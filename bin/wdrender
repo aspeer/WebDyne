@@ -1,0 +1,134 @@
+#!/usr/bin/perl
+#
+#  Compile and/or show compiled version of WebDyne HTML scripts
+#
+package main;
+
+
+#  Compiler pragma
+#
+use strict qw(vars);
+use vars   qw($VERSION $REVISION);
+use FindBin qw($RealBin $Script);
+use lib $RealBin;
+use File::Spec;
+use perl5lib File::Spec->catdir($RealBin, File::Spec->updir());
+
+
+#  Use the base module
+#
+use WebDyne::Base;
+
+
+#  Other external modules
+#
+use WebDyne;
+use WebDyne::Request::Fake;
+use Getopt::Long;
+use Pod::Usage;
+
+
+#  Version Info, must be all one line for MakeMaker, CPAN.
+#
+$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
+
+
+#  Release info
+#
+$REVISION = (qw $Revision: 1.3 $)[1];
+
+
+#  Run main
+#
+exit ${ &main(\@ARGV) || die errdump() };
+
+#===================================================================================================
+
+
+sub main {
+
+
+    #  Get argv array ref
+    #
+    my $argv_ar=shift();
+
+
+    #  Defaul options
+    #
+    my %option=(
+
+	handler    => $ENV{'WebDyneHandler'} || 'WebDyne'
+
+       );
+
+
+    #  Get command line options
+    #
+    GetOptions(\%option, 'help|?', 'handler=s') ||
+	pod2usage(2);
+    pod2usage(1) if $option{'help'};
+
+
+    #  Get srce file, add to options
+    #
+    my $srce_fn=shift(@{$argv_ar}) ||
+	pod2usage("$Script: no source file specified !");
+    (-f $srce_fn) ||
+	pod2usage("$Script: input file not found !");
+
+
+    #  Get new request object
+    #
+    my $r=WebDyne::Request::Fake->new(
+
+	filename	=>  $srce_fn,
+
+       ) || return err();
+
+
+    #  Get handler
+    #
+    my $handler=$option{'handler'};
+
+
+    #  Load up whichever handler we are using
+    #
+    eval ("require $handler") ||
+	return err("$Script: unable to load handler $handler, $@");
+
+
+    #  Set text errors only
+    #
+    $WebDyne::Err::WEBDYNE_ERROR_TEXT=1;
+
+
+    #  Run it and display results, or any error generated
+    #
+    defined($handler->handler($r)) || return err();
+
+
+    #  Manual cleanup
+    #
+    $r->DESTROY();
+
+
+    #  Done, return success
+    #
+    \undef;
+
+}
+
+
+__END__
+
+=head1 SYNOPSIS
+
+wdrender [options] file
+
+=begin text
+
+Options:
+    -h|help|?	brief help message
+    -handler	WebDyne handler to use - internal one is default
+
+=end text

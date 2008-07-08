@@ -1,0 +1,118 @@
+#!/usr/bin/perl
+#
+#  Compile and/or show compiled version of WebDyne HTML scripts
+#
+package main;
+
+
+#  Compiler pragma, load library path
+#
+use strict qw(vars);
+use vars   qw($VERSION $REVISION);
+use FindBin qw($RealBin $Script);
+use lib $RealBin;
+use File::Spec;
+use perl5lib File::Spec->catdir($RealBin, File::Spec->updir());
+
+
+#  Use the base modules
+#
+use WebDyne::Base;
+
+
+#  External modules
+#
+use WebDyne::Compile;
+use Getopt::Long;
+use Pod::Usage;
+use Data::Dumper;
+
+
+#  Version Info, must be all one line for MakeMaker, CPAN.
+#
+$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
+
+
+#  Release info
+#
+$REVISION = (qw $Revision: 1.2 $)[1];
+
+
+#  Run main
+#
+exit ${ &main(\@ARGV) || die errdump() };
+
+
+#===================================================================================================
+
+
+sub main {
+
+
+    #  Get argv array ref
+    #
+    my $argv_ar=shift();
+
+
+    #  Base options will pass to compile
+    #
+    my %option=(
+
+	nofilter    =>	1,	# don't run through any filters
+	noperl	    =>  1,	# don't run perl code,
+	stage4	    =>  1,	# default
+
+       );
+
+
+    #  Now import command line options. Command line option compilation stages are different from
+    #  internal stage numbers so maps are 0=>stage0, 1=>stage2, 2=>stage3, 3=>stage4, confusing ..
+    #
+    GetOptions(\%option, 'stage0|0', 'stage2|1', 'stage3|2', 'stage4|3', 'meta', 'help|?') ||
+	pod2usage(2);
+    pod2usage(1) if $option{'help'};
+
+
+    #  Get srce file, add to options
+    #
+    my $srce_fn=$argv_ar->[0] ||
+	pod2usage("$Script: no source file specified !");
+    $option{'srce'}=$srce_fn;
+
+
+    #  Create and run compile object
+    #
+    my $compile_or=WebDyne::Compile->new();
+    my $data_ar=$compile_or->compile(\%option) ||
+	return err();
+
+
+    #  Dump it
+    #
+    $Data::Dumper::Indent=1;
+    print Data::Dumper::Dumper(grep {$_} $option{'meta'} ? $data_ar->[0] : undef, $data_ar->[1]);
+
+
+    #  Return success
+    #
+    \undef;
+
+
+}
+
+__END__
+
+=head1 SYNOPSIS
+
+wdcompile [options] file
+
+=begin text
+
+Options:
+    -h|help	brief help message
+    -0		display data structure after parsing file with HTML::TreeBuilder
+    -1		display data structure after first stage of optimisation
+    -2		display data structure after second stage of optimsation
+    -m|meta	show container meta data
+
+=end text

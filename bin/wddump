@@ -1,0 +1,99 @@
+#!/usr/bin/perl
+#
+#  Dump the compiled version of WebDyne HTML scripts, as stored in the cache dir
+#
+package main;
+
+
+#  Compiler pragma
+#
+use strict qw(vars);
+use vars   qw($VERSION $REVISION);
+use FindBin qw($RealBin $Script);
+use lib $RealBin;
+use File::Spec;
+use perl5lib File::Spec->catdir($RealBin, File::Spec->updir());
+
+
+#  Use the base module
+#
+use WebDyne::Base;
+
+
+#  External modules
+#
+use Getopt::Long;
+use Pod::Usage;
+use Data::Dumper;
+use Storable;
+
+
+#  Version Info, must be all one line for MakeMaker, CPAN.
+#
+$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
+
+
+#  Release info
+#
+$REVISION = (qw $Revision: 1.2 $)[1];
+
+
+#  Run main
+#
+exit ${ &main(\@ARGV) || die errdump() };
+
+
+#============================================================================
+
+
+sub main {
+
+
+    #  Get argv array ref
+    #
+    my $argv_ar=shift();
+
+
+    #  Get command line options
+    #
+    GetOptions(\(my %option), 'help|?') ||
+	pod2usage(2);
+    pod2usage(1) if $option{'help'};
+
+
+    #  Get srce file
+    #
+    my $srce_pn=$argv_ar->[0] ||
+	pod2usage("$Script: no source file specified !");
+
+
+    #  Retrieve
+    #
+    my $data_ar=Storable::retrieve($srce_pn);
+
+
+    #  Dump
+    #
+    $Data::Dumper::Indent=1;
+    print Data::Dumper::Dumper($data_ar);
+
+
+    #  Done
+    #
+    return \undef;
+
+
+}
+
+__END__
+
+=head1 SYNOPSIS
+
+wddump file
+
+=begin text
+
+Options:
+    -h|help	brief help message
+
+=end text
