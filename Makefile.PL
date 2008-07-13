@@ -114,7 +114,7 @@ if (!$debug && $mm_has_pm_filter) {
     #  Write filter script and assign. Will strip debug statements depening on WEBDYNE_DEBUG env
     #  var
     #
-    my $fn='pm_filter.pl';
+    my $fn='pm_filter.pf';
     my $fh=IO::File->new($fn, O_WRONLY|O_CREAT|O_TRUNC) ||
 	die ("unable to write filter file '$fn', $!");
     print $fh 's/debug\\(/0 && debug\\(/m; print';
@@ -134,10 +134,7 @@ sub constants {
     #  Add license file, other support files here
     #
     my $mm_or=shift();
-    delete $mm_or->{'PM'}{'pm_filter.pl'};
-    delete $mm_or->{'PM'}{'.dumper.pm'};
     $mm_or->{'PM'}{'LICENSE'}='$(INST_LIBDIR)/$(BASEEXT)/LICENSE';
-    $mm_or->{'PM'}{'lib/WebDyne/Err/error.psp'}='$(INST_LIBDIR)/$(BASEEXT)/Err/error.psp';
     $mm_or->SUPER::constants;
 
 };
