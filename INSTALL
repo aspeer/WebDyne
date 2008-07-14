@@ -1,0 +1,30 @@
+THE EASY WAY:
+
+Use CPAN, install everything needed with:
+
+perl -MCPAN -e 'install Bundle::WebDyne'
+
+or if you have downloaed just the WebDyne module unpack it and:
+
+perl Makefile.PL
+make
+make test
+make install 
+
+Then run:
+
+bin/wdapacheinit
+
+for Apache installation or
+
+bin/wdlighttpdinit
+
+for Lighttpd installation
+
+the location of bin/wd... will be distribution dependent - you may have to
+hunt it down after installation.
+
+THE HARD WAY:
+
+Download and install the WebDyne::Doc module, then follow the instructions
+given in the tutorial.

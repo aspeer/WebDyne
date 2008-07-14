@@ -56,9 +56,10 @@ sub main {
 
     #  Get command line options
     #
-    GetOptions(\(my %option), 'help|?') ||
+    GetOptions(\(my %option), 'help|?', 'man') ||
 	pod2usage(2);
-    pod2usage(1) if $option{'help'};
+    pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $option{'help'};
+    pod2usage(-verbose => 2) if $option{'man'};
 
 
     #  Get srce file
@@ -87,13 +88,42 @@ sub main {
 
 __END__
 
-=head1 SYNOPSIS
+=head1 Name
 
-wddump file
+wddump - dump the data structure of a WebDyne page in the cache
+directory
 
-=begin text
+=head1 Synopsis
 
-Options:
-    -h|help	brief help message
+B<wddump> B<[OPTIONS]> B<FILE>
 
-=end text
+=head1 Description
+
+The L<wddump(1)> command displays internal the data structure of a
+compiled WebDyne psp file from the WebDyne cache directory. wddump is
+of limited diagnostic use - the L<wdcompile(1)> tool is more suitable for
+troubleshooting HTML tree errors.
+
+wddump can be useful to see a picture of the final data structure looks
+like on complex pages built via many filters, combining static and
+dynamic blocks etc.
+
+=head1 Options
+
+-h, --help
+Show brief help message.
+
+=head1 Examples
+
+B<wdrender> B</var/webdyne/cache/26f2c4edc8bfd52fbde915290db96779>
+
+Display the data structure from a compiled, cached webdyne file.
+
+=head1 Author
+
+Written by Andrew Speer, <andrew.speer@webdyne.org>
+
+=head1 Copying
+
+Copyright (C) 2008 Andrew Speer. Free use of this software is granted
+under the terms of the GNU General Public License (GPL)

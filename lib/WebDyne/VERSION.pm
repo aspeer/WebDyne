@@ -20,7 +20,7 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 #
-#  $Id: VERSION.pm,v 1.130 2008/06/10 14:07:04 aspeer Exp $
+#  $Id: VERSION.pm,v 1.131 2008/06/10 14:07:04 aspeer Exp $
 
 package WebDyne::VERSION;
-$VERSION=(qw$Revision: 1.130 $)[1];
+$VERSION=(qw$Revision: 1.131 $)[1];

@@ -1,5 +1,6 @@
 MANIFEST
 LICENSE
+INSTALL
 ChangeLog
 Makefile.PL
 lib/WebDyne.pm

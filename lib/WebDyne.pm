@@ -119,7 +119,7 @@ sub handler : method {
     debug("handler called with self $self, r $r, MP2 $MP2");
 
 
-    #  Start timer
+    #  Start timer so we can optionally keep stats on how long handler takes to run
     #
     my $time=time();
 
@@ -632,13 +632,6 @@ sub handler : method {
     debug("form $srce_pn render time $time_render");
 
 
-    #  Update cache script frequency used, time used indicators, nrun=number
-    #  of runs, lrun=last run time
-    #
-    $cache_inode_hr->{'nrun'}++;
-    $cache_inode_hr->{'lrun'}=time();
-
-
     #  Do we need to do house cleaning on cache after this run ? If so
     #  add a perl handler to do it after we finish
     #
@@ -663,6 +656,19 @@ sub handler : method {
 	#  fixed.
 	#
 
+
+    }
+    elsif ($WEBDYNE_CACHE_CHECK_FREQ) {
+
+	#  Only bother to update counters if we are checking cache periodically
+	#
+
+
+	#  Update cache script frequency used, time used indicators, nrun=number
+	#  of runs, lrun=last run time
+	#
+	$cache_inode_hr->{'nrun'}++;
+	$cache_inode_hr->{'lrun'}=time();
 
     }
     else {
