@@ -20,15 +20,13 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 #
-#  $Id: Handler.pm,v 1.1.1.1 2008/03/22 03:44:55 aspeer Exp $
-#
 package WebDyne::Handler;
 
 
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION $REVISION);
+use vars   qw($VERSION);
 
 
 #  WebDyne Modules.
@@ -43,14 +41,9 @@ use WebDyne::Base;
 $VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
 
 
-#  Release information
-#
-$REVISION= (qw$Revision: 1.1.1.1 $)[1];
-
-
 #  Debug 
 #
-debug("%s loaded, version $VERSION, revision $REVISION", __PACKAGE__);
+debug("%s loaded, version $VERSION", __PACKAGE__);
 
 
 #  And done

@@ -20,7 +20,6 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 #
-#  $Id: TreeBuilder.pm,v 1.2 2008/04/20 15:34:20 aspeer Exp $
 
 #
 #
@@ -30,7 +29,7 @@ package WebDyne::HTML::TreeBuilder;
 #  Compiler Pragma
 #
 use strict	qw(vars);
-use vars	qw($VERSION $REVISION @ISA %CGI_TAG_WEBDYNE %CGI_TAG_IMPLICIT %CGI_TAG_SPECIAL);
+use vars	qw($VERSION @ISA %CGI_TAG_WEBDYNE %CGI_TAG_IMPLICIT %CGI_TAG_SPECIAL);
 use warnings;
 no  warnings	qw(uninitialized redefine once);
 
@@ -60,15 +59,9 @@ use IO::File;
 $VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
 
 
-#  Revision info, by CVS
-#
-#
-$REVISION= (qw$Revision: 1.2 $)[1];
-
-
 #  Debug load
 #
-debug("Loading %s version $VERSION, revision $REVISION", __PACKAGE__);
+debug("Loading %s version $VERSION", __PACKAGE__);
 
 
 #  Make a hash of our implictly closed tags. TODO, expand to full list,

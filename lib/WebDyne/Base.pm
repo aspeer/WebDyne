@@ -20,8 +20,6 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 #
-#  $Id: Base.pm,v 1.3 2008/04/25 09:48:11 aspeer Exp $
-#
 package WebDyne::Base;
 
 
@@ -29,7 +27,7 @@ package WebDyne::Base;
 #
 sub BEGIN	{ $^W=0 };
 use strict	qw(vars);
-use vars	qw($VERSION $REVISION @EXPORT);
+use vars	qw($VERSION @EXPORT);
 use warnings;
 no  warnings	qw(uninitialized redefine once);
 
@@ -55,16 +53,9 @@ require Exporter;
 $VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
 
 
-#  Revision info, by CVS
-#
-#
-$REVISION= (qw$Revision: 1.3 $)[1];
-
-
 #  Var to hold package wide hash, for data shared across package, and error stack
 #
 my (%Package, @Err);
-
 
 
 #  All done. Positive return

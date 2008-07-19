@@ -20,8 +20,6 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 #
-#  $Id: WebDyne.pm,v 1.5 2008/04/27 15:43:07 aspeer Exp $
-#
 package WebDyne;
 
 
@@ -29,7 +27,7 @@ package WebDyne;
 #
 sub BEGIN	{ $^W=0 };
 use strict	qw(vars);
-use vars	qw($VERSION $REVISION %CGI_TAG_WEBDYNE @ISA $AUTOLOAD);
+use vars	qw($VERSION %CGI_TAG_WEBDYNE @ISA $AUTOLOAD);
 use warnings;
 no  warnings	qw(uninitialized redefine once);
 
@@ -62,15 +60,9 @@ use overload;
 $VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
 
 
-#  Revision info, by CVS
-#
-#
-$REVISION= (qw$Revision: 1.5 $)[1];
-
-
 #  Debug load
 #
-debug("%s loaded, version $VERSION, revision $REVISION", __PACKAGE__);
+debug("%s loaded, version $VERSION", __PACKAGE__);
 
 
 #  Shortcut error handler, save using ISA;

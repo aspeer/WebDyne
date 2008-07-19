@@ -20,7 +20,6 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 #
-#  $Id: Constant.pm,v 1.1 2008/03/24 13:48:21 aspeer Exp $
 
 #
 #  WebDyne::Err Constants
@@ -40,7 +39,6 @@ use File::Spec;
 #  Version information. Must be all on one line
 #
 $VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
-
 
 
 #  Hash of constants

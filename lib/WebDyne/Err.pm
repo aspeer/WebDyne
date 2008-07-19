@@ -20,15 +20,13 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 #
-#  $Id: Err.pm,v 1.1 2008/03/24 13:48:21 aspeer Exp $
-#
 package WebDyne::Err;
 
 
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION $REVISION);
+use vars   qw($VERSION);
 
 
 #  Webmod Modules.
@@ -50,14 +48,9 @@ use File::Spec;
 $VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
 
 
-#  Release information
-#
-$REVISION= (qw$Revision: 1.1 $)[1];
-
-
 #  Debug
 #
-debug("%s loaded, version $VERSION, revision $REVISION", __PACKAGE__);
+debug("%s loaded, version $VERSION", __PACKAGE__);
 
 
 #  Package wide vars

@@ -20,7 +20,6 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 #
-#  $Id: Compile.pm,v 1.3 2008/04/25 09:48:11 aspeer Exp $
 #
 package WebDyne::Compile;
 
@@ -28,7 +27,7 @@ package WebDyne::Compile;
 #  Compiler Pragma
 #
 use strict	qw(vars);
-use vars	qw($VERSION $REVISION %CGI_TAG_WEBDYNE %CGI_TAG_IMPLICIT);
+use vars	qw($VERSION %CGI_TAG_WEBDYNE %CGI_TAG_IMPLICIT);
 use warnings;
 no  warnings	qw(uninitialized redefine once);
 
@@ -55,15 +54,9 @@ use WebDyne::Base;
 $VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
 
 
-#  Revision info, by CVS
-#
-#
-$REVISION= (qw$Revision: 1.3 $)[1];
-
-
 #  Debug load
 #
-debug("Loading %s version $VERSION, revision $REVISION", __PACKAGE__);
+debug("Loading %s version $VERSION", __PACKAGE__);
 
 
 #  Tags that are case sensitive

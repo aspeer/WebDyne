@@ -20,15 +20,13 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 #
-#  $Id: Fake.pm,v 1.3 2008/06/09 14:42:31 aspeer Exp $
-#
 package WebDyne::Request::Fake;
 
 
 #  Compiler Pragma
 #
 use strict	qw(vars);
-use vars	qw($VERSION $REVISION $AUTOLOAD);
+use vars	qw($VERSION $AUTOLOAD);
 
 
 #  External modules
@@ -43,14 +41,9 @@ use HTTP::Status (RC_OK);
 $VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
 
 
-#  Revision info, by CVS
-#
-$REVISION= (qw$Revision: 1.3 $)[1];
-
-
 #  Debug load
 #
-debug("Loading %s version $VERSION, revision $REVISION", __PACKAGE__);
+debug("Loading %s version $VERSION", __PACKAGE__);
 
 
 #  All done. Positive return

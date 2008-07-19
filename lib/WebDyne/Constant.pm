@@ -20,7 +20,6 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 #
-#  $Id: Constant.pm,v 1.3 2008/04/25 09:48:11 aspeer Exp $
 
 
 #
