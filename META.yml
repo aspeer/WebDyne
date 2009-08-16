@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                WebDyne
-version:             1.132
+version:             1.133
 abstract:            ~
 license:             ~
 author:              
@@ -14,6 +14,7 @@ requires:
     HTML::TreeBuilder:             
     HTTP::Status:                  
     Storable:                      
+    Text::Template:                
     Tie::IxHash:                   
     Time::HiRes:                   
 meta-spec:

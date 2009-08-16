@@ -21,15 +21,9 @@ use IO::File;
 #------------------------------------------------------------------------------
 
 
-#  Get MakeMaker args
-#
-my %arg;
-&ExtUtils::MakeMaker::parse_args(\%arg, @ARGV);
-my $prereq_hr;
-
-
 #  Create the Makefile params, save in hash
 #
+my $prereq_hr;
 my %makefile=(
 
     NAME				    =>  __PACKAGE__,
@@ -50,7 +44,8 @@ my %makefile=(
 	'HTML::TreeBuilder'                 =>  undef,
 	'Storable'			    =>  undef,
 	'Tie::IxHash'			    =>  undef,
-	'Time::HiRes'			    =>  undef
+	'Time::HiRes'			    =>  undef,
+        'Text::Template'                    =>  undef
 
        }; ($ENV{'PREREQ_PM'} eq '0') ? {} : $prereq_hr },
 
@@ -65,6 +60,7 @@ my %makefile=(
 	'bin/wdcompile',
 	'bin/wdrender',
 	'bin/wddump',
+	'bin/wdapacheinit',
 	'bin/perl5lib.pm'
 
        ],
@@ -138,5 +134,3 @@ sub constants {
     $mm_or->SUPER::constants;
 
 };
-
-

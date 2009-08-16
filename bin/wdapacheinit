@@ -1,0 +1,119 @@
+#!/bin/perl
+
+
+#  Init Apache config files
+#
+use strict qw(vars);
+use File::Spec;
+use FindBin qw($RealBin);
+use Cwd qw(realpath);
+use lib $RealBin;
+use perl5lib File::Spec->catdir($RealBin, File::Spec->updir());
+use WebDyne::Base;
+use Getopt::Long;
+use Pod::Usage;
+
+
+#  Get command line options, add them to environment so picked up
+#  by WebDyne::Install::Apache::Constant module when loaded
+#
+my %option;
+GetOptions(\%option, (
+    'help|?',
+    'apache_uname|uname=s',
+    'apache_gname|gname=s',
+    'httpd_bin|httpd=s',
+    'dir_apache_conf|apache_conf=s',
+    'dir_apache_modules|apache_modules=s',
+    'file_mod_perl_lib|mod_perl_lib=s',
+    'mp2',
+    'webdyne_cache_dn|webdyne_cache|cache_dn|cache=s',
+    'silent',
+    'uninstall'
+   ) ) ||  pod2usage(2);
+pod2usage(1) if $option{'help'};
+map { $ENV{uc($_)}=$option{$_} } keys %option;
+
+
+#  By default the WebDyne::Install::Apache::Constant module will issue a
+#  warning if something not found, but will continue. In this case we want
+#  to consider any warning fatal
+#
+local $SIG{'__WARN__'}=sub { pod2usage("ERROR:\n\n".ucfirst($_[0])) };
+require WebDyne::Install::Apache;
+
+
+#  Get location prefile, call install/uninstall routine
+#
+my $prefix_dn=realpath(File::Spec->rel2abs(File::Spec->updir(),$RealBin));
+if ($option{'uninstall'}) {
+    exit ${ WebDyne::Install::Apache->uninstall($prefix_dn, $RealBin) || die errstr() }
+}
+else {
+    exit ${ WebDyne::Install::Apache->install($prefix_dn, $RealBin) || die errstr() }
+}
+
+__END__
+
+=head1 SYNOPSIS
+
+wdapacheinit [options]
+
+Options:
+
+=over
+
+=item -h|-?|--help
+
+brief help message
+
+=item --silent
+
+do not print any messages during install
+
+=item --uninstall
+
+remove webdyne config files and any Apache config file changes
+
+=item --mp2
+
+force installer to assume mod_perl2 in use
+
+=item --httpd
+
+full path name to the Apache binary (e.g. /sbin/httpd)
+
+=item --mod_perl
+
+full path name to the Apache mod_perl library (e.g. /lib/httpd/mod_perl.so)
+
+=item --uname
+
+user name used by the Apache process
+
+=item --gname
+
+group name used by the Apache process
+
+=item --apache_conf
+
+directory where Apache config file(s) are located
+
+=item --apache_modules
+
+directory where Apache modules are located
+
+=item --cache
+
+directory where you would like the WebDyne cache located (will be created)
+
+=back
+
+The installer will attempt to guess the values of each option above using common defaults. If it cannot determine
+the location of a file or directory it needs you must supply it as a command line or environment variable option.
+
+=head2 EXAMPLE
+
+=over
+
+C<wdapacheinit --httpd=/sbin/httpd --mod_perl=/lib/httpd/mod_perl.so --webdyne_cache=/var/cache_webdyne>

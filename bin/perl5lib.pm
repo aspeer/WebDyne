@@ -68,7 +68,7 @@ sub main {
         #  Juggle to get correct INC dir
         #
         my @config=(
-	    qw(sitelib privlib archlib vendorlib sitearch vendorarch),
+	    qw(sitelib privlib archlib vendorlib otherlibdirs sitearch vendorarch),
 	   );
 
         my @version=($Config{'version'}, split(/\s+/, $Config{'inc_version_list'}));
@@ -125,7 +125,8 @@ sub main {
     #  routing can generate duplicate entries in @inc;
     #
     my %inc;
-    @inc=map { realpath($_) } grep { -d $_ } @inc unless $inc{$_}++;
+    my @inc_tmp=grep { $inc{$_}++ ? undef : $_ } @inc;
+    @inc=map { realpath($_) } grep { -d $_ } @inc_tmp;
 
 
     #  Kludge to fix up when running from PAR - PAR inserts first line of 'package main; shift @INC', which
@@ -136,7 +137,7 @@ sub main {
 	unshift @inc, $ENV{'PAR_TEMP'};
 	unshift @inc, sub {};
     }
-
+    
 
     #  Add to @INC
     #

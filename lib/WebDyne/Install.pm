@@ -1,0 +1,226 @@
+#
+#
+#  Copyright (c) 2003 Andrew W. Speer <andrew.speer@isolutions.com.au>. All rights 
+#  reserved.
+#
+#  This file is part of WebDyne::Install.
+#
+#  WebDyne::Install is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#
+#  $Id: WebDyne_Install.pm,v 1.21 2008/04/27 15:40:42 aspeer Exp $
+
+
+
+#  WebDyne Install module
+#
+package WebDyne::Install;
+
+
+#  Compiler Pragma
+#
+sub BEGIN	{ $^W=0 };
+use strict	qw(vars);
+use vars	qw($VERSION $REVISION @EXPORT_OK @ISA);
+use warnings;
+no  warnings	qw(uninitialized);
+
+
+#  Export the message function
+#
+require Exporter;
+@ISA=qw(Exporter);
+@EXPORT_OK=qw(&message);
+
+
+#  WebDyne Modules
+#
+use WebDyne::Base;
+
+
+#  Constants
+#
+use WebDyne::Constant;
+use WebDyne::Install::Constant;
+
+
+#  External Modules
+#
+use File::Path;
+use IO::File;
+use Config;
+
+
+#  Version information in a formate suitable for CPAN etc. Must be
+#  all on one line
+#
+$VERSION = eval { require WebDyne::Install::VERSION; do $INC{'WebDyne/Install/VERSION.pm'}};
+
+
+#  Revision information, auto maintained by CVS
+#
+$REVISION=(qw$Revision: 1.21 $)[1];
+
+
+#  Debug
+#
+debug("%s loaded, version $VERSION, revision $REVISION", __PACKAGE__);
+
+
+#  Uninstaller global
+#
+my $Uninstall_fg;
+
+
+#  Init done.
+#
+1;
+
+
+#------------------------------------------------------------------------------
+
+
+sub message {
+
+
+    #  Print out messages unless silent flag set
+    #
+    return if $ENV{'SILENT'};
+    @_ || return print $/;
+    my $message=
+	sprintf(join('[%sinstall] - ',  undef, ucfirst(shift())).$/, $Uninstall_fg && 'un', @_);
+    $message=~s/\.?$/\./;
+    print $message;
+
+
+}
+
+
+sub uninstall {
+
+
+    #  Get prefix, discard class
+    #
+    my (undef, $prefix)=@_;
+    $prefix=undef if ($prefix eq $Config{'prefix'});
+
+
+    #  Set uninstall flag
+    #
+    $Uninstall_fg++;
+    message ;
+
+
+    #  Get cache dn
+    #
+    my $cache_dn=&cache_dn($prefix);
+
+
+    #  Delete cache files and remove if empty
+    #
+    if ($cache_dn && (-d $cache_dn)) {
+	my @file_cn=glob(File::Spec->catfile($cache_dn, '*'));
+	message "removing cache files from '$cache_dn'";
+        foreach my $fn (grep {/\w{32}(\.html)?$/} @file_cn) {
+            unlink $fn; #don't error here if problems, user will never see it
+        }
+	message "removing cache directory '$cache_dn'";
+	rmdir $cache_dn unless ($cache_dn eq File::Spec->tmpdir);
+    }
+    if ($prefix) {
+	message "updating perl5lib config.";
+	&perl5lib::del($prefix) if $prefix;
+	rmdir($prefix) if $prefix;
+    }
+
+
+    #  Done
+    #
+    return \undef;
+
+}
+
+
+#  Create cache dir and update perl5lib param
+#
+sub install {
+
+
+    #  Get prefix, discard class
+    #
+    my (undef, $prefix)=@_;
+    $prefix=undef if ($prefix eq $Config{'prefix'});
+
+    message ;
+    message sprintf(q[installation source directory '%s'.], $prefix || $Config{'prefix'});
+
+
+    #  Create the cache dir
+    #
+    unless  (-d (my $cache_dn=&cache_dn($prefix))) {
+
+	#  Make
+	#
+	message "creating cache directory '$cache_dn'.";
+	File::Path::mkpath($cache_dn, 0, 0755) || do {
+	    return err("unable to create dir $cache_dn") unless (-d $cache_dn) };
+
+    }
+    else {
+
+	message "using existing cache directory '$cache_dn'.";
+
+    }
+
+
+    #  Add prefix to perl5lib store
+    #
+    message "updating perl5lib config.";
+    &perl5lib::add($prefix) if $prefix;
+
+
+    # Done
+    #
+    message;
+
+
+    # Done
+    #
+    return \undef;
+
+}
+
+
+#  Work out cache dn
+#
+sub cache_dn {
+
+    my $cache_dn;
+    if ($WEBDYNE_CACHE_DN) {
+	$cache_dn=$WEBDYNE_CACHE_DN;
+    }
+    elsif (my $prefix=shift()) {
+	$cache_dn=File::Spec->catdir($prefix, 'cache');
+    }
+    elsif ($^O=~/MSWin[32|64]/) {
+	$cache_dn=File::Spec->catdir($ENV{'SYSTEMROOT'}, qw(TEMP webdyne))
+    }
+    else {
+	$cache_dn=File::Spec->catdir(
+	    File::Spec->rootdir(), qw(var cache webdyne));
+    }
+    return $cache_dn;
+
+}

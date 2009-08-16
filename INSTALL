@@ -1,30 +1,67 @@
-THE EASY WAY:
 
-Use CPAN, install everything needed with:
+== INSTALLATION VIA CPAN =======================================================
 
-perl -MCPAN -e 'install Bundle::WebDyne'
+You can install the base WebDyne module, and all prerequisites, with:
 
-or if you have downloaed just the WebDyne module unpack it and:
+perl -MCPAN -e 'install WebDyne'
+
+This assumes you have already setup and initialised CPAN appropriately for
+your environment.
+
+Note that WebDyne will not be automatically usable after this - you must
+modify your Web server configuration to make it active.  You may do this
+manually (referring to the documentation available in the doc directory, or
+at http://webdyne.org) or via an installer module which will do the work for
+you.
+
+The base WebDyne module comes with an installer module for Apache. It will
+be installed into whichever bin location (usually /usr/local/bin) your CPAN
+configuration defaults to.
+
+You can run the installer with the command:
+
+wdapacheinit
+
+It will use reasonable defaults to try and locate and update your Apache
+config, Webdyne cache dir.  etc.  If you need to alter the defaults do a
+
+wdapacheinit --help
+
+Other installer modules are available for Lighttpd and IIS. If you wish to
+download an installer module - which will add Webdyne hooks into your Web
+server - download the WebDyne::Install module appropriate for your server
+type, e.g:
+
+perl -MCPAN -e 'install WebDyne::Install::Apache'
+
+You may then run the installer script, e.g.:
+
+bin/wdapacheinit
+
+The actual location of the installer script will distribution dependent -
+you may have to search for it after module installation.
+
+The following installer modules and their installation scripts are
+available:
+
+WebDyne::Install::Lighttpd      bin/wdlighttpdinit 
+WebDyne::Install::IIS		bin/wdiisinit
+
+
+== INSTALLATION VIA MANUAL BUILD ===============================================
+
+You can download and install the base WebDyne module with the following commands
+after it is unpacked:
 
 perl Makefile.PL
 make
 make test
-make install 
+make install
 
-Then run:
+You will need to download and install all prerequisite modules manually. Modules
+required should be listed when you run the "perl Makefile.PL" command above.
 
-bin/wdapacheinit
-
-for Apache installation or
-
-bin/wdlighttpdinit
-
-for Lighttpd installation
-
-the location of bin/wd... will be distribution dependent - you may have to
-hunt it down after installation.
-
-THE HARD WAY:
-
-Download and install the WebDyne::Doc module, then follow the instructions
-given in the tutorial.
+Similarly to the CPAN install you will either need to adjust your Web server
+config manually to serve WebDyne pages, or run/download the appropriate
+installer module - see the CPAN section for details on what installer
+modules are available.

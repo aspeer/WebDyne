@@ -1,6 +1,6 @@
 #
 #
-#  Copyright (c) 2003 Andrew W. Speer <andrew.speer@isolutions.com.au>. All rights 
+#  Copyright (c) 2003 Andrew W. Speer <andrew.speer@isolutions.com.au>. All rights
 #  reserved.
 #
 #  This file is part of WebDyne.
@@ -89,7 +89,7 @@ require WebDyne::Err;
 my %Package;
 
 
-#  Do some class wide initialisation 
+#  Do some class wide initialisation
 #
 &init_class();
 
@@ -202,7 +202,7 @@ sub handler : method {
 	    #
 	    # meta	 =>  undef,  # page meta data, held in meta section or supplied by add-on modules
 	    # eval_cr	 =>  undef,  # where anonymous sub's representing eval'd perl code within this page are held
-	    # perl_init	 =>  undef,  # flags that perl code in __PERL__ block has been init'd (run once at page load) 
+	    # perl_init	 =>  undef,  # flags that perl code in __PERL__ block has been init'd (run once at page load)
 
 	}) || return $self->err_html('unable to initialize cache_inode_hr ref');
 
@@ -845,7 +845,7 @@ sub init_class {
 	    #  The following line puts all CGI params in %_ during the eval so they are easy to
 	    #  get to ..
 	    local *_=$param_hr;
-	    $eval_cr->($self, $eval_param_hr) 
+	    $eval_cr->($self, $eval_param_hr)
 	};
 	if (!defined($html_sr) || $@) {
 
@@ -1019,7 +1019,7 @@ sub init_class {
 		if (!exists($_[2]->{$_[3]}) && $WEBDYNE_STRICT_VARS) {
 		    return err("no '$_[3]' parameter value supplied, parameters are: %s", join(',', map {"'$_'"} keys %{$_[2]}))
 		} };
-	    #  Get rid of any overloading 
+	    #  Get rid of any overloading
 	    if (ref($value) && overload::Overloaded($value)) { $value="$value" }
 	    return ref($value) ? $value : \$value },
 	'@' => $eval_array_cr,
@@ -1027,7 +1027,7 @@ sub init_class {
 	'!' => $WEBDYNE_EVAL_SAFE ? $eval_safe_cr : $eval_cr,
 	'+' => sub { return \ ($_[0]->{'_CGI'}->param($_[3])) },
 	'*' => sub { return \ $ENV{$_[3]} },
-	'^' => sub { my $m=$_[3]; my $r=$_[0]->{'_r'}; 
+	'^' => sub { my $m=$_[3]; my $r=$_[0]->{'_r'};
 	    UNIVERSAL::can($r, $m) ? \$r->$m : err("unknown request method '$m'") }
 
        );
@@ -1164,7 +1164,7 @@ sub render {
 
     #  Get CGI object
     #
-    my $cgi_or=$self->{'_CGI'} || $self->CGI() || 
+    my $cgi_or=$self->{'_CGI'} || $self->CGI() ||
 	return err("unable to get CGI object from self ref");
 
 
@@ -1793,7 +1793,7 @@ sub render_block {
 	push @{$self->{'_block_render'}{$name}{$data_block_ar} ||= []}, $html_sr;
 
 
-	#  Store 
+	#  Store
 	#
 	push @html_sr, $html_sr;
 
@@ -2345,7 +2345,7 @@ sub subst_attr {
 	    #  If value_eval is a ref, get the ref text. No good showing a
 	    #  scalar ref in a text field
 	    #
-	    if (ref($eval_return) eq 'SCALAR') { 
+	    if (ref($eval_return) eq 'SCALAR') {
 
 	    	$eval_return=${$eval_return};
 		my $eval_expr="$oper\{${excl}${eval_text}${excl}\}";
@@ -2433,7 +2433,7 @@ sub include {
 
     #  Any param must supply a file name as an attribute
     #
-    my $fn=$param_hr->{'file'} || 
+    my $fn=$param_hr->{'file'} ||
 	return err('no file name supplied with include tag');
     my $pn=File::Spec->rel2abs($fn, $dn);
 
@@ -2964,7 +2964,7 @@ sub static {
 
 
     #  Set static flag for this instance only. If all instances wanted
-    #  set in meta data. This method used by WebDyne::Static module 
+    #  set in meta data. This method used by WebDyne::Static module
     #
     my $self=shift();
     $self->{'_static'}=1;
@@ -2979,7 +2979,7 @@ sub cache {
     #  set in meta data. This method used by WebDyne::Cache module
     #
     my $self=shift();
-    $self->{'_cache'}=shift() || 
+    $self->{'_cache'}=shift() ||
         return err('cache code ref or method name must be supplied');
 
 }
@@ -2991,7 +2991,7 @@ sub set_filter {
     #  set in meta data. This method used by WebDyne::Cache module
     #
     my $self=shift();
-    $self->{'_filter'}=shift() || 
+    $self->{'_filter'}=shift() ||
         return err('filter name must be supplied');
 
 }
@@ -3146,6 +3146,3 @@ sub UNTIE {
 
 sub AUTOLOAD {
 }
-
-
-
