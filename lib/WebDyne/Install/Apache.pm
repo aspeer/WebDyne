@@ -406,27 +406,35 @@ sub install {
 			#  SELinux is enabled. chcon first
 			#
 			if (my $chcon_bin=$SELINUX_CHCON_BIN) {
-			    message("Adding SELinux context $SELINUX_CONTEXT to cache directory '$cache_dn' via chcon");
+			    message("Adding SELinux context '$SELINUX_CONTEXT' to cache directory '$cache_dn' via chcon");
 			    if (my $rc=system($chcon_bin, '-R', '-t', $SELINUX_CONTEXT, $cache_dn)>>8) {
-				message("WARNING: SELinux chcon of $cache_dn to $SELINUX_CONTEXT failed with error code $rc")
+				message("WARNING: SELinux chcon of $cache_dn to $SELINUX_CONTEXT failed with error code $rc\n")
 			    }
     			}
 			else {
 			    message('WARNING: SELinux appears enabled, but the \'chcon\' command was not found - '.
-				    'your cache directory may not be writable');
+				    "your cache directory may not be writable\n");
 			}
 
 			#  Now semanage, if we can find it
 			#
 			if (my $semanage_bin=$SELINUX_SEMANAGE_BIN) {
-			    message("Adding SELinux context $SELINUX_CONTEXT to cache directory '$cache_dn' via semanage");
-			    if (my $rc=system($semanage_bin, 'fcontext', '-a', '-t', $SELINUX_CONTEXT, "${cache_dn}(/.*)?")>>8) {
-				message("WARNING: SELinux semanage of $cache_dn to $SELINUX_CONTEXT failed with error code $rc")
+
+			    #  List
+			    #
+			    my $selist=qx/$SELINUX_SEMANAGE_BIN fcontext -C -l -n/;
+			    unless ($selist=~/^\Q$cache_dn\E/m) {
+
+				#  Context not added yet
+				#
+				message("Adding SELinux context '$SELINUX_CONTEXT' to cache directory '$cache_dn' via semanage");
+				if (my $rc=system($semanage_bin, 'fcontext', '-a', '-t', $SELINUX_CONTEXT, "${cache_dn}(/.*)?")>>8) {
+				    message("WARNING: SELinux semanage of $cache_dn to $SELINUX_CONTEXT failed with error code $rc\n")
+				}
 			    }
 			}
 			else {
-			    message('WARNING: SELinux appears enabled, but the \'semanage\' command was not found - '.
-				    'your cache directory may become unwritable if an SELinux relabel takes place.');
+			    message('WARNING: SELinux semanage utility not found - chcon changes will be lost if SELinux relabel takes place.')
 			}
 		    }
 		}
@@ -434,14 +442,14 @@ sub install {
 
 		# Done
 		#
-		message "install completed.";
+		message 'install completed.'
 
 	    }
 	}
     }
     else {
 
-	message "uninstall completed";
+	message 'uninstall completed'
 
     };
 
