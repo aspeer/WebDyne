@@ -1,6 +1,6 @@
 #
 #
-#  Copyright (c) 2003 Andrew W. Speer <andrew.speer@isolutions.com.au>. All rights 
+#  Copyright (c) 2003 Andrew W. Speer <andrew.speer@isolutions.com.au>. All rights
 #  reserved.
 #
 #  This file is part of WebDyne.
@@ -50,7 +50,8 @@ eval { require mod_perl2 if ($ENV{'MOD_PERL_API_VERSION'}==2) } ||
 eval { require Apache2   if  $ENV{'MOD_PERL'}=~/1.99/ } ||
 eval { require mod_perl  if  $ENV{'MOD_PERL'} };
 eval undef;
-my $mp2 = (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION}) >= 1.99) ? 1 : 0;
+my $Mod_perl_version=$mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION};
+my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
 
 
 #  Name of file where install PREFIX info is stored
@@ -75,7 +76,7 @@ my $mp2 = (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSI
     WEBDYNE_NODE_LINE_IX			=>	4,
 
 
-    #  Where compiled scripts are stored. Scripts are stored in 
+    #  Where compiled scripts are stored. Scripts are stored in
     #  here with a the inode of the source file as the cache
     #  file name.
     #
@@ -138,13 +139,13 @@ my $mp2 = (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSI
     #  When a perl method loaded by a user calls another method within
     #  that just-loaded package (eg sub foo { shift()->bar() }), the
     #  WebDyne AUTOLOAD method gets called to work out where "bar" is,
-    #  as it is not in the WebDyne ISA stack. 
+    #  as it is not in the WebDyne ISA stack.
     #
-    #  By default, this gets done every time the routine is called, 
+    #  By default, this gets done every time the routine is called,
     #  which can add up when done many times. By setting the var below
     #  to 1, the AUTOLOAD method will pollute the WebDyne class with
     #  a code ref to the method in question, saving a run through
-    #  AUTOLOAD if it is ever called again. The downside - it is 
+    #  AUTOLOAD if it is ever called again. The downside - it is
     #  forever, and if your module has a method of the same name as
     #  one in the WebDyne class, it will clobber the WebDyne one, probably
     #  bringing the whole lot crashing down around your ears.
@@ -163,10 +164,9 @@ my $mp2 = (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSI
 
     #  DTD to use when generating HTML
     #
-    WEBDYNE_DTD					=>	 join(undef,(
-	'<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" ',
+    WEBDYNE_DTD					=>
+	'<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '.
 	'"http://www.w3.org/TR/html4/loose.dtd">',
-       )),
 
 
     #  Default <html> tag paramaters, eg { lang	=>'en-US' }
@@ -205,7 +205,7 @@ my $mp2 = (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSI
     #  CGI disable uploads default, max post size default
     #
     WEBDYNE_CGI_DISABLE_UPLOADS		        =>	1,
-    WEBDYNE_CGI_POST_MAX			=>	(512 * 1024),
+    WEBDYNE_CGI_POST_MAX			=>	(512 * 1024), #512Kb
 
 
     #  Install prefix info
@@ -216,7 +216,8 @@ my $mp2 = (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSI
     #  Mod_perl level. Do not change unless you know what you are
     #  doing.
     #
-    MP2						=>	$mp2,
+    MP2						=>	$MP2,
+    MOD_PERL					=>	$Mod_perl_version
 
 
 );
@@ -225,10 +226,14 @@ my $mp2 = (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSI
 sub local_constant_load {
 
     my ($class, $constant_hr)=@_;
+    debug("class $class, constant_hr %s", Dumper($constant_hr));
     my $local_constant_cn=local_constant_cn();
+    debug("local_constant_cn $local_constant_cn");
     my $local_hr=(-f $local_constant_cn) && (do($local_constant_cn) ||
 	warn "unable to read local constant file, $!");
+    debug("local_hr $local_hr");
     if (my $hr=$local_hr->{$class}) {
+	debug("found class $class hr %s", Dumper($hr));
 	while(my($key,$val)=each %{$hr}) {
 	    $constant_hr->{$key}=$val;
 	}
@@ -238,7 +243,10 @@ sub local_constant_load {
     #  Set via environment vars first
     #
     foreach my $key (keys %{$constant_hr}) {
-	$constant_hr->{$key}=$ENV{$key} if $ENV{$key};
+	if (my $val=$ENV{$key}) {
+	    debug("using environment value $val for key: $key");
+	    $constant_hr->{$key}=$val;
+	}
     }
 
 
@@ -247,41 +255,54 @@ sub local_constant_load {
     #GetOptions($constant_hr, map { "$_=s" } keys %{$constant_hr});
 
 
-    #  Ignore die's for the moment so don't get caught by error handler
+    #  Load up Apache config - only if running under mod_perl
     #
-    local $SIG{'__DIE__'}=undef;
-    my $server_or;
-    eval {
-	#  Modern mod_perl 2
-	#require Apache2;
-	require Apache2::ServerUtil;
-	require APR::Table;
-	$server_or = Apache2::ServerUtil->server();
-    };
-    $@ && eval {
-	#  Interim mod_perl 1.99x
-	#require Apache2;
-	require Apache::ServerUtil;
-	require APR::Table;
-	$server_or = Apache::ServerUtil->server();
-    };
-    $@ && eval {
-	#  mod_perl 1x ?
-	#require Apache;
-	require Apache::Server;
-	require Apache::Table;
-	$server_or = Apache->server();
-    };
+    if ($Mod_perl_version) {
 
-    #  Clear any eval errors, set via dir_config now (overrides env)
-    #
-    $@ && do { eval undef; errclr() };
-    if ($server_or) {
-	my $table_or=$server_or->dir_config();
-	while(my($key,$val)=each %{$table_or}) {
-	    $constant_hr->{$key}=$val if exists $constant_hr->{$key};
+
+	#  Ignore die's for the moment so don't get caught by error handler
+	#
+	debug("detected mod_perl version $Mod_perl_version - loading Apache directives");
+	local $SIG{'__DIE__'}=undef;
+	my $server_or;
+	eval {
+	    #  Modern mod_perl 2
+	    #require Apache2;
+	    require Apache2::ServerUtil;
+	    require APR::Table;
+	    $server_or = Apache2::ServerUtil->server();
+	};
+	$@ && eval {
+	    #  Interim mod_perl 1.99x
+	    #require Apache2;
+	    require Apache::ServerUtil;
+	    require APR::Table;
+	    $server_or = Apache::ServerUtil->server();
+	};
+	$@ && eval {
+	    #  mod_perl 1x ?
+	    #require Apache;
+	    require Apache::Server;
+	    require Apache::Table;
+	    $server_or = Apache->server();
+	};
+
+	#  Clear any eval errors, set via dir_config now (overrides env)
+	#
+	$@ && do { eval undef; errclr() };
+	debug("loaded server_or: $server_or");
+	if ($server_or) {
+	    my $table_or=$server_or->dir_config();
+	    while(my($key,$val)=each %{$table_or}) {
+		debug("installing value $val for Apache directive: $key");
+		$constant_hr->{$key}=$val if exists $constant_hr->{$key};
+	    }
 	}
     }
+
+
+    #  Done - return constant hash ref
+    #
     $constant_hr;
 
 }
@@ -292,7 +313,7 @@ sub local_constant_cn {
 
     #  Where local constants reside
     #
-    my $local_constant_fn='constant.pm';
+    my $local_constant_fn='webdyne.pm';
     my $local_constant_cn;
     if ($^O=~/MSWin[32|64]/) {
 	$local_constant_cn=
@@ -300,7 +321,7 @@ sub local_constant_cn {
 	}
     else {
 	$local_constant_cn=File::Spec->catfile(
-	    File::Spec->rootdir(), 'etc', 'constant.pm')
+	    File::Spec->rootdir(), 'etc', $local_constant_fn)
     }
     return $local_constant_cn;
 
@@ -316,6 +337,11 @@ sub cache_dn {
     if ($ENV{'PAR_TEMP'}) {
 	$cache_dn=$ENV{'PAR_TEMP'}
     }
+
+
+    #  Used to set like this - now leave the installer to
+    #  find and set an appropriate location
+    #
     #else {
 	#require File::Temp;
 	#$cache_dn=&File::Temp::tempdir( CLEANUP=> 1 );

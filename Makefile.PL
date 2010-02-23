@@ -45,7 +45,10 @@ my %makefile=(
 	'Storable'			    =>  undef,
 	'Tie::IxHash'			    =>  undef,
 	'Time::HiRes'			    =>  undef,
-        'Text::Template'                    =>  undef
+
+        #  Needed for installer - can be ignored if not using installer
+        'Text::Template'                    =>  undef,
+        'Env::Path'                         =>  undef,
 
        }; ($ENV{'PREREQ_PM'} eq '0') ? {} : $prereq_hr },
 
@@ -61,6 +64,7 @@ my %makefile=(
 	'bin/wdrender',
 	'bin/wddump',
 	'bin/wdapacheinit',
+	'bin/wddebug',
 	'bin/perl5lib.pm'
 
        ],

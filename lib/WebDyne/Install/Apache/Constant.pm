@@ -45,12 +45,14 @@ use File::Find;
 use File::Spec;
 use IO::File;
 use Cwd qw(realpath);
+use Env::Path;
+use WebDyne::Base;
 
 
-#  Constants for our Constants module
+#  Constants for our Constants module. PATH is only used as last resort
 #
-use constant PATH=>
-    '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/opt/sbin:/opt/bin';
+use constant PATH => [qw(
+    /sbin /bin /usr/sbin /usr/bin /usr/local/sbin /usr/local/bin /opt/sbin /opt/bin)];
 
 
 #  Need to null out some Fcntl functions under Win32
@@ -97,6 +99,7 @@ foreach my $name (@apache_gname) {
 	if ($apache_gid=getgrnam($name)) { $apache_gname=$name; last }
     }
 }
+debug("apache_uid: $apache_uid, apache_gid: $apache_gid");
 
 
 #  Check we have something for Apache uname etc.
@@ -114,6 +117,7 @@ eval { require mod_perl };
 eval { require mod_perl2 };
 eval undef;
 my $mp2_installed = (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION}) >= 1.99) ? 1 : 0;
+debug("mp2_installed: $mp2_installed");
 
 
 #  Hash to hold some temp vars
@@ -188,8 +192,13 @@ sub httpd_bin {
     #  If in Win32 need to get location of Apache from reg. Not much error checking
     #  because not fatal if reg key not found etc.
     #
+    debug();
     my ($path,@name_bin);
     if ($^O=~/MSWin[32|64]/) {
+
+	#  Windows
+	#
+	debug("detected MS Win: $^O");
 	require Win32::TieRegistry;
 	my $reg_ix=tie(
 	    my %reg, 'Win32::TieRegistry', 'HKEY_LOCAL_MACHINE\Software\Apache Group\Apache');
@@ -199,11 +208,19 @@ sub httpd_bin {
 		%reg, 'Win32::TieRegistry', 'HKEY_LOCAL_MACHINE\Software\Apache Software Foundation\Apache');
 	    $version=(sort {$b cmp $a} keys %reg)[0];
 	}
-	$path=($ServerRoot=$reg{$version}->{'ServerRoot'}) ||
+	debug("registry says version: $version");
+	$path=($ServerRoot=$reg{$version}->{'ServerRoot'}); #||
 	    # last resorts. blech
-	    'C:\Apache;C:\Apache~1;C:\Apache2;C:\Apache2.2;C:\Progra~1\Apache;C:\Progra~1\Apache2;C:\Progra~1\Apache~1;'.
-		'D:\Apache;D:\Apache~1;D:\Apache2;D:\Apache2.2;D:\Progra~1\Apache;D:\Progra~1\Apache2;D:\Progra~1\Apache~1;'.
-		    'E:\Apache;E:\Apache~1;E:\Apache2;E:\Apache2.2;E:\Progra~1\Apache;E:\Progra~1\Apache2;E:\Progra~1\Apache~1;';
+	    #'C:\Apache;C:\Apache~1;C:\Apache2;C:\Apache2.2;C:\Progra~1\Apache;C:\Progra~1\Apache2;C:\Progra~1\Apache~1;'.
+		#'D:\Apache;D:\Apache~1;D:\Apache2;D:\Apache2.2;D:\Progra~1\Apache;D:\Progra~1\Apache2;D:\Progra~1\Apache~1;'.
+		    #'E:\Apache;E:\Apache~1;E:\Apache2;E:\Apache2.2;E:\Progra~1\Apache;E:\Progra~1\Apache2;E:\Progra~1\Apache~1;';
+
+	#  Some Apache distro's use '/bin/' after ServerRoot
+	#
+	if ($path) { $path=join(Env::Path->PathSeparator, File::Spec->catdir($path, 'bin')) }
+
+	#  Various names for Apache under Windows
+	#
 	@name_bin=qw(Apache.exe Apache2.exe httpd.exe httpd2.exe);
     }
     else {
@@ -211,9 +228,11 @@ sub httpd_bin {
     	#  Add some hard coded paths as last resort options, will work if su'd to root
     	#  without getting root's path
     	#
-	$path=$ENV{'PATH'} . +PATH;
+	$path=join(Env::Path->PathSeparator, $ENV{'PATH'} , @{+PATH});;
 	@name_bin=qw(httpd httpd2 httpd2.2 apache apache2 apache2.2);
     }
+    debug("apache final search path: '$path'");
+    debug('apache names %s', Dumper(\@name_bin));
 
 
     #  Find the httpd bin file
@@ -221,11 +240,12 @@ sub httpd_bin {
     my $httpd_bin;
     unless ($httpd_bin=$ENV{'HTTPD_BIN'}) {
 
-	my @dir=grep { -d $_ } split(/:|;/, $path);
+	my @dir=grep { -d $_ } split(Env::Path->PathSeparator, $path);
 	my %dir=map { $_=> 1} @dir;
 	DIR: foreach my $dir (@dir) {
 	    next unless delete $dir{$dir};
 	    next unless -d $dir;
+	    debug("searching dir: $dir");
 	    foreach my $name_bin (@name_bin) {
 		if (-f File::Spec->catfile($dir, $name_bin)) {
 		    $httpd_bin=File::Spec->catfile($dir, $name_bin);
@@ -234,6 +254,7 @@ sub httpd_bin {
 	    }
 	}
     }
+    debug("httpd_bin returning: $httpd_bin");
 
 
     #  Warn if unable to find
@@ -253,14 +274,16 @@ sub httpd_bin {
 sub find_bin {
 
     my $bin=shift();
-    my $path=$ENV{'PATH'} . +PATH;
+    my $path=join(Env::Path->PathSeparator, $ENV{'PATH'} , @{+PATH});
+    debug("find_bin $bin, path: $path");
     my $fn;
     unless ($fn=$ENV{"${bin}_BIN"}) {
-	my @dir=grep { -d $_ } split(/:|;/, $path);
+	my @dir=grep { -d $_ } split(Env::Path->PathSeparator, $path);
 	my %dir=map { $_=> 1} @dir;
 	foreach my $dir (@dir) {
 	    next unless delete $dir{$dir};
 	    next unless -d $dir;
+	    debug("searching dir: $dir");
 	    if (-f File::Spec->catfile($dir, $bin)) {
 		$fn=File::Spec->catfile($dir, $bin); last;
 	    }
@@ -270,6 +293,7 @@ sub find_bin {
 
     #  Return
     #
+    debug("find_bin returning: $fn");
     return $fn ? File::Spec->canonpath($fn) : undef;
 
 }
@@ -280,6 +304,7 @@ sub httpd_config {
 
     #  Return if no Httpd_Bin, means apache binary not found
     #
+    debug();
     return unless $Httpd_Bin;
 
 
@@ -287,6 +312,7 @@ sub httpd_config {
     #
     my %config;
     my @httpd_config=qx(\"$Httpd_Bin\" -V);
+    debug('httpd_config: %s', Dumper(\@httpd_config));
 
 
     #  Go through
@@ -315,6 +341,7 @@ sub httpd_config {
     #  HTTPD_ROOT
     #
     unless (-d $httpd_dn) {
+	debug('using last resort to find httpd_dn');
 	$config{'HTTPD_ROOT'}=do {
 	    my $dn=File::Spec->catdir(
 		(File::Spec->splitpath($Httpd_Bin))[1],
@@ -323,6 +350,7 @@ sub httpd_config {
             $dn;
         };
     }
+    debug('httpd_dn set to: %s', $config{'HTTPD_ROOT'});
 
 
     #  And return the config
@@ -337,26 +365,50 @@ sub dir_apache_conf {
 
     #  Get Apache config dir, ensure is absolute
     #
+    debug();
     my $apache_conf_dn;
     unless ($apache_conf_dn=$ENV{'DIR_APACHE_CONF'}) {
-	$apache_conf_dn=(File::Spec->splitpath(
-	    $Httpd_Config_hr->{'HTTPD_SERVER_CONFIG_FILE'}))[1];
-	($apache_conf_dn=~/^\//) || (
+
+	$apache_conf_dn=$Httpd_Config_hr->{'HTTPD_SERVER_CONFIG_FILE'};
+	my $apache_conf_fn=(File::Spec->splitpath($apache_conf_dn))[2];
+	$apache_conf_dn=~s/\Q$apache_conf_fn\E$//;
+
+	#$apache_conf_dn=(File::Spec->splitpath(
+	#    $Httpd_Config_hr->{'HTTPD_SERVER_CONFIG_FILE'}))[1];
+	debug("apache_conf_fn initital value: $apache_conf_dn");
+	unless ($apache_conf_dn=~/^\//) {
+
+	    debug("apache_conf_dn path appears relative - prepending HTTPD_ROOT");
 	    $apache_conf_dn=File::Spec->catdir(
-		$Httpd_Config_hr->{'HTTPD_ROOT'},$apache_conf_dn));
+		$Httpd_Config_hr->{'HTTPD_ROOT'},$apache_conf_dn);
+
+	}
+	else {
+	    debug('apache_conf_dn appears fully qualified - leaving intact');
+	}
 
 
 	#  Check for ../conf.d path
 	#
 	foreach my $dn ('conf.d', File::Spec->catdir(File::Spec->updir(), 'conf.d')) {
+	    debug("looking for conf.d path: $dn");
 	    my $test_dn=File::Spec->canonpath(
 		File::Spec->catdir($apache_conf_dn, $dn));
+	    debug("testing: $test_dn");
 	    if (-d $test_dn) {
 		$apache_conf_dn=realpath($test_dn);
+		debug("found, setting apache_conf_dn: $apache_conf_dn");
 		$Httpd_Config_hr->{'HTTPD_SERVER_CONFIG_SKIP'}=1;
+	    }
+	    else {
+		debug('not found');
 	    }
 	}
     }
+    else {
+	debug('setting apache_conf_dn from %ENV');
+    }
+    debug("apache_conf_dn set to: $apache_conf_dn");
 
 
     #  Warn if not found
@@ -378,6 +430,7 @@ sub dir_apache_modules {
 
     #  Get Apache config dir, ensure is absolute
     #
+    debug();
     my @dn=(
 	File::Spec->catdir(
 	    $Httpd_Config_hr->{'HTTPD_ROOT'}, 'modules'),
@@ -399,13 +452,19 @@ sub dir_apache_modules {
     my $apache_modules_dn;
     unless ($apache_modules_dn=$ENV{'DIR_APACHE_MODULES'}) {
 	foreach my $dn (@dn) {
+	    debug("looking for path: $dn");
 	    if (-d $dn) {
 		$apache_modules_dn=$dn;
+		debug("found, setting apache_modules_dn to: $dn");
 		last;
 	    }
 	}
 	$apache_modules_dn ||= 'modules';
     }
+    else {
+	debug('setting apache_modules_dn from %ENV');
+    }
+    debug("apache_modules_dn set to: $apache_modules_dn");
 
 
     #  Warn if not found
@@ -428,19 +487,29 @@ sub file_mod_perl_lib {
     #  Get the name of the mod_perl library
     #
     my $dn=shift();
+    debug("looking for mod_perl dn: $dn");
     my $mod_perl_cn;
     unless ($mod_perl_cn=$ENV{'FILE_MOD_PERL_LIB'}) {
-	foreach my $fn (qw(libperl mod_perl mod_perl2 mod_perl-2 mod_perl-2.2)) {
+	foreach my $fn (qw(libperl mod_perl mod_perl2 mod_perl2.2 mod_perl-2 mod_perl-2.2)) {
 	    foreach my $ext (qw(so dll)) {
 		my $cn=File::Spec->catfile($dn, "$fn.$ext");
-		if (-f $cn) {
+		debug("looking for cn: $cn");
+	  	if (-f $cn) {
 		    $mod_perl_cn=$cn;
 		    last;
+		}
+		else {
+		    debug('not found');
 		}
 	    }
 	    last if $mod_perl_cn;
 	}
     }
+    else {
+	debug("setting mod_perl_cn from %ENV")
+    }
+    debug("mod_perl_cn set to: $mod_perl_cn");
+
 
     unless (-f $mod_perl_cn) {
 	warn('unable to find/determine mod_perl library - please supply via FILE_MOD_PERL_LIB environment variable');
@@ -452,6 +521,7 @@ sub file_mod_perl_lib {
 
 #  Finalise and export vars
 #
+debug('final constants: %s', Dumper(\%Constant));
 require Exporter;
 require WebDyne::Constant;
 @ISA=qw(Exporter WebDyne::Constant);

@@ -24,6 +24,7 @@ bin/wdcompile
 bin/wdapacheinit
 bin/wdrender
 bin/wddump
+bin/wddebug
 bin/perl5lib.pm
 lib/WebDyne/Install/Apache/apache.conf.inc
 lib/WebDyne/Install/Apache/webdyne.conf.inc

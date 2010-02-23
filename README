@@ -1,8 +1,10 @@
+**** INTRODUCTION ****
+
 WebDyne is a  HTML dynamic content engine. It allows for realtime generation
 of HTML documents using Perl code and/or Perl modules.
 
 WebDyne will work with Apache, Lighttpd, IIS. It uses mod_perl with Apache
-and FastCGI with other web servers to allow for decent speed.
+and FastCGI with other web servers to attain a high level of performance.
 
 An installer is included in the base WebDyne module for Apache, other
 installers are available by downloading the appropriate module (e.g. 
@@ -13,8 +15,21 @@ WebDyne source file.  It is parsed for WebDyne specific tags (such as <perl>
 and <block>) which are interpreted and executed on the server as
 appropriate.  The resulting output is then sent to the browser.
 
-Pages parsed once are are stored in a partially compiled format, speeding up
+Pages parsed once are are optionally stored in a partially compiled format, speeding up
 subsequent processing.
 
 The aim of WebDyne is to make coding web pages with Perl components a
-faster, easier and more maintainable experience.
+faster, easier and more enjoyable experience.
+
+
+**** GETTING STARTED ****
+
+1 .. Install the WebDyne module from CPAN
+
+2 .. Run the wdapachinit binary for Apache install and restart Apache. See documentation for
+     other Web servers.
+
+3 .. Create a .psp file in the Web server home directory. See documentation
+     for examples
+
+4 .. Load with your browser.

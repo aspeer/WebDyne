@@ -59,10 +59,11 @@ sub main {
 
     #  Get command line options
     #
-    GetOptions(\%option, 'help|?', 'handler=s', 'man') ||
+    GetOptions(\%option, 'help|?', 'handler=s', 'man', 'version') ||
 	pod2usage(2);
     pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $option{'help'};
     pod2usage(-verbose => 2) if $option{'man'};
+    $option{'version'} && do { print "$Script version: $VERSION\n"; exit 0 };
 
 
     #  Get srce file, add to options

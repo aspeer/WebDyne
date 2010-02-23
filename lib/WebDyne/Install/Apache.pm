@@ -126,19 +126,21 @@ sub install {
 
     #  Get package file name so we can look up inc for templates
     #
-    (my $class_fn=$class.q(.pm))=~s/::/\//g;
+    (my $class_dn=$class.q(.pm))=~s/::/\//g;
 
 
     #  Load constants, get full path for class and constants from INC
     #
-    $class_fn=$INC{$class_fn} ||
+    $class_dn=$INC{$class_dn} ||
 	return err("unable to find location for $class in \%INC");
 
 
-    #  Split
+    #  Get file name component, then cut file out to get directory,
+    #  split and reverse class for later use;
     #
-    my $class_dn=(File::Spec->splitpath($class_fn))[1];
-    my @class=split(/\:\:/, $class);
+    my $class_fn=(File::Spec->splitpath($class_dn))[2];
+    $class_dn=~s/\Q$class_fn\E$//;
+    my @class=reverse split(/::/, $class);
 
 
     #  Get webdyne cache dn;
@@ -167,9 +169,9 @@ sub install {
       unless $config_hr->{'HTTPD_BIN'};
 
 
-    #  Get template path name from module install dir
+    #  Get template path name from module install dir.
     #
-    my $template_dn=File::Spec->catdir($class_dn, $class[-1]);
+    my $template_dn=File::Spec->catdir($class_dn, $class[0]);
     my $template_fn=File::Spec->catfile(
 	$template_dn, $config_hr->{'FILE_WEBDYNE_CONF_TEMPLATE'});
 

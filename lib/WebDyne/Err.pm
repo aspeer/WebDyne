@@ -200,11 +200,13 @@ sub err_html {
 	#  WebDyne not being able to load/start etc, in which case trying to run it
 	#  again won't be helpful
 	#
+        my $status;
 	eval {
 
 
 	    #  Only compile container once if we can help it
 	    #
+            local $SIG{__DIE__}=undef;
 	    require WebDyne::Compile;
 	    my $container_ar=($Package{'container_ar'} ||= &WebDyne::Compile::compile($self,{
 
@@ -228,7 +230,7 @@ sub err_html {
 
 	    #  Set custom handler
 	    #
-	    my $status=$r->status();
+	    $status=$r->status();
 	    debug("send custom response for status $status on r $r");
 	    $r->custom_response($status, ${$html_sr});
 
@@ -237,19 +239,19 @@ sub err_html {
 	    #
 	    errclr();eval undef;
 
-
-	    #  And return
-	    #
-	    return $status;
-
 	};
 
 
-	#  If we get here we could not render the error in WebDyne, revert to text - better than
+	#  Check if render went OK, if not revert to text - better than
 	#  showing nothing ..
 	#
-	$WEBDYNE_ERROR_TEXT=1;
-	$self->err_html($errstr);
+        if ($@ || !$status) {
+            $WEBDYNE_ERROR_TEXT=1;
+            return $self->err_html($errstr);
+        }
+        else {
+            return $status
+        }
 
     }
 

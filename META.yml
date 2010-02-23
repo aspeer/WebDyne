@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                WebDyne
-version:             1.134
+version:             1.135
 abstract:            ~
 license:             ~
 author:              
@@ -10,6 +10,7 @@ distribution_type:   module
 requires:     
     CGI:                           
     Digest::MD5:                   
+    Env::Path:                     
     HTML::Tagset:                  
     HTML::TreeBuilder:             
     HTTP::Status:                  

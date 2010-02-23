@@ -1,6 +1,6 @@
 #
 #
-#  Copyright (c) 2003 Andrew W. Speer <andrew.speer@isolutions.com.au>. All rights 
+#  Copyright (c) 2003 Andrew W. Speer <andrew.speer@isolutions.com.au>. All rights
 #  reserved.
 #
 #  This file is part of WebDyne.
@@ -86,7 +86,18 @@ sub import {
 
     #  Environment var overrides all
     #
-    if ($ENV{'PERL_DEBUG'} || $ENV{'PERL_DEBUG_ALL'}) {
+    if ($ENV{'WEBDYNE_DEBUG_FILE'}) {
+
+	#  fn is whatever spec'd
+	#
+	my $fn=$ENV{'WEBDYNE_DEBUG_FILE'};
+	$debug_fh=IO::File->new($fn, O_CREAT|O_APPEND|O_WRONLY) || do {
+	    warn("unable to open file '$fn', $!");
+	    undef;
+	}
+
+    }
+    elsif ($ENV{'WEBDYNE_DEBUG'}) {
 
 
 	#  fh is stderr
@@ -139,10 +150,10 @@ sub import {
 	    local $|=1;
 	    my $method=(caller(1))[3] || 'main';
 	    (my $subroutine=$method)=~s/^.*:://;
-	    if ($ENV{'PERL_DEBUG'} && (($caller eq $ENV{'PERL_DEBUG'}) || ($method eq $ENV{'PERL_DEBUG'}))) {
+	    if ($ENV{'WEBDYNE_DEBUG'} && (($caller eq $ENV{'WEBDYNE_DEBUG'}) || ($method eq $ENV{'WEBDYNE_DEBUG'}))) {
 		CORE::print $debug_fh "[$subroutine] ", sprintf(shift(), @_), $/;
 	    }
-	    elsif (!$ENV{'PERL_DEBUG'}) {
+	    elsif (!$ENV{'WEBDYNE_DEBUG'} || ($ENV{'WEBDYNE_DEBUG'} eq '1')) {
 		CORE::print $debug_fh "[$subroutine] ", sprintf(shift(), @_), $/;
 	    }
 	} unless UNIVERSAL::can($caller, 'debug');
@@ -151,7 +162,6 @@ sub import {
 
     }
     else {
-
 
 	#  No, null our debug and Dumper routine
 	#
@@ -477,5 +487,4 @@ sub errstack {
     return \@Err;
 
 }
-
 

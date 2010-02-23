@@ -1,11 +1,11 @@
 #!/bin/perl
 
-
 #  Init Apache config files
 #
 use strict qw(vars);
+use vars qw($VERSION);
 use File::Spec;
-use FindBin qw($RealBin);
+use FindBin qw($RealBin $Script);
 use Cwd qw(realpath);
 use lib $RealBin;
 use perl5lib File::Spec->catdir($RealBin, File::Spec->updir());
@@ -14,12 +14,18 @@ use Getopt::Long;
 use Pod::Usage;
 
 
+#  Version Info, must be all one line for MakeMaker, CPAN.
+#
+$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
+
+
 #  Get command line options, add them to environment so picked up
 #  by WebDyne::Install::Apache::Constant module when loaded
 #
 my %option;
 GetOptions(\%option, (
     'help|?',
+    'man',
     'apache_uname|uname=s',
     'apache_gname|gname=s',
     'httpd_bin|httpd=s',
@@ -29,9 +35,12 @@ GetOptions(\%option, (
     'mp2',
     'webdyne_cache_dn|webdyne_cache|cache_dn|cache=s',
     'silent',
-    'uninstall'
+    'uninstall',
+    'version'
    ) ) ||  pod2usage(2);
-pod2usage(1) if $option{'help'};
+pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $option{'help'};
+pod2usage(-verbose => 2) if $option{'man'};
+$option{'version'} && do { print "$Script version: $VERSION\n"; exit 0 };
 map { $ENV{uc($_)}=$option{$_} } keys %option;
 
 
@@ -55,11 +64,11 @@ else {
 
 __END__
 
-=head1 SYNOPSIS
+=head1 Synopsis
 
 wdapacheinit [options]
 
-Options:
+=head1 Options
 
 =over
 
