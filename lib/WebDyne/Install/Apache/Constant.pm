@@ -86,14 +86,14 @@ $REVISION=(qw$Revision: 1.8 $)[1];
 #
 my ($apache_uname, $apache_gname, $apache_uid, $apache_gid);
 my @apache_uname=$ENV{'APACHE_UNAME'} ||
-    qw(apache apache2 www wwwrun httpd httpd2 www-data);
+    qw(apache apache2 www wwwrun httpd httpd2 www-data webservd);
 foreach my $name (@apache_uname) {
     unless ($apache_uid || $^O=~/MSWin[32|64]/) {
 	if ($apache_uid=getpwnam($name)) { $apache_uname=$name; last }
     }
 }
 my @apache_gname=$ENV{'APACHE_GNAME'} ||
-    qw(apache apache2 www wwwrun httpd httpd2 www-data);
+    qw(apache apache2 www wwwrun httpd httpd2 www-data webservd);
 foreach my $name (@apache_gname) {
     unless ($apache_gid || $^O=~/MSWin[32|64]/) {
 	if ($apache_gid=getgrnam($name)) { $apache_gname=$name; last }
@@ -107,22 +107,18 @@ debug("apache_uid: $apache_uid, apache_gid: $apache_gid");
 unless ($apache_uid || $^O=~/MSWin[32|64]/ ) {
     warn('unable to determine Apache uname - please supply via APACHE_UNAME environment variable')};
 unless ($apache_gid || $^O=~/MSWin[32|64]/ ) {
-    warn('unable to determine Apache uname - please supply via APACHE_GNAME environment variable')};
+    warn('unable to determine Apache gname - please supply via APACHE_GNAME environment variable')};
+
+
+#  Get mod_perl file and modules library location
+#
+my $dir_apache_modules=&dir_apache_modules();
+my $file_mod_perl_lib=&file_mod_perl_lib($dir_apache_modules);
 
 
 #  Is mod_perl2/1 installed
 #
-eval { require Apache2 };
-eval { require mod_perl };
-eval { require mod_perl2 };
-eval undef;
-my $mp2_installed = (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION}) >= 1.99) ? 1 : 0;
-debug("mp2_installed: $mp2_installed");
-
-
-#  Hash to hold some temp vars
-#
-my %temp;
+my $mp2_installed=&mp2_installed();
 
 
 #  Real deal
@@ -151,12 +147,12 @@ my %temp;
     #  Get apache directory name
     #
     DIR_APACHE_CONF			  =>  &dir_apache_conf(),
-    DIR_APACHE_MODULES			  =>  $temp{'dir_apache_modules'}=&dir_apache_modules(),
+    DIR_APACHE_MODULES			  =>  $dir_apache_modules,
 
 
     #  Mod_perl library name
     #
-    FILE_MOD_PERL_LIB			  =>    &file_mod_perl_lib($temp{'dir_apache_modules'}),
+    FILE_MOD_PERL_LIB			  =>  $file_mod_perl_lib,
 
 
     #  Need apache uid and gid, as some dirs will be chowned to this
@@ -434,6 +430,8 @@ sub dir_apache_modules {
     my @dn=(
 	File::Spec->catdir(
 	    $Httpd_Config_hr->{'HTTPD_ROOT'}, 'modules'),
+	File::Spec->catdir(
+	    $Httpd_Config_hr->{'HTTPD_ROOT'}, 'libexec'),
 	# last resorts, blech
 	'/usr/lib/apache2/modules',
 	'/usr/lib/apache2.2/modules',
@@ -516,6 +514,38 @@ sub file_mod_perl_lib {
     }
     return $mod_perl_cn;
 
+}
+
+
+sub mp2_installed {
+
+    eval { require Apache2 };
+    eval { require mod_perl };
+    eval { require mod_perl2 };
+    eval undef;
+    my $mp2_installed;
+    if (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION}) >= 1.99) {
+        $mp2_installed=1;
+    }
+    elsif (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION}) >= 1) {
+        $mp2_installed=0
+    }
+    elsif ( $file_mod_perl_lib ) {
+        # Last resort - mod_perl libary exists, but we couldn't load 
+        #
+        $mp2_installed=0;
+        my $version=qx($Httpd_Bin -v);
+        if ($version=~/(\d+)\.(\d+)/) {
+            $version=$1.$2;
+            if ($version >=2) {
+                $mp2_installed=1;
+            }
+        }
+    }
+    debug("mp2_installed: $mp2_installed");
+    
+    return $mp2_installed;
+    
 }
 
 

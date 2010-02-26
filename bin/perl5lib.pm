@@ -7,6 +7,7 @@ use Config;
 use Cwd qw(realpath);
 use lib;
 use File::Spec;
+use ExtUtils::MM;
 no warnings;
 local $^W=0;
 
@@ -72,15 +73,17 @@ sub main {
 	   );
 
         my @version=($Config{'version'}, split(/\s+/, $Config{'inc_version_list'}));
+        my %version=map { $_=> 1} @version;
 	my @config_version=split(/\./, $Config{'version'});
 	while (my $config_version=join('.', @config_version)) {
-	    push @version, $config_version;
+	    push @version, $config_version unless $version{$config_version};
 	    pop @config_version;
         }
 
 
 	my %lib_dn;
         LIB_DN: foreach my $lib_dn (@Config{@config}) {
+            next unless $lib_dn;
             foreach my $perl_prefix_dn (@Config{qw(prefix siteprefix)}) {
                 (my $dn=$lib_dn)=~s/\Q$perl_prefix_dn\E//;
                 $dn=File::Spec->catdir($prefix_dn, $dn);
@@ -113,10 +116,21 @@ sub main {
                 }
             }
         }
+        
+        #  One-off fix
         foreach my $version (@version) {
 	    push @inc, File::Spec->catdir($prefix_dn, 'lib', $version, $Config{'archname'});
         }
-
+        
+        #  Try to add any SITELIB paths from ExtUtils::MM
+        my $mm_or=bless({ ARGS=>{ PREFIX=>$prefix_dn }}, ExtUtils::MM) || next;
+        eval { $mm_or->init_INSTALL() };
+        foreach my $key (qw(INSTALLSITELIB INSTALLSITEARCH)) {
+            my $dn=$mm_or->{$key} || next;
+            if ($dn=~s/^\Q$(SITEPREFIX)\E/$prefix_dn/) {
+                push @inc, realpath($dn);
+            }
+        }
     }
 
 
@@ -151,9 +165,10 @@ sub prefix {
     my %prefix;
     my @prefix;
     my @prefix_dn=(File::Spec->splitpath(File::Spec->rel2abs(__FILE__)));
-    pop @prefix_dn;
+    pop @prefix_dn; ## Remove file portion
+    my $prefix_dn=File::Spec->catpath(@prefix_dn);
     my @updir=File::Spec->updir();
-    while (my $dn=realpath(File::Spec->catdir(grep {$_} @prefix_dn, @updir))) {
+    while (my $dn=realpath(File::Spec->catdir(grep {$_} $prefix_dn, @updir))) {
         last if $prefix{$dn}++;
         last if $dn eq $Config{'prefix'};
         push @prefix, $dn;
