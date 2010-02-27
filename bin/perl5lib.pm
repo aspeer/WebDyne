@@ -7,7 +7,7 @@ use Config;
 use Cwd qw(realpath);
 use lib;
 use File::Spec;
-use ExtUtils::MM;
+eval ("use ExtUtils::MM") || eval undef; # Clear $@ if fail
 no warnings;
 local $^W=0;
 
@@ -122,13 +122,21 @@ sub main {
 	    push @inc, File::Spec->catdir($prefix_dn, 'lib', $version, $Config{'archname'});
         }
         
-        #  Try to add any SITELIB paths from ExtUtils::MM
-        my $mm_or=bless({ ARGS=>{ PREFIX=>$prefix_dn }}, ExtUtils::MM) || next;
-        eval { $mm_or->init_INSTALL() };
-        foreach my $key (qw(INSTALLSITELIB INSTALLSITEARCH)) {
-            my $dn=$mm_or->{$key} || next;
-            if ($dn=~s/^\Q$(SITEPREFIX)\E/$prefix_dn/) {
-                push @inc, realpath($dn);
+        #  Try to add any SITELIB paths from ExtUtils::MM if it loaded
+        if ($INC{'ExtUtils/MM.pm'}) {
+            my $mm_or=bless({ ARGS=>{ PREFIX=>$prefix_dn }}, ExtUtils::MM) || next;
+            if (eval { $mm_or->init_INSTALL() }) {
+                foreach my $key (qw(INSTALLSITELIB INSTALLSITEARCH)) {
+                    my $dn=$mm_or->{$key} || next;
+                    if ($dn=~s/^\Q$(SITEPREFIX)\E/$prefix_dn/) {
+                        push @inc, realpath($dn);
+                    }
+                }
+            }
+            else {
+                # Clear eval
+                #
+                eval undef;
             }
         }
     }

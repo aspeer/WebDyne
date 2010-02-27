@@ -45,7 +45,15 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     #  Create TreeBuilder dump of rendered text
     #
     my ($tree_fh, $tree_fn)=tempfile();
-    my $tree_or=HTML::TreeBuilder->new_from_file($temp_fn);
+    my $html_fh=IO::File->new($temp_fn, O_RDONLY);
+    my $tree_or=HTML::TreeBuilder->new();
+    while (my $html=<$html_fh>) {
+	#  Do this way to get rid of extraneous CR's older version of CGI insert.
+	$html=~s/\n+$//;
+	$tree_or->parse($html);
+    }
+    $tree_or->eof();
+    $html_fh->close();
     ok($tree_or, 'HTML::TreeBuilder object');
     $tree_or->dump($tree_fh);
     $tree_or->delete();
@@ -65,7 +73,7 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     (my $dump_fn=$test_fn)=~s/\.psp$/\.dmp/;
     my $dump_fh=IO::File->new($dump_fn, O_RDONLY);
     ok($dump_fh, "loaded render dump file for $dump_fn");
-    $dump_fh->binmode();
+    binmode($dump_fh);
     $md5_or->reset();
     $md5_or->addfile($dump_fh);
     my $md5_dump=$md5_or->hexdigest();

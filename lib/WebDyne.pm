@@ -23,9 +23,9 @@
 package WebDyne;
 
 
-#  Compiler Pragma
+#  Compiler Pragma, attempt to load optional Time::HiRes module
 #
-sub BEGIN	{ $^W=0 };
+sub BEGIN	{ $^W=0; eval("use Time::HiRes qw(time)") || eval undef };
 use strict	qw(vars);
 use vars	qw($VERSION %CGI_TAG_WEBDYNE @ISA $AUTOLOAD);
 use warnings;
@@ -44,7 +44,6 @@ use Storable;
 use HTTP::Status qw(is_success is_error is_redirect RC_OK RC_FOUND RC_NOT_FOUND);
 use Fcntl;
 use Tie::IxHash;
-use Time::HiRes qw(time);
 use Digest::MD5 qw(md5_hex);
 use File::Spec::Unix;
 use overload;
