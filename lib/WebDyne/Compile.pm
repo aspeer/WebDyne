@@ -76,8 +76,10 @@ our %CGI_Tag_Ucase=map { $_=>ucfirst($_) } (
 
 #  Need the start/end_html code ref for later on
 #
-my $CGI_start_html_cr=UNIVERSAL::can(CGI,start_html);
-my $CGI_end_html_cr=UNIVERSAL::can(CGI,end_html);
+my $CGI_start_html_cr=UNIVERSAL::can(CGI,start_html) ||
+    sub { CGI->start_html(@_) }; # Need for older CGI.pm
+my $CGI_end_html_cr=UNIVERSAL::can(CGI,end_html) ||
+    sub { CGI->end_html(@_) };
 
 
 #  Var to hold package wide hash, for data shared across package
