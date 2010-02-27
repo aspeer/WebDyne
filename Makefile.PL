@@ -44,7 +44,6 @@ my %makefile=(
 	'HTML::TreeBuilder'                 =>  undef,
 	'Storable'			    =>  undef,
 	'Tie::IxHash'			    =>  undef,
-	'Time::HiRes'			    =>  undef,
 
         #  Needed for installer - can be ignored if not using installer
         'Text::Template'                    =>  undef,

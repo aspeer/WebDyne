@@ -17,7 +17,6 @@ requires:
     Storable:                      
     Text::Template:                
     Tie::IxHash:                   
-    Time::HiRes:                   
 meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.3.html
     version: 1.3
