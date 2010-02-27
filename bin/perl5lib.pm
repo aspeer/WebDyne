@@ -7,7 +7,7 @@ use Config;
 use Cwd qw(realpath);
 use lib;
 use File::Spec;
-eval ("use ExtUtils::MM") || eval undef; # Clear $@ if fail
+eval ("use ExtUtils::MM") || eval { undef }; # Clear $@ if fail
 no warnings;
 local $^W=0;
 
@@ -136,7 +136,7 @@ sub main {
             else {
                 # Clear eval
                 #
-                eval undef;
+                eval { undef };
             }
         }
     }

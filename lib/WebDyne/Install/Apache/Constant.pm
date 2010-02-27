@@ -522,7 +522,7 @@ sub mp2_installed {
     eval { require Apache2 };
     eval { require mod_perl };
     eval { require mod_perl2 };
-    eval undef;
+    eval { undef };
     my $mp2_installed;
     if (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION}) >= 1.99) {
         $mp2_installed=1;

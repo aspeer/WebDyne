@@ -164,7 +164,7 @@ sub err_html {
 
 	#  Clear error stack and $@.
 	#
-	errclr();eval undef;
+	errclr();eval { undef };
 
 
 	#  Print error and return
@@ -193,7 +193,7 @@ sub err_html {
 
 	#  Clear error stack and $@ so this render works without errors
 	#
-	errclr();eval undef;
+	errclr();eval { undef };
 
 
 	#  Wrap everything in eval block in case this error was thrown interally by
@@ -237,7 +237,7 @@ sub err_html {
 
 	    #  Clear error stack again, make sure all is clean before we return.
 	    #
-	    errclr();eval undef;
+	    errclr();eval { undef };
 
 	};
 

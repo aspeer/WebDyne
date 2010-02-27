@@ -25,7 +25,7 @@ package WebDyne;
 
 #  Compiler Pragma, attempt to load optional Time::HiRes module
 #
-sub BEGIN	{ $^W=0; eval("use Time::HiRes qw(time)") || eval undef };
+sub BEGIN	{ $^W=0; eval("use Time::HiRes qw(time)") || eval { undef } };
 use strict	qw(vars);
 use vars	qw($VERSION %CGI_TAG_WEBDYNE @ISA $AUTOLOAD);
 use warnings;
@@ -710,7 +710,7 @@ sub init_class {
 	    require Apache2::Const; Apache2::Const->import(-compile => qw(OK DECLINED));
 	    require APR::Table;
 	};
-	eval undef;
+	eval { undef };
 	unless (UNIVERSAL::can('Apache','OK')) {
 	    if (UNIVERSAL::can('Apache2::Const','OK')) {
 		*Apache::OK=\&Apache2::Const::OK;
@@ -734,7 +734,7 @@ sub init_class {
 	    *Apache::OK=\&Apache::Constants::OK;
 	    *Apache::DECLINED=\&Apache::Constants::DECLINED;
 	} || do { *Apache::OK=sub { 0 } };
-	eval undef;
+	eval { undef };
     }
     else {
 
