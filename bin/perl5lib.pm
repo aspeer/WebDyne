@@ -7,7 +7,7 @@ use Config;
 use Cwd qw(realpath);
 use lib;
 use File::Spec;
-eval ("use ExtUtils::MM") || eval { undef }; # Clear $@ if fail
+
 no warnings;
 local $^W=0;
 
@@ -45,11 +45,16 @@ sub main {
 
 
     #  Prefix is supplied as ARG, quit if same as standard Perl
-    #  prefix
+    #  prefix and no other libraries to load.
     #
     my @prefix_dn = shift() ||  &prefix();
     if (($prefix_dn[0] eq $Config{'prefix'}) && !@Perllib_dn)  { return 1 }
     my %prefix_dn;
+
+    
+    #  We'll need the ExtUtils::MM module (if we can get it) later on
+    #
+    eval ("use ExtUtils::MM") || eval { undef }; # Clear $@ if fail
 
 
     my @inc;
@@ -61,9 +66,9 @@ sub main {
         next if $prefix_dn{$prefix_dn}++;
 
 
-	#  Add base directory
+	#  Add base directory # Not doing this anymore.
 	#
-	push @inc, $prefix_dn;
+	#push @inc, $prefix_dn;
 
 
         #  Juggle to get correct INC dir
@@ -178,9 +183,10 @@ sub prefix {
     my @updir=File::Spec->updir();
     while (my $dn=realpath(File::Spec->catdir(grep {$_} $prefix_dn, @updir))) {
         last if $prefix{$dn}++;
-        last if $dn eq $Config{'prefix'};
         push @prefix, $dn;
+        last if $dn eq $Config{'prefix'}; # Quit if same as perl prefix
         push @updir, File::Spec->updir();
+        #last # Remove if need to traverse up directory tree because of wierd binary install location
     }
     return @prefix;
 
