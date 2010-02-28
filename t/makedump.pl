@@ -46,8 +46,10 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     my $html_fh=IO::File->new($temp_fn, O_RDONLY);
     my $tree_or=HTML::TreeBuilder->new();
     while (my $html=<$html_fh>) {
-	#  Do this way to get rid of extraneous CR's older version of CGI insert.
+	#  Do this way to get rid of extraneous CR's older version of CGI insert, spaces
+	#  after tags which also differ from ver to ver, confusing test
 	$html=~s/\n+$//;
+	$html=~s/>\s+/>/g;
 	$tree_or->parse($html);
     }
     $tree_or->eof();

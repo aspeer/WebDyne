@@ -50,6 +50,7 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     while (my $html=<$html_fh>) {
 	#  Do this way to get rid of extraneous CR's older version of CGI insert.
 	$html=~s/\n+$//;
+	$html=~s/>\s+/>/g;
 	$tree_or->parse($html);
     }
     $tree_or->eof();
