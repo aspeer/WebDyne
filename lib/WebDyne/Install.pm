@@ -207,20 +207,54 @@ sub install {
 #
 sub cache_dn {
 
+
+    #  Var to hold returned result
+    #
     my $cache_dn;
+    
+
+    #  Use user specified location
+    #
     if ($WEBDYNE_CACHE_DN) {
 	$cache_dn=$WEBDYNE_CACHE_DN;
     }
-    elsif (my $prefix=shift()) {
+    
+    #  If installed into custom location via PREFIX, but not the same
+    #  as the Perl instal,
+    elsif ((my $prefix=shift()) ne $Config{'prefix'}) {
 	$cache_dn=File::Spec->catdir($prefix, 'cache');
     }
-    elsif ($^O=~/MSWin[32|64]/) {
-	$cache_dn=File::Spec->catdir($ENV{'SYSTEMROOT'}, qw(TEMP webdyne))
+    
+    
+    #  If prefix is the same as Perl install dir we need to pick a better
+    #  location
+    #
+    elsif ($prefix eq $Config{'prefix'}) {
+    
+        #  Windows ?
+        #
+        if ($^O=~/MSWin[32|64]/) {
+            $cache_dn=File::Spec->catdir($ENV{'SYSTEMROOT'}, qw(TEMP webdyne))
+        }
+        #  No - set to /var/cache/webdyne
+        #
+        else {
+            $cache_dn=File::Spec->catdir(
+	        File::Spec->rootdir(), qw(var cache webdyne));
+        }
     }
+    
+    
+    #  Should have covered all eventualities, but just in case
+    #
     else {
 	$cache_dn=File::Spec->catdir(
 	    File::Spec->rootdir(), qw(var cache webdyne));
     }
+    
+    
+    #  Done return result
+    #
     return $cache_dn;
 
 }
