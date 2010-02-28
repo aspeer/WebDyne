@@ -59,6 +59,7 @@ use WebDyne::Install::Constant;
 #  External Modules
 #
 use File::Path;
+use File::Spec;
 use IO::File;
 use Config;
 
@@ -208,6 +209,11 @@ sub install {
 sub cache_dn {
 
 
+    #  Get any prefix supplied
+    #
+    my $prefix=shift();
+    
+
     #  Var to hold returned result
     #
     my $cache_dn;
@@ -221,35 +227,16 @@ sub cache_dn {
     
     #  If installed into custom location via PREFIX, but not the same
     #  as the Perl instal,
-    elsif ((my $prefix=shift()) ne $Config{'prefix'}) {
+    elsif ($prefix && ($prefix ne $Config{'prefix'})) {
 	$cache_dn=File::Spec->catdir($prefix, 'cache');
     }
     
     
-    #  If prefix is the same as Perl install dir we need to pick a better
-    #  location
-    #
-    elsif ($prefix eq $Config{'prefix'}) {
-    
-        #  Windows ?
-        #
-        if ($^O=~/MSWin[32|64]/) {
-            $cache_dn=File::Spec->catdir($ENV{'SYSTEMROOT'}, qw(TEMP webdyne))
-        }
-        #  No - set to /var/cache/webdyne
-        #
-        else {
-            $cache_dn=File::Spec->catdir(
-	        File::Spec->rootdir(), qw(var cache webdyne));
-        }
-    }
-    
-    
-    #  Should have covered all eventualities, but just in case
+    #  No prefix spec'd, or prefix is the same as Perl install dir, so
+    #  use default location
     #
     else {
-	$cache_dn=File::Spec->catdir(
-	    File::Spec->rootdir(), qw(var cache webdyne));
+        $cache_dn=$DIR_CACHE_DEFAULT;
     }
     
     

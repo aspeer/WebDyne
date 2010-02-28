@@ -38,6 +38,12 @@ use strict qw(vars);
 use vars qw($VERSION $REVISION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
 
 
+#  External Modules
+#
+use File::Path;
+use File::Spec;
+
+
 #  Version information in a format suitable for CPAN etc. Must be
 #  all on one line
 #
@@ -52,6 +58,26 @@ $REVISION=(qw$Revision: 1.30 $)[1];
 #------------------------------------------------------------------------------
 
 
+#  Work out default cache directory location if none spec'd by user and
+#  no PREFIX supplied
+#
+my $cache_default_dn;
+
+
+#  Windows ?
+#
+if ($^O=~/MSWin[32|64]/) {
+    $cache_default_dn=File::Spec->catdir($ENV{'SYSTEMROOT'}, qw(TEMP webdyne))
+}
+#  No - set to /var/cache/webdyne
+#
+else {
+    $cache_default_dn=File::Spec->catdir(
+        File::Spec->rootdir(), qw(var cache webdyne));
+}
+
+
+
 #  Real deal
 #
 %Constant = (
@@ -60,6 +86,11 @@ $REVISION=(qw$Revision: 1.30 $)[1];
     #  Where perl5 library dirs are sourced from
     #
     FILE_PERL5LIB			  =>  'perl5lib.pm',
+    
+    
+    #  Default cache directory
+    #
+    DIR_CACHE_DEFAULT			  =>  $cache_default_dn
 
 
    );
