@@ -66,9 +66,9 @@ sub main {
         next if $prefix_dn{$prefix_dn}++;
 
 
-	#  Add base directory # Not doing this anymore.
+	#  Add base prefix directory 
 	#
-	#push @inc, $prefix_dn;
+	push @inc, $prefix_dn;
 
 
         #  Juggle to get correct INC dir
@@ -186,7 +186,7 @@ sub prefix {
         push @prefix, $dn;
         last if $dn eq $Config{'prefix'}; # Quit if same as perl prefix
         push @updir, File::Spec->updir();
-        #last # Remove if need to traverse up directory tree because of wierd binary install location
+        last # Remove if need to traverse up directory tree because of wierd binary install location
     }
     return @prefix;
 
