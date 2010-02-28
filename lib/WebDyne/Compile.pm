@@ -24,9 +24,17 @@
 package WebDyne::Compile;
 
 
-#  Compiler Pragma, attempt to load optional Time::HiRes module
+#  Packace init, attempt to load optional Time::HiRes module
 #
-sub BEGIN	{ $^W=0; eval("use Time::HiRes qw(time)") || eval { undef }};
+sub BEGIN	{ 
+    local $SIG{__DIE__}=undef; 
+    $^W=0; 
+    eval("use Time::HiRes qw(time)") || eval { undef };
+}
+
+
+#  Pragma
+#
 use strict	qw(vars);
 use vars	qw($VERSION %CGI_TAG_WEBDYNE %CGI_TAG_IMPLICIT);
 use warnings;

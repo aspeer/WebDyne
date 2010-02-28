@@ -2,6 +2,7 @@
 
 #  Init Apache config files
 #
+sub BEGIN { $^W=0 };
 use strict qw(vars);
 use vars qw($VERSION);
 use File::Spec;

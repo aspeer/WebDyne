@@ -23,9 +23,16 @@
 package WebDyne;
 
 
-#  Compiler Pragma, attempt to load optional Time::HiRes module
+#  Packace init, attempt to load optional Time::HiRes module
+sub BEGIN	{ 
+    local $SIG{__DIE__}=undef; 
+    $^W=0; 
+    eval("use Time::HiRes qw(time)") || eval { undef };
+}
+
+
+#  Pragma
 #
-sub BEGIN	{ $^W=0; eval("use Time::HiRes qw(time)") || eval { undef } };
 use strict	qw(vars);
 use vars	qw($VERSION %CGI_TAG_WEBDYNE @ISA $AUTOLOAD);
 use warnings;

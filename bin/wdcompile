@@ -7,6 +7,7 @@ package main;
 
 #  Compiler pragma, load library path
 #
+sub BEGIN { $^W=0 };
 use strict qw(vars);
 use vars   qw($VERSION);
 use FindBin qw($RealBin $Script);
