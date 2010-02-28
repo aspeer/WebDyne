@@ -142,6 +142,7 @@ my $mp2_installed=&mp2_installed();
     FILE_WEBDYNE_CONF			  =>  'webdyne.conf',
     FILE_APACHE_CONF_TEMPLATE		  =>  'apache.conf.inc',
     FILE_APACHE_CONF_DELIM		  =>  '#*WebDyne*',
+    FILE_MOD_PERL_1_99_COMPAT		  =>  'webdyne-mod_perl-1_99-compat.pl',
 
 
     #  Get apache directory name
@@ -522,7 +523,7 @@ sub mp2_installed {
     eval { require Apache2 };
     eval { require mod_perl };
     eval { require mod_perl2 };
-    eval { undef };
+    eval { undef } if $@;
     my $mp2_installed;
     if (($mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION}) >= 1.99) {
         $mp2_installed=1;

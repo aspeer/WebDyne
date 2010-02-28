@@ -710,7 +710,7 @@ sub init_class {
 	    require Apache2::Const; Apache2::Const->import(-compile => qw(OK DECLINED));
 	    require APR::Table;
 	};
-	eval { undef };
+	eval { undef } if $@;
 	unless (UNIVERSAL::can('Apache','OK')) {
 	    if (UNIVERSAL::can('Apache2::Const','OK')) {
 		*Apache::OK=\&Apache2::Const::OK;
@@ -734,7 +734,7 @@ sub init_class {
 	    *Apache::OK=\&Apache::Constants::OK;
 	    *Apache::DECLINED=\&Apache::Constants::DECLINED;
 	} || do { *Apache::OK=sub { 0 } };
-	eval { undef };
+	eval { undef } if $@;
     }
     else {
 

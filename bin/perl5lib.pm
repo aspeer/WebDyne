@@ -136,7 +136,7 @@ sub main {
             else {
                 # Clear eval
                 #
-                eval { undef };
+                eval { undef } if $@;
             }
         }
     }

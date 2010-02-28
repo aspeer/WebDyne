@@ -140,7 +140,7 @@ sub compile {
 
     #  Start timer so we can log how long it takes us to compile a file
     #
-    my $time=Time::HiRes::time();
+    my $time=time();
 
 
     #  Init class if not yet done
@@ -428,7 +428,7 @@ sub compile {
 
     #  Work out the page compile time, log
     #
-    my $time_render=sprintf('%0.4f', Time::HiRes::time()-$time);
+    my $time_render=sprintf('%0.4f', time()-$time);
     debug("form $html_cn compile time $time_render");
 
 

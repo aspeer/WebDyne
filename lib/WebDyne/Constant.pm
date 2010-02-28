@@ -49,7 +49,7 @@ $VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
 eval { require mod_perl2 if ($ENV{'MOD_PERL_API_VERSION'}==2) } ||
 eval { require Apache2   if  $ENV{'MOD_PERL'}=~/1.99/ } ||
 eval { require mod_perl  if  $ENV{'MOD_PERL'} };
-eval { undef };
+eval { undef } if $@;
 my $Mod_perl_version=$mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION};
 my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
 
