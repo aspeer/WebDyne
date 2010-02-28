@@ -27,7 +27,7 @@ package WebDyne::Compile;
 #  Packace init, attempt to load optional Time::HiRes module
 #
 sub BEGIN	{ 
-    local $SIG{__DIE__}=undef; 
+    local $SIG{__DIE__}; 
     $^W=0; 
     eval("use Time::HiRes qw(time)") || eval { undef };
 }
@@ -406,7 +406,7 @@ sub compile {
     #
     if ($dest_cn) {
 	debug("attempting to cache to dest $dest_cn");
-	local $SIG{'__DIE__'}=undef;
+	local $SIG{'__DIE__'};
 	eval { Storable::lock_store(\@container, $dest_cn) } || do {
 
 	    #  This used to be fatal

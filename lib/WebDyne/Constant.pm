@@ -267,22 +267,18 @@ sub local_constant_load {
 	my $server_or;
 	eval {
 	    #  Modern mod_perl 2
-	    #require Apache2;
 	    require Apache2::ServerUtil;
 	    require APR::Table;
 	    $server_or = Apache2::ServerUtil->server();
 	};
 	$@ && eval {
 	    #  Interim mod_perl 1.99x
-	    #require Apache2;
 	    require Apache::ServerUtil;
 	    require APR::Table;
 	    $server_or = Apache::ServerUtil->server();
 	};
 	$@ && eval {
 	    #  mod_perl 1x ?
-	    #require Apache;
-	    require Apache::Server;
 	    require Apache::Table;
 	    $server_or = Apache->server();
 	};

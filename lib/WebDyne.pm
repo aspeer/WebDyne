@@ -25,7 +25,7 @@ package WebDyne;
 
 #  Packace init, attempt to load optional Time::HiRes module
 sub BEGIN	{ 
-    local $SIG{__DIE__}=undef; 
+    local $SIG{__DIE__};
     $^W=0; 
     eval("use Time::HiRes qw(time)") || eval { undef };
 }
@@ -702,9 +702,9 @@ sub init_class {
     #
     if ($MP2) {
 
-	local $SIG{'__DIE__'}=undef;
+	local $SIG{'__DIE__'};
 	eval {
-	    require Apache2;
+	    #require Apache2;
 	    require Apache::Log;
 	    require Apache::Response;
 	    require Apache::SubRequest;
@@ -735,7 +735,7 @@ sub init_class {
     }
     elsif ($ENV{'MOD_PERL'}) {
 
-	local $SIG{'__DIE__'}=undef;
+	local $SIG{'__DIE__'};
 	eval {
 	    require Apache::Constants; Apache::Constants->import(qw(OK DECLINED));
 	    *Apache::OK=\&Apache::Constants::OK;
@@ -753,7 +753,7 @@ sub init_class {
 
     #  If set, delete all old cache files at startup
     #
-    if ($WEBDYNE_STARTUP_CACHE_FLUSH) {
+    if ($WEBDYNE_STARTUP_CACHE_FLUSH && (-d $WEBDYNE_CACHE_DN)) {
 	my @file_cn=glob(File::Spec->catfile($WEBDYNE_CACHE_DN, '*'));
 	foreach my $fn (grep {/\w{32}(\.html)?$/} @file_cn) {
 	    unlink $fn; #don't error here if problems, user will never see it

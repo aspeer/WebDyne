@@ -206,7 +206,7 @@ sub err_html {
 
 	    #  Only compile container once if we can help it
 	    #
-            local $SIG{__DIE__}=undef;
+            local $SIG{__DIE__};
 	    require WebDyne::Compile;
 	    my $container_ar=($Package{'container_ar'} ||= &WebDyne::Compile::compile($self,{
 
