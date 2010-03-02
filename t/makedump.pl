@@ -6,9 +6,8 @@ use strict qw(vars);
 use vars qw($VERSION);
 #use File::Spec;
 use FindBin qw($RealBin $Script);
-use Cwd qw(realpath);
+#use Cwd qw(realpath);
 #use lib $RealBin;
-#use perl5lib File::Spec->catdir($RealBin, File::Spec->updir());
 use perl5lib;
 
 use WebDyne::Request::Fake;

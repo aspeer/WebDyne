@@ -168,6 +168,13 @@ sub main {
 	unshift @inc, sub {};
     }
     
+    
+    #  Allow PERL5INC environment variable to add directories also
+    #
+    if (my @perl5inc=split(/:/,$ENV{'PERL5INC'})) {
+        unshift @inc, @perl5inc;
+    }
+    
 
     #  Add to @INC
     #

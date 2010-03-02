@@ -67,23 +67,30 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #  Make a hash of our implictly closed tags. TODO, expand to full list,
 #  instead of most used.
 #
+#%CGI_TAG_IMPLICIT=map { $_=>1 } (
+#
+#    'popup_menu',
+#    'textfield',
+#    'textarea',
+#    'radio_group',
+#    'password_field',
+#    'filefield',
+#    'scrolling_list',
+#    'checkbox_group',
+#    'checkbox',
+#    'hidden',
+#    'submit',
+#    'reset',
+#    'dump'
+#
+#   );
+
 %CGI_TAG_IMPLICIT=map { $_=>1 } (
 
-    'popup_menu',
-    'textfield',
-    'textarea',
-    'radio_group',
-    'password_field',
-    'filefield',
-    'scrolling_list',
-    'checkbox_group',
-    'checkbox',
-    'hidden',
-    'submit',
-    'reset',
+    @{$CGI::EXPORT_TAGS{':form'}},
     'dump'
 
-   );
+);
 
 
 #  Get WebDyne tags from main module
@@ -97,7 +104,7 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 map { $CGI_TAG_SPECIAL{$_}++ } qw(perl script style start_html end_html include);
 
 
-#  Nullify Entities encode
+#  Nullify Entities encode & decode
 #
 *HTML::Entities::encode=sub {};
 *HTML::Entities::decode=sub {};
@@ -220,7 +227,7 @@ sub tag_parse {
 
     #  If it is an implicit extension, close it now
     #
-    if ($CGI_TAG_IMPLICIT{$tag_parent}) {
+    if ($CGI_TAG_IMPLICIT{$tag_parent} || $tag_parent=~/^start_/i || $tag_parent=~/^end_/i) {
 
 	#  End implicit parent if it was an implicit tag
 	#
@@ -490,8 +497,14 @@ sub text {
 
 
     }
-    elsif (($text=~/^\W*__CODE__/ || $text=~/^\W*__PERL__/) && !$self->{'_pos'}) {
+    #elsif (($text=~/^\W*__CODE__/ || $text=~/^\W*__PERL__/) && !$self->{'_pos'}) {
+    elsif (($text=~/^\W*__CODE__/ || $text=~/^\W*__PERL__/)) {
 
+
+        #  Close off any HTML
+        #
+        delete $self->{'_pos'} if $self->{'_pos'};
+        
 
 	#  Perl code fragment. Will be last thing we do, as __PERL__ must be at the
 	#  bottom of the file.

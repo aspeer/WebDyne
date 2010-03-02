@@ -21,4 +21,4 @@
 #
 #
 package WebDyne::VERSION;
-$VERSION='1.151';
+$VERSION='1.152';
