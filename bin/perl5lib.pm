@@ -1,5 +1,8 @@
-#  Massage @INC library to support WebDyne installation into
-#  non standard dir
+#  Massage @INC library to support WebDyne (and other modules) installated
+#  into custom directories via PREFIX=/foo directive.
+#
+#  Jumps through hoops to try and add all possible relevant directories to
+#  @INC so module load will work.
 #
 package perl5lib;
 use strict qw(vars);
@@ -12,15 +15,15 @@ no warnings;
 local $^W=0;
 
 
-#  Get location of library include file (perl5lib.pm) for this
-#  particular type of OS
+#  Get location of library include file (perl5lib.pm) for this particular
+#  type of OS.  Use %WINDIR% in Windows, /etc on other platforms
 #
 my $Perllib_dn={
 
     MSWin32	    => $ENV{'windir'},
     MSWin64	    => $ENV{'windir'},
 
-}->{$^O} || '/etc';
+}->{$^O} || File::Spec->catdir(File::Spec->rootdir(), 'etc');
 my $Perllib_cn=File::Spec->catfile($Perllib_dn, 'perl5lib.pm');
 my @Perllib_dn=@{do($Perllib_cn) if (-f $Perllib_cn && !$ENV{'PAR_TEMP'})};
 
@@ -33,7 +36,7 @@ my @Perllib_dn=@{do($Perllib_cn) if (-f $Perllib_cn && !$ENV{'PAR_TEMP'})};
 sub import {
 
 
-    #  Only run main routine again if user spects different prefix on use, eg
+    #  Only run main routine again if user specs different prefix on use, eg
     #  use perl5lib '/opt/foo'
     #
     &main($_[1]) if $_[1];
@@ -44,8 +47,8 @@ sub import {
 sub main {
 
 
-    #  Prefix is supplied as ARG, quit if same as standard Perl
-    #  prefix and no other libraries to load.
+    #  Prefix is supplied as ARG, quit if same as standard Perl prefix and
+    #  no other libraries to load.
     #
     my @prefix_dn = shift() ||  &prefix();
     if (($prefix_dn[0] eq $Config{'prefix'}) && !@Perllib_dn)  { return 1 }
@@ -185,8 +188,8 @@ sub prefix {
         last if $prefix{$dn}++;
         push @prefix, $dn;
         last if $dn eq $Config{'prefix'}; # Quit if same as perl prefix
+        last; # Remove if need to traverse up directory tree because of wierd binary install location
         push @updir, File::Spec->updir();
-        last # Remove if need to traverse up directory tree because of wierd binary install location
     }
     return @prefix;
 
