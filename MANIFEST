@@ -50,5 +50,9 @@ t/perlblock.psp
 t/subsitution.dmp
 t/subsitution.psp
 t/makedump.pl
+t/perlhead.psp
+t/implicit.psp
+t/perlhead.dmp
+t/implicit.dmp
 README
 META.yml                                 Module meta-data (added by MakeMaker)

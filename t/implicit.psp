@@ -1,0 +1,9 @@
+<start_html>
+<p>
+<start_form>
+<end_form>
+<start_form/>
+<end_form/>
+<start_form>
+<popup_menu values="@{1,2}">
+<submit>
