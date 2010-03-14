@@ -13,72 +13,197 @@
 
 <body bgcolor="white">
 
-<h1>WebDyne Error !{! $_[1]->{'r'}->status !}</h1><hr align="left" width="80%" size="1"><h2><i>!{! \&HTTP::Status::status_message($_[1]->{'r'}->status) !}.</i></h2>
+<!-- Status code and server status message -->
+<h1>WebDyne Error !{! $_[1]->{'r'}->status !}</h1><hr align="left" width="80%" size="1"><h2><i>!{! \&HTTP::Status::status_message($_[1]->{'r'}->status) !}</i></h2>
 
 <table width="80%">
-<tr><td><b>Error: </b></tr></td>
 
-<tr><td bgcolor="#eeeeee">
-<tt>
+<!-- The error string -->
+
 <perl param="@{$_[1]}">
 
+#  Display error string
+#
+if ($WebDyne::WEBDYNE_ERROR_SHOW) {
+	
 	#  Translate CR's to line breaks so errors are formatted somewhat nicely
 	#
 	my ($self, $param_ar)=@_;
 	my $errstr=$param_ar->[0]->{'errstr'};
 	$errstr=&CGI::escapeHTML($errstr);
 	$errstr=~s/\n/<br>/g;
-	\$errstr;
+	
+	#  Get HTML line no, prepend to error if we can
+	#
+	if (my $html_line_no=$param_ar->[0]->{'html_line_no'}) {
+		$errstr="error at line $html_line_no - $errstr";
+	}
+	
+	
+	#  Render
+	#
+	$self->render_block('error', errstr=>$errstr);
+}
+\undef;
 
 </perl>
 
+<block name="error">
+<tr><td><b>Error: </b></tr></td>
+
+<tr><td bgcolor="#eeeeee">
+<tt>
+${errstr}
 </tt>
 </td></tr>
+</block>
 
+<!-- Module backtrace -->
+
+<perl param="@{$_[1]}">
+
+#  Pull out the backtrace from the Error handler internals and present
+#  as nicely as possible
+#
+if ($WebDyne::WEBDYNE_ERROR_BACKTRACE_SHOW) {
+	my ($self, $param_ar)=@_;
+	my $errstack_ar=$param_ar->[0]->{'errstack_ar'};
+	my $errtrace_ar=$errstack_ar->[0];
+	my $webdyne_module_seen;
+	my $webdyne_backtrace_short=$WebDyne::WEBDYNE_ERROR_BACKTRACE_SHORT;
+	for (my $i=1; defined($errtrace_ar->[$i]); $i++) {
+
+		#  Get method, line no and file, render
+		#
+		my $method=$errtrace_ar->[$i+1][3] || $errtrace_ar->[$i][0] ||  last;
+		
+		#  If brief output look to see if we are in internal stack and quit
+		#
+		if ($method=~/^WebDyne::\w{32}::/) {
+			$webdyne_module_seen++;
+		}
+		elsif ($method=~/^WebDyne::/ && !$webdyne_module_seen) {
+			$webdyne_module_seen++;
+		}
+		elsif ($webdyne_backtrace_short && $webdyne_module_seen) {
+			last;
+		}
+
+		my $line=$errtrace_ar->[$i][2] || next;
+		my $i_formatted=sprintf('%-2d',$i);
+		$i=~s/ /&nbsp;/;
+		$self->render_block('backtrace_line',
+			i=>$i_formatted, package=>$method, line=>$line);
+	}
+	$self->render_block('backtrace')
+}
+\undef;
+
+</perl>
+
+<block name="backtrace">
 <tr><td>
 <br>
 <br>
 <b>Backtrace: </b>
 </td></tr>
 
+<tr><td bgcolor="#eeeeee">
+<tt>
+<b>#&nbsp;&nbsp;&nbsp;Module</b><br>
+<br>
+<block name="backtrace_line">
+${i}&nbsp;&nbsp;${package}, line ${line}<br>
+</block>
+</tt></td></tr>
+</block>
+
 <perl param="@{$_[1]}">
 
-	#  Pull out the backtrace from the Error handler internals and present
-	#  as nicely as possible
+#  Get self ref, params etc.
+#
+my ($self, $param_ar)=@_;
+my $html_line_no=$param_ar->[0]->{'html_line_no'};
+
+
+#  Print source file region that caused error to show context. Only do if show source flag set
+#  and we have found a line number.
+#
+if ($WebDyne::WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW && $html_line_no) {
+
+	#  Get required details, file name etc.
 	#
 	my ($self, $param_ar)=@_;
-	my $errstack_ar=$param_ar->[0]->{'errstack_ar'};
-	my $errtrace_ar=$errstack_ar->[0];
-        for (my $i=1; defined($errtrace_ar->[$i]); $i++) {
+	my $r=$self->r();
+	my $fn=$r->filename();
+	my $html_line_no=$param_ar->[0]->{'html_line_no'};
+	
+	
+	#  Number of pre and post lines, max line length to show.
+	#
+	my $lines_pre=$WebDyne::WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_PRE;
+	my $lines_post=$WebDyne::WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_POST;
+	my $line_fragment_max=$WebDyne::WEBDYNE_ERROR_SOURCE_CONTEXT_LINE_FRAGMENT_MAX;
+	
+	#  Pretty printing
+	#
+	my $sprintf_max=length($html_line_no+$lines_post);
+	$sprintf_max=2 if ($sprintf_max<2);
+	
+	#  Iterate through source lines till we get to area, then print
+	#
+	if ($fn && $html_line_no) {
+		my $fh=IO::File->new($fn, &Fcntl::O_RDONLY) || die;
+		my $line_no;
 
-            #  Get method, line no and file
-            #
-            my $method=$errtrace_ar->[$i+1][3] || $errtrace_ar->[$i][0] ||  last;
-            my $line=$errtrace_ar->[$i][2] || next;
-	    $self->render_block('backtrace', i=>sprintf('%-2d',$i), package=>$method, line=>$line);
-
+		while (my $line=<$fh>) {
+			if ($line_no++ > ($html_line_no-$lines_pre)) {
+				if ($line_fragment_max) {
+					$line=(length($line) > $line_fragment_max) ?
+						substr($line,0,$line_fragment_max) . '...' : $line;
+				}
+				$line=&CGI::escapeHTML($line);
+				my $line_no_formatted=sprintf("\%-${sprintf_max}d",$line_no);
+				$line_no_formatted=~s/ /&nbsp;/g;
+				my $line_error=($html_line_no == $line_no);
+				$self->render_block('context_line',
+					line_no=>$line_no_formatted, line=>$line, line_error=>$line_error)
+			}
+			last if ($line_no > ($html_line_no+$lines_post));			
+		}
+		$fh->close()
 	}
-	\undef;
+	$self->render_block('context');
+}
+\undef;
 
 
 </perl>
 
+<block name="context">
+<tr><td>
+<br>
+<br>
+<b>Context: </b>
+</td></tr>
+
 
 <tr><td bgcolor="#eeeeee">
 <tt>
-<b>#&nbsp;&nbsp;&nbsp;Module</b><br>
-<block name="backtrace">
-${i}&nbsp;&nbsp;${package}, line ${line}<br>
+<b>#&nbsp;&nbsp;&nbsp;Source</b><br>
+<br>
+<block name="context_line">
+<span style="!{! $_[1]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
 </block>
 </tt></td></tr>
-
+</block>
 
 </table>
 
 <br>
 <br>
 
-<b>Requested Url: </b>!{! shift()->r->uri().'' !}
+<b>Requested URI: </b>!{! shift()->r->uri().'' !}
 
 <br>
 <br>

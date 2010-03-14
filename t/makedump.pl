@@ -26,6 +26,18 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     #  Create WebDyne render of PSP file and capture to file
     #
     print "file $test_fn\n";
+    
+    
+    #  Check for en-us attribute - needed to consitency across CGI vers
+    #
+    my $test_fh=IO::File->new($test_fn, O_RDONLY) || die;
+    my $html_ln=<$test_fh>;
+    $test_fh->close();
+    unless ($html_ln=~/en-US/) { die("no html 'lang=en-US' attribute found in file '$test_fn'")}
+    
+    
+    #  Render to temp file
+    #
     my $r=WebDyne::Request::Fake->new( filename=>$test_fn );
     my ($temp_fh, $temp_fn)=tempfile();
     my $select_fh=select;
@@ -37,7 +49,7 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     select $select_fh;
 
 
-    #  Create TreeBuilder dump of rendered text
+    #  Create TreeBuilder dump of rendered text in temp file
     #
     (my $dump_fn=$test_fn)=~s/\.psp$/\.dmp/;
     my $dump_fh=IO::File->new($dump_fn, O_WRONLY|O_CREAT|O_TRUNC) ||

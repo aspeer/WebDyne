@@ -69,6 +69,7 @@ my %makefile=(
 
        ],
 
+
     'dist'				    =>  {
 
 	COMPRESS			    =>  'gzip -9f',
@@ -85,7 +86,7 @@ my %makefile=(
     'macro'				    =>  {
 
         COPYRIGHT			    =>  'Copyright (c) 2003 Andrew Speer, All rights reserved',
-	LICENSE				    =>  'GPL: GNU General Public License'
+	LICENSE				    =>  'GPL: GNU General Public License',
 
        },
 
@@ -138,3 +139,16 @@ sub constants {
     $mm_or->SUPER::constants;
 
 };
+
+
+sub postamble {
+
+
+    #  Copy pre built man files
+    #
+    my $postamble=shift()->SUPER::postamble;
+    $postamble.="subdirs ::\n\t\t".
+        '$(CP) man/*.3 $(INST_MAN3DIR)';
+
+};
+

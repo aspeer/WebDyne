@@ -349,7 +349,6 @@ sub errsubst {
     #
     my ($message, @param)=@_;
 
-
     #  If no message supplied return last one seen
     #
     unless ($message) {

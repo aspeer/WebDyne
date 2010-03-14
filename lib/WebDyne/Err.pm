@@ -86,36 +86,40 @@ sub err_html {
     #
     $errstr ? err($errstr) : ($errstr=errstr() || do {err($_='undefined error from handler'); $_});
     debug("final errstr $errstr");
-
-
-    #  Try to get CGI object from class, or create if not present - may
-    #  not have been initialised before error occured); Same with request
-    #  object, not fatal if not present. Also make sure we get main 
-    #  request object for error handling
+    
+    
+    #  Try to get request handler;
     #
-    my ($r, $cgi_or);
+    my $r;
     if ($r=eval { $self->{'_r'} }) {
-
 
 	#  Get main request handler in case we are in subrequest
 	#
 	$r=$r->main() || $r;
-
-
-	#  Get CGI object
-	#
-	$cgi_or=$self->{'_CGI'} || CGI->new();
-
+        
     }
-    debug("r $r, cgi_or $cgi_or");
+    debug("r $r");
 
 
-    #  Print errstr and exit immediately if  no request object yet, or in error loop
+    #  Print errstr and exit immediately if  no request object yet, or in error loop - something
+    #  is seriously wrong;
     #
     if (!$r) {
 	print(errdump());
 	CORE::exit 0;
     };
+
+
+    #  Try to get CGI object from class, or create if not present - may
+    #  not have been initialised before error occured); 
+    #
+    my $cgi_or=$self->{'_CGI'} || CGI->new();
+    debug("cgi_or $cgi_or");
+    
+    
+    #  Try to get current line no. from HTML data object
+    #
+    my $html_line_no=$self->{'_html_line_no'};
 
 
     #  Log the error
@@ -133,7 +137,7 @@ sub err_html {
     $r->set_handlers( PerlHandler=>undef );
 
 
-    #  Kill this Apache process afterwards to make sure it does not behave
+    #  Optionally kill this Apache process afterwards to make sure it does not behave
     #  badly after this error, if that is what the user has configured
     #
     if ($WEBDYNE_ERROR_EXIT) {
@@ -157,7 +161,8 @@ sub err_html {
 	#
 	my $err_text=errdump({
 
-	    'URI'  =>	$r->uri()
+	    'URI'  =>	$r->uri(),
+            'Line' =>   $html_line_no,
 
 	   });
 
@@ -186,8 +191,9 @@ sub err_html {
 
 	    errstr	=> $errstr,
 	    errstack_ar	=> \@errstack,
-	    r		=> $r,
-
+            html_line_no=> $html_line_no,
+	    r		=> $r
+  
 	   );
 
 
@@ -210,8 +216,8 @@ sub err_html {
 	    require WebDyne::Compile;
 	    my $container_ar=($Package{'container_ar'} ||= &WebDyne::Compile::compile($self,{
 
-		srce	=> $WEBDYNE_ERR_TEMPLATE,
-		nofilter	=> 1
+		srce	    => $WEBDYNE_ERR_TEMPLATE,
+		nofilter    => 1
 
 	       })) || return $self->err_html('fatal problem in error handler during compile !');
 
@@ -246,12 +252,16 @@ sub err_html {
 	#  showing nothing ..
 	#
         if ($@ || !$status) {
+            my $webdyne_error_text_save=$WEBDYNE_ERROR_TEXT;
             $WEBDYNE_ERROR_TEXT=1;
-            return $self->err_html($errstr);
+            $status=$self->err_html($errstr);
+            $WEBDYNE_ERROR_TEXT=$webdyne_error_text_save;
+
         }
-        else {
-            return $status
-        }
+        
+        #  Return result
+        #  
+        return $status
 
     }
 

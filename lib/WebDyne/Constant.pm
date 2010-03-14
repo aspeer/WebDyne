@@ -211,6 +211,26 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     #  Install prefix info
     #
     #WEBDYNE_PREFIX				=>      $prefix,
+    
+    #  Error handling. Use text errors rather than HTML ?
+    #
+    WEBDYNE_ERROR_TEXT				=>	0,
+    
+    
+    #  Show error, source file context, number of lines pre and post. Only applicable
+    #  for HTML error output.
+    #
+    WEBDYNE_ERROR_SHOW				=>	1,
+    WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW		=>	1,
+    WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_PRE	=>	4,
+    WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_POST	=>	4,
+    #  Max length of source line to show in ouput. 0 for unlimited.
+    WEBDYNE_ERROR_SOURCE_CONTEXT_LINE_FRAGMENT_MAX=>	80,
+    #  Show filename (including full filesystem path)
+    WEBDYNE_ERROR_FILENAME_SHOW			=>	1,
+    #  Show backtrace, show full or brief backtrace
+    WEBDYNE_ERROR_BACKTRACE_SHOW		=>	1,
+    WEBDYNE_ERROR_BACKTRACE_SHORT		=>	0,
 
 
     #  Mod_perl level. Do not change unless you know what you are

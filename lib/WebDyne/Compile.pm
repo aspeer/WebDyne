@@ -577,9 +577,13 @@ sub optimise_one {
 
 	#  Get this node tag and attrs
 	#
-	my ($html_tag, $attr_hr, $lineno)=
+	my ($html_tag, $attr_hr, $html_line_no)=
 	    @{$data_ar}[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX, $WEBDYNE_NODE_LINE_IX];
 	debug("tag $html_tag, attr %s", Dumper($attr_hr));
+
+	#  Store line number as hint to error handler should something go wrong
+	#
+	$self->{'_html_line_no'}=$html_line_no;
 
 
 	#  Check to see if any of the attributes will require a subst to be carried out
@@ -625,7 +629,8 @@ sub optimise_one {
 
 	#  If not special WebDyne tag, see if we can render node
 	#
-	if ((!$CGI_TAG_WEBDYNE{$html_tag} && !$CGI_TAG_IMPLICIT{$html_tag} && !$subst_fg) || $static_fg) {
+	#if ((!$CGI_TAG_WEBDYNE{$html_tag} && !$CGI_TAG_IMPLICIT{$html_tag} && !$subst_fg) || $static_fg) {
+	if ((!$CGI_TAG_WEBDYNE{$html_tag} && !$subst_fg) || $static_fg) {
 
 
 	    #  Check all child nodes to see if ref or scalar
@@ -666,12 +671,11 @@ sub optimise_one {
 		my @data_child_ar=$data_ar->[$WEBDYNE_NODE_CHLD_IX] ? @{$data_ar->[$WEBDYNE_NODE_CHLD_IX]} : undef;
 		my $html=eval {
 		    $cgi_or->$html_tag(grep {$_} $attr_hr, join(undef, @data_child_ar))} ||
+			#  Use errsubst as CGI may have DIEd during eval and be caught by WebDyne SIG handler
 			return errsubst(
-			    "error at line $lineno, CGI tag '<$html_tag>' - %s",
+			    "CGI tag '<$html_tag>': %s",
 			    $@ || "undefined error rendering tag '$html_tag'"
-			   );
-			#return err(("$@" || "no return from HTML tag $html_tag").
-				#       ", triggered in HTML file at line %s", $lineno || '<unknown>' );
+			);
 
 
 		#  Debug
@@ -784,9 +788,14 @@ sub optimise_two {
 
 	#  Get this tag and attrs
 	#
-	my ($html_tag, $attr_hr, $lineno)=
+	my ($html_tag, $attr_hr, $html_line_no)=
 	    @{$data_ar}[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX, $WEBDYNE_NODE_LINE_IX];
 	debug("tag $html_tag");
+	
+	
+	#  Store line number as hint to error handler should something go wrong
+	#
+	$self->{'_html_line_no'}=$html_line_no;
 
 
 	#  Check if this tag attributes will need substitution (eg ${foo});
@@ -843,11 +852,11 @@ sub optimise_two {
 		#
 		my ($html_start, $html_end)=map {
 		    eval { $cgi_or->$_(grep {$_} $attr_hr) } ||
+			#  Use errsubst as CGI may have DIEd during eval and be caught by WebDyne SIG handler
 			return errsubst(
-			    "error at line $lineno, CGI tag '<$_>' - %s",
+			    "CGI tag '<$_>' error- %s",
 			    $@ || "undefined error rendering tag '$_'"
 			   );
-		    #return err("$@" || "no html returned from tag $_")
 		} ( $html_tag_start, $html_tag_end);
 
 
@@ -951,7 +960,7 @@ sub optimise_two {
 	    my ($html_start, $html_end)=map {
 		eval { $cgi_or->$_(grep {$_} $attr_hr) } ||
 		    return errsubst(
-			"error at line $lineno, CGI tag '<$_>' - %s",
+			"CGI tag '<$_>': %s",
 			$@ || "undefined error rendering tag '$_'"
 		       );
 		    #return err("$@" || "no html returned from tag $_")

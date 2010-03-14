@@ -465,13 +465,16 @@ sub handler : method {
 	    debug("returning pre-rendered file ${cache_pn}.html");
 	    if ($MP2 || $ENV{'FCGI_ROLE'}) {
 
-		#  Do this way for mod_perl2, FCGI
+		#  Do this way for mod_perl2, FCGI. Note to self need r->output_filter or
+		#  Apache 2 seems to add junk characters at end of output
 		#
-		my $r_child=$r->lookup_file($fn);
+		my $r_child=$r->lookup_file($fn, $r->output_filters);
+		$r_child->handler('default-handler');
 		$r_child->content_type('text/html');
 		#  Apache bug ? Need to set content type on r also
 		$r->content_type('text/html');
 		return $r_child->run();
+
 	    }
 	    else {
 
@@ -1196,6 +1199,12 @@ sub render {
 	my ($html_tag, $html_line_no)=
 	    @{$data_ar}[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_LINE_IX];
 	my $html_chld;
+	
+	
+	#  Store line number as hint to error handler about the source of the problem should
+	#  something go wrong
+	#
+	$self->{'_html_line_no'}=$html_line_no;
 
 
 	#  Debug
@@ -1212,7 +1221,7 @@ sub render {
 	#
 	if ($data_ar->[$WEBDYNE_NODE_SBST_IX]) {
 	    $attr_hr=$self->subst_attr($data_ar, $attr_hr, $param_data_hr) ||
-		return errsubst("error at line $html_line_no - %s", errstr());
+		return err();
 	}
 
 
@@ -1291,7 +1300,7 @@ sub render {
 	    #  Special WebDyne tag, render using our self ref, not CGI object
 	    #
 	    my $html_sr=($self->$html_tag($data_ar, $attr_hr, $param_data_hr, $html_chld) ||
-		return errsubst("error at line $html_line_no - %s", errstr()));
+		return err());
 
 
 	    #  Debug
@@ -1311,7 +1320,7 @@ sub render {
 	    #  Normal CGI tag, with attributes and perhaps child text
 	    #
 	    return \ ($cgi_or->$html_tag(grep {$_} $attr_hr, $html_chld) ||
-		return err("error at line $html_line_no - CGI tag '<$html_tag>' ".
+		return err("CGI tag '<$html_tag>' ".
 			       'did not return any text'));
 
 	}
@@ -1321,7 +1330,7 @@ sub render {
 	    #  Normal CGI tag, no attributes but with child text
 	    #
 	    return \ ($cgi_or->$html_tag($html_chld) ||
-		return err("error at line $html_line_no - CGI tag '<$html_tag>' ".
+		return err("CGI tag '<$html_tag>' ".
 			       'did not return any text'));
 
 	}
@@ -1331,7 +1340,7 @@ sub render {
 	    #  Empty CGI object, eg <hr>
 	    #
 	    return \ ($cgi_or->$html_tag() ||
-	       return err("error at line $html_line_no - CGI tag '<$html_tag>' ".
+	       return err("CGI tag '<$html_tag>' ".
 		       'did not return any text'));
 
 	}
@@ -1767,6 +1776,13 @@ sub render_block {
 	return err("could not find block '$name' to render") unless $WEBDYNE_DELAYED_BLOCK_RENDER;
     }
 
+    
+    
+    #  Store params for later block render (outside perl block) if needed
+    #
+    push @{$self->{'_block_param'}{$name} ||=[]},$param_hr->{'param'} if $WEBDYNE_DELAYED_BLOCK_RENDER;
+
+
 
     #  Now, was it set to something ?
     #
@@ -1818,9 +1834,10 @@ sub render_block {
 
 
 	#  No, could not find block below us, store param away for later
-	#  render
+	#  render. NOTE now done for all blocks so work both in and out of
+	#  <perl> section. Moved this code above
 	#
-	push @{$self->{'_block_param'}{$name} ||=[]},$param_hr->{'param'};
+	#push @{$self->{'_block_param'}{$name} ||=[]},$param_hr->{'param'};
 
 
 	#  Debug

@@ -85,6 +85,8 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #
 #   );
 
+
+#  Update - get from CGI module, add special dump tag
 %CGI_TAG_IMPLICIT=map { $_=>1 } (
 
     @{$CGI::EXPORT_TAGS{':form'}},
@@ -127,7 +129,7 @@ push @HTML::TreeBuilder::p_closure_barriers,  keys %CGI_TAG_WEBDYNE;
 
 #  Local vars neeeded for cross sub comms
 #
-our ($Text_fg, $Line_no, $HTML_Perl_or, @HTML_Wedge);
+our ($Text_fg, $Line_no, $Line_no_next, $HTML_Perl_or, @HTML_Wedge);
 
 
 #  All done. Positive return
@@ -144,6 +146,7 @@ sub parse_fh {
     #  Get self ref, file handle
     #
     my ($self,$html_fh)=@_;
+    debug("parse $html_fh");
 
 
     #  Turn off HTML_Perl object global, in case left over from a __PERL__ segment
@@ -151,6 +154,10 @@ sub parse_fh {
     #  delete() also
     #
     $HTML_Perl_or && ($HTML_Perl_or=$HTML_Perl_or->delete());
+    undef $Text_fg;
+    undef $Line_no;
+    undef $Line_no_next;
+    undef @HTML_Wedge;
 
 
     #  Return closure code ref that understands how to count line
@@ -158,8 +165,17 @@ sub parse_fh {
     #
     my $parse_cr=sub {
 
-	$Line_no++;
-	return @HTML_Wedge ? shift @HTML_Wedge : <$html_fh>;
+        #$Line_no++;
+        my $line;
+	my $html = @HTML_Wedge ? shift @HTML_Wedge : ($line=<$html_fh>);
+        if ($line) {
+            debug("line $line");
+            my @cr=($line=~/\n/g);
+            $Line_no=$Line_no_next || 1;
+            $Line_no_next=$Line_no+@cr;
+            debug("Line $Line_no, Line_no_next $Line_no_next, cr %s", scalar @cr);
+        }
+        return $html;
 
     }
 
@@ -184,7 +200,9 @@ sub delete {
     #
     undef $Text_fg;
     undef $Line_no;
-
+    undef $Line_no_next;
+    undef @HTML_Wedge;
+    
 
     #  Run real deal from parent
     #
@@ -225,13 +243,13 @@ sub tag_parse {
     my $html_or;
 
 
-    #  If it is an implicit extension, close it now
+    #  If it is an below an implicit parent tag close that tag now.
     #
     if ($CGI_TAG_IMPLICIT{$tag_parent} || $tag_parent=~/^start_/i || $tag_parent=~/^end_/i) {
 
 	#  End implicit parent if it was an implicit tag
 	#
-	debug("ending implicit tag $tag_parent");
+	debug("ending implicit parent tag $tag_parent");
 	$self->end($tag_parent);
 
     }
@@ -276,6 +294,20 @@ sub tag_parse {
 	#
 	debug("webdyne tag ($tag) dispatch");
 	$html_or=$self->$tag($method, $tag, $attr_hr);
+
+    }
+
+
+    #  If it is an custom CGI tag that we need to close implicityly
+    #
+    elsif ($CGI_TAG_IMPLICIT{$tag_parent} || $tag=~/^start_/i || $tag=~/^end_/) {
+
+
+	#  Yes, is CGI tag
+	#
+	debug("webdyne tag ($tag) dispatch");
+	$html_or=$self->$method(@_);
+        $self->end($tag)
 
     }
 
@@ -492,12 +524,17 @@ sub text {
 	#  Yes. We have inline perl code, not text. Just add to perl attribute, which
 	#  is treated specially when rendering
 	#
-	debug('in __PERL__ tag, appending text to __PERL__ block');
+        debug('in __PERL__ tag, appending text to __PERL__ block');
+        #  Strip leading CR from Perl code so line numbers in errors make sense
+        unless ($HTML_Perl_or->{'perl'}) { $text=~s/^\n// }
 	$HTML_Perl_or->{'perl'}.=$text;
 
 
     }
+    
+    #  Used to do this so __PERL__ block would only count if at end of file.
     #elsif (($text=~/^\W*__CODE__/ || $text=~/^\W*__PERL__/) && !$self->{'_pos'}) {
+    
     elsif (($text=~/^\W*__CODE__/ || $text=~/^\W*__PERL__/)) {
 
 
@@ -531,6 +568,7 @@ sub text {
 		if (($html_or->tag() eq 'perl') && !$html_or->attr('inline')) {
 		    debug('hit !');
 		    $text=~s/^\n//;
+		    $text=~s/\n$//;
 		}
 	    }
 
