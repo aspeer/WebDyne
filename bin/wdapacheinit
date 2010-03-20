@@ -30,16 +30,17 @@ GetOptions(\%option, (
     'apache_uname|uname=s',
     'apache_gname|gname=s',
     'httpd_bin|httpd=s',
-    'dir_apache_conf|apache_conf=s',
-    'dir_apache_modules|apache_modules=s',
-    'file_mod_perl_lib|mod_perl_lib=s',
+    'dir_apache_conf|apache_conf|conf=s',
+    'dir_apache_modules|apache_modules|modules=s',
+    'file_mod_perl_lib|mod_perl_lib|mod_perl=s',
     'mp2',
     'webdyne_cache_dn|webdyne_cache|cache_dn|cache=s',
     'silent',
     'uninstall',
     'version'
    ) ) ||  pod2usage(2);
-pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $option{'help'};
+pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) 
+  if $option{'help'};
 pod2usage(-verbose => 2) if $option{'man'};
 $option{'version'} && do { print "$Script version: $VERSION\n"; exit 0 };
 map { $ENV{uc($_)}=$option{$_} } keys %option;
@@ -47,9 +48,23 @@ map { $ENV{uc($_)}=$option{$_} } keys %option;
 
 #  By default the WebDyne::Install::Apache::Constant module will issue a
 #  warning if something not found, but will continue. In this case we want
-#  to consider any warning fatal
+#  to consider any warning fatal.
 #
-local $SIG{'__WARN__'}=sub { pod2usage("ERROR:\n\n".ucfirst($_[0])) };
+local $SIG{'__WARN__'}=sub { 
+  my $warn=shift();
+  my %warn=(
+    APACHE_UNAME	=>  '--uname',
+    APACHE_GNAME	=>  '--gname',
+    HTTPD_BIN		=>  '--httpd',
+    DIR_APACHE_CONF	=>  '--conf',
+    DIR_APACHE_MODULES	=>  '--modules',
+    FILE_MOD_PERL_LIB	=>  '--mod_perl',
+  );
+  while (my($env,$param)=each %warn) {
+    last if $warn=~s/(.*)$env.*/$1$param option./;
+  }
+  pod2usage(-verbose=>99, -sections =>'Options', -message=>"ERROR: ".ucfirst($warn))
+};
 require WebDyne::Install::Apache;
 
 

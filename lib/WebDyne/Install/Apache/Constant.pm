@@ -469,7 +469,7 @@ sub dir_apache_modules {
     #  Warn if not found
     #
     unless (-d $apache_modules_dn) {
-	warn('unable to find/determine Apache conf directory - please supply via DIR_APACHE_MODULES environment variable');
+	warn('unable to find/determine Apache modules directory - please supply via DIR_APACHE_MODULES environment variable');
     }
 
 
