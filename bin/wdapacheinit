@@ -34,7 +34,7 @@ GetOptions(\%option, (
     'dir_apache_modules|apache_modules|modules=s',
     'file_mod_perl_lib|mod_perl_lib|mod_perl=s',
     'mp2',
-    'webdyne_cache_dn|webdyne_cache|cache_dn|cache=s',
+    'webdyne_cache_dn|webdyne_cache|cache_dn|cache|dir_webdyne_cache=s',
     'silent',
     'uninstall',
     'version'
@@ -150,6 +150,31 @@ Full path and filename of the Apache mod_perl library, e.g.
 
 Location (directory name) where the main Apache config file
 resides, e.g /opt/apache/etc/conf
+
+
+=item --dir_webdyne_cache
+
+
+
+
+Location (directort name) where partially compiled psp files will
+be cached
+
+
+=item --silent
+
+
+
+
+No output
+
+
+=item --uninstall
+
+
+
+
+Remove references to WebDyne from Apache config files
 
 =back
 
