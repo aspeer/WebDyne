@@ -63,7 +63,7 @@ use overload;
 
 #  Version information. Must be all on one line
 #
-$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
+$VERSION = do { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
 
 
 #  Debug load
