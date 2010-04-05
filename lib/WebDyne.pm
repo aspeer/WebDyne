@@ -145,8 +145,12 @@ sub handler : method {
 
     #  Setup error handlers
     #
-    local $SIG{'__DIE__'} =sub { return err(@_) };
-    local $SIG{'__WARN__'}=sub { return err(@_) } if $WEBDYNE_WARNINGS_FATAL;
+    local $SIG{'__DIE__'} =sub {
+	debug('in __DIE__ sig handler, caller %s', join(',', (caller(0))[0..3]));
+	return err(@_) };
+    local $SIG{'__WARN__'}=sub {
+	debug('in __WARN__ sig handler, caller %s',join(',', (caller(0))[0..3]));
+	return err(@_) } if $WEBDYNE_WARNINGS_FATAL;
 
 
     #  Debug
@@ -184,11 +188,11 @@ sub handler : method {
     #  Used to use inode as unique identifier for file in cache, but that
     #  did not take into account the fact that the same file may have diff
     #  Apache locations (and thus WebDyne::Chain) handlers for the same
-    #  physical file. So we now use an md5 hash of location and file name,
-    #  but the var name is still "inode";
+    #  physical file.  So we now use an md5 hash of handler, location and
+    #  file name, but the var name is still "inode";
     #
     RENDER_BEGIN:
-    my $srce_inode=($self->{'_inode'} ||= md5_hex($r->location, $srce_pn) ||
+    my $srce_inode=($self->{'_inode'} ||= md5_hex(ref($self), $r->location, $srce_pn) ||
 	return $self->err_html("could not get md5 for file $srce_pn, $!"));
     debug("srce_inode $srce_inode");
 
@@ -265,7 +269,7 @@ sub handler : method {
 	    require Symbol;
 	    &Symbol::delete_package("WebDyne::${srce_inode}");
 	} || do {
-	    eval 1; #clear $@ after error above
+	    eval { undef } if $@; #clear $@ after error above
 	    my $stash_hr=*{"WebDyne::${srce_inode}::"}{HASH};
 	    foreach (keys %{$stash_hr}) {
 		undef *{"WebDyne::${srce_inode}::${_}"};
@@ -402,6 +406,8 @@ sub handler : method {
 	    }
 	    my %handler_param_hr=(%{$param_hr}, %{$handler_param_hr}, meta=>$meta_hr);
 	    bless $self, $handler;
+	    #  Force recalc of inode in next handler so recompile done
+	    delete $self->{'_inode'};
 	    return &{"${handler}::handler"}($self, $r, \%handler_param_hr);
 	}
     }
@@ -470,9 +476,9 @@ sub handler : method {
 		#
 		my $r_child=$r->lookup_file($fn, $r->output_filters);
 		$r_child->handler('default-handler');
-		$r_child->content_type('text/html');
+		$r_child->content_type($WEBDYNE_CONTENT_TYPE_HTML);
 		#  Apache bug ? Need to set content type on r also
-		$r->content_type('text/html');
+		$r->content_type($WEBDYNE_CONTENT_TYPE_HTML);
 		return $r_child->run();
 
 	    }
@@ -482,7 +488,7 @@ sub handler : method {
 		#
 		$r->filename($fn);
 		$r->handler('default-handler');
-		$r->content_type('text/html');
+		$r->content_type($WEBDYNE_CONTENT_TYPE_HTML);
 		return &Apache::DECLINED;
 	    }
 	}
@@ -518,7 +524,8 @@ sub handler : method {
 
     #  Set default content type to text/html, can be overridden by render code if needed
     #
-    $r->content_type('text/html');
+    #$r->content_type('text/html');
+    $r->content_type($WEBDYNE_CONTENT_TYPE_HTML);
 
 
     #  Redirect 'print' function to our own routine for later output
@@ -1460,8 +1467,12 @@ sub redirect {
 	#  Set content type
 	#
 	my $r=$self->r() || return err();
-	if ($param_hr->{'html'})    { $r->content_type('text/html')  }
-	elsif ($param_hr->{'text'}) { $r->content_type('text/plain') }
+	if ($param_hr->{'html'})    { 
+	    $r->content_type($WEBDYNE_CONTENT_TYPE_HTML)  
+        }
+	elsif ($param_hr->{'text'}) { 
+	    $r->content_type($WEBDYNE_CONTENT_TYPE_PLAIN) 
+        }
 
 
 	#  And length
@@ -2621,7 +2632,7 @@ sub find_node {
     #
     my ($data_ar, $tag, $attr_hr, $depth_max, $prnt_fg, $all_fg)=@{$param_hr}{
 	qw(data_ar tag attr_hr depth prnt_fg all_fg) };
-    debug("find_node looking for tag $tag in data_ar %s", Dumper($data_ar));
+    debug("find_node looking for tag $tag in data_ar $data_ar", Dumper($data_ar));
 
 
     #  Array to hold results, depth
@@ -2926,13 +2937,16 @@ sub cache_html {
     my ($cache_pn, $html_sr)=@_;
     debug("cache_html @_");
 
-
-    #  No point || return err(), just warn so (maybe) is written to logs, otherwise go for it
+    #  If there was an error no html_sr will be supplied
     #
-    my $cache_fh=IO::File->new($cache_pn, O_WRONLY|O_CREAT|O_TRUNC) ||
-	return warn("unable to open cache file $cache_pn for write, $!");
-    CORE::print $cache_fh ${$html_sr};
-    $cache_fh->close();
+    if ($html_sr) {
+	#  No point || return err(), just warn so (maybe) is written to logs, otherwise go for it
+	#
+	my $cache_fh=IO::File->new($cache_pn, O_WRONLY|O_CREAT|O_TRUNC) ||
+	    return warn("unable to open cache file $cache_pn for write, $!");
+	CORE::print $cache_fh ${$html_sr};
+	$cache_fh->close();
+    }
     \undef;
 
 }
@@ -2956,6 +2970,7 @@ sub filter {
     #  No op
     #
     my ($self, $data_ar)=@_;
+    debug('in filter');
     $data_ar;
 
 }

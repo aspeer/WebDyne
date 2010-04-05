@@ -78,7 +78,7 @@ sub err_html {
 
     #  Debug
     #
-    debug("in error routine self $self, errstr $errstr");
+    debug("in error routine self $self, errstr $errstr, caller %s", join(',', (caller(0))[0..3]));
 
 
     #  Get errstr from stack if not supplied, or add if it
@@ -153,7 +153,8 @@ sub err_html {
 
 	#  Text error, set content type
 	#
-	debug("using text error - update $r content_type");
+	debug("using text error (%s:%s:%s:%s) - update $r content_type",
+            $WEBDYNE_ERROR_TEXT,$WEBDYNE_EVAL_SAFE,$self->{'_error_handler_run'},$cgi_or);
 	$r->content_type('text/plain');
 
 
@@ -252,6 +253,7 @@ sub err_html {
 	#  showing nothing ..
 	#
         if ($@ || !$status) {
+            debug("unable to render HTML template, reverting to text");
             my $webdyne_error_text_save=$WEBDYNE_ERROR_TEXT;
             $WEBDYNE_ERROR_TEXT=1;
             $status=$self->err_html($errstr);

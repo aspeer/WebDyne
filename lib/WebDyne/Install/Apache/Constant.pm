@@ -466,11 +466,12 @@ sub dir_apache_modules {
     debug("apache_modules_dn set to: $apache_modules_dn");
 
 
-    #  Warn if not found
+    #  Warn if not found. Update - don't do this anymore, just warn later if mod_perl lib not found, which
+    #  used this routine to find potential module storage dir.
     #
-    unless (-d $apache_modules_dn) {
-	warn('unable to find/determine Apache modules directory - please supply via DIR_APACHE_MODULES environment variable');
-    }
+    #unless (-d $apache_modules_dn) {
+	#warn('unable to find/determine Apache modules directory - please supply via DIR_APACHE_MODULES environment variable');
+    #}
 
 
     #  Return it
@@ -520,6 +521,7 @@ sub file_mod_perl_lib {
 
 sub mp2_installed {
 
+    local $SIG{__DIE__};
     eval { require Apache2 };
     eval { require mod_perl };
     eval { require mod_perl2 };

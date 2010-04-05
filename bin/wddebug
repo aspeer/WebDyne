@@ -289,31 +289,6 @@ wddebug - enable or disable debugging within WebDyne modules
 
 B<wddebug> B<[OPTIONS]> B<<FILE>>
 
-=head1 Description
-
-The L<wddebug(1)> command will enable or disable debugging within the
-WebDyne suite of modules.
-
-B<wddebug> acts by editing the content of the WebDyne modules to enable or
-disable debugging routines. Debugging is controlled this way (rather
-than at runtime) to ensure that WebDyne modules run at the fastest
-possible speed when debugging is disabled.
-
-When disabled debugging statements within each module are prefixed with
-the command "0 &&" (as in: 0 && debug "xyz"), which are optimised away
-at runtime by the Perl bytecode compiler.
-
-When debugging is enabled the "0 &&" is replaced by "1 &&" to ensure
-that the debug statements are called at run-time.
-
-Enabling and disabling debugging in this way is generally considered
-bad practice - for this reason this utility should only be used in an
-isolated test or development environment. The routine will modify all
-modules in the WebDyne directoy and below, and may have undesired (or
-unintended) consquence on any module that resides in those directories.
-
-For this reason the B<wddebug> utility should be used with extreme care !
-
 =head1 Options
 
 -h, --help
@@ -384,6 +359,31 @@ Display cersion information.
 
 A file name may be optionally specified to specifically enable or
 disable debugging for only one module.
+
+=head1 Description
+
+The L<wddebug(1)> command will enable or disable debugging within the
+WebDyne suite of modules.
+
+B<wddebug> acts by editing the content of the WebDyne modules to enable or
+disable debugging routines. Debugging is controlled this way (rather
+than at runtime) to ensure that WebDyne modules run at the fastest
+possible speed when debugging is disabled.
+
+When disabled debugging statements within each module are prefixed with
+the command "0 &&" (as in: 0 && debug "xyz"), which are optimised away
+at runtime by the Perl bytecode compiler.
+
+When debugging is enabled the "0 &&" is replaced by "1 &&" to ensure
+that the debug statements are called at run-time.
+
+Enabling and disabling debugging in this way is generally considered
+bad practice - for this reason this utility should only be used in an
+isolated test or development environment. The routine will modify all
+modules in the WebDyne directoy and below, and may have undesired (or
+unintended) consquence on any module that resides in those directories.
+
+For this reason the B<wddebug> utility should be used with extreme care !
 
 =head1 Usage
 

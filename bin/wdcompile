@@ -108,26 +108,6 @@ wdcompile - parse and compile WebDyne pages
 
 B<wdcompile> B<[OPTIONS]> B<FILE>
 
-=head1 Description
-
-The L<wdcompile(1)> command displays the internal data structure used by
-WebDyne when compiling psp pages.
-
-WebDyne uses the same parsing and compilation routines as wdcompile.
-After compilation WebDyne optionally stores the resulting data
-structure to a cache directory using the Perl Storable module to speed
-up subsequent rendering operations.
-
-If the tree structure does not appear correct when debugging with
-wdcompile then it will probably not display as expected when rendered
-with WebDyne. Missing end quotes, closing tags and general HTML syntax
-problems can all make the parse tree misplace (or omit completely)
-blocks of HTML/WebDyne code.
-
-By default wdcompile will show the data structure after all parsing and
-optimisation stages have been completed. You can display various
-intermediate stages using the options below.
-
 =head1 Options
 
 -h, --help
@@ -142,9 +122,9 @@ Show brief help message.
 
 
 
-Stop and display internal data structure after parsing with
-HTML::TreeBuilder. This stage shows the HTML syntax tree generated
-from the source file.
+Stop and display internal data structure after parsing
+withHTML::TreeBuilder. This stage shows the HTML syntax tree
+generated from the source file.
 
 
 =item -1
@@ -175,13 +155,33 @@ without affecting the dymamic components of the tree.
 
 
 Show any WebDyne meta data found in the source file. WebDyne meta
-data are hints or instructions contained in the <meta> sections
+data are hints or instructions contained in the B<<meta>> sections
 with the name "WebDyne". If found such meta data is removed from
 the resulting HTML parse tree and stored in a separate data
 structure. This option will show that data structire if it exists.
 
 =back
 
+
+=head1 Description
+
+The B<wdcompile> command displays the internal data structure used by
+WebDyne when compiling psp pages.
+
+WebDyne uses the same parsing and compilation routines as B<wdcompile>.
+After compilation WebDyne optionally stores the resulting data
+structure to a cache directory using the Perl Storable module to speed
+up subsequent rendering operations.
+
+If the tree structure does not appear correct when debugging with
+B<wdcompile> then it will probably not display as expected when rendered
+with WebDyne. Missing end quotes, closing tags and general HTML syntax
+problems can all make the parse tree misplace (or omit completely)
+blocks of HTML/WebDyne code.
+
+By default B<wdcompile> will show the data structure after all parsing and
+optimisation stages have been completed. You can display various
+intermediate stages using the options below.
 
 =head1 Notes
 

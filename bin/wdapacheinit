@@ -55,11 +55,14 @@ local $SIG{'__WARN__'}=sub {
   my %warn=(
     APACHE_UNAME	=>  '--uname',
     APACHE_GNAME	=>  '--gname',
-    HTTPD_BIN		=>  '--httpd',
-    DIR_APACHE_CONF	=>  '--conf',
-    DIR_APACHE_MODULES	=>  '--modules',
-    FILE_MOD_PERL_LIB	=>  '--mod_perl',
+    HTTPD_BIN		=>  '--httpd_bin',
+    DIR_APACHE_CONF	=>  '--dir_apache_conf',
+    FILE_MOD_PERL_LIB	=>  '--mod_perl_lib',
   );
+  
+  #  Translate warning messages from Contants module about setting env vars into
+  #  messages about setting command line options. Crude, but will do for now.
+  #
   while (my($env,$param)=each %warn) {
     last if $warn=~s/(.*)$env.*/$1$param option./;
   }
@@ -80,65 +83,92 @@ else {
 
 __END__
 
+=head1 Name
+
+wdapacheinit - configure Apache to process .psp files through WebDyne
+
 =head1 Synopsis
 
-wdapacheinit [options]
+B<wdapacheinit> B<[options]>
 
 =head1 Options
 
-=over
+-?, --help
+Show brief help message
 
-=item -h|-?|--help
 
-brief help message
+=over 5
 
-=item --silent
 
-do not print any messages during install
+=item --man
 
-=item --uninstall
 
-remove webdyne config files and any Apache config file changes
 
-=item --mp2
 
-force installer to assume mod_perl2 in use
+Display the manual page
 
-=item --httpd
-
-full path name to the Apache binary (e.g. /sbin/httpd)
-
-=item --mod_perl
-
-full path name to the Apache mod_perl library (e.g. /lib/httpd/mod_perl.so)
 
 =item --uname
 
-user name used by the Apache process
+
+
+
+The user name that the Apache daemon runs under when started, e.g.
+"varname", "httpd", "apache" etc.
+
 
 =item --gname
 
-group name used by the Apache process
 
-=item --apache_conf
 
-directory where Apache config file(s) are located
 
-=item --apache_modules
+The group name that the Apache daemons runs under when started
 
-directory where Apache modules are located
 
-=item --cache
+=item --httpd_bin
 
-directory where you would like the WebDyne cache located (will be created)
+
+
+
+Full path and filename of Apache httpd executable,
+e.g./opt/apache/bin/httpd
+
+
+=item --mod_perl_lib
+
+
+
+
+Full path and filename of the Apache mod_perl library, e.g.
+/opt/apache/lib/modules/mod_perl.so
+
+
+=item --dir_apache_conf
+
+
+
+
+Location (directory name) where the main Apache config file
+resides, e.g /opt/apache/etc/conf
 
 =back
 
-The installer will attempt to guess the values of each option above using common defaults. If it cannot determine
-the location of a file or directory it needs you must supply it as a command line or environment variable option.
 
-=head2 EXAMPLE
+=head1 Description
 
-=over
+B<wdapacheinit> will attempt to locate Apache configuration files and
+modify them so that requests for .psp pages are processed through the
+perl-handler WebDyne module.
 
-C<wdapacheinit --httpd=/sbin/httpd --mod_perl=/lib/httpd/mod_perl.so --webdyne_cache=/var/cache_webdyne>
+Where Apache uses a conf.d configuration file structure the installer
+will simply create a webdyne.conf file with the appropriate
+configuration int the conf.d directory. Where no conf.d structure can
+be found the installer will create the webdyne.conf file in the same
+location as the main Apachehttpd.conf file, then modify httpd.conf to
+append an include reference to the Webdyne config file.
+
+The installer will attempt to locate the necessary files and other
+information using common defaults - however if it can not discover the
+required information automatically (e.g. the path to the Apache binary)
+it will be necessary to specify it explicitly using the appropriate
+command line option.

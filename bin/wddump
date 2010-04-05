@@ -94,21 +94,21 @@ directory
 
 B<wddump> B<[OPTIONS]> B<FILE>
 
-=head1 Description
-
-The L<wddump(1)> command displays internal the data structure of a
-compiled WebDyne psp file from the WebDyne cache directory. wddump is
-of limited diagnostic use - the L<wdcompile(1)> tool is more suitable for
-troubleshooting HTML tree errors.
-
-wddump can be useful to see a picture of the final data structure looks
-like on complex pages built via many filters, combining static and
-dynamic blocks etc.
-
 =head1 Options
 
 -h, --help
 Show brief help message.
+
+=head1 Description
+
+The B<wddump> command displays internal the data structure of a compiled
+WebDyne psp file from the WebDyne cache directory.  B<wddump> is of
+limited diagnostic use - the B<wdcompile> tool is more suitable for
+troubleshooting HTML tree errors.
+
+B<wddump> can be useful to see a picture of the final data structure looks
+like on complex pages built via many filters, combining static and
+dynamic blocks etc.
 
 =head1 Examples
 

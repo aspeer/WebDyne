@@ -167,6 +167,26 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     WEBDYNE_DTD					=>
 	'<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" '.
 	'"http://www.w3.org/TR/html4/loose.dtd">',
+	
+	
+    #  Content-type for text/html. Combined with charset to produce Content-type header
+    #
+    WEBDYNE_CONTENT_TYPE_HTML			=>	'text/html',
+
+
+    #  Content-type for text/plain. As above
+    #
+    WEBDYNE_CONTENT_TYPE_PLAIN			=>	'text/plain',
+
+
+    #  Encoding
+    #
+    WEBDYNE_CHARSET				=>	'ISO-8859-1',
+    
+    
+    #  Include a Content-Type meta tag ?
+    #
+    WEBDYNE_CONTENT_TYPE_HTML_META		=>	0,
 
 
     #  Default <html> tag paramaters, eg { lang	=>'en-US' }
@@ -315,6 +335,17 @@ sub local_constant_load {
 	    }
 	}
     }
+    
+    
+    #  Is charset defined ? If so combine into content-type header
+    #
+    if (my $charset=$constant_hr->{'WEBDYNE_CHARSET'}) {
+        $constant_hr->{'WEBDYNE_CONTENT_TYPE_HTML'}=sprintf("%s; charset=$charset", $constant_hr->{'WEBDYNE_CONTENT_TYPE_HTML'})
+            unless $constant_hr->{'WEBDYNE_CONTENT_TYPE_HTML'}=~/charset=/;
+        $constant_hr->{'WEBDYNE_CONTENT_TYPE_PLAIN'}=sprintf("%s; charset=$charset", $constant_hr->{'WEBDYNE_CONTENT_TYPE_PLAIN'})
+            unless $constant_hr->{'WEBDYNE_CONTENT_TYPE_PLAIN'}=~/charset=/;
+    }
+            
 
 
     #  Done - return constant hash ref

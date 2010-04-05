@@ -37,6 +37,7 @@ no  warnings	qw(uninitialized redefine once);
 #  WebDyne Modules
 #
 use WebDyne;
+use WebDyne::Constant;
 use WebDyne::Base;
 
 
@@ -610,6 +611,9 @@ sub start_html {
 
     #  Need to handle this specially ..
     my ($self, $method, $tag, $attr_hr)=@_;
+    if ($WEBDYNE_CONTENT_TYPE_HTML_META) {
+        $attr_hr->{'head'} ||= &CGI::meta({ "http-equiv"=>"Content-Type", content=>$WEBDYNE_CONTENT_TYPE_HTML })
+    }
     my $html=&CGI::start_html_cgi($attr_hr);
     debug("html is $html");
     push @HTML_Wedge, $html;

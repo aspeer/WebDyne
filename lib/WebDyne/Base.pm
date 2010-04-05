@@ -407,6 +407,8 @@ sub errdump {
 	my $message=ucfirst($err_ar->[0]);
 	$message=~s/\s+$//;
 	$message.='.' unless $message=~/[\.\!\?]$/;
+	my @message=split("\n", $message);
+	$message=shift @message if @message;
 
 
 	#  Print out date, time, error message
@@ -416,6 +418,7 @@ sub errdump {
 	formline $format[0];
 	formline $format[1], 'Error', $message;
 	(formline $format[2], $message) if $message;
+	map {formline $format[2], $_} @message if @message;
 	formline $format[0];
 
 

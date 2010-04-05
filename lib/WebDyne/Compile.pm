@@ -343,10 +343,11 @@ sub compile {
     }
     debug('filter %s', Dumper(\@filter));
     if ((@filter) && !$param_hr->{'nofilter'}) {
+        local $SIG{'__DIE__'};
 	foreach my $filter (@filter) {
 	    $filter=~s/::filter$//;
 	    eval("require $filter") ||
-		return err("unable to load custom filter '$filter', $@");
+		return err("unable to load filter $filter, ".lcfirst($@));
 	    UNIVERSAL::can($filter, 'filter') ||
 		return err("custom filter '$filter' does not seem to have a 'filter' method to call");
 	    $filter.='::filter';
@@ -470,6 +471,7 @@ sub compile_init {
     *CGI::end_html_cgi=$CGI_end_html_cr;
     *CGI::start_html=sub {
 	my ($self, $attr_hr)=@_;
+	#CORE::print Data::Dumper::Dumper($attr_hr);
 	keys %{$attr_hr} || ($attr_hr=$WEBDYNE_HTML_PARAM);
 	my $html_attr=join(' ', map { qq($_="$attr_hr->{$_}") } keys %{$attr_hr});
 	return $WEBDYNE_DTD.($html_attr ? "<html $html_attr>" : '<html>');
@@ -479,7 +481,7 @@ sub compile_init {
     };
     *CGI::html=sub {
 	my ($self, $attr_hr, @html)=@_;
-	return join(undef, CGI->start_html($attr_hr), @html, $self->end_html);
+	return join(undef, CGI->start_html_cgi($attr_hr), @html, $self->end_html_cgi);
     };
 
 
