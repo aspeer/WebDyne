@@ -41,8 +41,7 @@ require Opcode;
 
 #  Version information. Must be all on one line
 #
-$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
-
+$VERSION='1.009';
 
 #  Get mod_perl version. Clear $@ after evals
 #

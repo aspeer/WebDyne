@@ -38,8 +38,7 @@ use File::Spec;
 
 #  Version information. Must be all on one line
 #
-$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
-
+$VERSION='1.003';
 
 #  Hash of constants
 #

@@ -59,8 +59,7 @@ use WebDyne::Base;
 
 #  Version information
 #
-$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
-
+$VERSION='1.012';
 
 #  Debug load
 #

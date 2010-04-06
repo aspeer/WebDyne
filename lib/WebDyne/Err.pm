@@ -45,8 +45,7 @@ use File::Spec;
 #  Version information in a formate suitable for CPAN etc. Must be
 #  all on one line
 #
-$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
-
+$VERSION='1.009';
 
 #  Debug
 #

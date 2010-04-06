@@ -57,8 +57,7 @@ use IO::File;
 
 #  Version information
 #
-$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
-
+$VERSION='1.006';
 
 #  Debug load
 #

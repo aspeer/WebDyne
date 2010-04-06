@@ -38,8 +38,7 @@ use HTTP::Status (RC_OK);
 
 #  Version information
 #
-$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
-
+$VERSION='1.003';
 
 #  Debug load
 #

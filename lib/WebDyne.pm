@@ -63,8 +63,7 @@ use overload;
 
 #  Version information. Must be all on one line
 #
-$VERSION = do { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
-
+$VERSION='1.013';
 
 #  Debug load
 #

@@ -38,8 +38,7 @@ use ExtUtils::MakeMaker qw(prompt);
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION = eval { require WebDyne::VERSION; do $INC{'WebDyne/VERSION.pm'}};
-
+$VERSION='1.004';
 
 #  Run main
 #

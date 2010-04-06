@@ -67,8 +67,7 @@ use Config;
 #  Version information in a formate suitable for CPAN etc. Must be
 #  all on one line
 #
-$VERSION = eval { require WebDyne::Install::VERSION; do $INC{'WebDyne/Install/VERSION.pm'}};
-
+$VERSION='1.004';
 
 #  Revision information, auto maintained by CVS
 #
