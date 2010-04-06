@@ -47,7 +47,7 @@ use File::Spec;
 #  Version information in a format suitable for CPAN etc. Must be
 #  all on one line
 #
-$VERSION='1.004';
+$VERSION='1.005';
 
 #  Revision information, auto maintained by CVS
 #

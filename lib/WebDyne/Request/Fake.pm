@@ -38,7 +38,7 @@ use HTTP::Status (RC_OK);
 
 #  Version information
 #
-$VERSION='1.004';
+$VERSION='1.005';
 
 #  Debug load
 #

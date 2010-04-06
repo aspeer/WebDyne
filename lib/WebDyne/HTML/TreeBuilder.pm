@@ -57,7 +57,7 @@ use IO::File;
 
 #  Version information
 #
-$VERSION='1.007';
+$VERSION='1.008';
 
 #  Debug load
 #

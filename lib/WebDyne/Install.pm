@@ -67,7 +67,7 @@ use Config;
 #  Version information in a formate suitable for CPAN etc. Must be
 #  all on one line
 #
-$VERSION='1.005';
+$VERSION='1.006';
 
 #  Revision information, auto maintained by CVS
 #
