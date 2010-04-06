@@ -64,7 +64,7 @@ my %makefile=(
 	'bin/wddump',
 	'bin/wdapacheinit',
 	'bin/wddebug',
-	'bin/perl5lib.pm',
+	'bin/perl5lib.pl',
 	'bin/webdyne-mod_perl-1_99-compat.pl'
 
        ],

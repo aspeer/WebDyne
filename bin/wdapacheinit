@@ -2,14 +2,17 @@
 
 #  Init Apache config files
 #
-sub BEGIN { $^W=0 };
+sub BEGIN {
+    #  Massage warnings and @INC path
+    $^W=0;
+    use File::Spec;
+    use FindBin qw($RealBin $Script);
+    require File::Spec->catfile($RealBin, 'perl5lib.pl');
+    perl5lib->import(File::Spec->catdir($RealBin, File::Spec->updir()));
+};
 use strict qw(vars);
 use vars qw($VERSION);
-use File::Spec;
-use FindBin qw($RealBin $Script);
 use Cwd qw(realpath);
-use lib $RealBin;
-use perl5lib File::Spec->catdir($RealBin, File::Spec->updir());
 use WebDyne::Base;
 use Getopt::Long;
 use Pod::Usage;

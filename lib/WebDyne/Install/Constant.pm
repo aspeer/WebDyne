@@ -84,7 +84,7 @@ else {
 
     #  Where perl5 library dirs are sourced from
     #
-    FILE_PERL5LIB			  =>  'perl5lib.pm',
+    FILE_PERL5LIB			  =>  'perl5lib.pl',
     
     
     #  Default cache directory

@@ -7,13 +7,16 @@ package main;
 
 #  Compiler pragma, load library path
 #
-sub BEGIN { $^W=0 };
+sub BEGIN {
+    #  Massage warnings and @INC path
+    $^W=0;
+    use File::Spec;
+    use FindBin qw($RealBin $Script);
+    require File::Spec->catfile($RealBin, 'perl5lib.pl');
+    perl5lib->import(File::Spec->catdir($RealBin, File::Spec->updir()));
+};
 use strict qw(vars);
 use vars   qw($VERSION);
-use FindBin qw($RealBin $Script);
-use lib $RealBin;
-use File::Spec;
-use perl5lib File::Spec->catdir($RealBin, File::Spec->updir());
 
 
 #  Use the base modules

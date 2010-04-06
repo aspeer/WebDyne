@@ -25,7 +25,7 @@ bin/wdapacheinit
 bin/wdrender
 bin/wddump
 bin/wddebug
-bin/perl5lib.pm
+bin/perl5lib.pl
 bin/webdyne-mod_perl-1_99-compat.pl
 lib/WebDyne/Install/Apache/apache.conf.inc
 lib/WebDyne/Install/Apache/webdyne.conf.inc
