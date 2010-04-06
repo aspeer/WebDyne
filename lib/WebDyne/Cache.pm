@@ -38,7 +38,7 @@ use WebDyne::Base;
 #  Version information in a formate suitable for CPAN etc. Must be
 #  all on one line
 #
-$VERSION='1.003';
+$VERSION='1.004';
 
 #  Debug 
 #
