@@ -42,10 +42,10 @@ use HTTP::Status qw(is_success is_error RC_INTERNAL_SERVER_ERROR);
 use File::Spec;
 
 
-#  Version information in a formate suitable for CPAN etc. Must be
-#  all on one line
+#  Version information
 #
 $VERSION='1.011';
+
 
 #  Debug
 #

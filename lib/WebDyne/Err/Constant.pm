@@ -36,9 +36,10 @@ local $^W=0;
 use File::Spec;
 
 
-#  Version information. Must be all on one line
+#  Version information
 #
 $VERSION='1.005';
+
 
 #  Hash of constants
 #

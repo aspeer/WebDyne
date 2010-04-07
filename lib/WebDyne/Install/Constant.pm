@@ -44,14 +44,9 @@ use File::Path;
 use File::Spec;
 
 
-#  Version information in a format suitable for CPAN etc. Must be
-#  all on one line
+#  Version information
 #
-$VERSION='1.7';
-
-#  Revision information, auto maintained by CVS
-#
-$REVISION=(qw$Revision: 1.30 $)[1];
+$VERSION='1.008';
 
 
 #------------------------------------------------------------------------------

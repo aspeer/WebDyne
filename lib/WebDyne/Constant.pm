@@ -39,9 +39,10 @@ use File::Spec;
 require Opcode;
 
 
-#  Version information. Must be all on one line
+#  Version information
 #
 $VERSION='1.011';
+
 
 #  Get mod_perl version. Clear $@ after evals
 #

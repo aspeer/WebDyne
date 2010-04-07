@@ -35,10 +35,10 @@ use WebDyne::Constant;
 use WebDyne::Base;
 
 
-#  Version information in a formate suitable for CPAN etc. Must be
-#  all on one line
+#  Version information in a format
 #
 $VERSION='1.005';
+
 
 #  Debug 
 #

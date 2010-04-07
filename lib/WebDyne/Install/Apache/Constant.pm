@@ -69,14 +69,9 @@ our $Httpd_Config_hr=&httpd_config();
 my  $ServerRoot;
 
 
-#  Version information in a format suitable for CPAN etc. Must be
-#  all on one line
+#  Version information
 #
 $VERSION='1.010';
-
-#  Revision information, auto maintained by CVS
-#
-$REVISION=(qw$Revision: 1.8 $)[1];
 
 
 #------------------------------------------------------------------------------

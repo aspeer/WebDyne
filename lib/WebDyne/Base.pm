@@ -48,9 +48,10 @@ require Exporter;
 @EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal);
 
 
-#  Version information. Must be all on one line
+#  Version information
 #
 $VERSION='1.008';
+
 
 #  Var to hold package wide hash, for data shared across package, and error stack
 #

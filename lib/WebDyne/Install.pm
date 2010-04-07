@@ -64,19 +64,14 @@ use IO::File;
 use Config;
 
 
-#  Version information in a formate suitable for CPAN etc. Must be
-#  all on one line
+#  Version information
 #
 $VERSION='1.006';
-
-#  Revision information, auto maintained by CVS
-#
-$REVISION=(qw$Revision: 1.21 $)[1];
 
 
 #  Debug
 #
-debug("%s loaded, version $VERSION, revision $REVISION", __PACKAGE__);
+debug("%s loaded, version $VERSION", __PACKAGE__);
 
 
 #  Uninstaller global

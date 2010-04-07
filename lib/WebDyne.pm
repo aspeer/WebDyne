@@ -61,9 +61,10 @@ use overload;
 @ISA=qw(WebDyne::Compile);
 
 
-#  Version information. Must be all on one line
+#  Version information
 #
 $VERSION='1.015';
+
 
 #  Debug load
 #
