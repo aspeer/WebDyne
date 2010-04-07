@@ -27,16 +27,16 @@ config, Webdyne cache dir.  etc.  If you need to alter the defaults do a
 
 wdapacheinit --help
 
-Other installer modules are available for Lighttpd and IIS. If you wish to
-download an installer module - which will add Webdyne hooks into your Web
-server - download the WebDyne::Install module appropriate for your server
-type, e.g:
+Other installer modules are available for FastCGI server such as Lighttpd.
+If you wish to download an installer module - which will add Webdyne hooks
+into your Web server - download the WebDyne::Install module appropriate for
+your server type, e.g:
 
-perl -MCPAN -e 'install WebDyne::Install::Apache'
+perl -MCPAN -e 'install WebDyne::Install::Lighttpd'
 
 You may then run the installer script, e.g.:
 
-bin/wdapacheinit
+bin/wdlighttpdinit
 
 The actual location of the installer script will distribution dependent -
 you may have to search for it after module installation.
@@ -45,7 +45,6 @@ The following installer modules and their installation scripts are
 available:
 
 WebDyne::Install::Lighttpd      bin/wdlighttpdinit 
-WebDyne::Install::IIS		bin/wdiisinit
 
 
 == INSTALLATION VIA MANUAL BUILD ===============================================
@@ -63,5 +62,4 @@ required should be listed when you run the "perl Makefile.PL" command above.
 
 Similarly to the CPAN install you will either need to adjust your Web server
 config manually to serve WebDyne pages, or run/download the appropriate
-installer module - see the CPAN section for details on what installer
-modules are available.
+installer module.
