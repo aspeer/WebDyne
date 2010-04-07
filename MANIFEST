@@ -29,7 +29,7 @@ bin/perl5lib.pl
 bin/webdyne-mod_perl-1_99-compat.pl
 lib/WebDyne/Install/Apache/apache.conf.inc
 lib/WebDyne/Install/Apache/webdyne.conf.inc
-man/WebDyne.3
+man/WebDyne.3pm
 doc/webdyne.pdf
 t/00-load.t
 t/01-basic.t
