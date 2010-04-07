@@ -148,7 +148,7 @@ sub postamble {
     #
     my $postamble=shift()->SUPER::postamble;
     $postamble.="subdirs ::\n\t\t".
-        '$(CP) man/*.3 $(INST_MAN3DIR)';
+        '$(CP) man/*.3pm $(INST_MAN3DIR)';
 
 };
 

@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.015';
+$VERSION='1.017';
 
 
 #  Debug load
@@ -3184,3 +3184,49 @@ sub UNTIE {
 
 sub AUTOLOAD {
 }
+
+
+__END__
+
+=head1 Name
+
+WebDyne - create web pages with embedded Perl
+
+=head1 Description
+
+WebDyne is a Perl based dynamic HTML engine. It works with web servers (or from the command line) to render HTML
+documents with embedded Perl code.
+
+Once WebDyne is installed and initialised to work with a web server, any file with a .psp extension is treated as a
+WebDyne source file. It is parsed for WebDyne or CGI.pm pseudo-tags (such as <perl> and <block> for WebDyne, or
+<start_html>, <popup_menu> for CGI.pm) which are interpreted and executed on the server. The resulting output is then
+sent to the browser.
+
+Pages are parsed once, then optionally stored in a partially compiled format - speeding up subsequent processing by
+avoiding the need to re-parse a page each time it is loaded. WebDyne works with common web server persistant/resident
+Perl modules such as mod_perl and FastCGI to provide fast dynamic content.
+
+=head1 Documentation
+
+A full man page with usage and exampled is installed with the WebDyne module. Further information is available from the
+WebDyne web page, httpd://webdyne.org/ with a snapshot of current documentation in PDF dormat available in the module
+source /doc directory.
+
+=head1 Copyright and License
+
+WebDyne is Copyright (C) Andrew Speer 2005-2010. Webdyne is dual licensed. It is released as free software released
+under the Gnu Public License (GPL)[2], but is also available for commercial use under a proprietary license - please
+contact the author for further information.
+
+WebDyne is written in Perl and uses modules from CPAN[3] (the Comprehensive Perl Archive Network). CPAN modules are
+Copyright (C) the owner/author, and are available in source from CPAN directly. All CPAN modules used are covered by the
+Perl Artistic License[4]
+
+=head1 Author
+
+Current maintainer: Andrew Speer, andrew.speer@webdyne.org
+
+=head1 Bugs
+
+Please report any bugs or feature requests to "bug-webdyne at rt.cpan.org", or via
+http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WebDyne

@@ -67,10 +67,7 @@ $OUT=qq[PerlRequire "$mod_perl_1_99_compat_fn"]
 -->
 
 
-#  Preload modules. WebDyne::Compile can be remove to save a few megs of
-#  memory if all pages are already compiled. If removed here, but needed
-#  while running, it will be loaded as required, which may take up more
-#  memory at run time than if loaded here.
+#  Load WebDyne modules
 #
 PerlModule	WebDyne WebDyne::Compile
 

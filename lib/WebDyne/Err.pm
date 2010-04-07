@@ -44,7 +44,7 @@ use File::Spec;
 
 #  Version information
 #
-$VERSION='1.011';
+$VERSION='1.012';
 
 
 #  Debug

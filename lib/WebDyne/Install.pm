@@ -66,7 +66,7 @@ use Config;
 
 #  Version information
 #
-$VERSION='1.006';
+$VERSION='1.007';
 
 
 #  Debug

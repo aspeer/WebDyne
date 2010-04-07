@@ -36,12 +36,12 @@ perl -MCPAN -e 'install WebDyne::Install::Lighttpd'
 
 You may then run the installer script, e.g.:
 
-bin/wdlighttpdinit
+wdlighttpdinit
 
-The actual location of the installer script will distribution dependent -
+The actual location of the installer script will be distribution dependent -
 you may have to search for it after module installation.
 
-The following installer modules and their installation scripts are
+The following installer modules and their installation scripts are currently
 available:
 
 WebDyne::Install::Lighttpd      bin/wdlighttpdinit 

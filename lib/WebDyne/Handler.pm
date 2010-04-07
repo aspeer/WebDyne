@@ -37,7 +37,7 @@ use WebDyne::Base;
 
 #  Version information
 #
-$VERSION='1.005';
+$VERSION='1.006';
 
 
 #  Debug 
