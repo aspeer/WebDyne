@@ -32,7 +32,7 @@ package WebDyne::Install::Apache;
 #
 sub BEGIN	{ $^W=0 };
 use strict	qw(vars);
-use vars	qw($VERSION $REVISION);
+use vars	qw($VERSION);
 use warnings;
 no  warnings	qw(uninitialized);
 

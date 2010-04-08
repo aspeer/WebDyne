@@ -35,7 +35,7 @@ use strict qw(vars);
 
 #  Vars to use
 #
-use vars qw($VERSION $REVISION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
+use vars qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
 
 
 #  External Modules

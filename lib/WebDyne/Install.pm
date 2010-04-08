@@ -33,7 +33,7 @@ package WebDyne::Install;
 #
 sub BEGIN	{ $^W=0 };
 use strict	qw(vars);
-use vars	qw($VERSION $REVISION @EXPORT_OK @ISA);
+use vars	qw($VERSION @EXPORT_OK @ISA);
 use warnings;
 no  warnings	qw(uninitialized);
 

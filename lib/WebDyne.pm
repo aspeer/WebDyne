@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.017';
+$VERSION='1.018';
 
 
 #  Debug load
@@ -3208,7 +3208,7 @@ Perl modules such as mod_perl and FastCGI to provide fast dynamic content.
 
 =head1 Documentation
 
-A full man page with usage and exampled is installed with the WebDyne module. Further information is available from the
+A full man page with usage and examples is installed with the WebDyne module. Further information is available from the
 WebDyne web page, http://webdyne.org/ with a snapshot of current documentation in PDF format available in the module
 source /doc directory.
 
