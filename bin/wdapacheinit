@@ -20,7 +20,7 @@ use Pod::Usage;
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='1.013';
+$VERSION='1.014';
 
 
 #  Get command line options, add them to environment so picked up

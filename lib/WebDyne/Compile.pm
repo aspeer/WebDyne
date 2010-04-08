@@ -59,7 +59,7 @@ use WebDyne::Base;
 
 #  Version information
 #
-$VERSION='1.016';
+$VERSION='1.017';
 
 
 #  Debug load

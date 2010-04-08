@@ -3209,7 +3209,7 @@ Perl modules such as mod_perl and FastCGI to provide fast dynamic content.
 =head1 Documentation
 
 A full man page with usage and exampled is installed with the WebDyne module. Further information is available from the
-WebDyne web page, httpd://webdyne.org/ with a snapshot of current documentation in PDF dormat available in the module
+WebDyne web page, http://webdyne.org/ with a snapshot of current documentation in PDF format available in the module
 source /doc directory.
 
 =head1 Copyright and License
@@ -3224,7 +3224,7 @@ Perl Artistic License[4]
 
 =head1 Author
 
-Current maintainer: Andrew Speer, andrew.speer@webdyne.org
+Andrew Speer, andrew.speer@webdyne.org
 
 =head1 Bugs
 

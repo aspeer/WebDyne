@@ -34,7 +34,7 @@ use Pod::Usage;
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='1.015';
+$VERSION='1.017';
 
 
 #  Run main
