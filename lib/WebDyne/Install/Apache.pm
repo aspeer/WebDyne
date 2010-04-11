@@ -1,10 +1,11 @@
 #
-#  Copyright (c) 2003 Andrew W. Speer <andrew.speer@isolutions.com.au>. All rights
-#  reserved.
 #
-#  This file is part of WebDyne::Install.
+#  Copyright (C) 2006-2010 Andrew Speer <andrew@webdyne.org>.
+#  All rights reserved.
 #
-#  WebDyne::Install is free software; you can redistribute it and/or modify
+#  This file is part of WebDyne.
+#
+#  WebDyne is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
@@ -18,12 +19,6 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-#
-#  $Id: WebDyne_Install_Apache.pm,v 1.4 2008/04/27 15:40:42 aspeer Exp $
-
-
-
-#  WebDyne Apache Install module
 #
 package WebDyne::Install::Apache;
 
@@ -63,7 +58,7 @@ use WebDyne::Install::Apache::Constant;
 
 #  Version information
 #
-$VERSION='1.011';
+$VERSION='1.012';
 
 
 #  Debug

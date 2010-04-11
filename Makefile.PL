@@ -85,12 +85,12 @@ my %makefile=(
 
     'macro'				    =>  {
 
-        COPYRIGHT			    =>  'Copyright (c) 2003 Andrew Speer, All rights reserved',
+        COPYRIGHT			    =>  'Copyright (C) 2006-2010 Andrew Speer, All rights reserved',
 	LICENSE				    =>  'GPL: GNU General Public License',
 
        },
 
-    AUTHOR				    => 'Andrew Speer <andrew.speer@isolutions.com.au>'
+    AUTHOR				    => 'Andrew Speer <andrew@webdyne.org>'
 
    );
 

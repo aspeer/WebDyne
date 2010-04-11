@@ -1,7 +1,7 @@
 #
 #
-#  Copyright (c) 2003 Andrew W. Speer <andrew.speer@isolutions.com.au>. All rights
-#  reserved.
+#  Copyright (C) 2006-2010 Andrew Speer <andrew@webdyne.org>.
+#  All rights reserved.
 #
 #  This file is part of WebDyne.
 #
@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.018';
+$VERSION='1.019';
 
 
 #  Debug load
@@ -3214,17 +3214,17 @@ source /doc directory.
 
 =head1 Copyright and License
 
-WebDyne is Copyright (C) Andrew Speer 2005-2010. Webdyne is dual licensed. It is released as free software released
-under the Gnu Public License (GPL)[2], but is also available for commercial use under a proprietary license - please
+WebDyne is Copyright (C) 2006-2010 Andrew Speer. Webdyne is dual licensed. It is released as free software released
+under the Gnu Public License (GPL), but is also available for commercial use under a proprietary license - please
 contact the author for further information.
 
-WebDyne is written in Perl and uses modules from CPAN[3] (the Comprehensive Perl Archive Network). CPAN modules are
+WebDyne is written in Perl and uses modules from CPAN (the Comprehensive Perl Archive Network). CPAN modules are
 Copyright (C) the owner/author, and are available in source from CPAN directly. All CPAN modules used are covered by the
-Perl Artistic License[4]
+Perl Artistic License.
 
 =head1 Author
 
-Andrew Speer, andrew.speer@webdyne.org
+Andrew Speer, andrew@webdyne.org
 
 =head1 Bugs
 

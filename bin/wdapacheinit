@@ -200,3 +200,12 @@ information using common defaults - however if it can not discover the
 required information automatically (e.g. the path to the Apache binary)
 it will be necessary to specify it explicitly using the appropriate
 command line option.
+
+=head1 Author
+
+Written by Andrew Speer, andrew@webdyne.org
+
+=head1 Copying
+
+Copyright (C) 2009-2010 Andrew Speer. Free use of this software is
+granted under the terms of the GNU General Public License (GPL)

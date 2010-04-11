@@ -424,9 +424,9 @@ B<wdrender> B<test.psp>
 
 =head1 Author
 
-Written by Andrew Speer, andrew.speer@webdyne.org
+Written by Andrew Speer, andrew@webdyne.org
 
 =head1 Copying
 
-Copyright (C) 2009 Andrew Speer. Free use of this software is granted
-under the terms of the GNU General Public License (GPL)
+Copyright (C) 2009-2010 Andrew Speer. Free use of this software is
+granted under the terms of the GNU General Public License (GPL)
