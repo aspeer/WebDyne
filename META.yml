@@ -1,8 +1,8 @@
 --- #YAML:1.0
 name:                WebDyne
-version:             1.192
+version:             1.193
 abstract:            ~
-license:             ~
+license:             gpl
 author:              
     - Andrew Speer <andrew@webdyne.org>
 generated_by:        ExtUtils::MakeMaker version 6.42
