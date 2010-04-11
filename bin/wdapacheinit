@@ -18,9 +18,9 @@ use Getopt::Long;
 use Pod::Usage;
 
 
-#  Version Info, must be all one line for MakeMaker, CPAN.
+#  Version info
 #
-$VERSION='1.014';
+$VERSION='1.015';
 
 
 #  Get command line options, add them to environment so picked up

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               WebDyne
-version:            1.194
+version:            1.195
 abstract:           ~
 author:
     - Andrew Speer <andrew@webdyne.org>
