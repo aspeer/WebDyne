@@ -1,22 +1,33 @@
 --- #YAML:1.0
-name:                WebDyne
-version:             1.193
-abstract:            ~
-license:             gpl
-author:              
+name:               WebDyne
+version:            1.194
+abstract:           ~
+author:
     - Andrew Speer <andrew@webdyne.org>
-generated_by:        ExtUtils::MakeMaker version 6.42
-distribution_type:   module
-requires:     
-    CGI:                           
-    Digest::MD5:                   
-    Env::Path:                     
-    HTML::Tagset:                  
-    HTML::TreeBuilder:             
-    HTTP::Status:                  
-    Storable:                      
-    Text::Template:                
-    Tie::IxHash:                   
+license:            gpl
+distribution_type:  module
+configure_requires:
+    ExtUtils::MakeMaker:  0
+build_requires:
+    ExtUtils::MakeMaker:  0
+requires:
+    CGI:                ~
+    Digest::MD5:        ~
+    Env::Path:          ~
+    HTML::Tagset:       ~
+    HTML::TreeBuilder:  ~
+    HTTP::Status:       ~
+    Storable:           ~
+    Text::Template:     ~
+    Tie::IxHash:        ~
+resources:
+    homepage:  http://webdyne.org
+    license:   http://www.gnu.org/licenses/gpl.html
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.50
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
-    version: 1.3
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4
