@@ -132,8 +132,7 @@ my $debug=$ENV{'WEBDYNE_DEBUG'} ? 1 : 0;
 
 #  Get ExtUtils::MakeMaker version. see if it supports PM_FILTER. From SpamAssassin Makefile.PL
 #
-my $mm_version=$ExtUtils::MakeMaker::VERSION;
-my $mm_has_pm_filter=$mm_version >  5.45 || ($mm_version == 5.45 && $] > 5.006);
+my $mm_has_pm_filter=$mm_ver >  5.45 || ($mm_ver == 5.45 && $] > 5.006);
 
 
 #  Install if supported

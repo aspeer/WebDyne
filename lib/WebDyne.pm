@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.019';
+$VERSION='1.020';
 
 
 #  Debug load
@@ -408,6 +408,10 @@ sub handler : method {
 	    bless $self, $handler;
 	    #  Force recalc of inode in next handler so recompile done
 	    delete $self->{'_inode'};
+	    #  Add meta-data. Something inefficient here, why supplying as handler param and
+	    #  self attrib ? If don't do it Fake/FastCGI request handler breaks but Apache does
+	    #  not ?
+	    $self->{'_meta_hr'}=$meta_hr;
 	    return &{"${handler}::handler"}($self, $r, \%handler_param_hr);
 	}
     }
