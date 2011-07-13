@@ -46,17 +46,17 @@ my %makefile=(
 
     PREREQ_PM				    =>	do { $prereq_hr={
 
-	'CGI'				    =>  undef,
-	'Digest::MD5'			    =>  undef,
-	'HTTP::Status'			    =>  undef,
-	'HTML::Tagset'			    =>  undef,
-	'HTML::TreeBuilder'                 =>  undef,
-	'Storable'			    =>  undef,
-	'Tie::IxHash'			    =>  undef,
+	'CGI'				    =>  0,
+	'Digest::MD5'			    =>  0,
+	'HTTP::Status'			    =>  0,
+	'HTML::Tagset'			    =>  0,
+	'HTML::TreeBuilder'                 =>  0,
+	'Storable'			    =>  0,
+	'Tie::IxHash'			    =>  0,
 
         #  Needed for installer - can be ignored if not using installer
-        'Text::Template'                    =>  undef,
-        'Env::Path'                         =>  undef,
+        'Text::Template'                    =>  0,
+        'Env::Path'                         =>  0,
 
        }; ($ENV{'PREREQ_PM'} eq '0') ? {} : $prereq_hr },
 

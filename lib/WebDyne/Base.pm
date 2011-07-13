@@ -50,7 +50,7 @@ require Exporter;
 
 #  Version information
 #
-$VERSION='1.013';
+$VERSION='1.014';
 
 
 #  Var to hold package wide hash, for data shared across package, and error stack
@@ -150,10 +150,15 @@ sub import {
 	    local $|=1;
 	    my $method=(caller(1))[3] || 'main';
 	    (my $subroutine=$method)=~s/^.*:://;
-	    if ($ENV{'WEBDYNE_DEBUG'} && (($caller eq $ENV{'WEBDYNE_DEBUG'}) || ($method eq $ENV{'WEBDYNE_DEBUG'}))) {
-		CORE::print $debug_fh "[$subroutine] ", sprintf(shift(), @_), $/;
+	    if ($ENV{'WEBDYNE_DEBUG'} && ($ENV{'WEBDYNE_DEBUG'} ne '1')) {
+		my @debug_target=split(/[,;:]/, $ENV{'WEBDYNE_DEBUG'});
+		foreach my $debug_target(@debug_target) {
+		    if (($caller eq $debug_target) || ($method=~/\Q$debug_target\E$/)) {
+			CORE::print $debug_fh "[$subroutine] ", sprintf(shift(), @_), $/;
+		    }
+		}
 	    }
-	    elsif (!$ENV{'WEBDYNE_DEBUG'} || ($ENV{'WEBDYNE_DEBUG'} eq '1')) {
+	    else {
 		CORE::print $debug_fh "[$subroutine] ", sprintf(shift(), @_), $/;
 	    }
 	} unless UNIVERSAL::can($caller, 'debug');

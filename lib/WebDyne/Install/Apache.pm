@@ -58,7 +58,7 @@ use WebDyne::Install::Apache::Constant;
 
 #  Version information
 #
-$VERSION='1.012';
+$VERSION='1.013';
 
 
 #  Debug
@@ -98,7 +98,7 @@ sub install {
 
     #  Get class, other paths
     #
-    my ($class, $prefix, $installbin)=@_;
+    my ($class, $prefix, $installbin, $option_hr)=@_;
 
 
     #  Run the base install/uninstall routine to create the cache dir
@@ -393,14 +393,61 @@ sub install {
 		#  Selinx fixup
 		#
 		if ($SELINUX_ENABLED_BIN) {
+		    
+
+		    #  Run to see if SELinux enabled
+		    #
 		    if ((system($SELINUX_ENABLED_BIN)>>8)==0) {
+
 			#  SELinux is enabled. chcon first
 			#
+			message("SELinux appears enabled - attempting to set cache directory file contexts appropriately.");
 			if (my $chcon_bin=$SELINUX_CHCON_BIN) {
-			    message("Adding SELinux context '$SELINUX_CONTEXT' to cache directory '$cache_dn' via chcon");
-			    if (my $rc=system($chcon_bin, '-R', '-t', $SELINUX_CONTEXT, $cache_dn)>>8) {
-				message("WARNING: SELinux chcon of $cache_dn to $SELINUX_CONTEXT failed with error code $rc\n")
+
+			    message("Adding SELinux context '$SELINUX_CONTEXT_HTTPD' to cache directory '$cache_dn' via chcon");
+			    if (my $rc=system($chcon_bin, '-R', '-t', $SELINUX_CONTEXT_HTTPD, $cache_dn)>>8) {
+				message("WARNING: SELinux chcon of $cache_dn to $SELINUX_CONTEXT_HTTPD failed with error code $rc\n")
 			    }
+
+
+			    #  Dynaloader files
+			    #
+			    my @module_so_fn;
+			    while (my ($module_so, $module_so_fn)=each %{$SELINUX_SO_CHECK}) {
+			      if (eval("require $module_so")) {
+                                foreach my $symbol (keys %::) {
+                                  if ($symbol=~/^_<(.*)\/\Q$module_so_fn\E$/) {
+                                    push @module_so_fn, File::Spec->catfile($1,$module_so_fn);
+                                  }
+                                }
+                              }
+                            }
+
+                            foreach my $module_so_fn (@module_so_fn) {
+
+                                my $context_ls=qx/ls -lZ $module_so_fn/ ||
+                                  message("WARNING: unable to get context of file $module_so_fn");
+                                my @context_ls=split(/\s+/,$context_ls);
+                                my $context=$context_ls[3];
+                                my ($user,$role,$type)=split(/\:/,$context);
+                                if (($type ne $SELINUX_CONTEXT_LIB) && !$option_hr->{'setcontext'}) {
+                                  message;
+                                  message("WARNING: SELinux context type of '$module_so_fn' is '$type'");
+                                  message("WARNING: file may not be loadable by Apache ! Use $installbin --setcontext to change or fix manually");
+                                  message;
+                                }
+                                elsif (($type ne $SELINUX_CONTEXT_LIB) && $option_hr->{'setcontext'}) {
+
+                                  message("Adding SELinux context '$SELINUX_CONTEXT_LIB' to module library '$module_so_fn' via chcon");
+
+                                  if (my $rc=system($chcon_bin, '-t', $SELINUX_CONTEXT_LIB, $module_so_fn)>>8) {
+                                      message("WARNING: SELinux chcon of '$module_so_fn' to '$SELINUX_CONTEXT_LIB' failed with error code $rc\n")
+                                  }
+                                  
+                                }
+
+                            }
+
     			}
 			else {
 			    message('WARNING: SELinux appears enabled, but the \'chcon\' command was not found - '.
@@ -413,14 +460,14 @@ sub install {
 
 			    #  List
 			    #
-			    my $selist=qx/$SELINUX_SEMANAGE_BIN fcontext -C -l -n/;
+			    my $selist=qx/$SELINUX_SEMANAGE_BIN fcontext -l -n/;
 			    unless ($selist=~/^\Q$cache_dn\E/m) {
 
 				#  Context not added yet
 				#
-				message("Adding SELinux context '$SELINUX_CONTEXT' to cache directory '$cache_dn' via semanage");
-				if (my $rc=system($semanage_bin, 'fcontext', '-a', '-t', $SELINUX_CONTEXT, "${cache_dn}(/.*)?")>>8) {
-				    message("WARNING: SELinux semanage of $cache_dn to $SELINUX_CONTEXT failed with error code $rc\n")
+				message("Adding SELinux context '$SELINUX_CONTEXT_HTTPD' to cache directory '$cache_dn' via semanage");
+				if (my $rc=system($semanage_bin, 'fcontext', '-a', '-t', $SELINUX_CONTEXT_HTTPD, "${cache_dn}(/.*)?")>>8) {
+				    message("WARNING: SELinux semanage of $cache_dn to $SELINUX_CONTEXT_HTTPD failed with error code $rc\n")
 				}
 			    }
 			}

@@ -65,7 +65,7 @@ my  $ServerRoot;
 
 #  Version information
 #
-$VERSION='1.016';
+$VERSION='1.017';
 
 
 #------------------------------------------------------------------------------
@@ -155,10 +155,27 @@ my $mp2_installed=&mp2_installed();
 
     #  SELinux context for cache directory
     #
-    SELINUX_CONTEXT			  =>  'httpd_sys_content_t',
+    SELINUX_CONTEXT_HTTPD		  =>  'httpd_sys_content_t',
+    SELINUX_CONTEXT_LIB			  =>  'lib_t',
     SELINUX_ENABLED_BIN			  =>  &find_bin('selinuxenabled'),
     SELINUX_CHCON_BIN			  =>  &find_bin('chcon'),
     SELINUX_SEMANAGE_BIN		  =>  &find_bin('semanage'),
+    
+    
+    #  Perl shared lib files that need to be checked for SELinux context
+    #
+    SELINUX_SO_CHECK			  =>  {
+    
+      IO		=>	'IO/IO.so',
+      'Digest::MD5'	=>	'Digest/MD5/MD5.so',
+      Fcntl		=>	'Fcntl/Fcntl.so',
+      'Time::HiRes'	=>	'Time/HiRes/HiRes.so',
+      Storable		=>	'Storable/Storable.so',
+      'File::Glob'	=>	'File/Glob/Glob.so',
+      Opcode		=>	'Opcode/Opcode.so',
+      'Data::Dumper'	=>	'Dumper/Dumper.so'
+      
+    },
 
 
     #  Server config

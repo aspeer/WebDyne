@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.020';
+$VERSION='1.021';
 
 
 #  Debug load
@@ -2459,7 +2459,7 @@ sub include {
 
     #  Debug
     #
-    debug('in include, param %s', Dumper($param_hr));
+    debug('in include, param %s, %s', Dumper($param_hr, $param_data_hr));
 
 
     #  Get CWD
@@ -2602,7 +2602,7 @@ sub include {
         #  child of results [WEBDYNE_NODE_CHLD_IX].
         #
         debug('calling render');
-        return $self->render({ data=>$block_ar->[$WEBDYNE_NODE_CHLD_IX], param=>$param_hr->{'param'} }) || err();
+        return $self->render({ data=>$block_ar->[$WEBDYNE_NODE_CHLD_IX], param=>($param_hr->{'param'} || $param_data_hr) }) || err();
 
     }
     else {

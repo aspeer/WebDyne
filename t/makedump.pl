@@ -8,7 +8,8 @@ use vars qw($VERSION);
 use FindBin qw($RealBin $Script);
 #use Cwd qw(realpath);
 #use lib $RealBin;
-use perl5lib;
+#use perl5lib;
+require 'perl5lib.pl';
 
 use WebDyne::Request::Fake;
 use WebDyne;
