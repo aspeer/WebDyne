@@ -4,7 +4,6 @@ INSTALL
 ChangeLog
 Makefile.PL
 lib/WebDyne.pm
-lib/WebDyne/VERSION.pm
 lib/WebDyne/Compile.pm
 lib/WebDyne/Constant.pm
 lib/WebDyne/Cache.pm
