@@ -38,7 +38,7 @@ use HTTP::Status (RC_OK);
 
 #  Version information
 #
-$VERSION='1.008';
+$VERSION='1.009';
 
 
 #  Debug load
@@ -72,8 +72,19 @@ sub filename {
 
 sub headers_out {
 
-    my $r=shift();
-    $r->{'headers_out'} ||= { 'Content-Type'=>'text/html' };
+    my ($r,$k,$v)=@_;
+    if (@_==3) {
+	return $r->{'headers_out'}{$k}=$v
+    }
+    elsif (@_==2) {
+	return $r->{'headers_out'}{$k}
+    }
+    elsif (@_==1) {
+	return ($r->{'headers_out'} ||= {});
+    }
+    else {
+	return err('incorrect usage of %s headers_out object, r->headers_out(%s)', +__PACKAGE__, join(',', @_[1..$#_]));
+    }
 
 }
 
@@ -96,7 +107,8 @@ sub is_main {
 
 sub log_error {
 
-    shift(); warn(@_);
+    my $r=shift();
+    warn(@_) unless $r->notes('nowarn');
 
 }
 
@@ -220,11 +232,62 @@ sub output_filters {
     #  Stub
 }
 
+
+sub location {
+
+    #  Stub
+}
+
+
+sub header_only {
+
+    #  Stub
+}
+
+
+sub set_handlers {
+
+    #  Stub
+}
+
+
+sub send_http_header {
+
+    my $r=shift();
+    return if $r->notes('noheader');
+    CORE::printf("Status: %s\n", $r->status());
+    while(my($header, $value)=each(%{$r->{'header'}})) {
+        CORE::print("$header: $value\n");
+    }
+    CORE::print "\n";
+
+}
+
+
+sub content_type {
+
+    my ($r, $content_type)=@_;
+    $r->{'header'}{'Content-Type'}=$content_type;
+    #CORE::print("Content-Type: $content_type\n");
+    
+}
+
+
+sub custom_response {
+
+    my ($r, $status)=(shift, shift);
+    $r->status($status);
+    $r->send_http_header();
+    $r->print(@_);
+    
+}
+
+
 sub AUTOLOAD {
 
     my ($r,$v)=@_;
     my $k=($AUTOLOAD=~/([^:]+)$/) && $1;
-    #warn(sprintf("Unhandled '%s' method, using AUTOLOAD", $k)); 
+    warn(sprintf("Unhandled '%s' method, using AUTOLOAD", $k )); 
     $v ? $r->{$k}=$v : $r->{$k};
 
 

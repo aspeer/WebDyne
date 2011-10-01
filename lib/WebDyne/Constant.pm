@@ -40,7 +40,7 @@ require Opcode;
 
 #  Version information
 #
-$VERSION='1.016';
+$VERSION='1.017';
 
 
 #  Get mod_perl version. Clear $@ after evals
@@ -51,13 +51,6 @@ eval { require mod_perl  if  $ENV{'MOD_PERL'} };
 eval { undef } if $@;
 my $Mod_perl_version=$mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION};
 my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
-
-
-#  Name of file where install PREFIX info is stored
-#
-#my $prefix_fn=File::Spec->catfile(
-#  (File::Spec->splitpath(__FILE__))[1], 'Prefix.pm');
-#my $prefix=$ENV{'PAR_TEMP'} ? File::Spec->catfile($ENV{'PAR_TEMP'}, 'inc') : do($prefix_fn);
 
 
 #  Hash of constants
@@ -73,7 +66,15 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     WEBDYNE_NODE_CHLD_IX			=>	2,
     WEBDYNE_NODE_SBST_IX			=>	3,
     WEBDYNE_NODE_LINE_IX			=>	4,
+    WEBDYNE_NODE_LINE_TAG_END_IX		=>	5,
+    WEBDYNE_NODE_SRCE_IX			=>	6,
 
+
+    #  Container structure
+    #
+    WEBDYNE_CONTAINER_META_IX			=> 	0,
+    WEBDYNE_CONTAINER_DATA_IX			=> 	1,
+    
 
     #  Where compiled scripts are stored. Scripts are stored in
     #  here with a the inode of the source file as the cache
@@ -124,9 +125,10 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     #  be able to use all perl opcodes. Ignored if using direct eval
     #
     #WEBDYNE_EVAL_SAFE_OPCODE_AR		=>	[&Opcode::full_opset()],
+    #WEBDYNE_EVAL_SAFE_OPCODE_AR			=>	[&Opcode::opset(':default')],
     WEBDYNE_EVAL_SAFE_OPCODE_AR			=>	[':default'],
-
-
+    
+    
     #  Use strict var checking, eg will check that a when ${varname} param
     #  exists with a HTML page that the calling perl code (a) supplies a
     #  "varname" hash parm, and (b) that param is not undef
@@ -213,7 +215,7 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
 
     #  Render blocks outside of perl code
     #
-    WEBDYNE_DELAYED_BLOCK_RENDER		=>	1,
+    #WEBDYNE_DELAYED_BLOCK_RENDER		=>	1,
 
 
     #  Are warnings fatal ?
@@ -227,10 +229,6 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     WEBDYNE_CGI_POST_MAX			=>	(512 * 1024), #512Kb
 
 
-    #  Install prefix info
-    #
-    #WEBDYNE_PREFIX				=>      $prefix,
-    
     #  Error handling. Use text errors rather than HTML ?
     #
     WEBDYNE_ERROR_TEXT				=>	0,
@@ -246,11 +244,30 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     #  Max length of source line to show in ouput. 0 for unlimited.
     WEBDYNE_ERROR_SOURCE_CONTEXT_LINE_FRAGMENT_MAX=>	80,
     #  Show filename (including full filesystem path)
-    WEBDYNE_ERROR_FILENAME_SHOW			=>	1,
+    WEBDYNE_ERROR_SOURCE_FILENAME_SHOW		=>	1,
     #  Show backtrace, show full or brief backtrace
     WEBDYNE_ERROR_BACKTRACE_SHOW		=>	1,
     WEBDYNE_ERROR_BACKTRACE_SHORT		=>	0,
-
+    #  Show eval trace. Uses SOURCE_CONTEXT_LINES to determine number of lines to show
+    WEBDYNE_ERROR_EVAL_CONTEXT_SHOW		=>	1,
+    #  URI and version
+    #
+    WEBDYNE_ERROR_URI_SHOW			=>	1,
+    WEBDYNE_ERROR_VERSION_SHOW			=>	1,
+    
+    
+    #  Internal indexes for error eval handler array
+    #
+    WEBDYNE_ERROR_EVAL_TEXT_IX			=>	0,
+    WEBDYNE_ERROR_EVAL_EMBEDDED_IX		=>	1,
+    WEBDYNE_ERROR_EVAL_LINE_NO_IX		=>	2,
+    
+    
+    #  Alternate error message if WEBDYNE_ERROR_SHOW disabled
+    #
+    WEBDYNE_ERROR_SHOW_ALTERNATE		=>
+        'error display disabled - enable WEBDYNE_ERROR_DISPLAY to show errors, or review web server error log.',
+    
 
     #  Mod_perl level. Do not change unless you know what you are
     #  doing.

@@ -54,7 +54,7 @@ use IO::File;
 
 #  Version information
 #
-$VERSION='1.013';
+$VERSION='1.014';
 
 
 #  Debug load
@@ -127,7 +127,7 @@ push @HTML::TreeBuilder::p_closure_barriers,  keys %CGI_TAG_WEBDYNE;
 
 #  Local vars neeeded for cross sub comms
 #
-our ($Text_fg, $Line_no, $Line_no_next, $HTML_Perl_or, @HTML_Wedge);
+our ($Text_fg, $Line_no, $Line_no_next, $Line_no_start, $HTML_Perl_or, @HTML_Wedge);
 
 
 #  All done. Positive return
@@ -154,6 +154,7 @@ sub parse_fh {
     $HTML_Perl_or && ($HTML_Perl_or=$HTML_Perl_or->delete());
     undef $Text_fg;
     undef $Line_no;
+    undef $Line_no_start;
     undef $Line_no_next;
     undef @HTML_Wedge;
 
@@ -171,7 +172,7 @@ sub parse_fh {
             my @cr=($line=~/\n/g);
             $Line_no=$Line_no_next || 1;
             $Line_no_next=$Line_no+@cr;
-            debug("Line $Line_no, Line_no_next $Line_no_next, cr %s", scalar @cr);
+            debug("Line $Line_no, Line_no_next $Line_no_next, Line_no_start $Line_no_start cr %s", scalar @cr);
         }
         return $html;
 
@@ -199,6 +200,7 @@ sub delete {
     undef $Text_fg;
     undef $Line_no;
     undef $Line_no_next;
+    undef $Line_no_start;
     undef @HTML_Wedge;
     
 
@@ -225,7 +227,7 @@ sub tag_parse {
 
     #  Debug
     #
-    debug("tag_parse $method, $tag");
+    debug("tag_parse $method, $tag, line $Line_no, line_no_start $Line_no_start");
 
 
     #  Get the parent tag
@@ -352,7 +354,8 @@ sub tag_parse {
 
     #  Insert line number if possible
     #
-    ref($html_or) && ($html_or->{'_line_nmbr'}=$Line_no);
+    debug("insert line_no $Line_no, line_no_start $Line_no_start into object ref $html_or");
+    ref($html_or) && (@{$html_or}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no));
 
 
     #  Returm object ref
@@ -448,7 +451,8 @@ sub process {
     my ($self, $text)=@_;
     debug("process $text");
     my $or=HTML::Element->new('perl', inline=>1, perl=>$text);
-    $or->{'_line_nmbr'}=$Line_no;
+    debug("insert line_no $Line_no into object ref $or");
+    @{$or}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no);
     $self->tag_parse('SUPER::text', $or )
 
 }
@@ -461,14 +465,19 @@ sub start {
     #  as text
     #
     my ($self,$tag)=(shift, shift);
+    my $text=$_[2];
     ref($tag) || ($tag=lc($tag));
-    debug("start $tag");
+    debug("start $tag Line_no $Line_no, @_, %s", Data::Dumper::Dumper(\@_));
     my $html_or;
     if ($Text_fg)  {
-	$html_or=$self->text($_[2])
+	$html_or=$self->text($text)
     }
     else {
-	$html_or=$self->tag_parse('SUPER::start', $tag, @_)
+        my @cr=($text=~/\n/g);
+        $Line_no_start=$Line_no - @cr;
+        debug("tag $tag line_no $Line_no, line_no_start $Line_no_start");
+	$html_or=$self->tag_parse('SUPER::start', $tag, @_);
+
     };
     $html_or;
 
@@ -483,7 +492,7 @@ sub end {
     #
     my ($self, $tag)=(shift, shift);
     ref($tag) || ($tag=lc($tag));
-    debug("end $tag, text_fg $Text_fg");
+    debug("end $tag, text_fg $Text_fg, line $Line_no");
     my $html_or;
     if($Text_fg && ($tag eq $Text_fg)) {
 	$Text_fg=undef;
@@ -524,7 +533,7 @@ sub text {
 	#
         debug('in __PERL__ tag, appending text to __PERL__ block');
         #  Strip leading CR from Perl code so line numbers in errors make sense
-        unless ($HTML_Perl_or->{'perl'}) { $text=~s/^\n// }
+        #unless ($HTML_Perl_or->{'perl'}) { $text=~s/^\n// }
 	$HTML_Perl_or->{'perl'}.=$text;
 
 
@@ -548,7 +557,8 @@ sub text {
 	$Text_fg='perl';
 	$self->implicit(0);
 	$self->push_content($HTML_Perl_or=HTML::Element->new('perl', inline=>1));
-	$HTML_Perl_or->{'_line_nmbr'}=$Line_no;
+        debug("insert line_no $Line_no into object ref $HTML_Perl_or");
+	@{$HTML_Perl_or}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no);
 	$HTML_Perl_or->{'_code'}++;
 
     }
@@ -556,22 +566,27 @@ sub text {
 
 	#  Normal text, process by parent class after handling any subst flags in code
  	#
-	if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/gs) {
+	#if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/gs) {
+	if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/s) {
 
 	    #  Meeds subst. Get rid of cr's at start and end of text after a <perl> tag, stuffs up formatting in <pre> sections
 	    #
-	    debug('found subst tag');
+	    debug("found subst tag line_no_start $Line_no_start, line_no $Line_no, text '$text'");
+	    my @cr=($text=~/\n/g);
 	    if (my $html_or=$self->{'_pos'}) {
 		debug("parent %s", $html_or->tag());
 		if (($html_or->tag() eq 'perl') && !$html_or->attr('inline')) {
 		    debug('hit !');
-		    $text=~s/^\n//;
-		    $text=~s/\n$//;
+		    #$text=~s/^\n//;
+		    #$text=~s/\n$//;
 		}
 	    }
 
 	    my $or=HTML::Element->new('subst');
-	    $or->{'_line_nmbr'}=$Line_no;
+	    #$or->{'_line_no'}=$Line_no_start;
+	    $Line_no_start=$Line_no - scalar @cr;
+            debug("insert line_no $Line_no_start, line_no_tag_end $Line_no into object ref $or for text $text, cr %s", scalar @cr);
+            @{$or}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no);
 	    $or->push_content($text);
 	    $self->tag_parse('SUPER::text', $or )
         }
@@ -598,7 +613,8 @@ sub comment {
 
     debug('comment');
     my $self=shift()->SUPER::comment(@_);
-    $self->{'_line_nmbr'}=$Line_no;
+    debug("insert line_no $Line_no into object ref $self");
+    @{$self}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no);
     $self;
 
 }

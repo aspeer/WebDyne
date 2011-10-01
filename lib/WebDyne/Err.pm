@@ -44,7 +44,7 @@ use File::Spec;
 
 #  Version information
 #
-$VERSION='1.016';
+$VERSION='1.017';
 
 
 #  Debug
@@ -83,7 +83,9 @@ sub err_html {
     #  Get errstr from stack if not supplied, or add if it
     #  has been
     #
-    $errstr ? err($errstr) : ($errstr=errstr() || do {err($_='undefined error from handler'); $_});
+    if ($errstr) {err($errstr)}
+    else { $errstr=errstr() || do {err($_='undefined error from handler'); $_} }
+    #$errstr ? err($errstr) : ($errstr=errstr() || do {err($_='undefined error from handler'); $_});
     debug("final errstr $errstr");
     
     
@@ -116,11 +118,6 @@ sub err_html {
     debug("cgi_or $cgi_or");
     
     
-    #  Try to get current line no. from HTML data object
-    #
-    my $html_line_no=$self->{'_html_line_no'};
-
-
     #  Log the error
     #
     $r->log_error($errstr);
@@ -162,7 +159,7 @@ sub err_html {
 	my $err_text=errdump({
 
 	    'URI'  =>	$r->uri(),
-            'Line' =>   $html_line_no,
+            'Line' =>   scalar $self->data_ar_html_line_no(),
 
 	   });
 
@@ -183,7 +180,9 @@ sub err_html {
     else {
 
 
-	#  Get error paramaters, must make copy of stack, it will be erased.
+
+
+	#  Get error parameters, must make copy of stack, data block - they will be erased.
 	#
 	debug('using html error');
 	my @errstack=@{&errstack()};
@@ -191,7 +190,8 @@ sub err_html {
 
 	    errstr	=> $errstr,
 	    errstack_ar	=> \@errstack,
-            html_line_no=> $html_line_no,
+            erreval_ar	=> $self->{'_err_eval_ar'},
+            data_ar	=> $self->{'_data_ar'},
 	    r		=> $r
   
 	   );
@@ -225,15 +225,20 @@ sub err_html {
 	    #  Get the data portion of the container (meta info not needed) and render. Bit of cheating
 	    #  to use internal
 	    #
-	    my $data_ar=$container_ar->[1];
+	    my $data_ar=$container_ar->[$WEBDYNE_CONTAINER_DATA_IX];
+	    
+	    
+	    #  Reset render state and render error page
+	    #
+	    $self->render_reset($data_ar);
 	    my $html_sr=$self->render({
 
 		data    => $data_ar,
 		param   => \%param
 
-	       }) || return $self->err_html('fatal problem in error handler during render !');
-
-
+	    }) || return $self->err_html('fatal problem in error handler during render: %s !', errstr() || 'undefined error');
+	    
+	    
 	    #  Set custom handler
 	    #
 	    $status=$r->status();
@@ -253,13 +258,15 @@ sub err_html {
 	#
         if ($@ || !$status) {
             debug("unable to render HTML template, reverting to text");
+            err($@) if $@;
+            err('previous error stack %s', Data::Dumper::Dumper(\@errstack));
             my $webdyne_error_text_save=$WEBDYNE_ERROR_TEXT;
             $WEBDYNE_ERROR_TEXT=1;
             $status=$self->err_html($errstr);
             $WEBDYNE_ERROR_TEXT=$webdyne_error_text_save;
 
         }
-        
+           
         #  Return result
         #  
         return $status
@@ -267,4 +274,31 @@ sub err_html {
     }
 
 }
+  
+
+sub err_eval {
+    
+    #  Special handler for eval errors
+    #
+    my ($self, $message, @param)=@_;
+    
+
+    #  Last param must be array ref with paramaters
+    #
+    my $param_ar=pop @param;
+    unless (ref($param_ar) eq ARRAY) {
+        return err('err_eval called without array ref to eval error param')
+    }
+    
+    
+    #  Store away for future ref by error handler
+    #
+    $self->{'_err_eval_ar'}=$param_ar;
+    
+    
+    #  Send message off to main error handler and return
+    #
+    return &err($message, @param);
+    
+}  
 

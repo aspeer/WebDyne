@@ -103,3 +103,10 @@ Order allow,deny
 Allow from all
 Deny from none
 </Directory>
+
+
+#  Error display on/off. See WebDyne::Constant for granular options. Set to 1 to enable
+#
+<Perl>
+$WebDyne::WEBDYNE_ERROR_SHOW=0,
+</Perl>

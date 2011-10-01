@@ -50,7 +50,7 @@ require Exporter;
 
 #  Version information
 #
-$VERSION='1.014';
+$VERSION='1.015';
 
 
 #  Var to hold package wide hash, for data shared across package, and error stack
@@ -159,11 +159,10 @@ sub import {
 		}
 	    }
 	    else {
-		CORE::print $debug_fh "[$subroutine] ", sprintf(shift(), @_), $/;
+		CORE::print $debug_fh "[$subroutine] ", $_[1] ? sprintf(shift(), @_) : $_[0], $/;
 	    }
 	} unless UNIVERSAL::can($caller, 'debug');
-	*{"${caller}::Dumper"}=\&Data::Dumper::Dumper
-	    unless UNIVERSAL::can($caller, 'Dumper');
+	*{"${caller}::Dumper"}=\&Data::Dumper::Dumper unless UNIVERSAL::can($caller, 'Dumper');
 
     }
     else {
@@ -219,7 +218,7 @@ sub err {
 	$message=@Err ? $Err[$#Err]->[0] && return undef :  'undefined error';
     }
     else {
-	$message=sprintf($message, @param);
+	$message=sprintf($message, @param) if @param;
     }
 
 
@@ -232,8 +231,8 @@ sub err {
     #  Populate the caller array
     #
     for (my $i=0; my @info=(caller($i))[0..3]; $i++) {
-
-
+    
+    
 	#  Push onto the caller array
 	#
 	push @caller, \@info;
@@ -291,7 +290,7 @@ sub err {
     return $Package{'nofatal'} ? undef : die(&errdump);
 
 }
-
+    
 
 sub errstr {
 
@@ -489,9 +488,9 @@ sub errdump {
 
 sub errstack {
 
-    #  Return the raw error stack
+    #  Return or push the raw error stack
     #
-    return \@Err;
+    return @_ ? \(@Err=@{$_[1]}) : \@Err;
 
 }
 

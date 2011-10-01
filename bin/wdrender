@@ -34,7 +34,7 @@ use Pod::Usage;
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='1.017';
+$VERSION='1.018';
 
 
 #  Run main
@@ -56,18 +56,25 @@ sub main {
     #
     my %option=(
 
-	handler    => $ENV{'WebDyneHandler'} || 'WebDyne'
+	handler    => $ENV{'WebDyneHandler'} || 'WebDyne',
+	error	   => 'text',
+	header     => 0,
+	warn	   => 1,
 
        );
 
 
     #  Get command line options
     #
-    GetOptions(\%option, 'help|?', 'handler=s', 'man', 'version') ||
+    GetOptions(\%option, 'help|?', 'handler=s', 'header!', 'warn!', 'error=s', 'man', 'version') ||
 	pod2usage(2);
     pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $option{'help'};
     pod2usage(-verbose => 2) if $option{'man'};
-    $option{'version'} && do { print "$Script version: $VERSION\n"; exit 0 };
+    $option{'version'} && do { 
+      print "$Script version: $VERSION\n"; 
+      print "WebDyne version: $WebDyne::VERSION\n";
+      exit 0 
+    };
 
 
     #  Get srce file, add to options
@@ -100,7 +107,13 @@ sub main {
 
     #  Set text errors only
     #
-    $WebDyne::Err::WEBDYNE_ERROR_TEXT=1;
+    $WebDyne::Err::WEBDYNE_ERROR_TEXT=1 if ($option{'error'} eq 'text');
+    
+    
+    #  Set header, warning output
+    #
+    $r->notes('noheader', !$option{'header'});
+    $r->notes('nowarn', !$option{'warn'});
 
 
     #  Run it and display results, or any error generated
@@ -135,17 +148,32 @@ B<wdrender> B<[OPTIONS]> B<FILE>
 -h, --help
 Show brief help message.
 
+-v, --version
+Show version information.
+
 
 =over 5
 
-
 =item --handler
-
-
-
 
 Use a different WebDyne handler module. Currently the only other
 handler module available is WebDyne::Chain.
+
+=back
+
+=over 5
+
+=item --header
+
+Show HTTP status headers (default). User --noheader to disable.
+
+=back
+
+=over 5
+
+=item --error=text[|html]
+
+Show text error messages. User --error=html to HTML error message.
 
 =back
 

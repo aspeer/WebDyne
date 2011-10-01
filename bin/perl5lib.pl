@@ -179,6 +179,14 @@ sub main {
     #  Add to @INC
     #
     'lib'->import(@inc);
+    
+    
+    #  Re-order relative lib (except relative ones starting with .);
+    #
+    foreach my $inc (grep {/^.\//} @INC) {
+        lib->unimport($inc);
+        lib->import($inc);
+    }
 
 }
 

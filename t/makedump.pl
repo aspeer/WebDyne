@@ -18,9 +18,9 @@ use File::Find qw(find);
 use IO::File;
 use HTML::TreeBuilder;
 
-my @test_fn;
+my @test_fn=@ARGV;
 my $wanted_sr=sub { push (@test_fn, $File::Find::name) if /\.psp$/ };
-find($wanted_sr, $RealBin);
+find($wanted_sr, $RealBin) unless @ARGV;
 foreach my $test_fn (sort {$a cmp $b } @test_fn) {
 
 

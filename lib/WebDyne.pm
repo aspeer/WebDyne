@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.208';
+$VERSION='1.209';
 
 
 #  Debug load
@@ -75,6 +75,7 @@ debug("%s loaded, version $VERSION", __PACKAGE__);
 #
 require WebDyne::Err;
 *err_html=\&WebDyne::Err::err_html || *err_html;
+*err_eval=\&WebDyne::Err::err_eval || *err_eval;
 
 
 #  Our webdyne "special" tags
@@ -336,7 +337,7 @@ sub handler : method {
 	    #  Load from storeable file
 	    #
 	    $container_ar=Storable::lock_retrieve($cache_pn) ||
-		retuern $self->err_html("Storable error when retreiveing cached file '$cache_pn', $!");
+		return $self->err_html("Storable error when retreiveing cached file '$cache_pn', $!");
 
 
 	    #  Update mtime flag
@@ -348,7 +349,9 @@ sub handler : method {
 	    #
 	    if (my $meta_hr=$container_ar->[0]) {
 		if (my $perl_ar=$meta_hr->{'perl'}) {
-		    $self->perl_init($perl_ar) || return $self->err_html();
+		    my $perl_debug_ar=$meta_hr->{'perl_debug'} ||
+		      return err('unable to load perl_debug array reference');
+		    $self->perl_init($perl_ar, $perl_debug_ar) || return $self->err_html();
 		}
 	    }
 	}
@@ -580,7 +583,8 @@ sub handler : method {
     #  Check for any blocks that user wanted rendered but were
     #  not present anywhere
     #
-    if ($WEBDYNE_DELAYED_BLOCK_RENDER && (my $block_param_hr=delete $self->{'_block_param'})) {
+    #if ($WEBDYNE_DELAYED_BLOCK_RENDER && (my $block_param_hr=delete $self->{'_block_param'})) {
+    if (my $block_param_hr=delete $self->{'_block_param'}) {
  	my @block_error;
  	foreach my $block_name (keys %{$block_param_hr}) {
  	    unless (exists $self->{'_block_render'}{$block_name}) {
@@ -706,6 +710,26 @@ sub handler : method {
 
 
 }
+
+
+sub eval_cr {
+
+
+   #  Return eval subroutine ref for inode ($_[0]) and eval code ref ($_[1]). Avoid using
+   #  var names so not available in eval code
+   #
+   eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT; sub{${$_[1]}}");
+   
+
+}
+
+
+sub perl_init_cr {
+
+    eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT; ${$_[1]}");
+    
+}
+
 
 
 sub init_class {
@@ -845,15 +869,14 @@ sub init_class {
 
 
 	#  Only eval subroutine if we have not done already, if need to eval store in
-	#  cache so only done once. Note how self is undefined before eval, stops me
-	#  accidently using it inline - must do $self=shift() in inline code.
+	#  cache so only done once. 
 	#
 	my $eval_cr=$Package{'_cache'}{$inode}{'eval_cr'}{$data_ar}{$index} ||= do {
-	    #$Package{'_cache'}{$inode}{'perl_init'} ||= $self->perl_init();
-	    no strict; my $self;
+	    $Package{'_cache'}{$inode}{'perl_init'}{+undef} ||= $self->perl_init();
+	    no strict;
 	    no integer;
-	    eval("package WebDyne::${inode}; $WebDyne::WEBDYNE_EVAL_USE_STRICT; sub{$eval_text}") || return
-		err($@ || 'undefined error');
+	    &eval_cr($inode, \$eval_text) || return
+		$self->err_eval("$@", [ \$eval_text, undef, undef ]);
 	};
 	#debug("eval done, eval_cr $eval_cr");
 
@@ -869,11 +892,21 @@ sub init_class {
 	};
 	if (!defined($html_sr) || $@) {
 
-
 	    #  An error occurred - handle it and return.
 	    #
-	    return errstr() ? err() : err(
-		$@ || 'undefined return from inline code, or did not return non-zero/non-null value, code: %s', $eval_text);
+	    if (errstr() || $@) { 
+	    
+	      #  Eval error or err() called during routine.
+	      #
+	      return $self->err_eval($@ ? $@ : undef, [ \$eval_text, undef, undef ]);
+
+            }
+	    else { 
+	    
+	      #  Some other problem
+	      #
+	      return err('code did not return a true value: %s', $eval_text);
+            }
 
 	}
 
@@ -885,11 +918,13 @@ sub init_class {
 	};
 
 
-        #  Any printed data ?
+        #  Any 'printed data ? Prepend to output
         #
-        $self->{'_print_ar'} && do {
-	    $html_sr=\ join(undef, grep {$_} map { (ref($_) eq 'SCALAR') ? ${$_} : $_ } @{delete $self->{'_print_ar'}}) };
-
+        if (my $print_ar=$self->{'_print_ar'}) {
+            my $print_html=join(undef, grep {$_} map { (ref($_) eq 'SCALAR') ? ${$_} : $_ } @{delete $self->{'_print_ar'}});
+            $html_sr=ref($html_sr) ? \($print_html.${$html_sr}) : $print_html.$html_sr;
+        }
+        
 
 	#  Always return a scalar ref
 	#
@@ -929,7 +964,9 @@ sub init_class {
 	    debug('safe init (eval_init)');
 	    require Safe;
 	    require Opcode;
-	    Safe->new($inode);
+	    #  Used to use Safe->new($inode), but bug in Safe (actually Opcode) is Safe root namespace too long
+	    #
+	    Safe->new();
 	};
 	$self->{'_eval_safe'} ||= do {
 	    $safe_or->permit_only(@{$WEBDYNE_EVAL_SAFE_OPCODE_AR});
@@ -952,9 +989,22 @@ sub init_class {
 	if (!defined($html_sr) || $@) {
 
 
-	    #  Error
+	    #  An error occurred - handle it and return.
 	    #
-	    return errstr() ? err() : err($@ || 'undefined return from inline code, or did not return true (1) value');
+	    if (errstr() || $@) { 
+	    
+	      #  Eval error or err() called during routine.
+	      #
+	      return $self->err_eval($@ ? $@ : undef, [ \$eval_text, undef, undef ]);
+
+            }
+	    else { 
+	    
+	      #  Some other problem
+	      #
+	      return err('code did not return a true value: %s', $eval_text);
+            }
+
 
 	}
 
@@ -966,10 +1016,12 @@ sub init_class {
 	};
 
 
-        #  Any printed data ?
+        #  Any 'printed data ? Prepend to output
         #
-        $self->{'_print_ar'} && do {
-	    $html_sr=\ join(undef, grep {$_} map { ref($_) ? ${$_} : $_ } @{delete $self->{'_print_ar'}}) };
+        if (my $print_ar=$self->{'_print_ar'}) {
+            my $print_html=join(undef, grep {$_} map { (ref($_) eq 'SCALAR') ? ${$_} : $_ } @{delete $self->{'_print_ar'}});
+            $html_sr=ref($html_sr) ? \($print_html.${$html_sr}) : $print_html.$html_sr;
+        }
 
 
 	#  Make sure we return a ref
@@ -1144,6 +1196,14 @@ sub head_request {
 }
 
 
+sub render_reset {
+
+    my ($self, $data_ar)=@_;
+    $data_ar ? $self->{'_perl'}[0]=$data_ar: delete $self->{'_perl'};
+    
+}
+
+
 sub render {
 
 
@@ -1155,20 +1215,19 @@ sub render {
     #  If not supplied param as hash ref assume all vars are params to be subs't when
     #  rendering this data block
     #
-    ref($param_hr) || ($param_hr={ param=>{ @_[1..$#_] } });
+    ref($param_hr) || ($param_hr={ param=>{ @_[1..$#_] } }) if $param_hr;
 
 
     #  Debug
     #
     debug('in render');
-    #debug('render %s', Dumper($param_hr));
 
 
     #  Get node array ref
     #
     my $data_ar=$param_hr->{'data'} || $self->{'_perl'}[0][$WEBDYNE_NODE_CHLD_IX] ||
 	return err('unable to get HTML data array');
-    $self->{'_perl'}[0] ||= $data_ar;
+    #$self->{'_perl'}[0] ||= $data_ar;
 
 
     #  Debug
@@ -1212,10 +1271,10 @@ sub render {
 	my $html_chld;
 	
 	
-	#  Store line number as hint to error handler about the source of the problem should
-	#  something go wrong
+	#  Save current data block away for reference by error handler if something goes 
+	#  wrong
 	#
-	$self->{'_html_line_no'}=$html_line_no;
+	$self->{'_data_ar'}=$data_ar;
 
 
 	#  Debug
@@ -1696,8 +1755,17 @@ sub render_block {
 
     #  Get current data block
     #
-    my $data_ar=$self->{'_perl'}[0] ||
-	return err("unable to get current data node");
+    #my $data_ar=$self->{'_perl'}[0] ||
+	#return err("unable to get current data node");
+    my $data_ar=$self->{'_perl'}[0] || do {
+        #if ($WEBDYNE_DELAYED_BLOCK_RENDER) {
+          push @{$self->{'_block_param'}{$name} ||=[]},$param_hr->{'param'}; # if $WEBDYNE_DELAYED_BLOCK_RENDER;
+          return \undef;
+        #}
+        #else {
+        #  return err("unable to get current data node")
+        #}
+    };
 
 
     #  Find block name
@@ -1707,7 +1775,7 @@ sub render_block {
 
     #  Debug
     #
-    debug("render_block self $self, name $name, data_ar $data_ar");
+    debug("render_block self $self, name $name, data_ar $data_ar, %s", Dumper($data_ar));
 
 
     #  Have we seen this search befor ?
@@ -1784,19 +1852,23 @@ sub render_block {
     #debug("set block node to $data_block_ar %s", Dumper($data_block_ar));
 
 
+    #  Store params for later block render (outside perl block) if needed
+    #
+    push @{$self->{'_block_param'}{$name} ||=[]},$param_hr->{'param'}; # if $WEBDYNE_DELAYED_BLOCK_RENDER;
+
+
+
     #  No data_block_ar ? Could not find block - remove this line if global block
     #  rendering is desired (ie blocks may lay outside perl code calling render_bloc())
     #
     unless (@data_block_ar) {
-	return err("could not find block '$name' to render") unless $WEBDYNE_DELAYED_BLOCK_RENDER;
+        #if ($WEBDYNE_DELAYED_BLOCK_RENDER) {
+          return \undef;
+        #}
+        #else {
+        #  return err("could not find block '$name' to render") unless $WEBDYNE_DELAYED_BLOCK_RENDER;
+        #}
     }
-
-    
-    
-    #  Store params for later block render (outside perl block) if needed
-    #
-    push @{$self->{'_block_param'}{$name} ||=[]},$param_hr->{'param'} if $WEBDYNE_DELAYED_BLOCK_RENDER;
-
 
 
     #  Now, was it set to something ?
@@ -2071,8 +2143,16 @@ sub perl {
 
 	#  Run the eval code to get HTML
 	#
-	my $html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $attr_hr->{'param'}, "&${function}") ||
-	    return err();
+	my $html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $attr_hr->{'param'}, "&${function}") || do {
+	
+
+	    #  Error occurred. Pop data ref off stack and return
+	    #
+            shift @{$self->{'_perl'}};
+	    return $self->err_eval(undef, [ \"&${function}", 1, 1 ]);
+
+
+        };
 
 
 	#  Debug
@@ -2090,9 +2170,15 @@ sub perl {
 	#  Unless we have a scalar ref by now, the eval returned the
 	#  wrong type of value.
 	#
-	(ref($html_sr) eq 'SCALAR') ||
-	    return err("error in perl method '$method': code did not return ".
-			   'a SCALAR ref value.');
+	(ref($html_sr) eq 'SCALAR') || do {
+
+
+	    #  Error occurred. Pop data ref off stack and return
+	    #
+	    shift @{$self->{'_perl'}};
+	    return err("error in perl method '$method'- code did not return a SCALAR ref value.");
+
+        };
 
 
         #  Any printed data ?  COMMENTED OUT - is done in eval
@@ -2101,9 +2187,9 @@ sub perl {
 	#    $html_sr=\ join(undef, grep {$_} map { ref($_) ? ${$_} : $_ } @{delete $self->{'_print_ar'}}) };
 
 
-	#  Pop perl data_ar ref from stack
+	#  Shift perl data_ar ref from stack
 	#
-	pop @{$self->{'_perl'}};
+	shift @{$self->{'_perl'}};
 
 
 	#  And return scalar val
@@ -2120,85 +2206,144 @@ sub perl_init {
 
     #  Init the perl package space for this inode
     #
-    {
-	my ($self, $perl_ar, $inode)=@_;
-	$inode ||= $self->{'_inode'} || 'ANON';	#ANON used when run from command line
-
-
-	#  Only run once
-	#
-	debug("perl_init inode $inode");
-	#$Package{'_cache'}{$inode}{'perl_init'}++ && return \undef;
-	debug("init perl code $perl_ar, %s", Dumper($perl_ar));
-	*{"WebDyne::${inode}::err"}=\&err;
-	*{"WebDyne::${inode}::self"}=sub {$self};
-	*{"WebDyne::${inode}::AUTOLOAD"}=sub { die("unknown function $AUTOLOAD") };
-
-	@_=($self, $perl_ar, $inode);
-
-    }
-
-
-    #  Try not to use named vars, so not present in eval package
+    my ($self, $perl_ar, $perl_debug_ar)=@_;
+    my $inode = $self->{'_inode'} || 'ANON';	#ANON used when run from command line
+    
+    
+    #  Prep package space
     #
-    for (0 .. $#{$_[1]}) {
+    debug("perl_init inode $inode");
+    #$Package{'_cache'}{$inode}{'perl_init'}++ && return \undef;
+    debug("init perl code $perl_ar, %s", Dumper($perl_ar));
+    *{"WebDyne::${inode}::err"}=\&err;
+    *{"WebDyne::${inode}::self"}=sub {$self};
+    *{"WebDyne::${inode}::AUTOLOAD"}=sub { die("unknown function $AUTOLOAD") };
 
+
+    #  Run each piece of perl code
+    #
+    foreach my $ix (0 .. $#{$perl_ar}) {
+
+
+        #  Get perl code and debug information
+        #
+	my $perl_sr=$perl_ar->[$ix];
+	my ($perl_line_no, $perl_srce_fn)=@{$perl_debug_ar->[$ix]};
+	
 
 	#  Do not execute twice
 	#
-	$_=$_[1]->[$_]; # Get scalar ref of perl code to execute.
-	debug("looking at perl code $_");
-	$Package{'_cache'}{$_[2]}{'perl_init'}{$_}++ && next;
-	debug("executing perl code $_");
+	$Package{'_cache'}{$inode}{'perl_init'}{$perl_sr}++ && next;
 
 
 	#  Set inc to include psp dir so can include packages easily
 	#
 	local @INC=@INC;
-	push @INC, $_[0]->cwd();
+	push @INC, $self->cwd();
 
 
 	#  Wrap in anon CR, eval for syntax
 	#
 	if ($WEBDYNE_EVAL_SAFE) {
 
+
 	    #  Safe mode, vars don't matter so much
 	    #
-	    my $self=$_[0];
 	    my $safe_or=$self->{'_eval_safe'} || do {
 		debug('safe init (perl_init)');
 		require Safe;
 		require Opcode;
-		Safe->new($self->{'_inode'});
+		#Safe->new($self->{'_inode'});
+		Safe->new();
 	    };
 	    $self->{'_eval_safe'} ||= do {
 		$safe_or->permit_only(@{$WEBDYNE_EVAL_SAFE_OPCODE_AR});
 		$safe_or;
 	    };
-	    $safe_or->reval(${$_}, $WebDyne::WEBDYNE_EVAL_USE_STRICT) || do {
-		undef *{"WebDyne::$_[2]::self"};
-		if (errstr()) {
-		    return errsubst("error in __PERL__ block: %s", errstr());
-		}
-		elsif ($@) {
-		    return errsubst("error in __PERL__ block: $@");
+	    $safe_or->reval(${$perl_sr}, $WebDyne::WEBDYNE_EVAL_USE_STRICT) || do {
+
+
+	        #  Nothing was returned  - did an error occur ?
+                #
+		if ($@ || errstr()) {
+
+                    #  An error has occurred. Deregister self subroutine call in package
+                    #
+                    undef *{"WebDyne::${inode}::self"};
+
+
+                    #  Make up a fake data block with details of error
+                    #
+                    my @data;
+                    @data[
+                        $WEBDYNE_NODE_LINE_IX,
+                        $WEBDYNE_NODE_LINE_TAG_END_IX,
+                        $WEBDYNE_NODE_SRCE_IX,
+                    ]=($perl_line_no, $perl_line_no, $perl_srce_fn);
+        
+                    
+                    #  Save away as current data block for reference by error handler
+                    #
+                    $self->{'_data_ar'}=\@data;
+                    
+                    
+                    #  Erreval array we need to pass as ref when throwing error
+                    #
+                    my @erreval=( $perl_sr, 1, undef );
+                    
+                    
+                    #  Throw error
+                    #
+                    return $self->err_eval($@ ? "error in __PERL__ block: $@" : undef, \@erreval);
+
 		}
 	    };
 
-	    #  Make sure not changed
-	    #
-	    $_[0]=$self;
 
 	}
 	else {
-	    my $eval_cr=eval("package WebDyne::$_[2]; $WebDyne::WEBDYNE_EVAL_USE_STRICT; ${$_}") || do {
-		undef *{"WebDyne::$_[2]::self"};
-		if (errstr()) {
-		    return errsubst("error in __PERL__ block: %s", errstr());
-		}
-		elsif ($@) {
-		    return errsubst("error in __PERL__ block: $@");
-		}
+
+            
+            #  Now init the perl code
+            #
+	    my $eval_cr=&perl_init_cr($inode, $perl_sr) || do {
+	    
+	    
+	        #  Nothing was returned from perl_init - did an error occur ?
+	        #
+		if ($@ || errstr()) {
+		
+
+		        #  An error has occurred. Deregister self subroutine call in package
+		        #
+		        undef *{"WebDyne::${inode}::self"};
+
+
+                        #  Make up a fake data block with details of error
+                        #
+                        my @data;
+                        @data[
+                            $WEBDYNE_NODE_LINE_IX,
+                            $WEBDYNE_NODE_LINE_TAG_END_IX,
+                            $WEBDYNE_NODE_SRCE_IX,
+                        ]=($perl_line_no, $perl_line_no, $perl_srce_fn);
+            
+                        
+                        #  Save away as current data block for reference by error handler
+                        #
+                        $self->{'_data_ar'}=\@data;
+                        
+                        
+                        #  Erreval array we need to pass as ref when throwing error
+                        #
+                        my @erreval=( $perl_sr, 1, undef );
+                        
+                        
+                        #  Throw error
+                        #
+                        return $self->err_eval($@ ? "error in __PERL__ block: $@" : undef, \@erreval);
+                            
+                }
 	    };
 	}
 
@@ -2208,7 +2353,7 @@ sub perl_init {
 
     #  Done
     #
-    undef *{"WebDyne::$_[2]::self"};
+    undef *{"WebDyne::${inode}::self"};
     debug('perl_init complete');
     \undef;
 
@@ -2368,9 +2513,8 @@ sub subst_attr {
 
 	       )->($self, $data_ar, $param_hr, $eval_text, $attr_ix++) || do {
 
-		   return errsubst (
+		   return $self->err_eval(undef, [ \$eval_text, 1, undef ]);
 
-		       "eval error in code fragment '$value', error was: %s", errstr() );
 
 	       };
 
@@ -2636,7 +2780,7 @@ sub find_node {
     #
     my ($data_ar, $tag, $attr_hr, $depth_max, $prnt_fg, $all_fg)=@{$param_hr}{
 	qw(data_ar tag attr_hr depth prnt_fg all_fg) };
-    debug("find_node looking for tag $tag in data_ar $data_ar", Dumper($data_ar));
+    debug("find_node looking for tag $tag in data_ar $data_ar, %s", Dumper($data_ar));
 
 
     #  Array to hold results, depth
@@ -2652,6 +2796,7 @@ sub find_node {
 	#  Get params
 	#
 	my ($find_cr, $data_ar, $data_prnt_ar)=@_;
+	debug("find_cr, data_ar $data_ar, data_prnt_ar $data_prnt_ar");
 
 
 	#  Do we match at this level ?
@@ -3056,6 +3201,9 @@ sub set_handler {
 
 sub select {
 
+
+    #  If we are in select mode where print output is redirected to handler output
+    #
     shift->{'_select'};
 
 }
@@ -3069,6 +3217,76 @@ sub inode {
     my $self=shift();
     @_ ? $self->{'_inode'}=shift() : $self->{'_inode'};
 
+}
+
+
+sub eval_cr {
+
+
+   #  Return eval subroutine ref for inode ($_[0]) and eval code ref ($_[1]). Avoid using
+   #  var names so not available in eval code
+   #
+   eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT; sub{${$_[1]}}");
+   
+
+}
+
+
+sub perl_init_cr {
+
+    eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT; ${$_[1]}");
+    
+}
+
+
+sub data_ar {
+
+
+    #  Return current data node, assumes we are in a perl block or subst
+    #
+    shift()->{'_data_ar'};;
+    
+}
+
+
+sub data_ar_html_srce_fn {
+
+
+    #  The file name that this data node was sourced from
+    #
+    my ($self, $data_ar)=@_;
+    if ($data_ar ||= $self->data_ar()) {
+      return ${$data_ar->[$WEBDYNE_NODE_SRCE_IX]}
+    }
+
+}
+
+
+sub data_ar_html_line_no {
+
+
+    #  The line number (in the original HTML file) this data node was sourced from. Return tag start line in scalar ref, tag start + tag end in array ref
+    #
+    my ($self, $data_ar)=@_;
+    if ($data_ar ||= $self->data_ar()) {
+      return wantarray ? @{$data_ar}[$WEBDYNE_NODE_LINE_IX, $WEBDYNE_NODE_LINE_TAG_END_IX] : $data_ar->[$WEBDYNE_NODE_LINE_IX];
+    }
+
+    
+}
+
+
+sub print {
+
+    push @{shift()->{'_print_ar'} ||= []}, @_;
+
+}
+
+
+sub printf {
+
+    push @{shift()->{'_print_ar'} ||= []}, sprintf(@_);
+  
 }
 
 
@@ -3175,7 +3393,6 @@ sub PRINTF {
     \undef;
 
 }
-
 
 
 sub DESTROY {

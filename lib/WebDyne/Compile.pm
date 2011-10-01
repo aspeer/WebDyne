@@ -59,7 +59,7 @@ use WebDyne::Base;
 
 #  Version information
 #
-$VERSION='1.017';
+$VERSION='1.018';
 
 
 #  Debug load
@@ -250,7 +250,11 @@ sub compile {
     #  our own array tree structure. Do this in a separate method that
     #  is rentrant as the tree is descended
     #
-    my %meta;
+    my %meta=(
+    
+        manifest => [ \$html_cn ]
+        
+    );
     my $data_ar=$self->parse($html_ox, \%meta) || do {
 	$html_ox->delete;
 	undef $html_ox;
@@ -323,7 +327,8 @@ sub compile {
 	#  This is inline __PERL__ perl. Must be executed before filter so any filters added by the __PERL__
 	#  block are seen
 	#
-	$self->perl_init($perl_ar) || return err();
+	my $perl_debug_ar=$meta{'perl_debug'};
+	$self->perl_init($perl_ar, $perl_debug_ar) || return err();
 
 
     }
@@ -579,13 +584,13 @@ sub optimise_one {
 
 	#  Get this node tag and attrs
 	#
-	my ($html_tag, $attr_hr, $html_line_no)=
-	    @{$data_ar}[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX, $WEBDYNE_NODE_LINE_IX];
+	my ($html_tag, $attr_hr)=
+	    @{$data_ar}[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX];
 	debug("tag $html_tag, attr %s", Dumper($attr_hr));
 
-	#  Store line number as hint to error handler should something go wrong
+	#  Store data block as hint to error handler should something go wrong
 	#
-	$self->{'_html_line_no'}=$html_line_no;
+	$self->{'_data_ar'}=$data_ar;
 
 
 	#  Check to see if any of the attributes will require a subst to be carried out
@@ -790,14 +795,14 @@ sub optimise_two {
 
 	#  Get this tag and attrs
 	#
-	my ($html_tag, $attr_hr, $html_line_no)=
-	    @{$data_ar}[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX, $WEBDYNE_NODE_LINE_IX];
+	my ($html_tag, $attr_hr)=
+	    @{$data_ar}[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX];
 	debug("tag $html_tag");
 	
 	
-	#  Store line number as hint to error handler should something go wrong
+	#  Store data block as hint to error handler should something go wrong
 	#
-	$self->{'_html_line_no'}=$html_line_no;
+	$self->{'_data_ar'}=$data_ar;
 
 
 	#  Check if this tag attributes will need substitution (eg ${foo});
@@ -1032,13 +1037,25 @@ sub parse {
     #  structure
     #
     my ($self, $html_or, $meta_hr)=@_;
-    my $line_no=$html_or->{'_line_nmbr'};
+    my ($line_no, $line_no_tag_end)=@{$html_or}{'_line_no', '_line_no_tag_end'};
+    debug("parse $self, $html_or line_no $line_no line_no_tag_end $line_no_tag_end");
     #debug("parse $html_or, %s", Dumper($html_or));
 
 
-    #  Array to hold this data node
+    #  Create array to hold this data node
     #
-    my @data=(undef,undef,undef,undef,$line_no);
+    my @data;
+    @data[
+        $WEBDYNE_NODE_NAME_IX,
+        $WEBDYNE_NODE_ATTR_IX,
+        $WEBDYNE_NODE_CHLD_IX,
+        $WEBDYNE_NODE_SBST_IX,
+        $WEBDYNE_NODE_LINE_IX,
+        $WEBDYNE_NODE_LINE_TAG_END_IX,
+        $WEBDYNE_NODE_SRCE_IX
+    ]=(
+        undef, undef, undef, undef, $line_no, $line_no_tag_end, $meta_hr->{'manifest'}[0]
+    );
 
 
     #  Get tag
@@ -1065,8 +1082,8 @@ sub parse {
 	#  Is this the inline perl __PERL__ block ?
 	#
 	if ($html_or->{'_code'} && $attr{'perl'}) {
-	    #$meta_hr->{'perl'}{\$attr{'perl'}}=\$attr{'perl'};
 	    push @{$meta_hr->{'perl'}}, \$attr{'perl'};
+	    push @{$meta_hr->{'perl_debug'}}, [$line_no_tag_end, $meta_hr->{'manifest'}[0]];
         }
 	else {
 	    @data[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX]=($html_tag, \%attr);
@@ -1102,7 +1119,7 @@ sub parse {
 
 	    #  Sub tag. Recurse down tree, updating to nearest line number
 	    #
-            $line_no=$html_child_or->{'_line_nmbr'};
+            $line_no=$html_child_or->{'_line_no'};
             my $data_ar=$self->parse($html_child_or, $meta_hr) ||
 		return err();
 
