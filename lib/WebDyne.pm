@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.210';
+$VERSION='1.211';
 
 
 #  Debug load
@@ -1730,6 +1730,29 @@ sub subrequest {
     return $status || $r_child->status();
 
 
+}
+
+
+sub erase_block {
+
+    #  Erase a block section so not rendered if encountered again
+    #
+    my ($self, $param_hr)=@_;
+
+
+    #  Has user only given name as param
+    #
+    ref($param_hr) || ($param_hr={ name=>$param_hr, param=>{@_[2..$#_]} });
+
+
+    #  Get block name
+    #
+    my $name=$param_hr->{'name'} || $param_hr->{'block'} ||
+	return err('no block name specified');
+    debug("in erase_block, name $name");
+    delete $self->{'_block_param'}{$name};
+    delete $self->{'_block_render'}{$name}
+        
 }
 
 
