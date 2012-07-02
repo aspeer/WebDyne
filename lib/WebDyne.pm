@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.211';
+$VERSION='1.212';
 
 
 #  Debug load
@@ -374,6 +374,13 @@ sub handler : method {
 
         }
 	$cache_inode_hr->{'data'}=$container_ar->[1];
+	
+	#  Corner case. Delete _CGI if WEBDYNE_CGI_EXPAND_PARAM set to force re-read of
+	#  CGI params in case was set in <perl> section - which means would not be seen
+	#  early enough. Will only happen after first compile, so no major performance
+	#  impact on CGI object recreation
+	#
+	delete $self->{'_CGI'} if $WEBDYNE_CGI_PARAM_EXPAND;
 
 
     }
@@ -3011,10 +3018,40 @@ sub CGI {
 
         #  And create it
         #
-        CGI::->new();
+        my $cgi_or=CGI::->new();
+	
+	
+	#  Expand params if we need to
+	#
+	&CGI_param_expand($cgi_or) if $WEBDYNE_CGI_PARAM_EXPAND;
+	
+	
+	#  Return new CGI object
+	#
+	$cgi_or;
 
    };
 
+}
+
+
+sub CGI_param_expand {
+
+    #  Expand CGI params if the form "foo;a=b" into "foo=param", "a=b";
+    #
+    my $cgi_or=shift() ||
+        return err("unable to get CGI object");
+    foreach my $param (grep /=/, $cgi_or->param()) {
+        my(@pairs) = split(/[&;]/,$param);
+        foreach my $pair (@pairs) {
+            my ($key,$value)=split('=',$pair,2);
+            $value ||= $cgi_or->param($param);
+            $key=&CGI::unescape($key);
+            $value=&CGI::unescape($value);
+            $cgi_or->param($key,$value);
+        }
+        $cgi_or->delete($param);
+    }
 }
 
 
