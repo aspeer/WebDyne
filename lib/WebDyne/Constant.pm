@@ -40,7 +40,7 @@ require Opcode;
 
 #  Version information
 #
-$VERSION='1.017';
+$VERSION='1.018';
 
 
 #  Get mod_perl version. Clear $@ after evals
@@ -227,6 +227,11 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     #
     WEBDYNE_CGI_DISABLE_UPLOADS		        =>	1,
     WEBDYNE_CGI_POST_MAX			=>	(512 * 1024), #512Kb
+    
+    
+    #  Expand CGI parameters
+    #
+    WEBDYNE_CGI_PARAM_EXPAND			=>	0,
 
 
     #  Error handling. Use text errors rather than HTML ?
@@ -250,8 +255,9 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     WEBDYNE_ERROR_BACKTRACE_SHORT		=>	0,
     #  Show eval trace. Uses SOURCE_CONTEXT_LINES to determine number of lines to show
     WEBDYNE_ERROR_EVAL_CONTEXT_SHOW		=>	1,
+    #  CGI Params
+    WEBDYNE_ERROR_CGI_PARAM_SHOW		=>	1,
     #  URI and version
-    #
     WEBDYNE_ERROR_URI_SHOW			=>	1,
     WEBDYNE_ERROR_VERSION_SHOW			=>	1,
     
@@ -266,7 +272,7 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     #  Alternate error message if WEBDYNE_ERROR_SHOW disabled
     #
     WEBDYNE_ERROR_SHOW_ALTERNATE		=>
-        'error display disabled - enable WEBDYNE_ERROR_DISPLAY to show errors, or review web server error log.',
+        'error display disabled - enable WEBDYNE_ERROR_SHOW to show errors, or review web server error log.',
     
 
     #  Mod_perl level. Do not change unless you know what you are
@@ -379,8 +385,9 @@ sub local_constant_cn {
     my $local_constant_fn='webdyne.pm';
     my $local_constant_cn;
     if ($^O=~/MSWin[32|64]/) {
+	my $dn=$ENV{'WEBDYNE_HOME'} || $ENV{'WEBDYNE'} || $ENV{'WINDIR'};
 	$local_constant_cn=
-	    File::Spec->catfile($ENV{'WINDIR'}, $local_constant_fn)
+	    File::Spec->catfile($dn, $local_constant_fn)
 	}
     else {
 	$local_constant_cn=File::Spec->catfile(

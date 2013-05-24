@@ -44,7 +44,7 @@ use File::Spec;
 
 #  Version information
 #
-$VERSION='1.017';
+$VERSION='1.018';
 
 
 #  Debug
@@ -94,9 +94,9 @@ sub err_html {
     my $r;
     if ($r=eval { $self->{'_r'} }) {
 
-	#  Get main request handler in case we are in subrequest
-	#
-	$r=$r->main() || $r;
+        #  Get main request handler in case we are in subrequest
+        #
+        $r=$r->main() || $r;
         
     }
     debug("r $r");
@@ -106,8 +106,8 @@ sub err_html {
     #  is seriously wrong;
     #
     if (!$r) {
-	print(errdump());
-	CORE::exit 0;
+        print(errdump());
+        CORE::exit 0;
     };
 
 
@@ -137,8 +137,8 @@ sub err_html {
     #  badly after this error, if that is what the user has configured
     #
     if ($WEBDYNE_ERROR_EXIT) {
-	my $cr=sub { CORE::exit() };
-	$MP2 ? $r->pool->cleanup_register($cr) : $r->register_cleanup($cr);
+        my $cr=sub { CORE::exit() };
+        $MP2 ? $r->pool->cleanup_register($cr) : $r->register_cleanup($cr);
     }
 
 
@@ -147,31 +147,31 @@ sub err_html {
     if ($WEBDYNE_ERROR_TEXT || $WEBDYNE_EVAL_SAFE || $self->{'_error_handler_run'}++ || !$cgi_or) {
 
 
-	#  Text error, set content type
-	#
-	debug("using text error (%s:%s:%s:%s) - update $r content_type",
+        #  Text error, set content type
+        #
+        debug("using text error (%s:%s:%s:%s) - update $r content_type",
             $WEBDYNE_ERROR_TEXT,$WEBDYNE_EVAL_SAFE,$self->{'_error_handler_run'},$cgi_or);
-	$r->content_type('text/plain');
+        $r->content_type('text/plain');
 
 
-	#  Push error
-	#
-	my $err_text=errdump({
+        #  Push error
+        #
+        my $err_text=errdump({
 
-	    'URI'  =>	$r->uri(),
+            'URI'  =>   $r->uri(),
             'Line' =>   scalar $self->data_ar_html_line_no(),
 
-	   });
+           });
 
 
-	#  Clear error stack and $@.
-	#
-	errclr(); eval { undef } if $@;
+        #  Clear error stack and $@.
+        #
+        errclr(); eval { undef } if $@;
 
 
-	#  Print error and return
-	#
-	$r->send_http_header() if !$MP2;
+        #  Print error and return
+        #
+        $r->send_http_header() if !$MP2;
         $r->print($err_text);
         return &Apache::OK;
 
@@ -182,80 +182,80 @@ sub err_html {
 
 
 
-	#  Get error parameters, must make copy of stack, data block - they will be erased.
-	#
-	debug('using html error');
-	my @errstack=@{&errstack()};
-	my %param=(
+        #  Get error parameters, must make copy of stack, data block - they will be erased.
+        #
+        debug('using html error');
+        my @errstack=@{&errstack()};
+        my %param=(
 
-	    errstr	=> $errstr,
-	    errstack_ar	=> \@errstack,
-            erreval_ar	=> $self->{'_err_eval_ar'},
-            data_ar	=> $self->{'_data_ar'},
-	    r		=> $r
+            errstr      => $errstr,
+            errstack_ar => \@errstack,
+            erreval_ar  => $self->{'_err_eval_ar'},
+            data_ar     => $self->{'_data_ar'},
+            r           => $r
   
-	   );
+           );
 
 
-	#  Clear error stack and $@ so this render works without errors
-	#
-	errclr(); eval { undef } if $@;
+        #  Clear error stack and $@ so this render works without errors
+        #
+        errclr(); eval { undef } if $@;
 
 
-	#  Wrap everything in eval block in case this error was thrown interally by
-	#  WebDyne not being able to load/start etc, in which case trying to run it
-	#  again won't be helpful
-	#
+        #  Wrap everything in eval block in case this error was thrown interally by
+        #  WebDyne not being able to load/start etc, in which case trying to run it
+        #  again won't be helpful
+        #
         my $status;
-	eval {
+        eval {
 
 
-	    #  Only compile container once if we can help it
-	    #
+            #  Only compile container once if we can help it
+            #
             local $SIG{__DIE__};
-	    require WebDyne::Compile;
-	    my $container_ar=($Package{'container_ar'} ||= &WebDyne::Compile::compile($self,{
+            require WebDyne::Compile;
+            my $container_ar=($Package{'container_ar'} ||= &WebDyne::Compile::compile($self,{
 
-		srce	    => $WEBDYNE_ERR_TEMPLATE,
-		nofilter    => 1
+                srce        => $WEBDYNE_ERR_TEMPLATE,
+                nofilter    => 1
 
-	       })) || return $self->err_html('fatal problem in error handler during compile !');
-
-
-	    #  Get the data portion of the container (meta info not needed) and render. Bit of cheating
-	    #  to use internal
-	    #
-	    my $data_ar=$container_ar->[$WEBDYNE_CONTAINER_DATA_IX];
-	    
-	    
-	    #  Reset render state and render error page
-	    #
-	    $self->render_reset($data_ar);
-	    my $html_sr=$self->render({
-
-		data    => $data_ar,
-		param   => \%param
-
-	    }) || return $self->err_html('fatal problem in error handler during render: %s !', errstr() || 'undefined error');
-	    
-	    
-	    #  Set custom handler
-	    #
-	    $status=$r->status();
-	    debug("send custom response for status $status on r $r");
-	    $r->custom_response($status, ${$html_sr});
+               })) || return $self->err_html('fatal problem in error handler during compile !');
 
 
-	    #  Clear error stack again, make sure all is clean before we return.
-	    #
-	    errclr(); eval { undef } if $@;
+            #  Get the data portion of the container (meta info not needed) and render. Bit of cheating
+            #  to use internal
+            #
+            my $data_ar=$container_ar->[$WEBDYNE_CONTAINER_DATA_IX];
+            
+            
+            #  Reset render state and render error page
+            #
+            $self->render_reset($data_ar);
+            my $html_sr=$self->render({
 
-	};
+                data    => $data_ar,
+                param   => \%param
+
+            }) || return $self->err_html('fatal problem in error handler during render: %s !', errstr() || 'undefined error');
+            
+            
+            #  Set custom handler
+            #
+            $status=$r->status();
+            debug("send custom response for status $status on r $r");
+            $r->custom_response($status, ${$html_sr});
 
 
-	#  Check if render went OK, if not revert to text - better than
-	#  showing nothing ..
-	#
+            #  Clear error stack again, make sure all is clean before we return.
+            #
+            errclr(); eval { undef } if $@;
+
+        };
+
+
+        #  Check if render went OK, if not revert to text - better than
+        #  showing nothing ..
+        #
         if ($@ || !$status) {
             debug("unable to render HTML template, reverting to text");
             err($@) if $@;

@@ -16,6 +16,7 @@ b    {font-family:"Verdana"; font-weight:bold; color:black; margin-top:-5px}
 h1   {font-family:"Verdana"; font-weight:normal; font-size:18pt; color:red }
 h2   {font-family:"Verdana"; font-weight:normal; font-size:14pt; color:maroon}
 tt   {font-family:"Lucida Console"; font-size:.9em}
+pre  {font-family:"Lucida Console"; font-size:.9em}
 </style>
 </head>
 
@@ -297,6 +298,20 @@ if ($WEBDYNE_ERROR_EVAL_CONTEXT_SHOW && @erreval) {
 }
 
 
+#  Now any CGI params
+#
+if ($WEBDYNE_ERROR_CGI_PARAM_SHOW && %_) {
+
+
+    #  Get message
+    #
+    local $Data::Dumper::Indent=1;
+    my $cgi_param_dump=Data::Dumper::Dumper(\%_);
+    $self->render_block('cgi_param', cgi_param_dump=>$cgi_param_dump );
+
+}
+
+
 #  Render version and URI blocks
 #
 $self->render_block('uri') if $WEBDYNE_ERROR_URI_SHOW;
@@ -322,9 +337,11 @@ return \undef;
 <tr><td><b>Error: </b></tr></td>
 
 <tr><td bgcolor="#eeeeee">
+<br>
 <tt>
 ${errstr}
 </tt>
+<br>
 </td></tr>
 </block>
 
@@ -388,6 +405,26 @@ ${i}&nbsp;&nbsp;${package}, line ${line}<br>
 <span style="!{! $_[1]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
 </block>
 </tt></td></tr>
+</block>
+
+
+<!-- CGI Paramaters -->
+
+<block name="cgi_param">
+<tr><td>
+<br>
+<br>
+<b>CGI Parameters: </b>
+</td></tr>
+
+<tr><td bgcolor="#eeeeee">
+<br>
+<span style="color:black">
+<pre>
+${cgi_param_dump}
+</pre>
+</span>
+</td></tr>
 </block>
 
 </table>
