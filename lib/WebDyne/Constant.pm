@@ -40,7 +40,7 @@ require Opcode;
 
 #  Version information
 #
-$VERSION='1.018';
+$VERSION='1.019';
 
 
 #  Get mod_perl version. Clear $@ after evals
@@ -238,11 +238,17 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     #
     WEBDYNE_ERROR_TEXT				=>	0,
     
-    
-    #  Show error, source file context, number of lines pre and post. Only applicable
-    #  for HTML error output.
+
+    #  Show errors ? Extended shows additional information with granularity as per following
+    #  section.
     #
-    WEBDYNE_ERROR_SHOW				=>	1,
+    WEBDYNE_ERROR_SHOW			        =>	1,
+    WEBDYNE_ERROR_SHOW_EXTENDED			=>	1,
+
+
+    #  Show error, source file context, number of lines pre and post. Only applicable
+    #  for extended + HTML error output.
+    #
     WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW		=>	1,
     WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_PRE	=>	4,
     WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_POST	=>	4,

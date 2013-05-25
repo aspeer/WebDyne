@@ -58,7 +58,7 @@ use WebDyne::Install::Apache::Constant;
 
 #  Version information
 #
-$VERSION='1.013';
+$VERSION='1.014';
 
 
 #  Debug
@@ -98,17 +98,17 @@ sub install {
 
     #  Get class, other paths
     #
-    my ($class, $prefix, $installbin, $option_hr)=@_;
+    my ($class, $prefix, $installbin_dn, $option_hr)=@_;
 
 
     #  Run the base install/uninstall routine to create the cache dir
     #
     unless ($Uninstall_fg) {
-	WebDyne::Install->install($prefix, $installbin) ||
+	WebDyne::Install->install($prefix, $installbin_dn) ||
 	    return err();
     }
     else {
-	WebDyne::Install->uninstall($prefix, $installbin) ||
+	WebDyne::Install->uninstall($prefix, $installbin_dn) ||
 	    return err();
     }
 
@@ -144,7 +144,7 @@ sub install {
 	%WebDyne::Constant::Constant,
 	%WebDyne::Install::Constant::Constant,
 	%WebDyne::Install::Apache::Constant::Constant,
-	DIR_INSTALLBIN	    => $installbin,
+	DIR_INSTALLBIN	    => $installbin_dn,
 	WEBDYNE_CACHE_DN    => $cache_dn,
 
        );
@@ -433,7 +433,7 @@ sub install {
                                 if (($type ne $SELINUX_CONTEXT_LIB) && !$option_hr->{'setcontext'}) {
                                   message;
                                   message("WARNING: SELinux context type of '$module_so_fn' is '$type'");
-                                  message("WARNING: file may not be loadable by Apache ! Use $installbin --setcontext to change or fix manually");
+                                  message("WARNING: file may not be loadable by Apache ! Use $0 --setcontext to change or fix manually");
                                   message;
                                 }
                                 elsif (($type ne $SELINUX_CONTEXT_LIB) && $option_hr->{'setcontext'}) {

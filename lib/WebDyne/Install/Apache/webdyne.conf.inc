@@ -105,8 +105,9 @@ Deny from none
 </Directory>
 
 
-#  Error display on/off. See WebDyne::Constant for granular options. Set to 1 to enable
+#  Error display/extended display on/off. See WebDyne::Constant for granular options. Set to 1 to enable, 0 to disable
 #
 <Perl>
-$WebDyne::WEBDYNE_ERROR_SHOW=0,
+$WebDyne::WEBDYNE_ERROR_SHOW=1;
+$WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=0;
 </Perl>

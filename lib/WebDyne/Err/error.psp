@@ -125,6 +125,14 @@ if ($WEBDYNE_ERROR_SHOW) {
 	#  Render
 	#
 	$self->render_block('error', errstr=>$errstr_display);
+	
+	
+	#  Return now if full/extended error messages not required
+	#
+	unless ($WEBDYNE_ERROR_SHOW_EXTENDED) {
+	    $self->render_block('error_extended_disabled');
+	    return \undef;
+        }
 
 }
 else {
@@ -345,6 +353,19 @@ ${errstr}
 </td></tr>
 </block>
 
+<block name="error_extended_disabled">
+<tr><td>
+<br>
+<br>
+<b>Backtrace: </b></tr></td>
+
+<tr><td bgcolor="#eeeeee">
+<br>
+<tt>
+Set WEBDYNE_ERROR_SHOW_EXTENDED=1 to display backtrace and other information.
+</tt>
+</tr></td>
+</block>
 
 <!-- Module backtrace -->
 
@@ -433,13 +454,11 @@ ${cgi_param_dump}
 <!-- End of error table. Display requested URI -->
 
 <br>
-<br>
 
 <block name="uri">
 <b>Requested URI: </b>!{! shift()->r->uri().'' !}
 </block>
 
-<br>
 <br>
 
 <hr align="left" width="80%" size="1">
