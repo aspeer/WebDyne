@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.217';
+$VERSION='1.218';
 
 
 #  Debug load
@@ -3455,9 +3455,7 @@ sub TIEHANDLE {
 sub PRINT {
 
     my $self=shift();
-    my $data_ar=${$self}->{'_data_ar'};
-    push @{${$self}->{'_print_ar'}{$data_ar} ||= []}, @_;
-    \undef;
+    return ${$self}->print(@_);
 
 }
 
@@ -3465,9 +3463,7 @@ sub PRINT {
 sub PRINTF {
 
     my $self=shift();
-    my $data_ar=${$self}->{'_data_ar'};
-    push @{$self->{'_print_ar'}{$data_ar} ||= []}, sprintf(shift(),@_);
-    \undef;
+    return ${$self}->printf(@_);
 
 }
 
