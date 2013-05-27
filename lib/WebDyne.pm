@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.218';
+$VERSION='1.219';
 
 
 #  Debug load
@@ -585,6 +585,7 @@ sub handler : method {
     #
     debug('errstr after render %s', errstr());
     errstr() && return $self->err_html();
+    &CGI::cgi_error() && return $self->err_html(&CGI::cgi_error());
 
 
     #  Check for any blocks that user wanted rendered but were

@@ -44,7 +44,7 @@ use File::Spec;
 
 #  Version information
 #
-$VERSION='1.018';
+$VERSION='1.019';
 
 
 #  Debug
@@ -56,6 +56,16 @@ debug("%s loaded, version $VERSION", __PACKAGE__);
 #
 my %Package;
 *debug=\&WebDyne::debug;
+
+
+#  Fix issues if mod_perl loads legacy Carp with modern Carp::Heavy
+#
+{
+    my $cr=sub { return \@_ };
+    foreach my $method (qw(shortmess_real longmess_real shortmess_heavy longmess_heavy)) {
+        *{"Carp::${method}"}=sub { return @_ } unless Carp->can($method);
+    }
+}
 
 
 #  And done

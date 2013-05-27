@@ -10,6 +10,7 @@ use FindBin qw($RealBin $Script);
 use File::Temp qw(tempfile);
 use Digest::MD5;
 use File::Find qw(find);
+use Data::Dumper;
 use IO::File;
 
 
@@ -80,7 +81,21 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     $md5_or->addfile($dump_fh);
     my $md5_dump=$md5_or->hexdigest();
     #diag("tree $md5_tree, dump $md5_dump");
-    ok($md5_tree eq $md5_dump, "render $test_fn");
+    ok($md5_tree eq $md5_dump, "render $test_fn") || do {
+        seek($tree_fh,0,0);
+        seek($dump_fh,0,0);
+        my @diff;
+        my $line;
+        while (my $made=<$tree_fh>) {
+            my $test=<$dump_fh>;
+            $line++;
+            unless ($made eq $test) {
+                push @diff, "$line: $made", "$line: $test";
+            }
+        }
+        $Data::Dumper::Indent=1;
+        diag('  diff: - ', Dumper(\@diff));
+    };
 
 
     #  Clean up

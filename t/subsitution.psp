@@ -47,7 +47,7 @@ sub popup0 {
 
 sub popup1 {
 	shift()->render(
-		popup_hr => { red=>'Red', blue=>'Blue' },
+		popup_hr => do { tie(my %hash, Tie::IxHash, ( blue=>'Blue', red=>'Red',  )); \%hash },
 		name     => 'popup1'
 	)
 }
