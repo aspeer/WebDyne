@@ -30,11 +30,12 @@ use WebDyne;
 use WebDyne::Request::Fake;
 use Getopt::Long;
 use Pod::Usage;
+use IO::File;
 
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='1.018';
+$VERSION='1.019';
 
 
 #  Run main
@@ -54,7 +55,7 @@ sub main {
 
     #  Defaul options
     #
-    my %option=(
+    my %opt=(
 
 	handler    => $ENV{'WebDyneHandler'} || 'WebDyne',
 	error	   => 'text',
@@ -66,15 +67,35 @@ sub main {
 
     #  Get command line options
     #
-    GetOptions(\%option, 'help|?', 'handler=s', 'header!', 'warn!', 'error=s', 'man', 'version') ||
-	pod2usage(2);
-    pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $option{'help'};
-    pod2usage(-verbose => 2) if $option{'man'};
-    $option{'version'} && do { 
+    GetOptions(\%opt,
+        'help|?',
+        'handler=s',
+        'status=s',
+        'header!',
+        'warn!',
+        'error=s',
+        'header_out=s@',
+        'header_in=s@',
+        'outfile=s',
+        'man',
+        'version'
+    ) || pod2usage(2);
+    pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
+    pod2usage(-verbose => 2) if $opt{'man'};
+    $opt{'version'} && do {
       print "$Script version: $VERSION\n"; 
       print "WebDyne version: $WebDyne::VERSION\n";
       exit 0 
     };
+
+
+    #  Is dest file set ? If so open
+    #
+    my $dest_fh;
+    if (my $dest_fn=$opt{'outfile'}) {
+        $dest_fh=IO::File->new($dest_fn, O_CREAT|O_TRUNC|O_WRONLY) ||
+            return err("unable to open file $dest_fn for output, $!");
+    }
 
 
     #  Get srce file, add to options
@@ -90,13 +111,27 @@ sub main {
     my $r=WebDyne::Request::Fake->new(
 
 	filename	=>  $srce_fn,
+	#select          =>  $dest_fh,
+	#status          =>  $opt{'status'},
 
        ) || return err();
 
 
+    #  Set headers
+    #
+    foreach my $header_out (@{$opt{'header_out0'}}) {
+        my ($k,$v)=split(/\s*:\s*/, $header_out);
+        $r->headers_out($k,$v);
+    }
+    foreach my $header_in (@{$opt{'header_in0'}}) {
+        my ($k,$v)=split(/\s*:\s*/, $header_in);
+        $r->headers_in($k,$v);
+    }
+
+
     #  Get handler
     #
-    my $handler=$option{'handler'};
+    my $handler=$opt{'handler'};
 
 
     #  Load up whichever handler we are using
@@ -107,13 +142,13 @@ sub main {
 
     #  Set text errors only
     #
-    $WebDyne::Err::WEBDYNE_ERROR_TEXT=1 if ($option{'error'} eq 'text');
+    $WebDyne::Err::WEBDYNE_ERROR_TEXT=1 if ($opt{'error'} eq 'text');
     
     
     #  Set header, warning output
     #
-    $r->notes('noheader', !$option{'header'});
-    $r->notes('nowarn', !$option{'warn'});
+    $r->notes('noheader', !$opt{'header'});
+    $r->notes('nowarn',   !$opt{'warn'});
 
 
     #  Run it and display results, or any error generated
@@ -174,6 +209,30 @@ Show HTTP status headers (default). User --noheader to disable.
 =item --error=text[|html]
 
 Show text error messages. User --error=html to HTML error message.
+
+=back
+
+=item --outfile=<filename>
+
+Send output to <filename> instead of STDOUT
+
+=back
+
+=item --header_in="Header: Value"
+
+Set simulated input header name to value. Can be set multiple times
+
+=back
+
+=item --header_out="Header: Value"
+
+Send output header with value (if header output enabled). Can be set multiple times
+
+=back
+
+=item --status=value
+
+Send status code x (e.g. 200,500,404) with header (if header output enabled)
 
 =back
 

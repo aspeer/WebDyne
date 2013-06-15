@@ -1,4 +1,4 @@
-#
+
 #
 #  Copyright (C) 2006-2010 Andrew Speer <andrew@webdyne.org>.
 #  All rights reserved.
@@ -58,7 +58,7 @@ use WebDyne::Install::Apache::Constant;
 
 #  Version information
 #
-$VERSION='1.014';
+$VERSION='1.015';
 
 
 #  Debug
@@ -433,7 +433,7 @@ sub install {
                                 if (($type ne $SELINUX_CONTEXT_LIB) && !$option_hr->{'setcontext'}) {
                                   message;
                                   message("WARNING: SELinux context type of '$module_so_fn' is '$type'");
-                                  message("WARNING: file may not be loadable by Apache ! Use $0 --setcontext to change or fix manually");
+                                  message("WARNING: file may not be loadable by Apache ! Use '$0 --setcontext' to change or fix manually");
                                   message;
                                 }
                                 elsif (($type ne $SELINUX_CONTEXT_LIB) && $option_hr->{'setcontext'}) {

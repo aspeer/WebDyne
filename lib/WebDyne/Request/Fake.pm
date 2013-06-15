@@ -38,7 +38,7 @@ use HTTP::Status (RC_OK);
 
 #  Version information
 #
-$VERSION='1.009';
+$VERSION='1.010';
 
 
 #  Debug load
@@ -185,7 +185,8 @@ sub prev {
 sub print {
 
     my $r=shift();
-    CORE::print((ref($_[0]) eq 'SCALAR') ? ${$_[0]} : @_);
+    my $fh=$r->{'select'} || \*STDOUT;
+    CORE::print $fh ((ref($_[0]) eq 'SCALAR') ? ${$_[0]} : @_);
 
 }
 
@@ -255,11 +256,12 @@ sub send_http_header {
 
     my $r=shift();
     return if $r->notes('noheader');
-    CORE::printf("Status: %s\n", $r->status());
-    while(my($header, $value)=each(%{$r->{'header'}})) {
-        CORE::print("$header: $value\n");
+    my $fh=$r->{'select'} || \*STDOUT;
+    CORE::printf $fh ("Status: %s\n", $r->status());
+    while(my($header, $value)=each(%{$r->{'headers_out'}})) {
+        CORE::print $fh ("$header: $value\n");
     }
-    CORE::print "\n";
+    CORE::print $fh "\n";
 
 }
 

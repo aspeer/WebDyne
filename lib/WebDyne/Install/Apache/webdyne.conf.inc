@@ -95,6 +95,15 @@ $OUT=join($/, @out);
 -->
 
 
+#  Block access to any module .pm files that might available in public
+#  areas as a precaution
+#
+<Files ~ "\.pm$">
+Order allow,deny
+Deny from all
+</Files>
+
+
 #  Set disk cache dir and allow apache access
 #
 PerlSetVar WEBDYNE_CACHE_DN "<!-- $WEBDYNE_CACHE_DN -->"
@@ -105,9 +114,92 @@ Deny from none
 </Directory>
 
 
-#  Error display/extended display on/off. See WebDyne::Constant for granular options. Set to 1 to enable, 0 to disable
+#  Some config setting defaults. See documentation for full range
 #
 <Perl>
-$WebDyne::WEBDYNE_ERROR_SHOW=1;
-$WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=0;
+
+#  Error display/extended display on/off. More granular optionss below. 
+#  Set to 1 to enable, 0 to disable
+#
+#  $WebDyne::WEBDYNE_ERROR_SHOW=1;
+#  $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=0;
+
+
+#  Extended error control.
+#
+#  $WebDyne::WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW=1;
+#  $WebDyne::WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_PRE=4;
+#  $WebDyne::WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_POST=4;
+#
+#
+#  Max length of source line to show in ouput. 0 for unlimited.
+#
+#  $WebDyne::WEBDYNE_ERROR_SOURCE_CONTEXT_LINE_FRAGMENT_MAX=80;
+#
+#
+#  Show filename (including full filesystem path)
+#
+#
+#  $WebDyne::WEBDYNE_ERROR_SOURCE_FILENAME_SHOW=1;
+#
+#
+#  Show backtrace, show full or brief backtrace
+#
+#  $WebDyne::WEBDYNE_ERROR_BACKTRACE_SHOW=1;
+#  $WebDyne::WEBDYNE_ERROR_BACKTRACE_SHORT=0;
+#
+#
+#  Show eval trace. Uses SOURCE_CONTEXT_LINES to determine number of lines to show
+#
+#  $WebDyne::WEBDYNE_ERROR_EVAL_CONTEXT_SHOW=1;
+#
+#
+#
+#  CGI Params
+#
+#  $WebDyne::WEBDYNE_ERROR_CGI_PARAM_SHOW=1;
+#
+#
+#  URI and version
+#
+#  $WebDyne::WEBDYNE_ERROR_URI_SHOW=1;
+#  $WebDyne::WEBDYNE_ERROR_VERSION_SHOW=1;
+
+
+#  CGI Upload facility. Set to 0 to enable, max post size as required
+#
+#  $WebDyne::WEBDYNE_CGI_DISABLE_UPLOADS=1;
+#  $WebDyne::WEBDYNE_CGI_POST_MAX=(512 * 1024); #512Kb
+
+
+#  Send no-cache headers ?
+#
+#  $WebDyne::WEBDYNE_NO_CACHE=1;
+
+
+#  Warnings fatal ? 
+#
+#  $WebDyne::WEBDYNE_WARNINGS_FATAL=0;
+
+
+#  Encoding
+#
+#  $WebDyne::WEBDYNE_CHARSET='ISO-8859-1';
+
+
+#  Include a Content-Type meta tag ?
+#
+#  $WebDyne::WEBDYNE_CONTENT_TYPE_HTML_META=0;
+
+
+#  Default <html> tag paramaters, eg { lang	=>'en-US' }
+#
+#  $WebDyne::WEBDYNE_HTML_PARAM=undef;
+
+
+#  CGI Paramater expansion. Will make POST submit strings of "foo=bar&car=dar" into
+#  individual paramaters
+#
+#  $WebDyne::WEBDYNE_CGI_PARAM_EXPAND=0;
+
 </Perl>

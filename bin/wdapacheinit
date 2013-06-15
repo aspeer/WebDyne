@@ -20,14 +20,14 @@ use Pod::Usage;
 
 #  Version info
 #
-$VERSION='1.016';
+$VERSION='1.017';
 
 
 #  Get command line options, add them to environment so picked up
 #  by WebDyne::Install::Apache::Constant module when loaded
 #
-my %option;
-GetOptions(\%option, (
+my %opt;
+GetOptions(\%opt, (
     'help|?',
     'man',
     'apache_uname|uname=s',
@@ -44,10 +44,10 @@ GetOptions(\%option, (
     'version'
    ) ) ||  pod2usage(2);
 pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) 
-  if $option{'help'};
-pod2usage(-verbose => 2) if $option{'man'};
-$option{'version'} && do { print "$Script version: $VERSION\n"; exit 0 };
-map { $ENV{uc($_)}=$option{$_} } keys %option;
+  if $opt{'help'};
+pod2usage(-verbose => 2) if $opt{'man'};
+$opt{'version'} && do { print "$Script version: $VERSION\n"; exit 0 };
+map { $ENV{uc($_)}=$opt{$_} } keys %opt;
 
 
 #  By default the WebDyne::Install::Apache::Constant module will issue a
@@ -78,11 +78,11 @@ require WebDyne::Install::Apache;
 #  Get location prefile, call install/uninstall routine
 #
 my $prefix_dn=realpath(File::Spec->rel2abs(File::Spec->updir(),$RealBin));
-if ($option{'uninstall'}) {
-    exit ${ WebDyne::Install::Apache->uninstall($prefix_dn, $RealBin, \%option) || die errstr() }
+if ($opt{'uninstall'}) {
+    exit ${ WebDyne::Install::Apache->uninstall($prefix_dn, $RealBin, \%opt) || die errstr() }
 }
 else {
-    exit ${ WebDyne::Install::Apache->install($prefix_dn, $RealBin, \%option) || die errstr() }
+    exit ${ WebDyne::Install::Apache->install($prefix_dn, $RealBin, \%opt) || die errstr() }
 }
 
 __END__

@@ -34,7 +34,7 @@ use Data::Dumper;
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='1.012';
+$VERSION='1.013';
 
 
 #  Run main
@@ -55,7 +55,7 @@ sub main {
 
     #  Base options will pass to compile
     #
-    my %option=(
+    my %opt=(
 
 	nofilter    =>	1,	# don't run through any filters
 	noperl	    =>  1,	# don't run perl code,
@@ -67,31 +67,31 @@ sub main {
     #  Now import command line options. Command line option compilation stages are different from
     #  internal stage numbers so maps are 0=>stage0, 1=>stage2, 2=>stage3, 3=>stage4, confusing ..
     #
-    GetOptions(\%option, 'stage0|0', 'stage2|1', 'stage3|2', 'stage4|3', 'meta', 'version', 'help|?', 'man') ||
+    GetOptions(\%opt, 'stage0|0', 'stage2|1', 'stage3|2', 'stage4|3', 'meta', 'version', 'help|?', 'man') ||
 	pod2usage(2);
-    pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $option{'help'};
-    pod2usage(-verbose => 2) if $option{'man'};
-    $option{'version'} && do { print "$Script version: $VERSION\n"; exit 0 };
+    pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
+    pod2usage(-verbose => 2) if $opt{'man'};
+    $opt{'version'} && do { print "$Script version: $VERSION\n"; exit 0 };
 
 
     #  Get srce file, add to options
     #
     my $srce_fn=$argv_ar->[0] ||
 	pod2usage("$Script: no source file specified !");
-    $option{'srce'}=$srce_fn;
+    $opt{'srce'}=$srce_fn;
 
 
     #  Create and run compile object
     #
     my $compile_or=WebDyne::Compile->new();
-    my $data_ar=$compile_or->compile(\%option) ||
+    my $data_ar=$compile_or->compile(\%opt) ||
 	return err();
 
 
     #  Dump it
     #
     $Data::Dumper::Indent=1;
-    print Data::Dumper::Dumper(grep {$_} $option{'meta'} ? $data_ar->[0] : undef, $data_ar->[1]);
+    print Data::Dumper::Dumper(grep {$_} $opt{'meta'} ? $data_ar->[0] : undef, $data_ar->[1]);
 
 
     #  Return success

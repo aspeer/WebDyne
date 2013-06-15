@@ -54,7 +54,7 @@ use IO::File;
 
 #  Version information
 #
-$VERSION='1.014';
+$VERSION='1.015';
 
 
 #  Debug load
@@ -560,6 +560,15 @@ sub text {
         debug("insert line_no $Line_no into object ref $HTML_Perl_or");
 	@{$HTML_Perl_or}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no);
 	$HTML_Perl_or->{'_code'}++;
+
+    }
+    elsif ($text=~/^\W*__END__/) {
+
+
+        #  End of file
+        #
+        debug('found __END__ tag, running eof');
+        $self->eof();
 
     }
     else {
