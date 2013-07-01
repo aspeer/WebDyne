@@ -120,6 +120,7 @@ if ($WEBDYNE_ERROR_SHOW) {
         }
 	$errstr_display=&CGI::escapeHTML($errstr_display);
 	$errstr_display=~s/\n/<br>/g;
+	$errstr_display=~s/[\x00]+/./g;
 
 
 	#  Render
@@ -315,6 +316,8 @@ if ($WEBDYNE_ERROR_CGI_PARAM_SHOW && %_) {
     #
     local $Data::Dumper::Indent=1;
     my $cgi_param_dump=Data::Dumper::Dumper(\%_);
+    $cgi_param_dump=&CGI::escapeHTML($cgi_param_dump);
+    $cgi_param_dump=~s/[\x00]+/,/g;
     $self->render_block('cgi_param', cgi_param_dump=>$cgi_param_dump );
 
 }
