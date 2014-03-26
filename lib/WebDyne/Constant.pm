@@ -229,9 +229,10 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     WEBDYNE_CGI_POST_MAX			=>	(512 * 1024), #512Kb
     
     
-    #  Expand CGI parameters
+    #  Expand CGI parameters found in CGI values, e.g. button with submit=1&name=2 will get those
+    #  CGI params set.
     #
-    WEBDYNE_CGI_PARAM_EXPAND			=>	0,
+    WEBDYNE_CGI_PARAM_EXPAND			=>	1,
 
 
     #  Error handling. Use text errors rather than HTML ?

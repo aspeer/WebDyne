@@ -59,7 +59,7 @@ sub main {
 
 	handler    => $ENV{'WebDyneHandler'} || 'WebDyne',
 	error	   => 'text',
-	header     => 0,
+	header     => 1,
 	warn	   => 1,
 
        );

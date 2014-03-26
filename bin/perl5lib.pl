@@ -14,7 +14,6 @@ use File::Spec;
 no warnings;
 local $^W=0;
 
-
 #  Get location of library include file (perl5lib.pm) for this particular
 #  type of OS.  Use %WINDIR% in Windows, /etc on other platforms
 #
@@ -52,15 +51,8 @@ sub main {
     #
     my @prefix_dn = shift() ||  &prefix();
     if (($prefix_dn[0] eq $Config{'prefix'}) && !@Perllib_dn)  { return 1 }
-    my %prefix_dn;
-
-    
-    #  We'll need the ExtUtils::MM module (if we can get it) later on
-    #
-    eval ("use ExtUtils::MM") || eval { undef }; # Clear $@ if fail
-
-
     my @inc;
+    my %prefix_dn; 
     foreach my $prefix_dn (grep {-d $_} (@prefix_dn, @Perllib_dn)) {
 
 
@@ -130,23 +122,6 @@ sub main {
 	    push @inc, File::Spec->catdir($prefix_dn, 'lib', $version, $Config{'archname'});
         }
         
-        #  Try to add any SITELIB paths from ExtUtils::MM if it loaded
-        if ($INC{'ExtUtils/MM.pm'}) {
-            my $mm_or=bless({ ARGS=>{ PREFIX=>$prefix_dn }}, ExtUtils::MM) || next;
-            if (eval { $mm_or->init_INSTALL() }) {
-                foreach my $key (qw(INSTALLSITELIB INSTALLSITEARCH)) {
-                    my $dn=$mm_or->{$key} || next;
-                    if ($dn=~s/^\Q$(SITEPREFIX)\E/$prefix_dn/) {
-                        push @inc, realpath($dn);
-                    }
-                }
-            }
-            else {
-                # Clear eval
-                #
-                eval { undef } if $@;
-            }
-        }
     }
 
 
@@ -154,9 +129,11 @@ sub main {
     #  needed by remembering which ones we have seen and avoid doing -d again - the above
     #  routing can generate duplicate entries in @inc;
     #
-    my %inc;
-    my @inc_tmp=grep { $inc{$_}++ ? undef : $_ } @inc;
-    @inc=map { realpath($_) } grep { -d $_ } @inc_tmp;
+    my %inc; 
+    @inc=grep { !$inc{$_}++ } @inc;
+    @inc=grep { -d $_ } @inc;
+    @inc=map  { realpath($_) } @inc;
+    my %inc_realpath= map { $_=>1 } @inc;
 
 
     #  Kludge to fix up when running from PAR - PAR inserts first line of 'package main; shift @INC', which
@@ -179,8 +156,48 @@ sub main {
     #  Add to @INC
     #
     'lib'->import(@inc);
-    
-    
+
+
+    #  Try to add any SITELIB paths from ExtUtils::MM if it loaded. Only load ExtUtils/MM after
+    #  adjusting @INC as it loads a stack of modules - including Carp. If loaded before @INC
+    #  adjusted they will all be loaded from existing @INC rather than new library location user
+    #  might want
+    #
+    eval ("use ExtUtils::MM") || eval { undef }; # Clear $@ if fail
+    if ($INC{'ExtUtils/MM.pm'}) {
+        my @inc_mm;
+        my %prefix_mm_dn;
+        foreach my $prefix_mm_dn (grep {$prefix_dn{$_}} (@prefix_dn, @Perllib_dn)) {
+
+
+            #  Skip if seen before otherwise add
+            #
+            next if $prefix_mm_dn{$prefix_mm_dn}++;
+            my $mm_or=bless({ ARGS=>{ PREFIX=>$prefix_mm_dn }}, ExtUtils::MM) || next;
+            if (eval { $mm_or->init_INSTALL() }) {
+                foreach my $key (qw(INSTALLSITELIB INSTALLSITEARCH)) {
+                    my $dn=$mm_or->{$key} || next;
+                    if ($dn=~s/^\Q$(SITEPREFIX)\E/$prefix_mm_dn/) {
+                        push @inc_mm, $dn;
+                    }
+                }
+            }
+            else {
+                # Clear eval
+                #
+                eval { undef } if $@;
+            }
+        }
+
+        @inc_mm=grep { !$inc{$_}++ } @inc_mm;
+        @inc_mm=grep { -d $_ } @inc_mm;
+        @inc_mm=map  { realpath($_) } @inc_mm;
+        @inc_mm=map  { !inc_realpath($_) } @inc_mm;
+        'lib'->import(@inc_mm);
+
+
+    }
+
     #  Re-order relative lib (except relative ones starting with .);
     #
     foreach my $inc (grep {/^.\//} @INC) {
