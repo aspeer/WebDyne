@@ -252,10 +252,18 @@ sub set_handlers {
 }
 
 
+sub noheader {
+
+    my $r=shift();
+    @_ ? $r->{'noheader'}=shift() : $r->{'noheader'};
+
+}
+
+
 sub send_http_header {
 
     my $r=shift();
-    return if $r->notes('noheader');
+    return if $r->{'noheader'};
     my $fh=$r->{'select'} || \*STDOUT;
     CORE::printf $fh ("Status: %s\n", $r->status());
     while(my($header, $value)=each(%{$r->{'headers_out'}})) {

@@ -8,7 +8,11 @@
 <form action="">
 <popup_menu values="@{qw(red blue)}" name="popup_array"/>
 <p>
-<popup_menu values="%{red=>'Red', blue=>'Blue'}" name="popup_hash"/>
+<popup_menu values="!{[qw(red blue)]}" name="popup_array"/>
+<p>
+<popup_menu values="!{tie(my %h, 'Tie::IxHash', ( red=>Red, blue=>Blue, green=>Green )); \%h}" name="popup_hash"/>
+<p>
+<popup_menu values="%{red=>'Red', blue=>'Blue', green=>Green}" name="popup_hash"/>
 <p>
 <perl method="popup0">
 <popup_menu values="${popup_ar}" name="${name}"/>
@@ -19,6 +23,12 @@
 </perl>
 <perl method="iterate">
 <p>i ${i}
+</perl>
+<perl method="submit1">
+<submit name="foo=bar;car=${i};dar=${dar}"/>
+<submit name="${i};dar=${dar}"/>
+<submit name="foo=bar&car=${i}&dar=${dar}"/>
+<submit name="${i}&dar=${dar}"/>
 </perl>
 </form>
 <end_html>
@@ -54,6 +64,11 @@ sub popup1 {
 
 sub iterate {
 	my $s=shift();
-	my @r=map { $s->render( i=>$_ ) } (0..2);
+	my @r=map { $s->render( i=>$_, dar=>'dar' ) } (0..2);
 	return \@r;
 }
+
+sub submit1 {
+        shift()->render( i=>1, dar=>'dar' )
+}
+    

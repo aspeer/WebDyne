@@ -21,26 +21,46 @@
         <option value="blue"> @0.1.6.0.1
           "blue"
       <p> @0.1.6.1
-        <select name="popup_hash"> @0.1.6.1.0
+        <select name="popup_array"> @0.1.6.1.0
           <option value="red"> @0.1.6.1.0.0
-            "Red"
-          <option value="blue"> @0.1.6.1.0.1
-            "Blue"
-      <p> @0.1.6.2
-        <select name="popup0"> @0.1.6.2.0
-          <option value="red"> @0.1.6.2.0.0
             "red"
-          <option value="blue"> @0.1.6.2.0.1
+          <option value="blue"> @0.1.6.1.0.1
             "blue"
-      <p> @0.1.6.3
-        <select name="popup1"> @0.1.6.3.0
-          <option value="blue"> @0.1.6.3.0.0
-            "Blue"
-          <option value="red"> @0.1.6.3.0.1
+      <p> @0.1.6.2
+        <select name="popup_hash"> @0.1.6.2.0
+          <option value="red"> @0.1.6.2.0.0
             "Red"
+          <option value="blue"> @0.1.6.2.0.1
+            "Blue"
+          <option value="green"> @0.1.6.2.0.2
+            "Green"
+      <p> @0.1.6.3
+        <select name="popup_hash"> @0.1.6.3.0
+          <option value="red"> @0.1.6.3.0.0
+            "Red"
+          <option value="blue"> @0.1.6.3.0.1
+            "Blue"
+          <option value="green"> @0.1.6.3.0.2
+            "Green"
       <p> @0.1.6.4
-        "i 0"
+        <select name="popup0"> @0.1.6.4.0
+          <option value="red"> @0.1.6.4.0.0
+            "red"
+          <option value="blue"> @0.1.6.4.0.1
+            "blue"
       <p> @0.1.6.5
-        "i 1"
+        <select name="popup1"> @0.1.6.5.0
+          <option value="blue"> @0.1.6.5.0.0
+            "Blue"
+          <option value="red"> @0.1.6.5.0.1
+            "Red"
       <p> @0.1.6.6
+        "i 0"
+      <p> @0.1.6.7
+        "i 1"
+      <p> @0.1.6.8
         "i 2"
+      <input name="foo=bar;car=1;dar=dar" type="submit" value="foo=bar;car=1;dar=dar" /> @0.1.6.9
+      <input name="1;dar=dar" type="submit" value="1;dar=dar" /> @0.1.6.10
+      <input name="foo=bar&amp;car=1&amp;dar=dar" type="submit" value="foo=bar&amp;car=1&amp;dar=dar" /> @0.1.6.11
+      <input name="1&amp;dar=dar" type="submit" value="1&amp;dar=dar" /> @0.1.6.12

@@ -27,8 +27,8 @@ find($wanted_sr, $RealBin);
 foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     my ($temp_fh, $temp_fn)=tempfile();
     #diag("test file $test_fn, temp_fh $temp_fh, temp_fn $temp_fn");
-    my $r=WebDyne::Request::Fake->new( filename=>$test_fn, select=>$temp_fh );
-    $r->notes('noheader', 1);
+    my $r=WebDyne::Request::Fake->new( filename=>$test_fn, select=>$temp_fh, noheader=>1 );
+    #$r->notes('noheader', 1);
     ok($r, 'request created');
 
 

@@ -233,6 +233,11 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     #  CGI params set.
     #
     WEBDYNE_CGI_PARAM_EXPAND			=>	1,
+    
+    
+    #  Disable CGI autoescape of form fields ?
+    #
+    WEBDYNE_CGI_AUTOESCAPE                      =>      0,
 
 
     #  Error handling. Use text errors rather than HTML ?
