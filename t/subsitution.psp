@@ -26,13 +26,17 @@
 </perl>
 <perl method="submit1">
 <submit name="foo=bar;car=${i};dar=${dar}"/>
-<submit name="${i};dar=${dar}"/>
+<submit name="i=${i};dar=${dar}"/>
 <submit name="foo=bar&car=${i}&dar=${dar}"/>
-<submit name="${i}&dar=${dar}"/>
+<submit name="i=${i}&dar=${dar}"/>
+<submit name="*{ASDF}"/>
+Text *{ASDF} ${dar} 
 </perl>
 </form>
 <end_html>
 __PERL__
+
+$ENV{'ASDF'}='GEFK';
 
 sub hello0 {
 	shift()->render( hello=>'Hello World 0' );
@@ -71,4 +75,3 @@ sub iterate {
 sub submit1 {
         shift()->render( i=>1, dar=>'dar' )
 }
-    

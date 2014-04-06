@@ -2428,75 +2428,24 @@ sub subst {
         return err('unable to get eval code ref table');
 
 
-    #  Var to hold result
-    #
-    my $text_subst=$text;
-
-
     #  Do we have to replace something in the text, look for pattern. We
     #  should always find something, as subst tag is only inserted at
     #  compile time in front of text with one of theses patterns
     #
     my $index;
-    while ($text=~/([$|!|+|*|^]{1})\{([$|!|+|*|^]?)(.*?)\2\}/gs) {
 
-
-        #  Yes, Save
-        #
-        my ($oper, $excl, $eval_text)=($1,$2,$3);
-        debug("subst hit on text $text, oper $oper excl $excl text $eval_text");
-
-
-        #  Run the appropriate eval
-        #
-        my $eval_sr=(
-
-            $eval_cr->{$oper} || return err("unknown eval operator, '$oper'")
-
-           )->($self, $data_ar, $param_data_hr, $eval_text, $index++) || do {
-
-               my $fragment=(length($text) > 80) ? substr($text,0,80) . '...' : $text;
-               $fragment=~s/^\n*//;
-               $fragment=~s/%/%%/;
-
-               return errsubst("eval error in fragment '$fragment': ".errstr())
-
-           };
-
-
-        # Should be a scalar ref
-        #
-        unless ((my $ref=ref($eval_sr)) eq 'SCALAR') {
-            return err("eval of '$eval_text' returned $ref ref, should return SCALAR ref");
-        }
-
-
-
-        #  Probably should have something now
-        #
-        if (!defined(${$eval_sr}) && $WEBDYNE_STRICT_DEFINED_VARS) {
-            return err("eval of '$eval_text' returned no value")
-        }
-
-
-
-        #  Work out what we are replacing, do it
-        #
-        my $eval_expr="$oper\{${excl}${eval_text}${excl}\}";
-        $text_subst=~s/\Q$eval_expr\E/${$eval_sr}/g;
-
-
-    }
-
-
-    #  Debug
-    #
-    #debug("return $text_subst");
-
+    my $cr=sub { 
+        my $sr=$eval_cr->{$_[0]}($self, $data_ar, $param_data_hr, $_[1], $_[2]) || 
+            return $self->err_eval(undef, [ \$_[1], 1, undef ]);
+        (ref($sr) eq 'SCALAR') ||
+            return err("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
+        $sr;
+    };
+    $text=~s/([\$!+*^]){\g1?(.*?)\g1?}/${$cr->($1,$2,$index++)}/ge;
 
     #  Done
     #
-    return \$text_subst;
+    return \$text;
 
 
 }
@@ -2528,7 +2477,7 @@ sub subst_attr {
 
     #  Go through each attribute and value
     #
-    my $attr_ix=0;
+    my $index;
     while ( my($attr_name, $attr_value)=each %attr ) {
 
 
@@ -2540,14 +2489,13 @@ sub subst_attr {
 
         #  Any variables in value ?
         #
-        if ($attr_value=~/^\s*([@%!+]{1}){\g1?(.+?)\g1?}\s*$/s) {
-        
+        if ($attr_value=~/^\s*([@%!+*^]{1}){\g1?(.+?)\g1?}\s*$/s) {
         
             #  Straightforward @%!+ operator, must be only content of value (can't be mixed
-            #  with string, e.g. <popup_list values="foo@{qw(bar)}" dont make sense
+            #  with string, e.g. <popup_list values="foo=@{qw(bar)}" dont make sense
             #
             my ($oper, $eval_text)=($1,$2);
-            my $eval=$eval_cr->{$oper}->($self, $data_ar, $param_hr, $eval_text, $attr_ix++, 1) ||
+            my $eval=$eval_cr->{$oper}->($self, $data_ar, $param_hr, $eval_text, $index++, 1) ||
                 return $self->err_eval(undef, [ \$eval_text, 1, undef ]);
             $attr{$attr_name}=(ref($eval) eq 'SCALAR') ? ${$eval} : $eval;
 
@@ -2557,7 +2505,7 @@ sub subst_attr {
             #  Entire attr val is of form "name=${foo}", therefore OK to submit for eval
             #
             my $eval_text=$1;
-            my $eval=$eval_cr->{'$'}->($self, $data_ar, $param_hr, $eval_text, $attr_ix++) ||
+            my $eval=$eval_cr->{'$'}->($self, $data_ar, $param_hr, $eval_text, $index++) ||
                 return $self->err_eval(undef, [ \$eval_text, 1, undef ]);
             $attr{$attr_name}=(ref($eval) eq 'SCALAR') ? ${$eval} : $eval;
         }
@@ -2566,7 +2514,7 @@ sub subst_attr {
             #  Trickier - might be interspersed in strings, e.g <submit name="foo=1&${bar}=2&car=${dar}"/>
             #  Substitution needed
             #
-            my $cr=sub { $eval_cr->{'$'}($self, $data_ar, $param_hr, $_[0], $attr_ix++) || 
+            my $cr=sub { $eval_cr->{'$'}($self, $data_ar, $param_hr, $_[0], $index++) || 
                 return $self->err_eval(undef, [ \$_[0], 1, undef ])  };
             $attr_value=~s/\$\{(.*?)\}/${$cr->($1)}/ge;
             $attr{$attr_name}=$attr_value
