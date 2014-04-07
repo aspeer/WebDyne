@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.225';
+$VERSION='1.227';
 
 
 #  Debug load
