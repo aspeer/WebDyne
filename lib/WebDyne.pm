@@ -2441,7 +2441,7 @@ sub subst {
             return err("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
         $sr;
     };
-    $text=~s/([\$!+*^]){\g1?(.*?)\g1?}/${$cr->($1,$2,$index++)}/ge;
+    $text=~s/([\$!+*^]){\1?(.*?)\1?}/${$cr->($1,$2,$index++)}/ge;
 
     #  Done
     #
@@ -2489,7 +2489,7 @@ sub subst_attr {
 
         #  Any variables in value ?
         #
-        if ($attr_value=~/^\s*([@%!+*^]{1}){\g1?(.+?)\g1?}\s*$/s) {
+        if ($attr_value=~/^\s*([@%!+*^]{1}){\1?(.+?)\1?}\s*$/s) {
         
             #  Straightforward @%!+ operator, must be only content of value (can't be mixed
             #  with string, e.g. <popup_list values="foo=@{qw(bar)}" dont make sense
