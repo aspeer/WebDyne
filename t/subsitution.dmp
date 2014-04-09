@@ -64,5 +64,6 @@
       <input name="i=1;dar=dar" type="submit" value="i=1;dar=dar" /> @0.1.6.10
       <input name="foo=bar&amp;car=1&amp;dar=dar" type="submit" value="foo=bar&amp;car=1&amp;dar=dar" /> @0.1.6.11
       <input name="i=1&amp;dar=dar" type="submit" value="i=1&amp;dar=dar" /> @0.1.6.12
-      <input name="GEFK" type="submit" value="GEFK" /> @0.1.6.13
+      <input name="1=1&amp;dar=dar" type="submit" value="1=1&amp;dar=dar" /> @0.1.6.13
+      <input name="GEFK" type="submit" value="GEFK" /> @0.1.6.14
       "Text GEFK dar"

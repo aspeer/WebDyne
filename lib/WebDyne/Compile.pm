@@ -1067,6 +1067,13 @@ sub parse {
     #  in CGI
     #
     $html_tag=$CGI_Tag_Ucase{$html_tag} || $html_tag;
+    
+    
+    #  Check valid
+    #
+    unless (UNIVERSAL::can('CGI', $html_tag) || $CGI_TAG_WEBDYNE{$html_tag}) { 
+        return err("unknown CGI/WebDyne tag: $html_tag")
+    }
 
 
     #  Get tag attr
