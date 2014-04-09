@@ -12,6 +12,7 @@ use Digest::MD5;
 use File::Find qw(find);
 use Data::Dumper;
 use IO::File;
+$Data::Dumper::Indent=1;
 
 
 #  Load WebDyne
@@ -78,7 +79,11 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     $md5_or->addfile($dump_fh);
     my $md5_dump=$md5_or->hexdigest();
     #diag("tree $md5_tree, dump $md5_dump");
-    ok($md5_tree eq $md5_dump, "render $test_fn") || do {
+    if ($md5_tree eq $md5_dump) {
+        pass("render $test_fn");
+    }
+    else {
+    #ok($md5_tree eq $md5_dump, "render $test_fn") || do {
         seek($tree_fh,0,0);
         seek($dump_fh,0,0);
         my @diff;
@@ -86,12 +91,30 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
         while (my $made=<$tree_fh>) {
             my $test=<$dump_fh>;
             $line++;
+            if ($made ne $test) {
+                #  Hacks for HTML::Tree 3.13 which renders tags differently
+                #
+                #   '13 [gen]:         <option value=2> @0.1.3.0.1
+                # ',
+                #   '13 [ref]:         <option value="2"> @0.1.3.0.1
+                # ',
+                #   '15 [gen]:       <input type="submit"> @0.1.3.1
+                # ',
+                #   '15 [ref]:       <input type="submit" /> @0.1.3.1
+                $test=~s/\s?\/>/>/g;
+                $test=~s/\"(\d+)\"/$1/g;
+            }
             unless ($made eq $test) {
                 push @diff, "$line [gen]: $made", "$line [ref]: $test";
             }
         }
-        $Data::Dumper::Indent=1;
-        diag('  diff: - ', Dumper(\@diff));
+        if (@diff) {
+            diag('  diff: - ', Dumper(\@diff));
+            fail("render $test_fn");
+        }
+        else {
+            pass("render $test_fn");
+        }
     };
 
 

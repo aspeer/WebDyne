@@ -30,6 +30,8 @@ use File::Spec;
 use IO::File;
 use HTML::TreeBuilder;
 use Data::Dumper;
+use CGI qw(-no_xhtml);
+$CGI::XHTML=0;
 
 
 #  Get list of files either from command line or from *.psp if no
@@ -79,6 +81,7 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     while (my $html=<$html_fh>) {
 	#  Do this way to get rid of extraneous CR's older version of CGI insert, spaces
 	#  after tags which also differ from ver to ver, confusing test
+	print "html $html\n";
 	$html=~s/\n+$//;
 	$html=~s/>\s+/>/g;
 	$tree_or->parse($html);
