@@ -63,7 +63,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.227';
+$VERSION='1.228';
 
 
 #  Debug load
@@ -99,6 +99,11 @@ my %Package;
 #  Do some class wide initialisation
 #
 &init_class();
+
+
+#  Eval safe not effective - die if turned on
+#
+if ($WEBDYNE_EVAL_SAFE) { die "WEBDYNE_EVAL_SAFE disabled in this version\n" }
 
 
 #  All done. Positive return
@@ -859,102 +864,6 @@ sub init_class {
         #  Get self ref
         #
         my ($self, $data_ar, $eval_param_hr, $eval_text, $index, $tag_fg)=@_;
-        #CORE::print STDERR join('*', @{$data_ar})," evel param_hr: $eval_param_hr\n";
-
-
-        #  Debug
-        #
-        my $inode=$self->{'_inode'} || 'ANON'; # Anon used when no inode present, eg wdcompile
-
-
-        #  Get CGI vars
-        #
-        my $param_hr=($self->{'_eval_cgi_hr'} ||= do {
-
-            my $cgi_or=$self->{'_CGI'} || $self->CGI();
-            $cgi_or->Vars();
-
-        });
-
-
-        #  Only eval subroutine if we have not done already, if need to eval store in
-        #  cache so only done once. 
-        #
-        my $eval_cr=$Package{'_cache'}{$inode}{'eval_cr'}{$data_ar}{$index} ||= do {
-            $Package{'_cache'}{$inode}{'perl_init'}{+undef} ||= $self->perl_init();
-            no strict;
-            no integer;
-            &eval_cr($inode, \$eval_text) || return
-                $self->err_eval("$@", [ \$eval_text, undef, undef ]);
-        };
-        #debug("eval done, eval_cr $eval_cr");
-
-
-        #  Run eval
-        #
-        my $html_sr=eval {
-
-            #  The following line puts all CGI params in %_ during the eval so they are easy to
-            #  get to ..
-            local *_=$param_hr;
-            $eval_cr->($self, $eval_param_hr)
-        };
-        if (!defined($html_sr) || $@) {
-
-            #  An error occurred - handle it and return.
-            #
-            if (errstr() || $@) { 
-            
-              #  Eval error or err() called during routine.
-              #
-              return $self->err_eval($@ ? $@ : undef, [ \$eval_text, undef, undef ]);
-
-            }
-            else { 
-            
-              #  Some other problem
-              #
-              return err('code did not return a true value: %s', $eval_text);
-            }
-
-        }
-
-
-        #  Array returneda and not evaling HT attribue values (which might want array ref ) ? Convert if so
-        #
-        if ((ref($html_sr) eq 'ARRAY') && !$tag_fg) {
-            $html_sr=\ join(undef, map { (ref($_) eq 'SCALAR') ? ${$_} : $_ } @{$html_sr}) ||
-                return err('unable to generate scalar from %s', Dumper($html_sr));
-        };
-
-
-        #  Any 'printed data ? Prepend to output
-        #
-        if (my $print_ar=delete $self->{'_print_ar'}{$data_ar}) {
-            my $print_html=join(undef, grep {$_} map { (ref($_) eq 'SCALAR') ? ${$_} : $_ } @{$print_ar});
-            $html_sr=ref($html_sr) ? \(${$html_sr}.$print_html) : $html_sr.$print_html;
-        }
-        
-
-        #  Always return a scalar ref
-        #
-        return ref($html_sr) ? $html_sr : \$html_sr;
-
-
-    };
-
-
-    #  Eval routine for eval'ing perl code in a non-safe way (ie hostile
-    #  code could probably easily subvert us, as all operations are
-    #  allowed, including redefining our subroutines etc).
-    #
-    my $eval_new_cr=sub {
-
-
-        #  Get self ref
-        #
-        my ($self, $data_ar, $eval_param_hr, $eval_text, $index, $tag_fg)=@_;
-        #CORE::print STDERR join('*', @{$data_ar})," eval param_hr: $eval_param_hr\n";
 
 
         #  Debug
@@ -995,7 +904,6 @@ sub init_class {
             $eval_cr->($self, $eval_param_hr)
 
         };
-        #CORE::print STDERR Data::Dumper::Dumper(\@eval, $eval_text);
         if (!@eval || $@) {
 
             #  An error occurred - handle it and return.
@@ -1016,7 +924,6 @@ sub init_class {
             }
 
         }
-        #CORE::print STDERR "Hit !", Data::Dumper::Dumper(\@eval);
         
         
         #  Done
@@ -1129,27 +1036,11 @@ sub init_class {
     my $eval_hash_cr=sub {
 
 
-        #  Get self ref, data_ar etc
+        #  Run eval and turn into tied hash
         #
-        #my ($self, $data_ar, $eval_param_hr, $eval_text, $index)=@_;
-        
-        #my $hr=$eval_cr->($self, $data_ar, $eval_param_hr, "[$eval_text]", $index) || return err();
-        tie (my %hr, 'Tie::IxHash', @{$eval_new_cr->(@_) || return err()});
+        tie (my %hr, 'Tie::IxHash', @{$eval_cr->(@_) || return err()});
         return \%hr;
 
-
-        #  Get code ref from cache of possible, otherwise create
-        #
-        #my $eval_cr=$Package{'_cache'}{$self->{'_inode'}}{'eval_hash_cr'}{$data_ar}{$index} ||= do {
-            #eval("sub{$eval_text}") || return(err("$@"));
-        #    &eval_cr($self->{'_inode'} || 'ANON', \$eval_text);
-        #};
-
-
-        #  Create an indexed, tied hash ref and return it
-        #
-        #tie (my %value, 'Tie::IxHash', $eval_cr->($self, $eval_param_hr) || return err());
-        #\%value;
 
     };
 
@@ -1159,37 +1050,25 @@ sub init_class {
     my $eval_array_cr=sub {
 
 
-        #  Get self ref, data_ar etc
+        #  Run eval and return default - which is an array ref
         #
-        return $eval_new_cr->(@_) || err();
-        my ($self, $data_ar, $eval_param_hr, $eval_text, $index)=@_;
-
-
-        #  Get code ref from cache of possible, otherwise create
-        #
-        my $eval_cr=$Package{'_cache'}{$self->{'_inode'}}{'eval_array_cr'}{$data_ar}{$index} ||= do {
-            #eval("sub{$eval_text}") || return(err(qq[$@ fragment "$eval_text"]));
-            &eval_cr($self->{'_inode'} || 'ANON', \$eval_text);
-
-        };
-
-
-        [$eval_cr->($self, $eval_param_hr) || return $self->err_eval(@_)];
+        return $eval_cr->(@_) || err();
 
     };
     
     
+    #  Code ref eval routine
+    #
     my $eval_code_cr=sub {
         
         my ($self, $data_ar, $eval_param_hr, $eval_text, $index, $tag_fg)=@_;
-        my $html_ar=@{$eval_new_cr->(@_) || err()};
+        my $html_ar=$eval_cr->(@_) || err();
         my $html_sr=$html_ar->[0];
-        #my $tag_fg=$_[5];
-
-        #my $html_sr=\ join(undef, map { (ref($_) eq 'SCALAR') ? ${$_} : $_ } @{$html_ar});
-        #  Array returneda and not evaling HT attribue values (which might want array ref ) ? Convert if so
+        
+        
+        #  If array ref returned and not rendering a tag convert to string. If in tag CGI.pm can
+        #  use array ref so leave alone
         #
-        #CORE::print STDERR "htlm_sr $html_sr, tag_fg $tag_fg\n".Data::Dumper::Dumper($html_sr);
         if ((ref($html_sr) eq 'ARRAY') && !$tag_fg) {
             $html_sr=\ join(undef, map { (ref($_) eq 'SCALAR') ? ${$_} : $_ } @{$html_sr}) ||
                 return err('unable to generate scalar from %s', Dumper($html_sr));
@@ -1203,14 +1082,15 @@ sub init_class {
             $html_sr=ref($html_sr) ? \(${$html_sr}.$print_html) : $html_sr.$print_html;
         }
 
-        #return $html_ar->[0];
         #  Make sure we return a ref
         #
         return ref($html_sr) ? $html_sr : \$html_sr;
         
     };
     
-    
+
+    #  Scalar (${foo}) routine
+    #    
     my $eval_scalar_cr=sub {
     
         my $value=$_[2]->{$_[3]};
@@ -1232,20 +1112,10 @@ sub init_class {
     #
     my %eval_cr=(
 
-        #'$' => sub {
-        #    (my $value=$_[2]->{$_[3]}) || do {
-        #        if (!exists($_[2]->{$_[3]}) && $WEBDYNE_STRICT_VARS) {
-        #            return err("no '$_[3]' parameter value supplied, parameters are: %s", join(',', map {"'$_'"} keys %{$_[2]}))
-        #        } };
-        #    #  Get rid of any overloading
-        #    if (ref($value) && overload::Overloaded($value)) { $value="$value" }
-        #    return ref($value) ? $value : \$value 
-        #},
         '$' => $eval_scalar_cr,
         '@' => $eval_array_cr,
         '%' => $eval_hash_cr,
-        '!' => $WEBDYNE_EVAL_SAFE ? $eval_safe_cr : $eval_cr,
-        #'!' => $eval_code_cr,
+        '!' => $eval_code_cr,
         '+' => sub { return \ ($_[0]->{'_CGI'}->param($_[3])) },
         '*' => sub { return \ $ENV{$_[3]} },
         '^' => sub { my $m=$_[3]; my $r=$_[0]->{'_r'};
