@@ -1,6 +1,6 @@
 #
 #
-#  Copyright (C) 2006-2010 Andrew Speer <andrew@webdyne.org>.
+#  Copyright (C) 2006-2014 Andrew Speer <andrew@webdyne.org>.
 #  All rights reserved.
 #
 #  This file is part of WebDyne.

@@ -170,7 +170,7 @@ sub import {
 	#  No, null our debug and Dumper routine
 	#
 	*{"${caller}::debug" }= sub {} unless UNIVERSAL::can($caller, 'debug');
-	*{"${caller}::Dumper"}= sub {} unless UNIVERSAL::can($caller, 'Dumper');
+	#*{"${caller}::Dumper"}= sub {} unless UNIVERSAL::can($caller, 'Dumper');
 
     };
 

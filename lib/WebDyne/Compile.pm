@@ -596,7 +596,8 @@ sub optimise_one {
 	#  Check to see if any of the attributes will require a subst to be carried out
 	#
 	my @subst_oper;
-	my $subst_fg=grep { $_=~/([$|@|%|!|+|^|*]{1})\{([$|@|%|!|+|^|*]?)(.*?)\2\}/s && push (@subst_oper, $1) } values %{$attr_hr};
+	#my $subst_fg=grep { $_=~/([$|@|%|!|+|^|*]{1})\{([$|@|%|!|+|^|*]?)(.*?)\2\}/s && push (@subst_oper, $1) } values %{$attr_hr};
+	my $subst_fg=grep { $_=~/([\$@%!+*^]){1}{(\1?)(.*?)\2}/ && push (@subst_oper, $1) } values %{$attr_hr};
 
 
 	#  Do not subst comments
@@ -807,7 +808,8 @@ sub optimise_two {
 
 	#  Check if this tag attributes will need substitution (eg ${foo});
 	#
-	my $subst_fg=grep { $_=~/([$|@|%|!|+|^|*]{1})\{([$|@|%|!|+|^|*]?)(.*?)\2\}/s } values %{$attr_hr};
+	#my $subst_fg=grep { $_=~/([$|@|%|!|+|^|*]{1})\{([$|@|%|!|+|^|*]?)(.*?)\2\}/s } values %{$attr_hr};
+	my $subst_fg=grep { $_=~/([\$@%!+*^]){1}{(\1?)(.*?)\2}/so } values %{$attr_hr};
 
 
 	#  If subst_fg present, means we must do a subst on attr vars. Flag, also get static flag
