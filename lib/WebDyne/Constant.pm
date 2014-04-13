@@ -35,6 +35,7 @@ local $^W=0;
 #
 use WebDyne::Base;
 use File::Spec;
+use Data::Dumper;
 require Opcode;
 
 

@@ -42,6 +42,7 @@ use WebDyne::Base;
 use File::Spec;
 use Text::Template;
 use IO::File;
+use Data::Dumper;
 
 
 #  Base installer
@@ -98,7 +99,7 @@ sub install {
 
     #  Get class, other paths
     #
-    my ($class, $prefix, $installbin_dn, $option_hr)=@_;
+    my ($class, $prefix, $installbin_dn, $opt_hr)=@_;
 
 
     #  Run the base install/uninstall routine to create the cache dir
@@ -202,7 +203,7 @@ sub install {
     #
     unless ($Uninstall_fg) {
         message "writing Apache config file '$webdyne_conf_fn'.";
-	my $webdyne_conf_fh=IO::File->new($webdyne_conf_fn, O_CREAT|O_WRONLY|O_TRUNC) ||
+	my $webdyne_conf_fh=$opt_hr->{'text'} ? *STDOUT : IO::File->new($webdyne_conf_fn, O_CREAT|O_WRONLY|O_TRUNC) ||
 	    return err("unable to open file $webdyne_conf_fn, $!");
 	print $webdyne_conf_fh $webdyne_conf;
 	$webdyne_conf_fh->close();
@@ -230,7 +231,7 @@ sub install {
 	($apache_conf_fn=~/^\//) || (
 	    $apache_conf_fn=File::Spec->catfile(
 		$config_hr->{'HTTPD_ROOT'},$apache_conf_fn));
-	my $apache_conf_fh=IO::File->new($apache_conf_fn, O_RDONLY) ||
+	my $apache_conf_fh=$opt_hr->{'text'} ? *STDOUT : IO::File->new($apache_conf_fn, O_RDONLY) ||
 	    return err("unable to open file $apache_conf_fn, $!");
 	message "Apache config file '$apache_conf_fn'";
 
@@ -430,13 +431,13 @@ sub install {
                                 my @context_ls=split(/\s+/,$context_ls);
                                 my $context=$context_ls[3];
                                 my ($user,$role,$type)=split(/\:/,$context);
-                                if (($type ne $SELINUX_CONTEXT_LIB) && !$option_hr->{'setcontext'}) {
+                                if (($type ne $SELINUX_CONTEXT_LIB) && !$opt_hr->{'setcontext'}) {
                                   message;
                                   message("WARNING: SELinux context type of '$module_so_fn' is '$type'");
                                   message("WARNING: file may not be loadable by Apache ! Use '$0 --setcontext' to change or fix manually");
                                   message;
                                 }
-                                elsif (($type ne $SELINUX_CONTEXT_LIB) && $option_hr->{'setcontext'}) {
+                                elsif (($type ne $SELINUX_CONTEXT_LIB) && $opt_hr->{'setcontext'}) {
 
                                   message("Adding SELinux context '$SELINUX_CONTEXT_LIB' to module library '$module_so_fn' via chcon");
 

@@ -7,8 +7,13 @@ sub BEGIN {
     $^W=0;
     use File::Spec;
     use FindBin qw($RealBin $Script);
-    require File::Spec->catfile($RealBin, 'perl5lib.pl');
-    perl5lib->import(File::Spec->catdir($RealBin, File::Spec->updir()));
+    foreach my $dn ($RealBin, File::Spec->path()) {
+        if (-f (my $fn=File::Spec->catfile($dn, 'perl5lib.pl'))) {
+            require $fn;
+            perl5lib->import(File::Spec->catdir($dn, File::Spec->updir()));
+            last;
+        }
+    }
 };
 use strict qw(vars);
 use vars qw($VERSION);
@@ -41,6 +46,7 @@ GetOptions(\%opt, (
     'silent',
     'setcontext',
     'uninstall',
+    'text|print',
     'version'
    ) ) ||  pod2usage(2);
 pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) 
