@@ -45,6 +45,7 @@ use HTML::TreeBuilder;
 use HTML::Entities;
 use HTML::Tagset;
 use IO::File;
+use Data::Dumper;
 
 
 #  Inheritance
@@ -54,7 +55,7 @@ use IO::File;
 
 #  Version information
 #
-$VERSION='1.015';
+$VERSION='1.016';
 
 
 #  Debug load

@@ -53,6 +53,7 @@ use Fcntl;
 use Tie::IxHash;
 use Digest::MD5 qw(md5_hex);
 use File::Spec::Unix;
+use Data::Dumper;
 use overload;
 
 
@@ -63,7 +64,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.229';
+$VERSION='1.230';
 
 
 #  Debug load
@@ -2490,11 +2491,12 @@ sub subst_attr {
     while ( my($attr_name, $attr_value)=each %attr ) {
 
 
-        #  Skip perl attr, as that is perl code, do not do any
-        #  regexp on perl code, as we will probably botch it
+        #  Skip perl attr, as that is perl code, do not do any regexp on perl code, as we will
+        #  probably botch it. Don't bother doing if/then's on anything without regexpt pattern.
         #
         next if ($attr_name eq 'perl');
-
+        next if ($attr_value!~/[\$@%!+*^]/);
+        
 
         #  Any variables in value ?
         #
@@ -2506,6 +2508,7 @@ sub subst_attr {
             my $eval=$eval_cr->{'$'}->($self, $data_ar, $param_hr, $eval_text, $index++) ||
                 return $self->err_eval(undef, [ \$eval_text, 1, undef ]);
             $attr{$attr_name}=(ref($eval) eq 'SCALAR') ? ${$eval} : $eval;
+
         }
         elsif ($attr_value=~/^\s*([@%!+*^]){1}{(\1?)(.*)\2}\s*$/so ) {
         
@@ -2518,15 +2521,21 @@ sub subst_attr {
             $attr{$attr_name}=(ref($eval) eq 'SCALAR') ? ${$eval} : $eval;
 
         }
-        elsif ($attr_value=~/\${(.*?)}/so) {
-        
+        else {
+
             #  Trickier - might be interspersed in strings, e.g <submit name="foo=1&${bar}=2&car=${dar}"/>
             #  Substitution needed
             #
-            my $cr=sub { $eval_cr->{'$'}($self, $data_ar, $param_hr, $_[0], $index++) || 
-                return $self->err_eval(undef, [ \$_[0], 1, undef ])  };
-            $attr_value=~s/\${(.*?)}/${$cr->($1)}/ge;
-            $attr{$attr_name}=$attr_value
+            my $cr=sub { 
+                my $sr=$eval_cr->{$_[0]}($self, $data_ar, $param_hr, $_[1], $_[2]) || 
+                    return $self->err_eval(undef, [ \$_[1], 1, undef ]);
+                (ref($sr) eq 'SCALAR') ||
+                    return err("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
+                $sr;
+            };
+            $attr_value=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++)}/ge;
+            $attr{$attr_name}=$attr_value;
+
         }
 
     }

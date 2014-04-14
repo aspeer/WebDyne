@@ -49,6 +49,7 @@ use Storable;
 use IO::File;
 use CGI qw(-no_xhtml);
 use CGI::Util;
+use Data::Dumper;
 
 
 #  WebDyne Modules
@@ -59,7 +60,7 @@ use WebDyne::Base;
 
 #  Version information
 #
-$VERSION='1.018';
+$VERSION='1.021';
 
 
 #  Debug load
