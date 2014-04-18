@@ -64,7 +64,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.231';
+$VERSION='1.232';
 
 
 #  Debug load
@@ -2492,27 +2492,16 @@ sub subst_attr {
 
 
         #  Skip perl attr, as that is perl code, do not do any regexp on perl code, as we will
-        #  probably botch it. Don't bother doing if/then's on anything without regexpt pattern.
+        #  probably botch it. 
         #
         next if ($attr_name eq 'perl');
-        next if ($attr_value!~/[\$@%!+*^]/);
         
 
-        #  Any variables in value ?
+        #  Look for attribute value strings that need substitution
         #
-        if ($attr_value=~/^\s*\${([^{]*)}\s*$/so) {
+        if ($attr_value=~/^\s*([\$@%!+*^]){1}{(\1?)([^{]+)\2}\s*$/so ) {
         
-            #  Entire attr val is of form name="${foo}", therefore OK to submit for eval as-is
-            #
-            my $eval_text=$1;
-            my $eval=$eval_cr->{'$'}->($self, $data_ar, $param_hr, $eval_text, $index++) ||
-                return $self->err_eval(undef, [ \$eval_text, 1, undef ]);
-            $attr{$attr_name}=(ref($eval) eq 'SCALAR') ? ${$eval} : $eval;
-
-        }
-        elsif ($attr_value=~/^\s*([@%!+*^]){1}{(\1?)(.*)\2}\s*$/so ) {
-        
-            #  Straightforward @%!+^ operator, must be only content of value (can't be mixed
+            #  Straightforward $@%!+^ operator, must be only content of value (can't be mixed
             #  with string, e.g. <popup_list values="foo=@{qw(bar)}" dont make sense
             #
             my ($oper, $eval_text)=($1,$3);

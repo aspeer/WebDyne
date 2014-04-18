@@ -38,7 +38,7 @@ use HTTP::Status (RC_OK);
 
 #  Version information
 #
-$VERSION='1.010';
+$VERSION='1.012';
 
 
 #  Debug load
@@ -202,7 +202,7 @@ sub register_cleanup {
 sub run {
 
     my ($r, $self)=@_;
-    ref($self)->handler($r);
+    (ref($self) || $self)->handler($r);
 
 }
 
