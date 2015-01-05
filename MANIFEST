@@ -1,7 +1,6 @@
 MANIFEST
 LICENSE
 INSTALL
-ChangeLog
 Makefile.PL
 lib/WebDyne.pm
 lib/WebDyne/Compile.pm
@@ -56,4 +55,3 @@ t/implicit.psp
 t/perlhead.dmp
 t/implicit.dmp
 README
-META.yml                                 Module meta-data (added by MakeMaker)

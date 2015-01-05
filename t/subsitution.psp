@@ -14,6 +14,8 @@
 <p>
 <popup_menu values="%{red=>'Red', blue=>'Blue', green=>Green}" name="popup_hash"/>
 <p>
+<popup_menu values="!{! [keys %{${__PACKAGE__.'::TEST_HR'}} ] !}" /></td>
+<p>
 <perl method="popup0">
 <popup_menu values="${popup_ar}" name="${name}"/>
 </perl>
@@ -38,6 +40,7 @@ Text *{ASDF} ${dar}
 __PERL__
 
 $ENV{'ASDF'}='GEFK';
+our $TEST_HR={ red=>'red', green=>'Green' };
 
 sub hello0 {
 	shift()->render( hello=>'Hello World 0' );

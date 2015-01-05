@@ -1,3 +1,15 @@
+#  This file is part of WebDyne.
+#
+#  This software is Copyright (c) 2015 by Andrew Speer <andrew@webdyne.org>.
+#
+#  This is free software, licensed under:
+#
+#    The GNU General Public License, Version 2, June 1991
+#
+#  Full license text is available at:
+#
+#  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+#
 #  Massage @INC library to support WebDyne (and other modules) installated
 #  into custom directories via PREFIX=/foo directive.
 #
@@ -6,6 +18,7 @@
 #
 package perl5lib;
 use strict qw(vars);
+use vars qw($VERSION);
 use Config;
 use Cwd qw(realpath);
 use lib;
@@ -13,6 +26,12 @@ use File::Spec;
 
 no warnings;
 local $^W=0;
+
+
+#  Version information
+#
+$VERSION='1.238';
+
 
 #  Get location of library include file (perl5lib.pm) for this particular
 #  type of OS.  Use %WINDIR% in Windows, /etc on other platforms

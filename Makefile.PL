@@ -51,6 +51,7 @@ my %makefile=(
 	'HTML::Tagset'			    =>  0,
 	'HTML::TreeBuilder'                 =>  0,
 	'Storable'			    =>  0,
+	'Test::More'                        =>  0,
 	'Tie::IxHash'			    =>  0,
 
         #  Needed for installer - can be ignored if not using installer
@@ -94,7 +95,7 @@ my %makefile=(
     'macro'				    =>  {
 
         COPYRIGHT			    =>  'Copyright (C) 2006-2010 Andrew Speer, All rights reserved',
-	LICENSE				    =>  'GPL: GNU General Public License',
+	#LICENSE				    =>  'GPL: GNU General Public License',
 
        },
 
@@ -107,18 +108,32 @@ my %makefile=(
 
     ($mm_ver < 6.31 ? () : (
 
-        LICENSE                             =>  'gpl',
+        LICENSE                             =>  'gpl_2',
 
     )),
     
     ($mm_ver <= 6.45 ? () : (
         
-        META_MERGE => { resources => {
-            
-            homepage                        =>  'http://webdyne.org',
-            license                         =>  'http://www.gnu.org/licenses/gpl.html'
-            
-        }}
+        META_MERGE => { 
+
+            'meta-spec'         => {
+                version         => 2
+            },
+            resources           => {
+                homepage        => 'https://webdyne.org',
+                repository      => {
+                    type        => 'git',
+                    url         => 'https://github.com/aspeer/WebDyne.git',
+                    web         => 'https://github.com/aspeer/WebDyne'
+                }
+            }
+        }
+    )),
+
+    ($mm_ver < 6.48 ? () : (
+
+        MIN_PERL_VERSION	=>  '5.006',
+
     )),
 
    );
@@ -157,19 +172,17 @@ WriteMakefile(%makefile);
 
 package MY;
 
-sub constants {
-
+sub post_initialize {
 
     #  Add license file, other support files here
     #
     my $mm_or=shift();
     $mm_or->{'PM'}{'LICENSE'}='$(INST_LIBDIR)/$(BASEEXT)/LICENSE';
-    $mm_or->SUPER::constants;
+    $mm_or->SUPER::post_initialize;
 
 };
 
-
-sub postamble {
+sub selfdocument {
 
 
     #  Copy pre built man files

@@ -1,24 +1,14 @@
-#
-#
-#  Copyright (C) 2006-2014 Andrew Speer <andrew@webdyne.org>.
-#  All rights reserved.
-#
 #  This file is part of WebDyne.
 #
-#  WebDyne is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  This software is Copyright (c) 2015 by Andrew Speer <andrew@webdyne.org>.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
+#  This is free software, licensed under:
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#    The GNU General Public License, Version 2, June 1991
 #
+#  Full license text is available at:
+#
+#  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
 #
 package WebDyne;
 
@@ -64,7 +54,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.233';
+$VERSION='1.238';
 
 
 #  Debug load
@@ -2495,11 +2485,13 @@ sub subst_attr {
         #  probably botch it. 
         #
         next if ($attr_name eq 'perl');
-        
 
-        #  Look for attribute value strings that need substitution
+
+        #  Look for attribute value strings that need substitution. First and second attemps did'nt work as single regexp
         #
-        if ($attr_value=~/^\s*([\$@%!+*^]){1}{(\1?)([^{]+)\2}\s*$/so ) {
+        #if ($attr_value=~/^\s*([\$@%!+*^]){1}{(\1?)([^{]+)\2}\s*$/so ) {
+        #if ($attr_value=~/^\s*([\$@%!+*^]){1}{(\1?)(.*)\2}\s*$/so ) {
+        if ($attr_value=~/^\s*([\@%!+*^]){1}{(\1?)(.*)\2}\s*$/so || $attr_value=~/^\s*(\$){1}{(\1?)([^{]+)\2}\s*$/so ) {
         
             #  Straightforward $@%!+^ operator, must be only content of value (can't be mixed
             #  with string, e.g. <popup_list values="foo=@{qw(bar)}" dont make sense

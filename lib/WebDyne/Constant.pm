@@ -1,24 +1,14 @@
-#
-#
-#  Copyright (C) 2006-2010 Andrew Speer <andrew@webdyne.org>.
-#  All rights reserved.
-#
 #  This file is part of WebDyne.
 #
-#  WebDyne is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  This software is Copyright (c) 2015 by Andrew Speer <andrew@webdyne.org>.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
+#  This is free software, licensed under:
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#    The GNU General Public License, Version 2, June 1991
 #
+#  Full license text is available at:
+#
+#  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
 #
 package WebDyne::Constant;
 
@@ -27,6 +17,7 @@ package WebDyne::Constant;
 #
 use strict qw(vars);
 use vars qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
+use warnings;
 no warnings qw(uninitialized);
 local $^W=0;
 
@@ -41,7 +32,7 @@ require Opcode;
 
 #  Version information
 #
-$VERSION='1.020';
+$VERSION='1.238';
 
 
 #  Get mod_perl version. Clear $@ after evals
