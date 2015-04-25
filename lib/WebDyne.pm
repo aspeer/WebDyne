@@ -241,16 +241,29 @@ sub handler : method {
     }
 
 
-
     #  Test if compile/reload needed
     #
-    if ($self->{'_compile'} || ($cache_inode_hr->{'mtime'} < $srce_mtime) || ($cache_mtime > $cache_inode_hr->{'mtime'})) {
+    if ($WEBDYNE_RELOAD || $self->{'_compile'} || ($cache_inode_hr->{'mtime'} < $srce_mtime) || ($cache_mtime > $cache_inode_hr->{'mtime'})) {
 
 
         #  Debug
         #
-        debug("compile/reload needed _compile %s, cache_inode_hr mtime %s, srce_mtime $srce_mtime",
+        debug("compile/reload needed _compile %s, cache_inode_hr mtime %s, srce_mtime $srce_mtime, WEBDYNE::RELOAD $WEBDYNE::RELOAD",
               $self->{'_compile'}, $cache_inode_hr->{'mtime'});
+
+
+        #  use Module::Reload to reload modules
+        #
+        if ($WEBDYNE_RELOAD) {
+            local $SIG{'__DIE__'};
+            unless ($INC{'Module/Reload.pm'}) {
+                debug('loading Module::Reload');
+                eval { require Module::Reload };
+                return $self->err_html('unable to load Module::Reload - is it installed ?') if $@;
+            }
+            debug('running Module::Reload->check');
+            Module::Reload->check();
+        }
 
 
         #  Null out cache_inode to clear any flags

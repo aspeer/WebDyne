@@ -271,12 +271,17 @@ my $MP2 = ($Mod_perl_version > 1.99) ? 1 : 0;
     WEBDYNE_ERROR_EVAL_TEXT_IX			=>	0,
     WEBDYNE_ERROR_EVAL_EMBEDDED_IX		=>	1,
     WEBDYNE_ERROR_EVAL_LINE_NO_IX		=>	2,
-    
-    
+
+
     #  Alternate error message if WEBDYNE_ERROR_SHOW disabled
     #
     WEBDYNE_ERROR_SHOW_ALTERNATE		=>
         'error display disabled - enable WEBDYNE_ERROR_SHOW to show errors, or review web server error log.',
+
+
+    #  Development mode - recompile loaded modules
+    #
+    WEBDYNE_RELOAD                              =>      0,
     
 
     #  Mod_perl level. Do not change unless you know what you are

@@ -203,4 +203,10 @@ Deny from none
 #
 #  $WebDyne::WEBDYNE_CGI_PARAM_EXPAND=<!-- $WEBDYNE_CGI_PARAM_EXPAND -->;
 
+
+#  Reload modules from disk if changed ?
+#
+#
+#  $WebDyne::WENDYNE_RELOAD=<!-- $WEBDYNE_RELOAD -->;
+
 </Perl>
