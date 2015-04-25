@@ -1030,6 +1030,7 @@ sub parse {
     #
     my ($self, $html_or, $meta_hr)=@_;
     my ($line_no, $line_no_tag_end)=@{$html_or}{'_line_no', '_line_no_tag_end'};
+    my $html_fn_sr=$meta_hr->{'manifest'}[0];
     debug("parse $self, $html_or line_no $line_no line_no_tag_end $line_no_tag_end");
     #debug("parse $html_or, %s", Dumper($html_or));
 
@@ -1046,7 +1047,8 @@ sub parse {
         $WEBDYNE_NODE_LINE_TAG_END_IX,
         $WEBDYNE_NODE_SRCE_IX
     ]=(
-        undef, undef, undef, undef, $line_no, $line_no_tag_end, $meta_hr->{'manifest'}[0]
+        #undef, undef, undef, undef, $line_no, $line_no_tag_end, $meta_hr->{'manifest'}[0]
+        undef, undef, undef, undef, $line_no, $line_no_tag_end, $html_fn_sr
     );
 
 
@@ -1064,7 +1066,7 @@ sub parse {
     #  Check valid
     #
     unless (UNIVERSAL::can('CGI', $html_tag) || $CGI_TAG_WEBDYNE{$html_tag}) { 
-        return err("unknown CGI/WebDyne tag: $html_tag")
+        return err("unknown CGI/WebDyne tag: <$html_tag>, line $line_no in source file ${$html_fn_sr}")
     }
 
 
@@ -1082,7 +1084,8 @@ sub parse {
 	#
 	if ($html_or->{'_code'} && $attr{'perl'}) {
 	    push @{$meta_hr->{'perl'}}, \$attr{'perl'};
-	    push @{$meta_hr->{'perl_debug'}}, [$line_no_tag_end, $meta_hr->{'manifest'}[0]];
+	    #push @{$meta_hr->{'perl_debug'}}, [$line_no_tag_end, $meta_hr->{'manifest'}[0]];
+	    push @{$meta_hr->{'perl_debug'}}, [$line_no_tag_end, $html_fn_sr];
         }
 	else {
 	    @data[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX]=($html_tag, \%attr);

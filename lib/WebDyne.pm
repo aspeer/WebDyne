@@ -735,7 +735,7 @@ sub eval_cr {
    #  Return eval subroutine ref for inode ($_[0]) and eval code ref ($_[1]). Avoid using
    #  var names so not available in eval code
    #
-   eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT; sub{${$_[1]}}");
+   eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;\n" . "#line $_[2]\n" . "sub{${$_[1]}}");
    
 
 }
@@ -743,7 +743,7 @@ sub eval_cr {
 
 sub perl_init_cr {
 
-    eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT; ${$_[1]}");
+    eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;\n". "#line $_[2]\n" . "${$_[1]}");
     
 }
 
@@ -873,6 +873,7 @@ sub init_class {
         #  Debug
         #
         my $inode=$self->{'_inode'} || 'ANON'; # Anon used when no inode present, eg wdcompile
+        my $html_line_no=$data_ar->[$WEBDYNE_NODE_LINE_IX];
 
 
         #  Get CGI vars
@@ -892,7 +893,7 @@ sub init_class {
             $Package{'_cache'}{$inode}{'perl_init'}{+undef} ||= $self->perl_init();
             no strict;
             no integer;
-            &eval_cr($inode, \$eval_text) || return
+            &eval_cr($inode, \$eval_text, $html_line_no) || return
                 $self->err_eval("$@", [ \$eval_text, undef, undef ]);
         };
         #debug("eval done, eval_cr $eval_cr");
@@ -2368,7 +2369,7 @@ sub perl_init {
             
             #  Now init the perl code
             #
-            my $eval_cr=&perl_init_cr($inode, $perl_sr) || do {
+            my $eval_cr=&perl_init_cr($inode, $perl_sr, $perl_line_no) || do {
             
             
                 #  Nothing was returned from perl_init - did an error occur ?
@@ -3233,13 +3234,6 @@ sub inode {
     my $self=shift();
     @_ ? $self->{'_inode'}=shift() : $self->{'_inode'};
 
-}
-
-
-sub perl_init_cr {
-
-    eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT; ${$_[1]}");
-    
 }
 
 
