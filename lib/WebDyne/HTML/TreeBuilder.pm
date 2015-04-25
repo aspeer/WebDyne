@@ -526,6 +526,7 @@ sub text {
         #  Strip leading CR from Perl code so line numbers in errors make sense
         #unless ($HTML_Perl_or->{'perl'}) { $text=~s/^\n// }
 	$HTML_Perl_or->{'perl'}.=$text;
+	$HTML_Perl_or->{'_line_no_tag_end'}=$Line_no;
 
 
     }
