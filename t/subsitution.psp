@@ -40,7 +40,8 @@ Text *{ASDF} ${dar}
 __PERL__
 
 $ENV{'ASDF'}='GEFK';
-our $TEST_HR={ red=>'red', green=>'Green' };
+tie(our %TEST_HR, 'Tie::IxHash', ( green=>'Green', red=>'red' ));
+our $TEST_HR=\%TEST_HR;
 
 sub hello0 {
 	shift()->render( hello=>'Hello World 0' );
