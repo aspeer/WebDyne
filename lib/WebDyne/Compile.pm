@@ -1084,8 +1084,7 @@ sub parse {
 	#
 	if ($html_or->{'_code'} && $attr{'perl'}) {
 	    push @{$meta_hr->{'perl'}}, \$attr{'perl'};
-	    #push @{$meta_hr->{'perl_debug'}}, [$line_no_tag_end, $meta_hr->{'manifest'}[0]];
-	    push @{$meta_hr->{'perl_debug'}}, [$line_no_tag_end, $html_fn_sr];
+	    push @{$meta_hr->{'perl_debug'}}, [$line_no, $html_fn_sr];
         }
 	else {
 	    @data[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX]=($html_tag, \%attr);

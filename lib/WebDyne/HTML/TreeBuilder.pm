@@ -550,7 +550,7 @@ sub text {
 	$self->implicit(0);
 	$self->push_content($HTML_Perl_or=HTML::Element->new('perl', inline=>1));
         debug("insert line_no $Line_no into object ref $HTML_Perl_or");
-	@{$HTML_Perl_or}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no);
+	@{$HTML_Perl_or}{'_line_no', '_line_no_tag_end'}=($Line_no, $Line_no);
 	$HTML_Perl_or->{'_code'}++;
 
     }
@@ -584,10 +584,9 @@ sub text {
 	    }
 
 	    my $or=HTML::Element->new('subst');
-	    #$or->{'_line_no'}=$Line_no_start;
-	    $Line_no_start=$Line_no - scalar @cr;
+	    my $line_no_start=$Line_no;
             debug("insert line_no $Line_no_start, line_no_tag_end $Line_no into object ref $or for text $text, cr %s", scalar @cr);
-            @{$or}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no);
+            @{$or}{'_line_no', '_line_no_tag_end'}=($line_no_start, $Line_no);
 	    $or->push_content($text);
 	    $self->tag_parse('SUPER::text', $or )
         }

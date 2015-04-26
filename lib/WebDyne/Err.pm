@@ -192,7 +192,7 @@ sub err_html {
 
             errstr      => $errstr,
             errstack_ar => \@errstack,
-            erreval_ar  => $self->{'_err_eval_ar'},
+            errperl_sr  => $self->{'_err_perl_sr'},
             data_ar     => $self->{'_data_ar'},
             r           => $r
   
@@ -282,25 +282,18 @@ sub err_eval {
     
     #  Special handler for eval errors
     #
-    my ($self, $message, @param)=@_;
+    my ($self, $message, $perl_sr)=@_;
+    debug("err_eval $message, %s, caller %s", Dumper($perl_sr), Dumper([caller()]));
     
 
-    #  Last param must be array ref with paramaters
-    #
-    my $param_ar=pop @param;
-    unless (ref($param_ar) eq ARRAY) {
-        return err('err_eval called without array ref to eval error param')
-    }
-    
-    
     #  Store away for future ref by error handler
     #
-    $self->{'_err_eval_ar'}=$param_ar;
+    $self->{'_err_perl_sr'}=$perl_sr;
     
     
     #  Send message off to main error handler and return
     #
-    return &err($message, @param);
+    return &errsubst($message);
     
 }  
 

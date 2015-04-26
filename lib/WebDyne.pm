@@ -735,7 +735,7 @@ sub eval_cr {
    #  Return eval subroutine ref for inode ($_[0]) and eval code ref ($_[1]). Avoid using
    #  var names so not available in eval code
    #
-   eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;\n" . "#line $_[2]\n" . "sub{${$_[1]}}");
+   eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;\n" . "#line $_[2]\n" . "sub{${$_[1]}\n}");
    
 
 }
@@ -743,7 +743,7 @@ sub eval_cr {
 
 sub perl_init_cr {
 
-    eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;\n". "#line $_[2]\n" . "${$_[1]}");
+   eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;\n". "#line $_[2]\n" . "${$_[1]}");
     
 }
 
@@ -893,23 +893,27 @@ sub init_class {
             $Package{'_cache'}{$inode}{'perl_init'}{+undef} ||= $self->perl_init();
             no strict;
             no integer;
+            debug("calling eval sub: $eval_text");
             &eval_cr($inode, \$eval_text, $html_line_no) || return
-                $self->err_eval("$@", [ \$eval_text, undef, undef ]);
+                $self->err_eval("$@", \$eval_text);
         };
         #debug("eval done, eval_cr $eval_cr");
 
 
         #  Run eval
         #
-        my @eval=eval {
+        my @eval;
+        eval {
 
             #  The following line puts all CGI params in %_ during the eval so they are easy to
             #  get to ..
             local *_=$param_hr;
-            $eval_cr->($self, $eval_param_hr)
+            debug('eval call starting');
+            @eval=$eval_cr->($self, $eval_param_hr);
+            debug("eval call complete, $@, %s", Dumper(\@eval)); 
 
         };
-        if (!@eval || $@) {
+        if (!@eval || $@ || !$eval[0]) {
 
             #  An error occurred - handle it and return.
             #
@@ -917,7 +921,7 @@ sub init_class {
             
               #  Eval error or err() called during routine.
               #
-              return $self->err_eval($@ ? $@ : undef, [ \$eval_text, undef, undef ]);
+              return $self->err_eval($@ ? $@ : undef, \$eval_text);
 
             }
             else { 
@@ -999,7 +1003,7 @@ sub init_class {
             
               #  Eval error or err() called during routine.
               #
-              return $self->err_eval($@ ? $@ : undef, [ \$eval_text, undef, undef ]);
+              return $self->err_eval($@ ? $@ : undef, \$eval_text);
 
             }
             else { 
@@ -1067,7 +1071,9 @@ sub init_class {
     my $eval_code_cr=sub {
         
         my ($self, $data_ar, $eval_param_hr, $eval_text, $index, $tag_fg)=@_;
-        my $html_ar=$eval_cr->(@_) || err();
+        debug("eval code start $eval_text");
+        my $html_ar=$eval_cr->(@_) || return err();
+        debug("eval code finish %s", Dumper($html_ar));
         my $html_sr=$html_ar->[0];
         
         
@@ -1388,7 +1394,7 @@ sub render {
 
             #  Debug
             #
-            #debug("rendering webdyne tag $html_tag");
+            debug("rendering webdyne tag $html_tag");
 
 
             #  Special WebDyne tag, render using our self ref, not CGI object
@@ -2212,7 +2218,7 @@ sub perl {
             #  Error occurred. Pop data ref off stack and return
             #
             shift @{$self->{'_perl'}};
-            return $self->err_eval(undef, [ \"&${function}", 1, 1 ]);
+            return err();
 
 
         };
@@ -2350,14 +2356,9 @@ sub perl_init {
                     $self->{'_data_ar'}=\@data;
                     
                     
-                    #  Erreval array we need to pass as ref when throwing error
-                    #
-                    my @erreval=( $perl_sr, 1, undef );
-                    
-                    
                     #  Throw error
                     #
-                    return $self->err_eval($@ ? "error in __PERL__ block: $@" : undef, \@erreval);
+                    return $self->err_eval($@ ? "error in __PERL__ block: $@" : undef, $perl_sr);
 
                 }
             };
@@ -2397,14 +2398,9 @@ sub perl_init {
                         $self->{'_data_ar'}=\@data;
                         
                         
-                        #  Erreval array we need to pass as ref when throwing error
-                        #
-                        my @erreval=( $perl_sr, 1, undef );
-                        
-                        
                         #  Throw error
                         #
-                        return $self->err_eval($@ ? "error in __PERL__ block: $@" : undef, \@erreval);
+                        return $self->err_eval($@ ? "error in __PERL__ block: $@" : undef, $perl_sr);
                             
                 }
             };
@@ -2433,7 +2429,7 @@ sub subst {
 
     #  Debug
     #
-    #debug("eval $text %s", Dumper($param_data_hr));
+    debug("eval $text %s", Dumper($param_data_hr));
 
 
     #  Get eval code refs for subst
@@ -2449,12 +2445,12 @@ sub subst {
     my $index;
     my $cr=sub { 
         my $sr=$eval_cr->{$_[0]}($self, $data_ar, $param_data_hr, $_[1], $_[2]) || 
-            return $self->err_eval(undef, [ \$_[1], 1, undef ]);
+            return err();
         (ref($sr) eq 'SCALAR') ||
             return err("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
         $sr;
     };
-    $text=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++)}/ge;
+    $text=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++) || return err()}/ge;
 
 
     #  Done
@@ -2475,7 +2471,7 @@ sub subst_attr {
 
     #  Debug
     #
-    #debug('subst_attr %s', Dumper({%{$attr_hr}, perl=>undef}));
+    debug('subst_attr %s', Dumper({%{$attr_hr}, perl=>undef}));
 
 
     #  Get eval code refs for subst
@@ -2512,7 +2508,7 @@ sub subst_attr {
             #
             my ($oper, $eval_text)=($1,$3);
             my $eval=$eval_cr->{$oper}->($self, $data_ar, $param_hr, $eval_text, $index++, 1) ||
-                return $self->err_eval(undef, [ \$eval_text, 1, undef ]);
+                return err();
             $attr{$attr_name}=(ref($eval) eq 'SCALAR') ? ${$eval} : $eval;
 
         }
@@ -2523,12 +2519,12 @@ sub subst_attr {
             #
             my $cr=sub { 
                 my $sr=$eval_cr->{$_[0]}($self, $data_ar, $param_hr, $_[1], $_[2]) || 
-                    return $self->err_eval(undef, [ \$_[1], 1, undef ]);
+                    return err();
                 (ref($sr) eq 'SCALAR') ||
                     return err("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
                 $sr;
             };
-            $attr_value=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++)}/ge;
+            $attr_value=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++) || return err()}/ge;
             $attr{$attr_name}=$attr_value;
 
         }
@@ -2538,7 +2534,7 @@ sub subst_attr {
 
     #  Debug
     #
-    #debug('returning attr hash %s', Dumper({%attr, perl=>undef }));
+    debug('returning attr hash %s', Dumper({%attr, perl=>undef }));
 
 
     #  Return new attribute hash
