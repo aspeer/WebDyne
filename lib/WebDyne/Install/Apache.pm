@@ -50,7 +50,7 @@ use WebDyne::Install::Apache::Constant;
 
 #  Version information
 #
-$VERSION='1.239';
+$VERSION='1.240';
 
 
 #  Debug
