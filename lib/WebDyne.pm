@@ -845,6 +845,11 @@ sub init_class {
     #
     $CGI::DISABLE_UPLOADS=$WEBDYNE_CGI_DISABLE_UPLOADS;
     $CGI::POST_MAX=$WEBDYNE_CGI_POST_MAX;
+    
+    
+    #  Apparently not such good practice - but needed
+    #
+    $CGI::LIST_CONTEXT_WARN=0;
 
 
     #  Alias request method to just 'r' also
