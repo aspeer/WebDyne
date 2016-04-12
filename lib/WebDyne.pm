@@ -1,6 +1,7 @@
+#
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2015 by Andrew Speer <andrew@webdyne.org>.
+#  This software is Copyright (c) 2016 by Andrew Speer <andrew@webdyne.org>.
 #
 #  This is free software, licensed under:
 #
@@ -54,7 +55,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.240';
+$VERSION='1.241';
 
 
 #  Debug load
@@ -3443,15 +3444,18 @@ A full man page with usage and examples is installed with the WebDyne module. Fu
 WebDyne web page, http://webdyne.org/ with a snapshot of current documentation in PDF format available in the module
 source /doc directory.
 
-=head1 Copyright and License
+=head1 LICENSE and COPYRIGHT
 
-WebDyne is Copyright (C) 2006-2010 Andrew Speer. Webdyne is dual licensed. It is released as free software released
-under the Gnu Public License (GPL), but is also available for commercial use under a proprietary license - please
-contact the author for further information.
+This file is part of WebDyne.
 
-WebDyne is written in Perl and uses modules from CPAN (the Comprehensive Perl Archive Network). CPAN modules are
-Copyright (C) the owner/author, and are available in source from CPAN directly. All CPAN modules used are covered by the
-Perl Artistic License.
+This software is Copyright (c) 2016 by Andrew Speer <andrew@webdyne.org>.
+
+This is free software, licensed under:
+
+  The GNU General Public License, Version 2, June 1991
+
+Full license text is available at:
+L<http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
 
 =head1 Author
 

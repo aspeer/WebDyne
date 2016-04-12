@@ -1,6 +1,7 @@
+#
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2015 by Andrew Speer <andrew@webdyne.org>.
+#  This software is Copyright (c) 2016 by Andrew Speer <andrew@webdyne.org>.
 #
 #  This is free software, licensed under:
 #
@@ -10,6 +11,7 @@
 #
 #  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
 #
+
 package WebDyne::Request::Fake;
 
 
@@ -30,7 +32,7 @@ use HTTP::Status (RC_OK);
 
 #  Version information
 #
-$VERSION='1.240';
+$VERSION='1.241';
 
 
 #  Debug load

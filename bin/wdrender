@@ -1,5 +1,19 @@
 #!/usr/bin/perl
 #
+#  This file is part of WebDyne.
+#
+#  This software is Copyright (c) 2016 by Andrew Speer <andrew@webdyne.org>.
+#
+#  This is free software, licensed under:
+#
+#    The GNU General Public License, Version 2, June 1991
+#
+#  Full license text is available at:
+#
+#  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+#
+
+#
 #  Compile and/or show compiled version of WebDyne HTML scripts
 #
 package main;
@@ -33,7 +47,7 @@ use IO::File;
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='1.240';
+$VERSION='1.241';
 
 
 #  Run main
@@ -277,7 +291,16 @@ B<widget.psp>
 
 Written by Andrew Speer, andrew@webdyne.org
 
-=head1 Copying
+=head1 LICENSE and COPYRIGHT
 
-Copyright (C) 2008-2010 Andrew Speer. Free use of this software is
-granted under the terms of the GNU General Public License (GPL)
+This file is part of WebDyne.
+
+This software is Copyright (c) 2016 by Andrew Speer <andrew@webdyne.org>.
+
+This is free software, licensed under:
+
+  The GNU General Public License, Version 2, June 1991
+
+Full license text is available at:
+L<http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+

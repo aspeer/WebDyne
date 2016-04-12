@@ -1,6 +1,7 @@
+#
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2015 by Andrew Speer <andrew@webdyne.org>.
+#  This software is Copyright (c) 2016 by Andrew Speer <andrew@webdyne.org>.
 #
 #  This is free software, licensed under:
 #
@@ -10,12 +11,13 @@
 #
 #  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
 #
+
 #  Massage @INC library to support WebDyne (and other modules) installated
 #  into custom directories via PREFIX=/foo directive.
 #
 #  Jumps through hoops to try and add all possible relevant directories to
 #  @INC so module load will work.
-#
+
 package perl5lib;
 use strict qw(vars);
 use vars qw($VERSION);
@@ -30,7 +32,7 @@ local $^W=0;
 
 #  Version information
 #
-$VERSION='1.240';
+$VERSION='1.241';
 
 
 #  Get location of library include file (perl5lib.pm) for this particular

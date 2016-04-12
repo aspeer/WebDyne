@@ -1,6 +1,7 @@
+#
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2015 by Andrew Speer <andrew@webdyne.org>.
+#  This software is Copyright (c) 2016 by Andrew Speer <andrew@webdyne.org>.
 #
 #  This is free software, licensed under:
 #
@@ -32,7 +33,7 @@ require Opcode;
 
 #  Version information
 #
-$VERSION='1.240';
+$VERSION='1.241';
 
 
 #  Get mod_perl version. Clear $@ after evals
