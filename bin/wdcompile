@@ -53,7 +53,7 @@ use Data::Dumper;
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='1.241';
+$VERSION='1.242';
 
 
 #  Run main

@@ -32,7 +32,7 @@ use HTTP::Status (RC_OK);
 
 #  Version information
 #
-$VERSION='1.241';
+$VERSION='1.242';
 
 
 #  Debug load
