@@ -389,7 +389,12 @@ sub handler : method {
         #  early enough. Will only happen after first compile, so no major performance
         #  impact on CGI object recreation
         #
-        delete $self->{'_CGI'} if $WEBDYNE_CGI_PARAM_EXPAND;
+        #  Update: Re-init rather than delete or WebDyne::State worn't work
+        #
+        #delete $self->{'_CGI'} if $WEBDYNE_CGI_PARAM_EXPAND;
+        if ((my $cgi_or=$self->{'_CGI'}) && $WEBDYNE_CGI_PARAM_EXPAND) {
+            $cgi_or->init();
+        }
 
 
     }
@@ -2999,6 +3004,7 @@ sub CGI_param_expand {
     #
     my $cgi_or=shift() ||
         return err("unable to get CGI object");
+    local($CGI::LIST_CONTEXT_WARN)=0;
     foreach my $param (grep /=/, $cgi_or->param()) {
         my(@pairs) = split(/[&;]/,$param);
         foreach my $pair (@pairs) {
