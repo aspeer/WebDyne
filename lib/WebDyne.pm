@@ -852,9 +852,10 @@ sub init_class {
     $CGI::POST_MAX=$WEBDYNE_CGI_POST_MAX;
     
     
-    #  Apparently not such good practice - but needed
+    #  Apparently not such good practice - but needed. 
+    #  Update. Now done via local() closer to method.
     #
-    $CGI::LIST_CONTEXT_WARN=0;
+    #$CGI::LIST_CONTEXT_WARN=0;
 
 
     #  Alias request method to just 'r' also
