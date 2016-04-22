@@ -47,7 +47,7 @@ use IO::File;
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='1.242';
+$VERSION='1.243';
 
 
 #  Run main
