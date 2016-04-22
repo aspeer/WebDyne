@@ -243,6 +243,7 @@ sub tag_parse {
 	#
 	debug("ending implicit parent tag $tag_parent");
 	$self->end($tag_parent);
+	$html_or=$self->$method(@_);
 
     }
 
