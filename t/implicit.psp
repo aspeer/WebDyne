@@ -7,5 +7,8 @@
 <start_form action="">
 <popup_menu values="@{1,2}">
 <submit>
+Hello
+<submit/>
+Hello
 <end_form>
 Test text with !{! 2+2 !} Perl sub
