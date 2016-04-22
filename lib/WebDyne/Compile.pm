@@ -588,7 +588,9 @@ sub optimise_one {
 	#
 	my @subst_oper;
 	#my $subst_fg=grep { $_=~/([$|@|%|!|+|^|*]{1})\{([$|@|%|!|+|^|*]?)(.*?)\2\}/s && push (@subst_oper, $1) } values %{$attr_hr};
-	my $subst_fg=grep { $_=~/([\$@%!+*^]){1}{(\1?)(.*?)\2}/ && push (@subst_oper, $1) } values %{$attr_hr};
+	#my $subst_fg=grep { $_=~/([\$@%!+*^]){1}{(\1?)(.*?)\2}/ && push (@subst_oper, $1) } values %{$attr_hr};
+	my $subst_fg=$data_ar->[$WEBDYNE_NODE_SBST_IX] || delete $attr_hr->{'subst'} ||
+		grep { $_=~/([\$@%!+*^]){1}{(\1?)(.*?)\2}/ && push (@subst_oper, $1) } values %{$attr_hr};
 
 
 	#  Do not subst comments
@@ -800,7 +802,8 @@ sub optimise_two {
 	#  Check if this tag attributes will need substitution (eg ${foo});
 	#
 	#my $subst_fg=grep { $_=~/([$|@|%|!|+|^|*]{1})\{([$|@|%|!|+|^|*]?)(.*?)\2\}/s } values %{$attr_hr};
-	my $subst_fg=grep { $_=~/([\$@%!+*^]){1}{(\1?)(.*?)\2}/so } values %{$attr_hr};
+	my $subst_fg=$data_ar->[$WEBDYNE_NODE_SBST_IX] || delete $attr_hr->{'subst'} ||
+		grep { $_=~/([\$@%!+*^]){1}{(\1?)(.*?)\2}/so } values %{$attr_hr};
 
 
 	#  If subst_fg present, means we must do a subst on attr vars. Flag, also get static flag

@@ -168,7 +168,8 @@ sub parse_fh {
         }
         return $html;
 
-    }
+    };
+    return $parse_cr;
 
 }
 
