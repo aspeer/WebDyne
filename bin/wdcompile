@@ -22,6 +22,7 @@ package main;
 #  Compiler pragma, load library path
 #
 sub BEGIN {
+
     #  Massage warnings and @INC path
     $^W=0;
     use File::Spec;
@@ -33,9 +34,9 @@ sub BEGIN {
             last;
         }
     }
-};
+}
 use strict qw(vars);
-use vars   qw($VERSION);
+use vars qw($VERSION);
 
 
 #  Use the base modules
@@ -58,7 +59,7 @@ $VERSION='1.243';
 
 #  Run main
 #
-exit ${ &main(\@ARGV) || die errdump() };
+exit ${&main(\@ARGV) || die errdump()};
 
 
 #===================================================================================================
@@ -76,27 +77,27 @@ sub main {
     #
     my %opt=(
 
-	nofilter    =>	1,	# don't run through any filters
-	noperl	    =>  1,	# don't run perl code,
-	stage4	    =>  1,	# default
+        nofilter => 1,    # don't run through any filters
+        noperl   => 1,    # don't run perl code,
+        stage4   => 1,    # default
 
-       );
+    );
 
 
     #  Now import command line options. Command line option compilation stages are different from
     #  internal stage numbers so maps are 0=>stage0, 1=>stage2, 2=>stage3, 3=>stage4, confusing ..
     #
     GetOptions(\%opt, 'stage0|0', 'stage2|1', 'stage3|2', 'stage4|3', 'meta', 'version', 'help|?', 'man') ||
-	pod2usage(2);
+        pod2usage(2);
     pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2) if $opt{'man'};
-    $opt{'version'} && do { print "$Script version: $VERSION\n"; exit 0 };
+    $opt{'version'} && do {print "$Script version: $VERSION\n"; exit 0};
 
 
     #  Get srce file, add to options
     #
     my $srce_fn=$argv_ar->[0] ||
-	pod2usage("$Script: no source file specified !");
+        pod2usage("$Script: no source file specified !");
     $opt{'srce'}=$srce_fn;
 
 
@@ -104,7 +105,7 @@ sub main {
     #
     my $compile_or=WebDyne::Compile->new();
     my $data_ar=$compile_or->compile(\%opt) ||
-	return err();
+        return err ();
 
 
     #  Dump it

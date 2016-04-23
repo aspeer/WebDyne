@@ -35,20 +35,19 @@ $VERSION='1.243';
 
 #  Hash of constants
 #
-%Constant = (
+%Constant=(
 
 
     #  Where we keep the error template
     #
-    WEBDYNE_ERR_TEMPLATE	=>  File::Spec->catfile(&class_dn(__PACKAGE__), 'error.psp'),
+    WEBDYNE_ERR_TEMPLATE => File::Spec->catfile(&class_dn(__PACKAGE__), 'error.psp'),
 
 
     #  If set to 1, error messages will be sent as text/plain, not
     #  HTML. If ERROR_EXIT set, child will quit after an error
     #
-    WEBDYNE_ERROR_TEXT		=>  0,
-    WEBDYNE_ERROR_EXIT		=>  0,
-
+    WEBDYNE_ERROR_TEXT => 0,
+    WEBDYNE_ERROR_EXIT => 0,
 
 
 );
@@ -66,7 +65,7 @@ sub class_dn {
     #
     (my $class_fn="${class}.pm")=~s/::/\//g;
     $class_fn=$INC{$class_fn} ||
-	die("unable to find location for $class in \%INC");
+        die("unable to find location for $class in \%INC");
 
 
     #  Split
@@ -76,15 +75,14 @@ sub class_dn {
 }
 
 
-
 #  Export constants to namespace, place in export tags
 #
 require Exporter;
 require WebDyne::Constant;
 @ISA=qw(Exporter WebDyne::Constant);
 +__PACKAGE__->local_constant_load(\%Constant);
-foreach (keys %Constant) { ${$_}=$Constant{$_} }
-@EXPORT=map { '$'.$_ } keys %Constant;
+foreach (keys %Constant) {${$_}=$Constant{$_}}
+@EXPORT=map {'$' . $_} keys %Constant;
 @EXPORT_OK=@EXPORT;
 %EXPORT_TAGS=(all => [@EXPORT_OK]);
 $_=\%Constant;

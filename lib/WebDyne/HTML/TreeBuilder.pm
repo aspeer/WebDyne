@@ -16,10 +16,10 @@ package WebDyne::HTML::TreeBuilder;
 
 #  Compiler Pragma
 #
-use strict	qw(vars);
-use vars	qw($VERSION @ISA %CGI_TAG_WEBDYNE %CGI_TAG_IMPLICIT %CGI_TAG_SPECIAL);
+use strict qw(vars);
+use vars qw($VERSION @ISA %CGI_TAG_WEBDYNE %CGI_TAG_IMPLICIT %CGI_TAG_SPECIAL);
 use warnings;
-no  warnings	qw(uninitialized redefine once);
+no warnings qw(uninitialized redefine once);
 
 
 #  WebDyne Modules
@@ -77,7 +77,7 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 
 
 #  Update - get from CGI module, add special dump tag
-%CGI_TAG_IMPLICIT=map { $_=>1 } (
+%CGI_TAG_IMPLICIT=map {$_ => 1} (
 
     @{$CGI::EXPORT_TAGS{':form'}},
     'dump'
@@ -93,28 +93,28 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #  The tags below need to be handled specially at compile time - see the method
 #  associated with each tag below.
 #
-map { $CGI_TAG_SPECIAL{$_}++ } qw(perl script style start_html end_html include);
+map {$CGI_TAG_SPECIAL{$_}++} qw(perl script style start_html end_html include);
 
 
 #  Nullify Entities encode & decode
 #
-*HTML::Entities::encode=sub {};
-*HTML::Entities::decode=sub {};
+*HTML::Entities::encode=sub { };
+*HTML::Entities::decode=sub { };
 
 
 #  Add to islist items in TreeBuilder
 #
-map { $HTML::TreeBuilder::isList{$_}++ } keys %CGI_TAG_WEBDYNE;
+map {$HTML::TreeBuilder::isList{$_}++} keys %CGI_TAG_WEBDYNE;
 
 
 #  Need to tell HTML::TagSet about our special elements so
 #
-map { $HTML::Tagset::isTableElement{$_}++ }  keys %CGI_TAG_WEBDYNE;
+map {$HTML::Tagset::isTableElement{$_}++} keys %CGI_TAG_WEBDYNE;
 
 
 #  And that we also block <p> tag closures
 #
-push @HTML::TreeBuilder::p_closure_barriers,  keys %CGI_TAG_WEBDYNE;
+push @HTML::TreeBuilder::p_closure_barriers, keys %CGI_TAG_WEBDYNE;
 
 
 #  Local vars neeeded for cross sub comms
@@ -135,7 +135,7 @@ sub parse_fh {
 
     #  Get self ref, file handle
     #
-    my ($self,$html_fh)=@_;
+    my ($self, $html_fh)=@_;
     debug("parse $html_fh");
 
 
@@ -158,7 +158,7 @@ sub parse_fh {
 
         #$Line_no++;
         my $line;
-	my $html = @HTML_Wedge ? shift @HTML_Wedge : ($line=<$html_fh>);
+        my $html=@HTML_Wedge ? shift @HTML_Wedge : ($line=<$html_fh>);
         if ($line) {
             debug("line $line");
             my @cr=($line=~/\n/g);
@@ -195,7 +195,7 @@ sub delete {
     undef $Line_no_next;
     undef $Line_no_start;
     undef @HTML_Wedge;
-    
+
 
     #  Run real deal from parent
     #
@@ -226,8 +226,9 @@ sub tag_parse {
     #  Get the parent tag
     #
     my $pos;
-    my $tag_parent = (
-	$pos  = $self->{'_pos'} || $self  )->{'_tag'};
+    my $tag_parent=(
+        $pos=$self->{'_pos'} || $self
+    )->{'_tag'};
     debug("tag $tag, tag_parent $tag_parent");
 
 
@@ -240,11 +241,11 @@ sub tag_parse {
     #
     if ($CGI_TAG_IMPLICIT{$tag_parent} || $tag_parent=~/^start_/i || $tag_parent=~/^end_/i) {
 
-	#  End implicit parent if it was an implicit tag
-	#
-	debug("ending implicit parent tag $tag_parent");
-	$self->end($tag_parent);
-	$html_or=$self->$method(@_);
+        #  End implicit parent if it was an implicit tag
+        #
+        debug("ending implicit parent tag $tag_parent");
+        $self->end($tag_parent);
+        $html_or=$self->$method(@_);
 
     }
 
@@ -254,13 +255,13 @@ sub tag_parse {
     #
     elsif ($CGI_TAG_WEBDYNE{$tag_parent} && ($tag eq 'head')) {
 
-	#  Debug and modify tree
-	#
-	debug("found $tag_parent above $tag, modifying tree");
-	$self->{'_head'}->preinsert($pos);
-	$self->{'_head'}->detach();
-	$pos->push_content($self->{'_head'});
-	$self->$method(@_);
+        #  Debug and modify tree
+        #
+        debug("found $tag_parent above $tag, modifying tree");
+        $self->{'_head'}->preinsert($pos);
+        $self->{'_head'}->detach();
+        $pos->push_content($self->{'_head'});
+        $self->$method(@_);
 
     }
 
@@ -269,11 +270,11 @@ sub tag_parse {
     #
     elsif ($CGI_TAG_WEBDYNE{$tag_parent} && ($tag eq 'body')) {
 
-    	debug("found $tag_parent above $tag, modifying tree");
-	$self->{'_body'}->preinsert($pos);
-	$self->{'_body'}->detach();
-	$pos->push_content($self->{'_body'});
-	$self->$method(@_);
+        debug("found $tag_parent above $tag, modifying tree");
+        $self->{'_body'}->preinsert($pos);
+        $self->{'_body'}->detach();
+        $pos->push_content($self->{'_body'});
+        $self->$method(@_);
 
     }
 
@@ -284,10 +285,10 @@ sub tag_parse {
     elsif ($CGI_TAG_SPECIAL{$tag} && ($method ne 'SUPER::text')) {
 
 
-	#  Yes, is WebDyne tag
-	#
-	debug("webdyne tag ($tag) dispatch");
-	$html_or=$self->$tag($method, $tag, $attr_hr);
+        #  Yes, is WebDyne tag
+        #
+        debug("webdyne tag ($tag) dispatch");
+        $html_or=$self->$tag($method, $tag, $attr_hr);
 
     }
 
@@ -297,10 +298,10 @@ sub tag_parse {
     elsif ($CGI_TAG_IMPLICIT{$tag_parent} || $tag=~/^start_/i || $tag=~/^end_/) {
 
 
-	#  Yes, is CGI tag
-	#
-	debug("webdyne tag ($tag) dispatch");
-	$html_or=$self->$method(@_);
+        #  Yes, is CGI tag
+        #
+        debug("webdyne tag ($tag) dispatch");
+        $html_or=$self->$method(@_);
         $self->end($tag)
 
     }
@@ -312,35 +313,34 @@ sub tag_parse {
     elsif ($CGI_TAG_WEBDYNE{$tag_parent}) {
 
 
-	#  Turn off implicitness here to stop us from being moved
-	#  around in the parse tree if we are under a table or some
-	#  such
-	#
-	debug('turning off implicit tags');
-	$self->implicit_tags(0);
+        #  Turn off implicitness here to stop us from being moved
+        #  around in the parse tree if we are under a table or some
+        #  such
+        #
+        debug('turning off implicit tags');
+        $self->implicit_tags(0);
 
 
-	#  Run the WebDyne tag method.
-	#
-	debug("webdyne tag_parent ($tag_parent) dispatch");
-	$html_or=$self->$tag_parent($method, $tag, $attr_hr);
+        #  Run the WebDyne tag method.
+        #
+        debug("webdyne tag_parent ($tag_parent) dispatch");
+        $html_or=$self->$tag_parent($method, $tag, $attr_hr);
 
 
-	#  Turn implicitness back on again
-	#
-	debug('turning on implicit tags');
-	$self->implicit_tags(1);
-
+        #  Turn implicitness back on again
+        #
+        debug('turning on implicit tags');
+        $self->implicit_tags(1);
 
 
     }
     else {
 
 
-	#  Pass onto our base class for further processing
-	#
-	debug("base class method $method");
-	$html_or=$self->$method(@_);
+        #  Pass onto our base class for further processing
+        #
+        debug("base class method $method");
+        $html_or=$self->$method(@_);
 
 
     }
@@ -365,7 +365,7 @@ sub block {
 
     #  No special handling needed, just log for debugging purposes
     #
-    my ($self, $method)=(shift,shift);
+    my ($self, $method)=(shift, shift);
     debug("block self $self, method $method, @_ text_fg $Text_fg");
     $self->$method(@_);
 
@@ -374,7 +374,7 @@ sub block {
 
 sub script {
 
-    my ($self, $method)=(shift,shift);
+    my ($self, $method)=(shift, shift);
     debug('script');
     $Text_fg='script';
     $self->$method(@_);
@@ -384,7 +384,7 @@ sub script {
 
 sub style {
 
-    my ($self, $method)=(shift,shift);
+    my ($self, $method)=(shift, shift);
     debug('style');
     $Text_fg='style';
     $self->$method(@_);
@@ -406,30 +406,30 @@ sub perl {
     my $html_perl_or=$self->$method($tag, $attr_hr);
     my $inline;
     if ($tag eq 'perl') {
-	unless (grep {exists $attr_hr->{$_}} qw(package class method)) {
-	    $html_perl_or->attr( inline=>++$inline );
-	}
+        unless (grep {exists $attr_hr->{$_}} qw(package class method)) {
+            $html_perl_or->attr(inline => ++$inline);
+        }
     }
     if ($inline) {
 
-	#  Inline tag, set global var to this element so any extra text can be
-	#  added here
-	#
-	$HTML_Perl_or=$html_perl_or;
-	$Text_fg='perl';
+        #  Inline tag, set global var to this element so any extra text can be
+        #  added here
+        #
+        $HTML_Perl_or=$html_perl_or;
+        $Text_fg='perl';
 
 
-	#  And return it
-	#
-	return $html_perl_or;
+        #  And return it
+        #
+        return $html_perl_or;
 
     }
     else {
 
 
-	#  Not inline, just return object
-	#
-	return $html_perl_or;
+        #  Not inline, just return object
+        #
+        return $html_perl_or;
 
     }
 
@@ -444,10 +444,10 @@ sub process {
     #
     my ($self, $text)=@_;
     debug("process $text");
-    my $or=HTML::Element->new('perl', inline=>1, perl=>$text);
+    my $or=HTML::Element->new('perl', inline => 1, perl => $text);
     debug("insert line_no $Line_no into object ref $or");
     @{$or}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no);
-    $self->tag_parse('SUPER::text', $or )
+    $self->tag_parse('SUPER::text', $or)
 
 }
 
@@ -458,21 +458,21 @@ sub start {
     #  Ugly, make sure if in perl or script tag, whatever we see counts
     #  as text
     #
-    my ($self,$tag)=(shift, shift);
+    my ($self, $tag)=(shift, shift);
     my $text=$_[2];
     ref($tag) || ($tag=lc($tag));
     debug("start $tag Line_no $Line_no, @_, %s", Data::Dumper::Dumper(\@_));
     my $html_or;
-    if ($Text_fg)  {
-	$html_or=$self->text($text)
+    if ($Text_fg) {
+        $html_or=$self->text($text)
     }
     else {
         my @cr=($text=~/\n/g);
-        $Line_no_start=$Line_no - @cr;
+        $Line_no_start=$Line_no-@cr;
         debug("tag $tag line_no $Line_no, line_no_start $Line_no_start");
-	$html_or=$self->tag_parse('SUPER::start', $tag, @_);
+        $html_or=$self->tag_parse('SUPER::start', $tag, @_);
 
-    };
+    }
     $html_or;
 
 }
@@ -488,21 +488,20 @@ sub end {
     ref($tag) || ($tag=lc($tag));
     debug("end $tag, text_fg $Text_fg, line $Line_no");
     my $html_or;
-    if($Text_fg && ($tag eq $Text_fg)) {
-	$Text_fg=undef;
-	$html_or=$self->SUPER::end($tag, @_)
+    if ($Text_fg && ($tag eq $Text_fg)) {
+        $Text_fg=undef;
+        $html_or=$self->SUPER::end($tag, @_)
     }
     elsif ($Text_fg) {
-	$html_or=$self->text($_[0])
+        $html_or=$self->text($_[0])
     }
     else {
-	$html_or=$self->SUPER::end($tag, @_)
+        $html_or=$self->SUPER::end($tag, @_)
     }
     $html_or;
 
 
 }
-
 
 
 #  Reminder to self. Keep this in, or implicit CGI tags will not be closed
@@ -522,39 +521,40 @@ sub text {
     if ($Text_fg eq 'perl') {
 
 
-	#  Yes. We have inline perl code, not text. Just add to perl attribute, which
-	#  is treated specially when rendering
-	#
+        #  Yes. We have inline perl code, not text. Just add to perl attribute, which
+        #  is treated specially when rendering
+        #
         debug('in __PERL__ tag, appending text to __PERL__ block');
+
         #  Strip leading CR from Perl code so line numbers in errors make sense
         #unless ($HTML_Perl_or->{'perl'}) { $text=~s/^\n// }
-	$HTML_Perl_or->{'perl'}.=$text;
-	$HTML_Perl_or->{'_line_no_tag_end'}=$Line_no;
+        $HTML_Perl_or->{'perl'}.=$text;
+        $HTML_Perl_or->{'_line_no_tag_end'}=$Line_no;
 
 
     }
-    
+
     #  Used to do this so __PERL__ block would only count if at end of file.
     #elsif (($text=~/^\W*__CODE__/ || $text=~/^\W*__PERL__/) && !$self->{'_pos'}) {
-    
+
     elsif (($text=~/^\W*__CODE__/ || $text=~/^\W*__PERL__/)) {
 
 
         #  Close off any HTML
         #
         delete $self->{'_pos'} if $self->{'_pos'};
-        
 
-	#  Perl code fragment. Will be last thing we do, as __PERL__ must be at the
-	#  bottom of the file.
-	#
-	debug('found __PERL__ tag');
-	$Text_fg='perl';
-	$self->implicit(0);
-	$self->push_content($HTML_Perl_or=HTML::Element->new('perl', inline=>1));
+
+        #  Perl code fragment. Will be last thing we do, as __PERL__ must be at the
+        #  bottom of the file.
+        #
+        debug('found __PERL__ tag');
+        $Text_fg='perl';
+        $self->implicit(0);
+        $self->push_content($HTML_Perl_or=HTML::Element->new('perl', inline => 1));
         debug("insert line_no $Line_no into object ref $HTML_Perl_or");
-	@{$HTML_Perl_or}{'_line_no', '_line_no_tag_end'}=($Line_no, $Line_no);
-	$HTML_Perl_or->{'_code'}++;
+        @{$HTML_Perl_or}{'_line_no', '_line_no_tag_end'}=($Line_no, $Line_no);
+        $HTML_Perl_or->{'_code'}++;
 
     }
     elsif ($text=~/^\W*__END__/) {
@@ -568,37 +568,38 @@ sub text {
     }
     else {
 
-	#  Normal text, process by parent class after handling any subst flags in code
- 	#
-	#if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/gs) {
-	if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/s) {
+        #  Normal text, process by parent class after handling any subst flags in code
+        #
+        #if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/gs) {
+        if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/s) {
 
-	    #  Meeds subst. Get rid of cr's at start and end of text after a <perl> tag, stuffs up formatting in <pre> sections
-	    #
-	    debug("found subst tag line_no_start $Line_no_start, line_no $Line_no, text '$text'");
-	    my @cr=($text=~/\n/g);
-	    if (my $html_or=$self->{'_pos'}) {
-		debug("parent %s", $html_or->tag());
-		if (($html_or->tag() eq 'perl') && !$html_or->attr('inline')) {
-		    debug('hit !');
-		    #$text=~s/^\n//;
-		    #$text=~s/\n$//;
-		}
-	    }
+            #  Meeds subst. Get rid of cr's at start and end of text after a <perl> tag, stuffs up formatting in <pre> sections
+            #
+            debug("found subst tag line_no_start $Line_no_start, line_no $Line_no, text '$text'");
+            my @cr=($text=~/\n/g);
+            if (my $html_or=$self->{'_pos'}) {
+                debug("parent %s", $html_or->tag());
+                if (($html_or->tag() eq 'perl') && !$html_or->attr('inline')) {
+                    debug('hit !');
 
-	    my $or=HTML::Element->new('subst');
-	    my $line_no_start=$Line_no;
+                    #$text=~s/^\n//;
+                    #$text=~s/\n$//;
+                }
+            }
+
+            my $or=HTML::Element->new('subst');
+            my $line_no_start=$Line_no;
             debug("insert line_no $Line_no_start, line_no_tag_end $Line_no into object ref $or for text $text, cr %s", scalar @cr);
             @{$or}{'_line_no', '_line_no_tag_end'}=($line_no_start, $Line_no);
-	    $or->push_content($text);
-	    $self->tag_parse('SUPER::text', $or )
+            $or->push_content($text);
+            $self->tag_parse('SUPER::text', $or)
         }
         else {
 
-	    # No subst, process as normal
-	    #
-	    debug('processing as normal text');
-	    $self->tag_parse('SUPER::text', $text )
+            # No subst, process as normal
+            #
+            debug('processing as normal text');
+            $self->tag_parse('SUPER::text', $text)
         }
 
     }
@@ -628,7 +629,7 @@ sub start_html {
     #  Need to handle this specially ..
     my ($self, $method, $tag, $attr_hr)=@_;
     if ($WEBDYNE_CONTENT_TYPE_HTML_META) {
-        $attr_hr->{'head'} ||= &CGI::meta({ "http-equiv"=>"Content-Type", content=>$WEBDYNE_CONTENT_TYPE_HTML })
+        $attr_hr->{'head'} ||= &CGI::meta({"http-equiv" => "Content-Type", content => $WEBDYNE_CONTENT_TYPE_HTML})
     }
     my $html=&CGI::start_html_cgi($attr_hr);
     debug("html is $html");
@@ -653,7 +654,7 @@ sub include {
 
     #  No special handling needed, just log for debugging purposes
     #
-    my ($self, $method)=(shift,shift);
+    my ($self, $method)=(shift, shift);
     debug("block self $self, method $method, @_ text_fg $Text_fg");
     $self->$method(@_);
 

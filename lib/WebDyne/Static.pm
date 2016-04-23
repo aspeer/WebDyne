@@ -18,9 +18,9 @@ package WebDyne::Static;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION);
+use vars qw($VERSION);
 use warnings;
-no  warnings	qw(uninitialized);
+no warnings qw(uninitialized);
 
 
 #  Utilities, constants
@@ -34,7 +34,7 @@ use WebDyne::Base;
 $VERSION='1.243';
 
 
-#  Debug 
+#  Debug
 #
 debug("%s loaded, version $VERSION");
 
@@ -45,6 +45,7 @@ debug("%s loaded, version $VERSION");
 
 #------------------------------------------------------------------------------
 
+
 sub import {
 
 
@@ -52,7 +53,7 @@ sub import {
     #
     my $self_cr=UNIVERSAL::can(scalar caller, 'self') || return;
     my $self=$self_cr->() || return;
-    my $meta_hr=$self->meta() || return err();
+    my $meta_hr=$self->meta() || return err ();
     $meta_hr->{'static'}=1;
 
 }

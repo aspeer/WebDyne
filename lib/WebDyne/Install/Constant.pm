@@ -19,7 +19,7 @@ package WebDyne::Install::Constant;
 #
 use strict qw(vars);
 use warnings;
-no  warnings	qw(uninitialized);
+no warnings qw(uninitialized);
 
 
 #  Vars to use
@@ -52,31 +52,32 @@ my $cache_default_dn;
 if ($^O=~/MSWin[32|64]/) {
     $cache_default_dn=File::Spec->catdir($ENV{'SYSTEMROOT'}, qw(TEMP webdyne))
 }
+
 #  No - set to /var/cache/webdyne
 #
 else {
     $cache_default_dn=File::Spec->catdir(
-        File::Spec->rootdir(), qw(var cache webdyne));
+        File::Spec->rootdir(), qw(var cache webdyne)
+    );
 }
-
 
 
 #  Real deal
 #
-%Constant = (
+%Constant=(
 
 
     #  Where perl5 library dirs are sourced from
     #
-    FILE_PERL5LIB			  =>  'perl5lib.pl',
-    
-    
+    FILE_PERL5LIB => 'perl5lib.pl',
+
+
     #  Default cache directory
     #
-    DIR_CACHE_DEFAULT			  =>  $cache_default_dn
+    DIR_CACHE_DEFAULT => $cache_default_dn
 
 
-   );
+);
 
 
 #  Finalise and export vars
@@ -84,10 +85,11 @@ else {
 require Exporter;
 require WebDyne::Constant;
 @ISA=qw(Exporter WebDyne::Constant);
+
 #  Local constants override globals
 +__PACKAGE__->local_constant_load(\%Constant);
-foreach (keys %Constant) { ${$_}=$Constant{$_} }
-@EXPORT=map { '$'.$_ } keys %Constant;
+foreach (keys %Constant) {${$_}=$Constant{$_}}
+@EXPORT=map {'$' . $_} keys %Constant;
 @EXPORT_OK=@EXPORT;
 %EXPORT_TAGS=(all => [@EXPORT_OK]);
 $_=\%Constant;

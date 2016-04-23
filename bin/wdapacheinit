@@ -17,6 +17,7 @@
 #  Init Apache config files
 #
 sub BEGIN {
+
     #  Massage warnings and @INC path
     $^W=0;
     use File::Spec;
@@ -28,7 +29,7 @@ sub BEGIN {
             last;
         }
     }
-};
+}
 use strict qw(vars);
 use vars qw($VERSION);
 use Cwd qw(realpath);
@@ -46,63 +47,65 @@ $VERSION='1.243';
 #  by WebDyne::Install::Apache::Constant module when loaded
 #
 my %opt;
-GetOptions(\%opt, (
-    'help|?',
-    'man',
-    'apache_uname|uname=s',
-    'apache_gname|gname=s',
-    'httpd_bin|httpd=s',
-    'dir_apache_conf|apache_conf|conf=s',
-    'dir_apache_modules|apache_modules|modules=s',
-    'file_mod_perl_lib|mod_perl_lib|mod_perl=s',
-    'mp2',
-    'webdyne_cache_dn|webdyne_cache|cache_dn|cache|dir_webdyne_cache=s',
-    'silent',
-    'setcontext',
-    'uninstall',
-    'text|print',
-    'version'
-   ) ) ||  pod2usage(2);
-pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) 
-  if $opt{'help'};
+GetOptions(
+    \%opt,
+    (
+        'help|?',
+        'man',
+        'apache_uname|uname=s',
+        'apache_gname|gname=s',
+        'httpd_bin|httpd=s',
+        'dir_apache_conf|apache_conf|conf=s',
+        'dir_apache_modules|apache_modules|modules=s',
+        'file_mod_perl_lib|mod_perl_lib|mod_perl=s',
+        'mp2',
+        'webdyne_cache_dn|webdyne_cache|cache_dn|cache|dir_webdyne_cache=s',
+        'silent',
+        'setcontext',
+        'uninstall',
+        'text|print',
+        'version'
+    )) || pod2usage(2);
+pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1)
+    if $opt{'help'};
 pod2usage(-verbose => 2) if $opt{'man'};
-$opt{'version'} && do { print "$Script version: $VERSION\n"; exit 0 };
-map { $ENV{uc($_)}=$opt{$_} } keys %opt;
+$opt{'version'} && do {print "$Script version: $VERSION\n"; exit 0};
+map {$ENV{uc($_)}=$opt{$_}} keys %opt;
 
 
 #  By default the WebDyne::Install::Apache::Constant module will issue a
 #  warning if something not found, but will continue. In this case we want
 #  to consider any warning fatal.
 #
-local $SIG{'__WARN__'}=sub { 
-  my $warn=shift();
-  my %warn=(
-    APACHE_UNAME	=>  '--uname',
-    APACHE_GNAME	=>  '--gname',
-    HTTPD_BIN		=>  '--httpd_bin',
-    DIR_APACHE_CONF	=>  '--dir_apache_conf',
-    FILE_MOD_PERL_LIB	=>  '--mod_perl_lib',
-  );
-  
-  #  Translate warning messages from Contants module about setting env vars into
-  #  messages about setting command line options. Crude, but will do for now.
-  #
-  while (my($env,$param)=each %warn) {
-    last if $warn=~s/(.*)$env.*/$1$param option./;
-  }
-  pod2usage(-verbose=>99, -sections =>'Options', -message=>"ERROR: ".ucfirst($warn))
+local $SIG{'__WARN__'}=sub {
+    my $warn=shift();
+    my %warn=(
+        APACHE_UNAME      => '--uname',
+        APACHE_GNAME      => '--gname',
+        HTTPD_BIN         => '--httpd_bin',
+        DIR_APACHE_CONF   => '--dir_apache_conf',
+        FILE_MOD_PERL_LIB => '--mod_perl_lib',
+    );
+
+    #  Translate warning messages from Contants module about setting env vars into
+    #  messages about setting command line options. Crude, but will do for now.
+    #
+    while (my ($env, $param)=each %warn) {
+        last if $warn=~s/(.*)$env.*/$1$param option./;
+    }
+    pod2usage(-verbose => 99, -sections => 'Options', -message => "ERROR: " . ucfirst($warn))
 };
 require WebDyne::Install::Apache;
 
 
 #  Get location prefile, call install/uninstall routine
 #
-my $prefix_dn=realpath(File::Spec->rel2abs(File::Spec->updir(),$RealBin));
+my $prefix_dn=realpath(File::Spec->rel2abs(File::Spec->updir(), $RealBin));
 if ($opt{'uninstall'}) {
-    exit ${ WebDyne::Install::Apache->uninstall($prefix_dn, $RealBin, \%opt) || die errstr() }
+    exit ${WebDyne::Install::Apache->uninstall($prefix_dn, $RealBin, \%opt) || die errstr()}
 }
 else {
-    exit ${ WebDyne::Install::Apache->install($prefix_dn, $RealBin, \%opt) || die errstr() }
+    exit ${WebDyne::Install::Apache->install($prefix_dn, $RealBin, \%opt) || die errstr()}
 }
 
 __END__

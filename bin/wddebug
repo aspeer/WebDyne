@@ -22,6 +22,7 @@ package main;
 #  Compiler pragma, load library path
 #
 sub BEGIN {
+
     #  Massage warnings and @INC path
     $^W=0;
     use File::Spec;
@@ -33,9 +34,9 @@ sub BEGIN {
             last;
         }
     }
-};
+}
 use strict qw(vars);
-use vars   qw($VERSION);
+use vars qw($VERSION);
 
 
 #  Use the base modules
@@ -65,7 +66,7 @@ $VERSION='1.243';
 
 #  Run main
 #
-exit ${ &main(\@ARGV) || die errdump() };
+exit ${&main(\@ARGV) || die errdump()};
 
 
 #===================================================================================================
@@ -82,28 +83,30 @@ sub main {
     #  Now import command line options.
     #
     my %opt;
-    GetOptions(\%opt, qw(
-        status
-        enable
-        disable
-        version
-        help|?
-        man
-        directory:s
-        yes
-    ));
+    GetOptions(
+        \%opt, qw(
+            status
+            enable
+            disable
+            version
+            help|?
+            man
+            directory:s
+            yes
+            ));
     pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2) if $opt{'man'};
-    $opt{'version'} && do { print "$Script version: $VERSION\n"; exit 0 };
+    $opt{'version'} && do {print "$Script version: $VERSION\n"; exit 0};
 
 
     #  Check if user really wants to do this
     #
-    if(($opt{'enable'} || $opt{'disable'}) && !$opt{'yes'}) {
+    if (($opt{'enable'} || $opt{'disable'}) && !$opt{'yes'}) {
         my $yesno=ExtUtils::MakeMaker::prompt(
-            "\nWARNING: This script will edit installed WebDyne.pm and support files to turn on/off debugging. ".
-            "It is intended only for use in a test environment, and may have unintended consquences:\n\n".
-            'Are you sure you wish to proceed ?', 'no');
+            "\nWARNING: This script will edit installed WebDyne.pm and support files to turn on/off debugging. " .
+                "It is intended only for use in a test environment, and may have unintended consquences:\n\n" .
+                'Are you sure you wish to proceed ?', 'no'
+        );
         exit 0 unless ($yesno=~/^y/i);
         print "\n";
     }
@@ -125,7 +128,7 @@ sub main {
     }
     else {
         #$debug_cr=\&status;
-        $debug_cr=sub{ \undef };
+        $debug_cr=sub {\undef};
     }
 
 
@@ -142,14 +145,14 @@ sub main {
     else {
         $webdyne_pm=File::Spec->catfile($webdyne_dn, 'WebDyne.pm');
         unless (-f $webdyne_pm) {
-            return err("unable to find Webdyne.pm in directory: $webdyne_dn !");
+            return err ("unable to find Webdyne.pm in directory: $webdyne_dn !");
         }
     }
     if (!$debug_fn || ($debug_fn && ($webdyne_pm=~/\Q$debug_fn\E$/))) {
         $debug_cr->($webdyne_pm) ||
-            return err();
+            return err ();
         &status($webdyne_pm, $webdyne_dn) ||
-            return err();
+            return err ();
         $webdyne_fn{$webdyne_pm}++;
     }
 
@@ -174,9 +177,9 @@ sub main {
             return unless $File::Find::name=~/\Q$debug_fn\E$/
         }
         $debug_cr->($File::Find::name) ||
-            return err();
+            return err ();
         &status($File::Find::name, $webdyne_display_dn) ||
-            return err();
+            return err ();
     };
     find($wanted_cr, $webdyne_dn);
 
@@ -192,8 +195,9 @@ sub main {
 sub enable {
 
     my $fn=shift();
-    my $fh=IO::File->new($fn, O_RDONLY) || return err(
-        "unable to open file $fn for read, $!");
+    my $fh=IO::File->new($fn, O_RDONLY) || return err (
+        "unable to open file $fn for read, $!"
+    );
     my ($temp_fh, $temp_fn)=tempfile();
     my $modified;
     while (my $line=<$fh>) {
@@ -204,7 +208,7 @@ sub enable {
             }
         }
         print $temp_fh $line or
-            return err("unable to print to temp file handle, $!");
+            return err ("unable to print to temp file handle, $!");
     }
     $fh->close();
     $temp_fh->close();
@@ -215,10 +219,10 @@ sub enable {
         }
         else {
             my $perm=(stat $fn)[2] & 07777;
-            chmod($perm|0600, $fn);
+            chmod($perm | 0600, $fn);
         }
         move($temp_fn, $fn) ||
-            return err("unable to move $temp_fn=>$fn, $!");
+            return err ("unable to move $temp_fn=>$fn, $!");
         chmod($perm, $fn) if $perm;
     }
 
@@ -230,23 +234,24 @@ sub enable {
 sub disable {
 
     my $fn=shift();
-    my $fh=IO::File->new($fn, O_RDONLY) || return err(
-        "unable to open file $fn for read, $!");
+    my $fh=IO::File->new($fn, O_RDONLY) || return err (
+        "unable to open file $fn for read, $!"
+    );
     my ($temp_fh, $temp_fn)=tempfile();
     my $modified;
     while (my $line=<$fh>) {
         if ($line=~/^\s*(\d?)\s+&&\s+debug/ || $line=~/^\s*debug/) {
-            if ($1==1) {
-               $line=~s/^(\s*)(\d+)/${1}0/;
-               $modified++;
+            if ($1 == 1) {
+                $line=~s/^(\s*)(\d+)/${1}0/;
+                $modified++;
             }
-            elsif ($1 eq '')  {
+            elsif ($1 eq '') {
                 $line=~s/debug(\s*)\(/0 && debug$1\(/;
                 $modified++;
             }
         }
         print $temp_fh $line or
-            return err("unable to print to temp file handle, $!");
+            return err ("unable to print to temp file handle, $!");
     }
     $fh->close();
     $temp_fh->close();
@@ -257,10 +262,10 @@ sub disable {
         }
         else {
             my $perm=(stat $fn)[2] & 07777;
-            chmod($perm|0600, $fn);
+            chmod($perm | 0600, $fn);
         }
         move($temp_fn, $fn) ||
-            return err("unable to move $temp_fn=>$fn, $!");
+            return err ("unable to move $temp_fn=>$fn, $!");
         chmod($perm, $fn) if $perm;
     }
 
@@ -271,12 +276,14 @@ sub disable {
 
 sub status {
 
-    my ($fn,$dn)=@_;
+    my ($fn, $dn)=@_;
     my $fh=IO::File->new($fn, O_RDONLY) || die(
-        "unable to open file $fn for read, $!");
+        "unable to open file $fn for read, $!"
+    );
     my ($debug, $found);
     while (my $line=<$fh>) {
         next unless ($line=~/^\s*(\d?)\s+&&\s+debug/ || $line=~/^\s*debug/);
+
         #print "line $line, $1\n";
         $debug=($1 eq '0') ? 0 : 1;
         $found++;

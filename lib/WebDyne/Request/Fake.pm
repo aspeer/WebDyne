@@ -17,10 +17,10 @@ package WebDyne::Request::Fake;
 
 #  Compiler Pragma
 #
-use strict	qw(vars);
-use vars	qw($VERSION $AUTOLOAD);
+use strict qw(vars);
+use vars qw($VERSION $AUTOLOAD);
 use warnings;
-no  warnings	qw(uninitialized);
+no warnings qw(uninitialized);
 
 
 #  External modules
@@ -66,18 +66,18 @@ sub filename {
 
 sub headers_out {
 
-    my ($r,$k,$v)=@_;
-    if (@_==3) {
-	return $r->{'headers_out'}{$k}=$v
+    my ($r, $k, $v)=@_;
+    if (@_ == 3) {
+        return $r->{'headers_out'}{$k}=$v
     }
-    elsif (@_==2) {
-	return $r->{'headers_out'}{$k}
+    elsif (@_ == 2) {
+        return $r->{'headers_out'}{$k}
     }
-    elsif (@_==1) {
-	return ($r->{'headers_out'} ||= {});
+    elsif (@_ == 1) {
+        return ($r->{'headers_out'} ||= {});
     }
     else {
-	return err('incorrect usage of %s headers_out object, r->headers_out(%s)', +__PACKAGE__, join(',', @_[1..$#_]));
+        return err ('incorrect usage of %s headers_out object, r->headers_out(%s)', +__PACKAGE__, join(',', @_[1..$#_]));
     }
 
 }
@@ -110,7 +110,7 @@ sub log_error {
 sub lookup_file {
 
     my ($r, $fn)=@_;
-    my $r_child=ref($r)->new( filename=> $fn ) || return err();
+    my $r_child=ref($r)->new(filename => $fn) || return err ();
 
 }
 
@@ -142,18 +142,18 @@ sub new {
 
 sub notes {
 
-    my ($r,$k,$v)=@_;
-    if (@_==3) {
-	return $r->{'_notes'}{$k}=$v
+    my ($r, $k, $v)=@_;
+    if (@_ == 3) {
+        return $r->{'_notes'}{$k}=$v
     }
-    elsif (@_==2) {
-	return $r->{'_notes'}{$k}
+    elsif (@_ == 2) {
+        return $r->{'_notes'}{$k}
     }
-    elsif (@_==1) {
-	return ($r->{'_notes'} ||= {});
+    elsif (@_ == 1) {
+        return ($r->{'_notes'} ||= {});
     }
     else {
-	return err('incorrect usage of %s notes object, r->notes(%s)', +__PACKAGE__, join(',', @_[1..$#_]));
+        return err ('incorrect usage of %s notes object, r->notes(%s)', +__PACKAGE__, join(',', @_[1..$#_]));
     }
 
 }
@@ -204,7 +204,7 @@ sub run {
 sub status {
 
     my $r=shift();
-    @_ ? $r->{'status'}=shift() :  $r->{'status'} || RC_OK;
+    @_ ? $r->{'status'}=shift() : $r->{'status'} || RC_OK;
 
 }
 
@@ -217,13 +217,13 @@ sub uri {
 
 
 sub debug {
-    
+
     #  Stub
 }
 
 
 sub output_filters {
-    
+
     #  Stub
 }
 
@@ -260,7 +260,7 @@ sub send_http_header {
     return if $r->{'noheader'};
     my $fh=$r->{'select'} || \*STDOUT;
     CORE::printf $fh ("Status: %s\n", $r->status());
-    while(my($header, $value)=each(%{$r->{'headers_out'}})) {
+    while (my ($header, $value)=each(%{$r->{'headers_out'}})) {
         CORE::print $fh ("$header: $value\n");
     }
     CORE::print $fh "\n";
@@ -272,8 +272,9 @@ sub content_type {
 
     my ($r, $content_type)=@_;
     $r->{'header'}{'Content-Type'}=$content_type;
+
     #CORE::print("Content-Type: $content_type\n");
-    
+
 }
 
 
@@ -283,15 +284,15 @@ sub custom_response {
     $r->status($status);
     $r->send_http_header();
     $r->print(@_);
-    
+
 }
 
 
 sub AUTOLOAD {
 
-    my ($r,$v)=@_;
+    my ($r, $v)=@_;
     my $k=($AUTOLOAD=~/([^:]+)$/) && $1;
-    warn(sprintf("Unhandled '%s' method, using AUTOLOAD", $k )); 
+    warn(sprintf("Unhandled '%s' method, using AUTOLOAD", $k));
     $v ? $r->{$k}=$v : $r->{$k};
 
 
@@ -302,8 +303,8 @@ sub DESTROY {
 
     my $r=shift();
     if (my $cr_ar=delete $r->{'register_cleanup'}) {
-	foreach my $cr (@{$cr_ar}) {
-	    $cr->($r);
-	}
+        foreach my $cr (@{$cr_ar}) {
+            $cr->($r);
+        }
     }
 }

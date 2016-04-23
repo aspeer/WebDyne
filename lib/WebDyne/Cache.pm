@@ -17,9 +17,9 @@ package WebDyne::Cache;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION);
+use vars qw($VERSION);
 use warnings;
-no  warnings	qw(uninitialized);
+no warnings qw(uninitialized);
 
 
 #  WebDyne Modules.
@@ -33,7 +33,7 @@ use WebDyne::Base;
 $VERSION='1.243';
 
 
-#  Debug 
+#  Debug
 #
 debug("%s loaded, version $VERSION", __PACKAGE__);
 
@@ -44,6 +44,7 @@ debug("%s loaded, version $VERSION", __PACKAGE__);
 
 #------------------------------------------------------------------------------
 
+
 sub import {
 
 
@@ -52,8 +53,8 @@ sub import {
     my ($class, @param)=@_;
     my $self_cr=UNIVERSAL::can(scalar caller, 'self') || return;
     my $self=$self_cr->() || return;
-    my %param=(@param==1) ? (cache => @param) : @param;
-    my $meta_hr=$self->meta() || return err();
+    my %param=(@param == 1) ? (cache => @param) : @param;
+    my $meta_hr=$self->meta() || return err ();
     $meta_hr->{'cache'}=$param{'cache'};
 
 }
@@ -66,12 +67,13 @@ sub handler : method {
     #  module is seen by WebDyne autoload method when tracking back through
     #  chained modules
     #
-    my ($self,$r)=(shift, shift);
+    my ($self, $r)=(shift, shift);
     my $cache=$r->dir_config('WebDyneCacheHandler') ||
-      return $self->err_html(
-        'unable to get cache handler name - have you set the WebDyneCacheHandler var ?');
+        return $self->err_html(
+        'unable to get cache handler name - have you set the WebDyneCacheHandler var ?'
+        );
     $self->cache($cache);
-    $self->SUPER::handler($r,@_);
+    $self->SUPER::handler($r, @_);
 
 }
 

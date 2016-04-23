@@ -22,13 +22,14 @@ package main;
 #  Compiler pragma
 #
 sub BEGIN {
+
     #  Massage warnings and @INC path
     $^W=0;
     use File::Spec;
     use FindBin qw($RealBin $Script);
-};
+}
 use strict qw(vars);
-use vars   qw($VERSION);
+use vars qw($VERSION);
 
 
 #  Use the base module
@@ -52,7 +53,7 @@ $VERSION='1.243';
 
 #  Run main
 #
-exit ${ &main(\@ARGV) || die errdump() };
+exit ${&main(\@ARGV) || die errdump()};
 
 #===================================================================================================
 
@@ -69,17 +70,18 @@ sub main {
     #
     my %opt=(
 
-	handler    => $ENV{'WebDyneHandler'} || 'WebDyne',
-	error	   => 'text',
-	header     => 1,
-	warn	   => 1,
+        handler => $ENV{'WebDyneHandler'} || 'WebDyne',
+        error   => 'text',
+        header  => 1,
+        warn    => 1,
 
-       );
+    );
 
 
     #  Get command line options
     #
-    GetOptions(\%opt,
+    GetOptions(
+        \%opt,
         'help|?',
         'handler=s',
         'status=s',
@@ -95,9 +97,9 @@ sub main {
     pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2) if $opt{'man'};
     $opt{'version'} && do {
-      print "$Script version: $VERSION\n"; 
-      print "WebDyne version: $WebDyne::VERSION\n";
-      exit 0 
+        print "$Script version: $VERSION\n";
+        print "WebDyne version: $WebDyne::VERSION\n";
+        exit 0
     };
 
 
@@ -105,39 +107,40 @@ sub main {
     #
     my $dest_fh;
     if (my $dest_fn=$opt{'outfile'}) {
-        $dest_fh=IO::File->new($dest_fn, O_CREAT|O_TRUNC|O_WRONLY) ||
-            return err("unable to open file $dest_fn for output, $!");
+        $dest_fh=IO::File->new($dest_fn, O_CREAT | O_TRUNC | O_WRONLY) ||
+            return err ("unable to open file $dest_fn for output, $!");
     }
 
 
     #  Get srce file, add to options
     #
     my $srce_fn=shift(@{$argv_ar}) ||
-	pod2usage("$Script: no source file specified !");
+        pod2usage("$Script: no source file specified !");
     (-f $srce_fn) ||
-	pod2usage("$Script: input file not found !");
+        pod2usage("$Script: input file not found !");
 
 
     #  Get new request object
     #
     my $r=WebDyne::Request::Fake->new(
 
-	filename	=>  $srce_fn,
-	#select          =>  $dest_fh,
-	#status          =>  $opt{'status'},
+        filename => $srce_fn,
 
-       ) || return err();
+        #select          =>  $dest_fh,
+        #status          =>  $opt{'status'},
+
+    ) || return err ();
 
 
     #  Set headers
     #
     foreach my $header_out (@{$opt{'header_out0'}}) {
-        my ($k,$v)=split(/\s*:\s*/, $header_out);
-        $r->headers_out($k,$v);
+        my ($k, $v)=split(/\s*:\s*/, $header_out);
+        $r->headers_out($k, $v);
     }
     foreach my $header_in (@{$opt{'header_in0'}}) {
-        my ($k,$v)=split(/\s*:\s*/, $header_in);
-        $r->headers_in($k,$v);
+        my ($k, $v)=split(/\s*:\s*/, $header_in);
+        $r->headers_in($k, $v);
     }
 
 
@@ -148,15 +151,15 @@ sub main {
 
     #  Load up whichever handler we are using
     #
-    eval ("require $handler") ||
-	return err("$Script: unable to load handler $handler, $@");
+    eval("require $handler") ||
+        return err ("$Script: unable to load handler $handler, $@");
 
 
     #  Set text errors only
     #
     $WebDyne::Err::WEBDYNE_ERROR_TEXT=1 if ($opt{'error'} eq 'text');
-    
-    
+
+
     #  Set header, warning output
     #
     $r->notes('noheader', !$opt{'header'});
@@ -165,7 +168,7 @@ sub main {
 
     #  Run it and display results, or any error generated
     #
-    defined($handler->handler($r)) || return err();
+    defined($handler->handler($r)) || return err ();
 
 
     #  Manual cleanup
