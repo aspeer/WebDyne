@@ -61,7 +61,7 @@ use ExtUtils::MakeMaker qw(prompt);
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='1.243';
+$VERSION='1.244';
 
 
 #  Run main
