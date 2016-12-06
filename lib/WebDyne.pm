@@ -55,7 +55,7 @@ use overload;
 
 #  Version information
 #
-$VERSION='1.244';
+$VERSION='1.245';
 
 
 #  Debug load
