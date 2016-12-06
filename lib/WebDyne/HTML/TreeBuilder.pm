@@ -46,7 +46,7 @@ use Data::Dumper;
 
 #  Version information
 #
-$VERSION='1.245';
+$VERSION='1.246';
 
 
 #  Debug load
