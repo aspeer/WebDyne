@@ -374,10 +374,12 @@ sub block {
 
 sub script {
 
-    my ($self, $method)=(shift, shift);
+    my ($self, $method, $tag, $attr_hr)=@_;
     debug('script');
     $Text_fg='script';
-    $self->$method(@_);
+    my $or=$self->$method($tag, $attr_hr, @_);
+    $or->postinsert('</script>') if $attr_hr->{'src'};
+    $or;
 
 }
 

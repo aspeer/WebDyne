@@ -153,7 +153,7 @@ sub import {
                 }
             }
             else {
-                CORE::print $debug_fh "[$subroutine] ", $_[1] ? sprintf(shift(), @_) : $_[0], $/;
+                CORE::print $debug_fh "[$subroutine] ", $_[1] ? sprintf(shift(), @_ ) : $_[0], $/;
             }
             }
             unless UNIVERSAL::can($caller, 'debug');

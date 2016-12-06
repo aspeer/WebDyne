@@ -27,13 +27,6 @@ sub BEGIN {
     $^W=0;
     use File::Spec;
     use FindBin qw($RealBin $Script);
-    foreach my $dn ($RealBin, File::Spec->path()) {
-        if (-f (my $fn=File::Spec->catfile($dn, 'perl5lib.pl'))) {
-            require $fn;
-            perl5lib->import(File::Spec->catdir($dn, File::Spec->updir()));
-            last;
-        }
-    }
 }
 use strict qw(vars);
 use vars qw($VERSION);
@@ -91,7 +84,11 @@ sub main {
         pod2usage(2);
     pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2) if $opt{'man'};
-    $opt{'version'} && do {print "$Script version: $VERSION\n"; exit 0};
+    $opt{'version'} && do {
+        print "$Script version: $VERSION\n";
+        print "WebDyne version: $WebDyne::VERSION\n";
+        exit 0
+    };
 
 
     #  Get srce file, add to options

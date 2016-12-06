@@ -47,6 +47,8 @@ t/noninline.dmp
 t/noninline.psp
 t/perlblock.dmp
 t/perlblock.psp
+t/script.dmp
+t/script.psp
 t/subsitution.dmp
 t/subsitution.psp
 t/makedump.pl
