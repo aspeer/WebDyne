@@ -62,17 +62,8 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #
 our %CGI_Tag_Ucase=map {$_ => ucfirst($_)} (
 
-    qw(select tr link delete accept sub)
+    qw(select tr link delete accept sub header)
 
-);
-
-
-#  Extend CGI with missing tags
-#
-our @CGI_Tag_Extend=(
-    
-    qw(Header)
-    
 );
 
 
@@ -507,19 +498,6 @@ sub compile_init {
     #
     #0 && *CGI::start_html;
     #0 && *CGI::end_html;
-
-
-    #  Extend CGI with any missing tags
-    #
-    if (UNIVERSAL::can(CGI, '_tag_func')) {
-        foreach my $tag (@CGI_Tag_Extend) {
-            *{"CGI::$tag"} = sub { return &CGI::_tag_func($tag,@_); };
-            foreach my $start_end ( qw/start end/ ) {
-                my $start_end_function = "${start_end}_${tag}";
-                *{"CGI::$start_end_function"} = sub { return &CGI::_tag_func($start_end_function,@_); };
-            }
-        }
-    }
 
 
     #  All done
