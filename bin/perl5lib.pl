@@ -32,7 +32,7 @@ local $^W=0;
 
 #  Version information
 #
-$VERSION='1.247';
+$VERSION='1.248';
 
 
 #  Get location of library include file (perl5lib.pm) for this particular
