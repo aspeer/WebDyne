@@ -62,7 +62,7 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #
 our %CGI_Tag_Ucase=map {$_ => ucfirst($_)} (
 
-    qw(select tr link delete accept sub header)
+    qw(select tr link delete accept sub header button)
 
 );
 
