@@ -145,7 +145,10 @@ sub handler : method {
     #
     local $SIG{'__DIE__'}=sub {
         debug('in __DIE__ sig handler, caller %s', join(',', (caller(0))[0..3]));
-        return err (@_)
+        #  Updated to *NOT* throw error if in eval block (i.e. if $@ is set). Stops error handler being called
+        #  if non WebDyne module has eval code which triggers non WebDyne AUTOLOAD block. Might need to be more
+        #  sophisticated and look at traceback for Autoload::AUTOLOAD but another day
+        return err (@_) unless $@;
     };
     local $SIG{'__WARN__'}=sub {
         debug('in __WARN__ sig handler, caller %s', join(',', (caller(0))[0..3]));
