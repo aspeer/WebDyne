@@ -33,7 +33,7 @@ require Opcode;
 
 #  Version information
 #
-$VERSION='1.250';
+$VERSION='1.251';
 
 
 #  Get mod_perl version. Clear $@ after evals

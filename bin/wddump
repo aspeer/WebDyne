@@ -54,7 +54,7 @@ use Storable;
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='1.250';
+$VERSION='1.251';
 
 
 #  Run main
