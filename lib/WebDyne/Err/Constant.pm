@@ -30,7 +30,7 @@ use File::Spec;
 
 #  Version information
 #
-$VERSION='1.249';
+$VERSION='1.250';
 
 
 #  Hash of constants
