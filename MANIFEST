@@ -57,3 +57,4 @@ t/implicit.psp
 t/perlhead.dmp
 t/implicit.dmp
 README
+cpanfile                                 

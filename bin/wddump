@@ -2,7 +2,7 @@
 #
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2017 by Andrew Speer <andrew@webdyne.org>.
+#  This software is Copyright (c) 2024 by Andrew Speer <andrew@webdyne.org>.
 #
 #  This is free software, licensed under:
 #
@@ -108,51 +108,10 @@ sub main {
 
 __END__
 
-=head1 Name
+=begin markdown
 
-wddump - dump the data structure of a WebDyne page in the cache
-directory
 
-=head1 Synopsis
+=end markdown
 
-B<wddump> B<[OPTIONS]> B<FILE>
 
-=head1 Options
-
--h, --help
-Show brief help message.
-
-=head1 Description
-
-The B<wddump> command displays internal the data structure of a compiled
-WebDyne psp file from the WebDyne cache directory.  B<wddump> is of
-limited diagnostic use - the B<wdcompile> tool is more suitable for
-troubleshooting HTML tree errors.
-
-B<wddump> can be useful to see a picture of the final data structure looks
-like on complex pages built via many filters, combining static and
-dynamic blocks etc.
-
-=head1 Examples
-
-B<wdrender> B</var/webdyne/cache/26f2c4edc8bfd52fbde915290db96779>
-
-Display the data structure from a compiled, cached webdyne file.
-
-=head1 Author
-
-Written by Andrew Speer, andrew@webdyne.org
-
-=head1 LICENSE and COPYRIGHT
-
-This file is part of WebDyne.
-
-This software is Copyright (c) 2017 by Andrew Speer <andrew@webdyne.org>.
-
-This is free software, licensed under:
-
-  The GNU General Public License, Version 2, June 1991
-
-Full license text is available at:
-L<http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
-
+=cut

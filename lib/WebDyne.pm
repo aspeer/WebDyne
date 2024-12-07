@@ -1,7 +1,7 @@
 #
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2017 by Andrew Speer <andrew@webdyne.org>.
+#  This software is Copyright (c) 2024 by Andrew Speer <andrew@webdyne.org>.
 #
 #  This is free software, licensed under:
 #
@@ -3515,48 +3515,10 @@ sub AUTOLOAD {
 
 __END__
 
-=head1 Name
+=begin markdown
 
-WebDyne - create web pages with embedded Perl
 
-=head1 Description
+=end markdown
 
-WebDyne is a Perl based dynamic HTML engine. It works with web servers (or from the command line) to render HTML
-documents with embedded Perl code.
 
-Once WebDyne is installed and initialised to work with a web server, any file with a .psp extension is treated as a
-WebDyne source file. It is parsed for WebDyne or CGI.pm pseudo-tags (such as <perl> and <block> for WebDyne, or
-<start_html>, <popup_menu> for CGI.pm) which are interpreted and executed on the server. The resulting output is then
-sent to the browser.
-
-Pages are parsed once, then optionally stored in a partially compiled format - speeding up subsequent processing by
-avoiding the need to re-parse a page each time it is loaded. WebDyne works with common web server persistant/resident
-Perl modules such as mod_perl and FastCGI to provide fast dynamic content.
-
-=head1 Documentation
-
-A full man page with usage and examples is installed with the WebDyne module. Further information is available from the
-WebDyne web page, http://webdyne.org/ with a snapshot of current documentation in PDF format available in the module
-source /doc directory.
-
-=head1 LICENSE and COPYRIGHT
-
-This file is part of WebDyne.
-
-This software is Copyright (c) 2017 by Andrew Speer <andrew@webdyne.org>.
-
-This is free software, licensed under:
-
-  The GNU General Public License, Version 2, June 1991
-
-Full license text is available at:
-L<http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
-
-=head1 Author
-
-Andrew Speer, andrew@webdyne.org
-
-=head1 Bugs
-
-Please report any bugs or feature requests to "bug-webdyne at rt.cpan.org", or via
-http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WebDyne
+=cut

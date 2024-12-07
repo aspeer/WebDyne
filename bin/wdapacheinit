@@ -2,7 +2,7 @@
 #
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2017 by Andrew Speer <andrew@webdyne.org>.
+#  This software is Copyright (c) 2024 by Andrew Speer <andrew@webdyne.org>.
 #
 #  This is free software, licensed under:
 #
@@ -110,135 +110,10 @@ else {
 
 __END__
 
-=head1 Name
+=begin markdown
 
-wdapacheinit - configure Apache to process .psp files through WebDyne
 
-=head1 Synopsis
+=end markdown
 
-B<wdapacheinit> B<[options]>
 
-=head1 Options
-
--?, --help
-Show brief help message
-
-
-=over 5
-
-
-=item --man
-
-
-
-
-Display the manual page
-
-
-=item --uname
-
-
-
-
-The user name that the Apache daemon runs under when started, e.g.
-"varname", "httpd", "apache" etc.
-
-
-=item --gname
-
-
-
-
-The group name that the Apache daemons runs under when started
-
-
-=item --httpd_bin
-
-
-
-
-Full path and filename of Apache httpd executable,
-e.g./opt/apache/bin/httpd
-
-
-=item --mod_perl_lib
-
-
-
-
-Full path and filename of the Apache mod_perl library, e.g.
-/opt/apache/lib/modules/mod_perl.so
-
-
-=item --dir_apache_conf
-
-
-
-
-Location (directory name) where the main Apache config file
-resides, e.g /opt/apache/etc/conf
-
-
-=item --dir_webdyne_cache
-
-
-
-
-Location (directort name) where partially compiled psp files will
-be cached
-
-
-=item --silent
-
-
-
-
-No output
-
-
-=item --uninstall
-
-
-
-
-Remove references to WebDyne from Apache config files
-
-=back
-
-
-=head1 Description
-
-B<wdapacheinit> will attempt to locate Apache configuration files and
-modify them so that requests for .psp pages are processed through the
-perl-handler WebDyne module.
-
-Where Apache uses a conf.d configuration file structure the installer
-will simply create a webdyne.conf file with the appropriate
-configuration int the conf.d directory. Where no conf.d structure can
-be found the installer will create the webdyne.conf file in the same
-location as the main Apachehttpd.conf file, then modify httpd.conf to
-append an include reference to the Webdyne config file.
-
-The installer will attempt to locate the necessary files and other
-information using common defaults - however if it can not discover the
-required information automatically (e.g. the path to the Apache binary)
-it will be necessary to specify it explicitly using the appropriate
-command line option.
-
-=head1 Author
-
-Written by Andrew Speer, andrew@webdyne.org
-
-=head1 LICENSE and COPYRIGHT
-
-This file is part of WebDyne.
-
-This software is Copyright (c) 2017 by Andrew Speer <andrew@webdyne.org>.
-
-This is free software, licensed under:
-
-  The GNU General Public License, Version 2, June 1991
-
-Full license text is available at:
-L<http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
-
+=cut

@@ -10,9 +10,9 @@
 <p>
 <popup_menu values="!{[qw(red blue)]}" name="popup_array"/>
 <p>
-<popup_menu values="!{tie(my %h, 'Tie::IxHash', ( red=>Red, blue=>Blue, green=>Green )); \%h}" name="popup_hash"/>
+<popup_menu values="!{tie(my %h, 'Tie::IxHash', ( red=>Red, blue=>Blue, green=>Green )); [keys %h], \%h}" name="popup_hash0"/>
 <p>
-<popup_menu values="%{red=>'Red', blue=>'Blue', green=>Green}" name="popup_hash"/>
+<popup_menu values="%{blue=>'Blue', green=>Green, red=>'Red' }" name="popup_hash1"/>
 <p>
 <popup_menu values="!{! [keys %{${__PACKAGE__.'::TEST_HR'}} ] !}" /></td>
 <p>

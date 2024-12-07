@@ -27,21 +27,21 @@
           <option value="blue"> @0.1.6.1.0.1
             "blue"
       <p> @0.1.6.2
-        <select name="popup_hash"> @0.1.6.2.0
+        <select name="popup_hash0"> @0.1.6.2.0
           <option value="red"> @0.1.6.2.0.0
-            "Red"
+            "red"
           <option value="blue"> @0.1.6.2.0.1
-            "Blue"
+            "blue"
           <option value="green"> @0.1.6.2.0.2
-            "Green"
+            "green"
       <p> @0.1.6.3
-        <select name="popup_hash"> @0.1.6.3.0
-          <option value="red"> @0.1.6.3.0.0
-            "Red"
-          <option value="blue"> @0.1.6.3.0.1
+        <select name="popup_hash1"> @0.1.6.3.0
+          <option value="blue"> @0.1.6.3.0.0
             "Blue"
-          <option value="green"> @0.1.6.3.0.2
+          <option value="green"> @0.1.6.3.0.1
             "Green"
+          <option value="red"> @0.1.6.3.0.2
+            "Red"
       <p> @0.1.6.4
         <select name=""> @0.1.6.4.0
           <option value="green"> @0.1.6.4.0.0

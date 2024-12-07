@@ -2,7 +2,7 @@
 #
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2017 by Andrew Speer <andrew@webdyne.org>.
+#  This software is Copyright (c) 2024 by Andrew Speer <andrew@webdyne.org>.
 #
 #  This is free software, licensed under:
 #

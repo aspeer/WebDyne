@@ -2,7 +2,7 @@
 #
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2017 by Andrew Speer <andrew@webdyne.org>.
+#  This software is Copyright (c) 2024 by Andrew Speer <andrew@webdyne.org>.
 #
 #  This is free software, licensed under:
 #
@@ -310,158 +310,10 @@ sub status {
 
 __END__
 
-=head1 Name
+=begin markdown
 
-wddebug - enable or disable debugging within WebDyne modules
 
-=head1 Synopsis
+=end markdown
 
-B<wddebug> B<[OPTIONS]> B<<FILE>>
 
-=head1 Options
-
--h, --help
-Show brief help message.
-
-
-=over 5
-
-
-=item -m, --man
-
-
-
-
-Show the manual page
-
-
-=item --status
-
-
-
-
-Show the current status of debugging within the module tree. This
-is the default if no options are given.
-
-
-=item --enable
-
-
-
-
-Enable debugging within the module tree
-
-
-=item --disable
-
-
-
-
-Disable debugging within the module tree.
-
-
-=item --directory
-
-
-
-
-Manually specify the directory where the module tree resides.
-
-
-=item --yes
-
-
-
-
-Bypass confirmation message
-
-
-=item --version
-
-
-
-
-Display cersion information.
-
-
-=back
-
-A file name may be optionally specified to specifically enable or
-disable debugging for only one module.
-
-=head1 Description
-
-The L<wddebug(1)> command will enable or disable debugging within the
-WebDyne suite of modules.
-
-B<wddebug> acts by editing the content of the WebDyne modules to enable or
-disable debugging routines. Debugging is controlled this way (rather
-than at runtime) to ensure that WebDyne modules run at the fastest
-possible speed when debugging is disabled.
-
-When disabled debugging statements within each module are prefixed with
-the command "0 &&" (as in: 0 && debug "xyz"), which are optimised away
-at runtime by the Perl bytecode compiler.
-
-When debugging is enabled the "0 &&" is replaced by "1 &&" to ensure
-that the debug statements are called at run-time.
-
-Enabling and disabling debugging in this way is generally considered
-bad practice - for this reason this utility should only be used in an
-isolated test or development environment. The routine will modify all
-modules in the WebDyne directoy and below, and may have undesired (or
-unintended) consquence on any module that resides in those directories.
-
-For this reason the B<wddebug> utility should be used with extreme care !
-
-=head1 Usage
-
-Enable global debugging:
-
-B<wddebug> B<--enable>
-
-Or for just one module
-
-B<wddebug> B<--enable> B<WebDyne/Session.pm>
-
-Debug output can then be displayed by setting the B<WEBDYNE_DEBUG>
-environment variable.
-
-B<WEBDYNE_DEBUG=1> B<wdrender> B<test.psp>
-
-Will display debug output when rendering a test page. You can filter
-down to one module by setting the environment variable to the
-method/subroutine you are interested in:
-
-B<WEBDYNE_DEBUG=WebDyne::handler> B<wdrender> B<test.psp>
-
-Will only show debug information from the WebDyne::handler method.
-
-Debug information can be saved to a file by setting the
-B<WEBDYNE_DEBUG_FILE> environment variable:
-
-B<WEBDYNE_DEBUG_FILE=/tmp/webdyne.log> B<wdrender> B<test.psp>
-
-If you require file output to be filtered you can combine the two
-environment variables
-
-B<WEBDYNE_DEBUG_FILE=/tmp/webdyne.log> B<WEBDYNE_DEBUG=WebDyne::handler>
-B<wdrender> B<test.psp>
-
-=head1 Author
-
-Written by Andrew Speer, andrew@webdyne.org
-
-=head1 LICENSE and COPYRIGHT
-
-This file is part of WebDyne.
-
-This software is Copyright (c) 2017 by Andrew Speer <andrew@webdyne.org>.
-
-This is free software, licensed under:
-
-  The GNU General Public License, Version 2, June 1991
-
-Full license text is available at:
-L<http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
-
+=cut
