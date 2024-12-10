@@ -186,6 +186,21 @@ sub compile {
         return err ("unable to open file $html_cn, $!");
 
 
+    #  Read over file handle until we get to the first non-comment line (ignores auto added copyright statements)
+    #
+    while (1) {
+        my $pos=tell($html_fh);
+        my $line=<$html_fh>;
+        if ($line=~/^#/) {
+            next;
+        }
+        else {
+            seek($html_fh, $pos,0);
+            last;
+        }
+    }
+
+
     #  Get new TreeBuilder object
     #
     my $html_ox=WebDyne::HTML::TreeBuilder->new(
