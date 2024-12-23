@@ -34,6 +34,7 @@ no warnings qw(uninitialized redefine once);
 #
 use WebDyne::Constant;
 use WebDyne::Base;
+use WebDyne::HTML::Tiny;
 
 
 #  External Modules
@@ -1350,6 +1351,7 @@ sub render {
     #
     my $cgi_or=$self->{'_CGI'} || $self->CGI() ||
         return err ("unable to get CGI object from self ref");
+    debug("CGI $cgi_or");
 
 
     #  Any data params for this render
@@ -3052,7 +3054,9 @@ sub CGI {
 
         #  Debug
         #
-        debug('CGI init');
+        my $html_or=WebDyne::HTML::Tiny->new( mode=>'html' );
+        debug("CGI init $html_or");
+        return $html_or;
 
 
         #  Need to turn off XHTML generation - CGI wants to turn it on every time for

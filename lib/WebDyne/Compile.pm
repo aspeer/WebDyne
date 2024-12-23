@@ -44,6 +44,7 @@ use Data::Dumper;
 
 #  WebDyne Modules
 #
+use WebDyne::HTML::Tiny;
 use WebDyne::Constant;
 use WebDyne::Base;
 
@@ -100,8 +101,28 @@ sub new {
     #  example. wdcompile is only used for debugging - we do some q&d stuff here
     #  to make it work
     #
-    my $class=shift();
-
+    my ($class, $opt_hr)=@_;
+    
+    
+    #  What HTML tag generation module should we compile with 
+    #
+    my $html_tag_module=$opt_hr->{'html_tag_module'} || 
+        return die('no html_tag_module option supplied');
+    #print "HTML tag module: $html_tag_module\n";
+    
+    
+    #  Get appropriate cgi_or
+    #
+    my $html_tag_or;
+    if ($html_tag_module eq 'CGI') {
+        $html_tag_or=CGI->new();
+    }
+    elsif ($html_tag_module eq 'WebDyne::HTML::Tiny') {
+        $html_tag_or=WebDyne::HTML::Tiny->new( mode=>'html' )
+    }
+    $html_tag_or ||
+        return die("unable to create new html_tag_or from module $ $html_tag_module");
+        
 
     #  Init WebDyne module
     #
@@ -115,7 +136,9 @@ sub new {
     my %self=(
 
         _r    => $r,
-        _CGI  => CGI->new(),
+        #_CGI  => CGI->new(),
+        #_CGI  => WebDyne::HTML::Tiny->new( mode=>'html' ),
+        _CGI  => $html_tag_or,
         _time => time()
 
     );
@@ -166,18 +189,22 @@ sub compile {
 
     #  Get CGI ref
     #
-    my $cgi_or=$self->{'_CGI'} || $self->CGI() || return err ();
+    #my $cgi_or=$self->{'_CGI'} || $self->CGI() || return err ();
+    my $cgi_or=$self->{'_CGI'} || return err ();
+    #*diag=\&Test::More::diag;
+    *diag=sub { printf(shift() . $/,  grep {$_} @_) };
+    diag("compile $cgi_or");
 
 
     #  Turn off xhtml in CGI - should work in pragma, seems dodgy - seems like
     #  we must do every time we compile a page
     #
-    $CGI::XHTML=0;
+    #$CGI::XHTML=0;
 
 
     #  Nostick
     #
-    $CGI::NOSTICKY=1;
+    #$CGI::NOSTICKY=1;
 
 
     #  Open the file
@@ -470,6 +497,59 @@ sub compile {
 }
 
 
+sub compile_init0 {
+
+
+    #  Used to init package, move ugliness out of handler
+    #
+    my $class=shift();
+    debug("in compile_init class $class");
+
+
+    #  Init some CGI custom routines we need for correct compilation etc.
+    #
+    *{'CGI::~comment'}=sub {sprintf('<!--%s-->', $_[1]->{'text'})};
+    $CGI::XHTML=0;
+    $CGI::NOSTICKY=1;
+    *CGI::start_html_cgi=$CGI_start_html_cr;
+    *CGI::end_html_cgi=$CGI_end_html_cr;
+    *CGI::start_html=sub {
+        my ($self, $attr_hr)=@_;
+
+        #CORE::print Data::Dumper::Dumper($attr_hr);
+        keys %{$attr_hr} || ($attr_hr=$WEBDYNE_HTML_PARAM);
+        my $html_attr=join(' ', map {qq($_="$attr_hr->{$_}")} keys %{$attr_hr});
+        return $WEBDYNE_DTD . ($html_attr ? "<html $html_attr>" : '<html>');
+    };
+    *CGI::end_html=sub {
+        '</html>'
+    };
+    *CGI::html=sub {
+        my ($self, $attr_hr, @html)=@_;
+        return join(undef, CGI->start_html($attr_hr), @html, $self->end_html);
+    };
+
+
+    #  Get rid of the simple escape routine, which mangles attribute characters we
+    #  want to keep
+    #
+    *CGI::Util::simple_escape=sub {shift()};
+
+
+    #  Get rid of compiler warnings on start and end routines
+    #
+    #0 && *CGI::start_html;
+    #0 && *CGI::end_html;
+
+
+    #  All done
+    #
+    return \undef;
+
+
+}
+
+
 sub compile_init {
 
 
@@ -538,9 +618,11 @@ sub optimise_one {
 
     #  Get CGI object
     #
+    #my $cgi_or=$self->{'_CGI'} || $self->CGI() ||
     my $cgi_or=$self->{'_CGI'} ||
         return err ("unable to get CGI object from self ref");
-
+    debug("CGI $cgi_or");
+    diag("optimise_one $cgi_or");
 
     #  Recursive anon sub to do the render
     #
@@ -759,8 +841,10 @@ sub optimise_two {
 
     #  Get CGI object
     #
+    #my $cgi_or=$self->{'_CGI'} || $self->CGI() ||
     my $cgi_or=$self->{'_CGI'} ||
         return err ("unable to get CGI object from self ref");
+    diag("optimise_two $cgi_or");
 
 
     #  Recursive anon sub to do the render

@@ -219,6 +219,7 @@ sub uri {
 sub debug {
 
     #  Stub
+    #printf(shift().$/, @_);
 }
 
 
