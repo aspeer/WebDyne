@@ -26,6 +26,7 @@ no warnings qw(uninitialized redefine once);
 #
 use WebDyne;
 use WebDyne::Constant;
+use WebDyne::HTML::Tiny;
 use WebDyne::Base;
 
 
@@ -83,6 +84,9 @@ debug("Loading %s version $VERSION", __PACKAGE__);
     'dump'
 
 );
+delete @CGI_TAG_IMPLICIT{qw(
+    button
+)};
 
 
 #  Get WebDyne tags from main module
@@ -129,6 +133,20 @@ our ($Text_fg, $Line_no, $Line_no_next, $Line_no_start, $HTML_Perl_or, @HTML_Wed
 
 #==================================================================================================
 
+
+sub new {
+
+    my $class=shift();
+    debug('in %s new(), class: %s', __PACKAGE__, ref($class) || $class );
+    my $self=$class->SUPER::new(@_) ||
+        return err('unable to initialize from %s, using ISA: %s', ref($class) || $class, Dumper(\@ISA));
+    $self->{'_html_tiny_or'}=
+        WebDyne::HTML::Tiny->new( mode=>'html' );
+    #die Dumper($self);
+    return $self;
+    
+}
+    
 
 sub parse_fh {
 
@@ -232,14 +250,15 @@ sub tag_parse {
     debug("tag $tag, tag_parent $tag_parent");
 
 
-    #  Var to hold returned html object ref
+    #  Var to hold returned html element object ref
     #
     my $html_or;
 
 
     #  If it is an below an implicit parent tag close that tag now.
     #
-    if ($CGI_TAG_IMPLICIT{$tag_parent} || $tag_parent=~/^start_/i || $tag_parent=~/^end_/i) {
+    #if ($CGI_TAG_IMPLICIT{$tag_parent} || $tag_parent=~/^start_/i || $tag_parent=~/^end_/i) {
+    if ($CGI_TAG_IMPLICIT{$tag_parent} || ($tag_parent=~/^(?:start_|end_)/i)) {
 
         #  End implicit parent if it was an implicit tag
         #
@@ -287,20 +306,42 @@ sub tag_parse {
 
         #  Yes, is WebDyne tag
         #
-        debug("webdyne tag ($tag) dispatch");
+        debug("webdyne tag_special ($tag) dispatch");
+        #die(Dumper($self));
+        #my $cgi_or=$self->CGI() ||
+        #    return err('unable to get CGI object');
         $html_or=$self->$tag($method, $tag, $attr_hr);
+
+    }
+
+
+    elsif ((my($modifier, $tag_actual)=($tag=~/^(start_|end_)(.*)/i)) && ($method ne 'SUPER::text')) {
+
+
+        #  Yes, is WebDyne tag
+        #
+        debug("webdyne tag start|end ($tag) dispatch, method $method");
+        if ($modifier=~/end_/) { 
+           debug('end tag so changing method to SUPER::end');
+           $method='SUPER::end' 
+        }
+        #Rif (UNIVERSAL::can('WebDyne::HTML::Tiny', $tag) {
+            
+        $html_or=$self->tag_parse($method, $tag_actual, $attr_hr);
+        
 
     }
 
 
     #  If it is an custom CGI tag that we need to close implicityly
     #
-    elsif ($CGI_TAG_IMPLICIT{$tag_parent} || $tag=~/^start_/i || $tag=~/^end_/) {
+    #elsif ($CGI_TAG_IMPLICIT{$tag_parent} || $tag=~/^start_/i || $tag=~/^end_/) {
+    elsif ($CGI_TAG_IMPLICIT{$tag_parent}) {
 
 
         #  Yes, is CGI tag
         #
-        debug("webdyne tag ($tag) dispatch");
+        debug("webdyne tag_implicit ($tag) dispatch");
         $html_or=$self->$method(@_);
         $self->end($tag)
 
@@ -463,7 +504,8 @@ sub start {
     my ($self, $tag)=(shift, shift);
     my $text=$_[2];
     ref($tag) || ($tag=lc($tag));
-    debug("start $tag Line_no $Line_no, @_, %s", Data::Dumper::Dumper(\@_));
+    debug("start tag '$tag' Line_no $Line_no, @_, %s", Data::Dumper::Dumper(\@_));
+    
     my $html_or;
     if ($Text_fg) {
         $html_or=$self->text($text)
@@ -628,23 +670,41 @@ sub comment {
 
 sub start_html {
 
+    my ($self, $method, $tag, $attr_hr)=@_;
+    push @HTML_Wedge, (my $html=$self->{'_html_tiny_or'}->$tag($attr_hr));
+    #die Dumper(\@HTML_Wedge);
+    return $self;
+    
+}
+
+sub end_html {
+    &start_html(@_);
+}
+
+
+sub start_html0 {
+
     #  Need to handle this specially ..
     my ($self, $method, $tag, $attr_hr)=@_;
+    debug('in start_html');
     if ($WEBDYNE_CONTENT_TYPE_HTML_META) {
         $attr_hr->{'head'} ||= &CGI::meta({"http-equiv" => "Content-Type", content => $WEBDYNE_CONTENT_TYPE_HTML})
     }
-    my $html=&CGI::start_html_cgi($attr_hr);
+    #my $html=&CGI::start_html_cgi($attr_hr);
+    my $html=WebDyne::HTML::Tiny->new->start_html_cgi($attr_hr);
     debug("html is $html");
     push @HTML_Wedge, $html;
     $self;
 }
 
 
-sub end_html {
+sub end_html0 {
 
     #  Need to handle this specially ..
     my ($self, $method, $tag, $attr_hr)=@_;
-    my $html=&CGI::end_html_cgi($attr_hr);
+    debug('in end_html');
+    #my $html=&CGI::end_html_cgi($attr_hr);
+    my $html=WebDyne::HTML::Tiny->new->end_html_cgi($attr_hr);
     debug("html is $html");
     push @HTML_Wedge, $html;
     $self;

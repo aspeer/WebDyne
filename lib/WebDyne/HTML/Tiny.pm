@@ -30,8 +30,6 @@ our @ISA=qw(HTML::Tiny);
 #  External Modules
 #
 use HTML::Tiny;
-use URI::Escape;
-use Data::Dumper;
 
 
 #  WebDyne Modules
@@ -62,33 +60,64 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 
 #  All done. Positive return
 #
-return ${&init()} || err('error running init code');
+return ${&_init()} || err('error running init code');
 
 
 #==================================================================================================
 
-sub init {
+
+sub new {
+
+
+    #  Start new instance
+    #
+    my ($class, @param)=@_;
+    my %param;
+    if (ref($param[0]) eq 'HASH') {
+        %param=%{$param[0]};
+    }
+    else {
+        %param=@param;
+    }
+    
+    #  Shortcuts (start_html, start_form etc.) enabled by default
+    #
+    &shortcut_enable() unless
+        $param{'noshortcut'};
+        
+        
+    #  Done
+    #
+    return $class->SUPER::new(@param);
+    
+}        
+
+
+sub _init {
+
 
     #  Initialise various subs
     #
-    *HTML::Tiny::start=\&HTML::Tiny::open || *HTML::Tiny::start; # || *HTML::Tiny::Start stops warning
-    *HTML::Tiny::end=\&HTML::Tiny::close  || *HTML::Tiny::end; # || as above
+    *HTML::Tiny::start= \&HTML::Tiny::open  || *HTML::Tiny::start; # || *HTML::Tiny::Start stops warning
+    *HTML::Tiny::end=   \&HTML::Tiny::close || *HTML::Tiny::end; # || as above
     
 
     #  Re-impliment CGI input shortcut tags
     #
-    foreach my $tag (qw(textfield password_field filefield button submit reset defaults image_button hidden)) {
+    foreach my $tag (qw(textfield password_field filefield button submit reset defaults image_button hidden button)) {
 
         my %type=(
             textfield       => 'text',
             password_field  => 'password',
             filefield       => 'file',
             defaults        => 'submit',
-            image_button    => 'image'
+            image_button    => 'image',
+            button          => 'button'
         );
 
         *{$tag}=sub { 
             my ($s, $attr_hr)=(shift(),shift());
+            debug("s:$s, attr_hr:$attr_hr, param:%s", Dumper(\@_));
             if ($attr_hr) {
                 return $s->input({ type=>$type{$tag} || $tag, %{$attr_hr} }, @_);
             }
@@ -96,7 +125,7 @@ sub init {
                 return $s->input({ type=>$type{$tag} || $tag }, @_)
             };
 
-        };
+        } unless UNIVERSAL::can(__PACKAGE__, $tag);
         
     }
 
@@ -106,10 +135,11 @@ sub init {
     foreach my $tag (qw(isindex)) {
 
         no strict qw(refs);
-        *{$tag}=sub { shift()->closed($tag, @_) };
+        *{$tag}=sub { shift()->closed($tag, @_) }
+            unless UNIVERSAL::can(__PACKAGE__, $tag);
         
     }
-
+    
     
     #  Done return OK
     #
@@ -118,21 +148,68 @@ sub init {
 }    
     
 
-sub AUTOLOAD {
-    print "AUTOLOAD: $AUTOLOAD\n";
-    if (my ($action, $tag) = ($AUTOLOAD =~ /\:\:(start|end)_([^:]+)$/)) {
-        *{$AUTOLOAD}=sub { shift()->$action($tag, @_) };
-        return &{$AUTOLOAD}(@_);
+sub shortcut {
+
+    #  Set or return passthough flag which flags us to ignore all start_* methods
+    #
+    my $self=shift();
+    if (@_) {
+        return shift() ? $self->shortcut_enable() : $self->shortcut_disable()
     }
+    else {
+        return $self->{'_shortcut'}
+    }
+    
+}
+
+
+sub shortcut_disable {
+
+    no warnings qw(redefine);
+    foreach my $sub (grep {/^(?:_start|_end)/} keys %{__PACKAGE__.'::'}) {
+        (my $sub_start=$sub)=~s/^_//;
+        #print "disable $sub_start=>$sub";
+        if (my ($action, $tag) = ($sub_start =~ /^(start|end)_([^:]+)$/)) {
+            #print "action: $action, tag: $tag\n";
+            *{$sub_start}=sub { shift()->$action($tag, @_) };
+        }
+    }
+    *start_html=sub { shift()->_start_html_bare(@_) };
+
+}
+
+
+sub shortcut_enable {
+
+    no warnings qw(redefine);
+    foreach my $sub (grep {/^(?:_start|_end])/} keys %{__PACKAGE__.'::'}) {
+        (my $sub_start=$sub)=~s/^_//;
+        #print "enable $sub_start=>$sub";
+        *{$sub_start}=\&{$sub};
+    }
+    #*start_html=\&_start_html_bare;
+
 }
 
 
 #  Start_html shorcut and include DTD
 #
-sub start_html {
+sub _start_html {
 
-    my ($self, $attr_hr)=@_;
+    
+    #  Get self ref and any attributes passed
+    #
+    my ($self, $attr_hr, @param)=@_;
+    #return $self->SUPER::start_html($attr_hr, @param) if $self->{'_passthrough'};
+
+
+    #  If no attributes passed used defaults from constants file
+    #
     keys %{$attr_hr} || ($attr_hr=$WEBDYNE_HTML_PARAM);
+    
+    
+    #  Pull out meta attributes leaving rest presumably native html tag attribs
+    #
     my %attr_page=map {$_=>delete $attr_hr->{$_}} qw(
         title
         meta
@@ -141,45 +218,95 @@ sub start_html {
         target
         author
     );
+    debug('start_html %s', Dumper(\%attr_page));
 
+
+    #  Start with the DTD
+    #
     my @html=$WEBDYNE_DTD;
-    my @meta;
-    while (my ($name, $content)=each %{$attr_page{'meta'}}) {
-        push @meta, $self->meta({ name=>$name, content=>$content });
+    #my @html;
+    
+    
+    #  Add meta section
+    #
+    my @meta=$self->meta({ content=>$attr_page{'meta'} })
+        if $attr_page{'meta'};
+    #while (my ($name, $content)=each %{$attr_page{'meta'}}) {
+    #    push @meta, $self->meta({ name=>$name, content=>$content });
+    #}
+    while (my ($name, $content)=each %{$WEBDYNE_META}) {
+        push @meta, $self->meta({ $name=>$content });
     }
+    
+    
+    #  Add any stylesheets
+    #
     my @link;
-    while (my ($src, $href)=each %{$attr_page{'style'}}) {
-        push @link, $self->link({ rel=>'stylesheet', href=>$href });
+    if($attr_page{'style'}) {
+        push @link, $self->link({ rel=>'stylesheet', href=>$attr_page{'style' }} )
     }
     if (my $author=$attr_page{'author'}) {
-        $author=uri_escape($author);
+        $author=$self->url_encode($author);
         push @link, $self->link({ rel=>'author', href=>sprintf('mailto:%s', $author) });
     }
+    
+    
+    #  Build head, adding a title section, empty if none specified
+    #
     my $head=$self->head(join($/,
         grep {$_}
-        $self->title($attr_page{'title'} || 'Untitled Document'),
+        $self->title($attr_page{'title'} ? $attr_page{'title'} : ''),
         @meta,
         @link
     ));
     
-    push @html, $self->open('html', $attr_hr), $head;
+    
+    #  Put all together and return
+    #
+    push @html, $self->open('html', $attr_hr), $head . $self->open('body');
     return join($/, @html);
     
 }
 
 
-#  Big shortcut, creates page in one hit
-#
+sub _end_html {
+    
+    #  Stub for WebDyne UNIVERSAL::can to find
+    #
+    #shift()->SUPER::end_html(@_);
+    my ($self, $attr_hr)=@_;
+    #return $self->SUPER::end_html($attr_hr) if $self->{'_passthrough'};
+    my @html;
+    push @html, $self->close('body'), $self->close('html');
+    return join($/, @html);
+    #return shift()->close('html', @_);
+    
+}
+
+
 sub html {
 
-    my ($self, $attr_hr, @html)=@_;
-    return join('', $self->start_html($attr_hr), @html, $self->end_html);
+    #my $self=shift();
+    #die Dumper(\@_);
+    return $WEBDYNE_DTD . shift()->SUPER::html(@_);
 
 }
 
+
+sub _start_html_bare {
+
+    #  Special. Called by optimise_two in WebDybe compile instead of start_html above
+    #
+    #die &Data::Dumper::Dumper(\@_);
+    return $WEBDYNE_DTD . shift()->SUPER::open('html', @_);
+    #return $WEBDYNE_DTD
+    
+}
+
+
 #  Start_form shortcut
 #
-sub start_form {
+sub _start_form {
 
     my ($s, $attr_hr, @param)=@_;
     my %default=(
@@ -189,18 +316,19 @@ sub start_form {
     map { $attr_hr->{$_} ||= $default{$_} }
         keys %default;
     return $s->start('form', $attr_hr, @param);
+
 }
 
 
 
 #  Start multi-part form shortcut
 #
-sub start_multipart_form {
-    return shift()->start_form({ enctype=>+MULTIPART, %{shift()} }, @_);
+sub _start_multipart_form {
+    return shift()->start_form({ enctype=>+MULTIPART, %{$_[0] ? shift() : {}} }, @_);
 }
 
 
-sub end_multipart_form {
+sub _end_multipart_form {
     return shift()->end_form(@_);
 }
 
@@ -211,6 +339,57 @@ sub comment {
     
     my $s=shift();
     return sprintf('<!-- '.shift().' -->', @_);
+    
+}
+
+
+
+#  Link tag, expand any array into multiple link tags 
+#
+sub meta {
+
+    my ($self, $attr_hr)=@_;
+    debug('in meta, attr %s', Dumper($attr_hr));
+    my @html;
+    if (ref($attr_hr->{'content'}) eq 'HASH') {
+        while (my ($name, $content)=each %{$attr_hr->{'content'}}) {
+            if ((my ($key,$value)=split(/=/, $name))==2) {
+                #  Self contained
+                #
+                debug("split to $key: $value");
+                if ($content) {
+                    push @html, $self->SUPER::meta({ $key=>$value, content=>$content });
+                }
+                else {
+                    push @html, $self->SUPER::meta({ $key=>$value });
+                }
+            }
+            else {
+                push @html, $self->SUPER::meta({ name=>$name, content=>$content });
+            }
+        }
+    }
+    else {
+        push @html, $self->SUPER::meta($attr_hr)
+    }
+    return join($/, @html);
+    
+}
+
+
+sub link {
+
+    my ($self, $attr_hr)=@_;
+    debug('in link, attr %s', Dumper($attr_hr));
+    my @html;
+    if (ref($attr_hr->{'href'}) eq 'ARRAY') {
+        my $href_ar=delete($attr_hr->{'href'});
+        map { push @html, $self->SUPER::link({ %{$attr_hr}, href=>$_ }) } @{$href_ar}
+    }
+    else {
+        push @html, $self->SUPER::link($attr_hr)
+    }
+    return join($/, @html);
     
 }
 
@@ -274,7 +453,7 @@ sub _radio_checkbox_group {
         #  Note use of empty array for checked and disabled values as per HTML::Tiny specs
         $attr_tag{'checked'}=[] if $attr_group{'defaults'}{$value};
         $attr_tag{'disabled'}=[] if $attr_group{'disabled'}{$value};
-        $attr_tag{'label'}=$attr_hr->{'labels'}{$value} if $attr_hr->{'labels'}{$value};
+        $attr_tag{'label'}= $attr_hr->{'labels'}{$value} ? $attr_hr->{'labels'}{$value} : $value;
         push @html, $self->_radio_checkbox($tag, \%attr_tag);
     }
     
@@ -313,6 +492,19 @@ sub popup_menu {
     #
     my @html;
     
+
+    #  If values is a hash not an array then convert to array and use hash as values
+    #
+    if (ref($attr{'values'}) eq 'HASH') {
+    
+        
+        #  It's a hash - use as labels, and push keys to values
+        #
+        $attr{'labels'}=(my $hr=delete $attr{'labels'});
+        $attr{'values'}=[keys %{$hr}]
+        
+    }
+    
     
     #  Convert arrays of default values (i.e checked/enabled) and any disabled entries into hash - easier to check
     #
@@ -326,6 +518,11 @@ sub popup_menu {
             if $attr{$attr};
         delete $attr{$attr};
     }
+    #unless ($attr_group{'labels'}) {
+    #    $attr_group{'labels'}={
+    #        map { $_=>$_ } @{$attr_group{'values'}}
+    #    }
+    #}
     
     
     #  Convert 'defaults' key to 'selected'
@@ -348,7 +545,7 @@ sub popup_menu {
     #  Fix multiple tag if true
     #
     $attr{'multiple'}=[] if $attr{'multiple'};
-        
+    
     
     #  Now iterate and build actual tag, push onto HTML array
     #
@@ -361,13 +558,13 @@ sub popup_menu {
         #  Note use of empty array for checked and disabled values as per HTML::Tiny specs
         $attr_tag{'selected'}=[] if $attr_group{'selected'}{$value};
         $attr_tag{'disabled'}=[] if $attr_group{'disabled'}{$value};
-        my $label=$attr_group{'labels'}{$value} if $attr_group{'labels'}{$value};
-        if ($label) {
-            push @html, $self->label($self->option(\%attr_tag) . $label);
-        }
-        else {
-            push @html, $self->option(\%attr_tag)
-        }
+        my $label=$attr_group{'labels'}{$value} ? $attr_group{'labels'}{$value} : $value;
+        #if ($label) {
+        #    push @html, $self->label($self->option(\%attr_tag) . $label);
+        #}
+        #else {
+            push @html, $self->option(\%attr_tag, $label)
+        #}
     }
     
     
@@ -387,9 +584,13 @@ sub scrolling_list {
     
 }
 
+sub Dumper {
+    return &Data::Dumper::Dumper(@_);
+}
 
 sub AUTOLOAD {
-    if (my ($action, $tag) = ($AUTOLOAD =~ /\:\:(start|end)_([^:]+)$/)) {
+    #print "AUTOLOAD: $AUTOLOAD\n";
+    if (my ($action, $tag) = ($AUTOLOAD =~ /\:\:(start|end|open|close)_([^:]+)$/)) {
         *{$AUTOLOAD}=sub { shift()->$action($tag, @_) };
         return &{$AUTOLOAD}(@_);
     }

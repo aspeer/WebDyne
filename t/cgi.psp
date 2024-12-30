@@ -1,5 +1,5 @@
-<start_html lang="en-US" title="A simple example"/>
-
+<start_html title="A simple example" style="@{qw(https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css test.css)}">
+<main class="container">
 <h1>A Simple Example</h1>
 <start_form action=""/>
 <p>
@@ -10,7 +10,8 @@ What's the combination ? <checkbox_group
 <p>
 What's your favourite color ? <popup_menu 
 	name="color" values="@{qw(red green blue chartreuse)}"/>
-<submit/>
+<submit disabled/><submit/>
+<button>FooBar Gherkin</button>
 <end_form/>
 <hr>
 
@@ -22,21 +23,21 @@ The keywords are: <em>${words}</em>
 <p>
 Your favorite color is: <em>+{color}</em>
 </perl>
-
+</main>
 <end_html/>
 __PERL__
 
 sub answers {
 
 	my $self=shift();
-	my $cgi_or=$self->CGI();
-	if ($cgi_or->param()) {
-		my $words=join(",", $cgi_or->param('words'));
-		return $self->render( words=>$words )
-	}
-	else {
+	#my $cgi_or=$self->CGI();
+	#if ($cgi_or->param()) {
+	#	my $words=join(",", $cgi_or->param('words'));
+	#	return $self->render( words=>$words )
+	#}
+	#else {
 		return \undef;
-	}
+	#}
 
 }
 

@@ -43,6 +43,7 @@ use WebDyne::Compile;
 use Getopt::Long;
 use Pod::Usage;
 use Data::Dumper;
+$Data::Dumper::Indent=1;
 
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
@@ -72,7 +73,9 @@ sub main {
 
         nofilter => 1,    # don't run through any filters
         noperl   => 1,    # don't run perl code,
-        stage4   => 1,    # default
+        nocache	 => 1,
+        notimestamp => 1
+        #stage5   => 1,    # default
 
     );
 
@@ -80,8 +83,22 @@ sub main {
     #  Now import command line options. Command line option compilation stages are different from
     #  internal stage numbers so maps are 0=>stage0, 1=>stage2, 2=>stage3, 3=>stage4, confusing ..
     #
-    GetOptions(\%opt, 'stage0|0', 'stage2|1', 'stage3|2', 'stage4|3', 'meta', 'version', 'html_tag_module:s', 'help|?', 'man') ||
-        pod2usage(2);
+    GetOptions(\%opt, qw(
+        stage0|0|opt0 
+        stage1|1 
+        stage2|2 
+        stage3|3|opt1
+        stage4|4|opt2
+        stage5|5|final
+        meta
+        data
+        dest|dest_fn:s
+        all
+        timestamp
+        version
+        help|?
+        man
+    )) || pod2usage(2);
     pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2) if $opt{'man'};
     $opt{'version'} && do {
@@ -107,8 +124,16 @@ sub main {
 
     #  Dump it
     #
-    $Data::Dumper::Indent=1;
-    print Data::Dumper::Dumper(grep {$_} $opt{'meta'} ? $data_ar->[0] : undef, $data_ar->[1]);
+    if ($opt{'all'}) {
+        print Dumper($data_ar);
+    }
+    elsif ($opt{'meta'}) {
+        print Dumper($data_ar->[0])
+    }
+    else {
+        print Dumper($data_ar->[1])
+    } 
+    #print Data::Dumper::Dumper(grep {$_} $opt{'meta'} ? $data_ar->[0] : undef, $data_ar->[1]);
 
 
     #  Return success

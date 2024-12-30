@@ -306,3 +306,9 @@ sub err_eval {
 
 }
 
+use Carp qw(croak confess);
+sub Dumper {
+
+    confess Data::Dumper::Dumper(\@_);
+    
+}

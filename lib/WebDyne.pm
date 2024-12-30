@@ -3055,6 +3055,7 @@ sub CGI {
         #  Debug
         #
         my $html_or=WebDyne::HTML::Tiny->new( mode=>'html' );
+        #my $html_or=WebDyne::HTML::Tiny->new();
         debug("CGI init $html_or");
         return $html_or;
 

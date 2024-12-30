@@ -3,7 +3,7 @@
 #  Create dump files in test directory from PSP sources
 #
 
-sub BEGIN {
+sub BEGIN0 {
     #  Massage warnings and @INC path
     $^W=0;
     use File::Spec;
@@ -30,8 +30,8 @@ use File::Spec;
 use IO::File;
 use HTML::TreeBuilder;
 use Data::Dumper;
-use CGI qw(-no_xhtml);
-$CGI::XHTML=0;
+#use CGI qw(-no_xhtml);
+#$CGI::XHTML=0;
 
 
 #  Get list of files either from command line or from *.psp if no
@@ -49,7 +49,7 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
 
     #  Create WebDyne render of PSP file and capture to file
     #
-    printf("processing: %s .. ", (File::Spec->splitpath($test_fn))[2]);
+    printf("processing: %s\n", (File::Spec->splitpath($test_fn))[2]);
     
     
     #  Check for en-us attribute - needed to consitency across CGI vers
@@ -57,7 +57,7 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     my $test_fh=IO::File->new($test_fn, O_RDONLY) || die;
     my $html_ln=<$test_fh>;
     $test_fh->close();
-    unless ($html_ln=~/en-US/) { die("no html 'lang=en-US' attribute found in file '$test_fn'")}
+    #unless ($html_ln=~/en-US/) { die("no html 'lang=en-US' attribute found in file '$test_fn'")}
     
     
     
@@ -81,7 +81,8 @@ foreach my $test_fn (sort {$a cmp $b } @test_fn) {
     while (my $html=<$html_fh>) {
 	#  Do this way to get rid of extraneous CR's older version of CGI insert, spaces
 	#  after tags which also differ from ver to ver, confusing test
-	print "html $html\n";
+	#print "html $html\n";
+	print "html: $html";
 	$html=~s/\n+$//;
 	$html=~s/>\s+/>/g;
 	$tree_or->parse($html);

@@ -102,7 +102,7 @@ sub is_main {
 sub log_error {
 
     my $r=shift();
-    warn(@_) unless $r->notes('nowarn');
+    warn(@_) unless !$r->{'warn'};
 
 }
 
@@ -250,7 +250,7 @@ sub set_handlers {
 sub noheader {
 
     my $r=shift();
-    @_ ? $r->{'noheader'}=shift() : $r->{'noheader'};
+    @_ ? $r->{'header'}=shift() : $r->{'header'};
 
 }
 
@@ -258,7 +258,7 @@ sub noheader {
 sub send_http_header {
 
     my $r=shift();
-    return if $r->{'noheader'};
+    return unless $r->{'header'};
     my $fh=$r->{'select'} || \*STDOUT;
     CORE::printf $fh ("Status: %s\n", $r->status());
     while (my ($header, $value)=each(%{$r->{'headers_out'}})) {
@@ -272,8 +272,7 @@ sub send_http_header {
 sub content_type {
 
     my ($r, $content_type)=@_;
-    $r->{'header'}{'Content-Type'}=$content_type;
-
+    $r->{'headers_out'}{'Content-Type'}=$content_type;
     #CORE::print("Content-Type: $content_type\n");
 
 }

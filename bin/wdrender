@@ -46,6 +46,12 @@ use Pod::Usage;
 use IO::File;
 
 
+#  Error handling
+#
+use Carp;
+$SIG{__DIE__} = \&Carp::confess;
+
+
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
 $VERSION='1.251';
@@ -88,8 +94,8 @@ sub main {
         'header!',
         'warn!',
         'error=s',
-        'header_out=s@',
-        'header_in=s@',
+        'headers_out|header_out=s@',
+        'headers_in|header_in=s@',
         'outfile=s',
         'man',
         'version'
@@ -125,7 +131,7 @@ sub main {
     my $r=WebDyne::Request::Fake->new(
 
         filename => $srce_fn,
-
+        %opt
         #select          =>  $dest_fh,
         #status          =>  $opt{'status'},
 
@@ -134,11 +140,11 @@ sub main {
 
     #  Set headers
     #
-    foreach my $header_out (@{$opt{'header_out0'}}) {
+    foreach my $header_out (@{$opt{'headers_out'}}) {
         my ($k, $v)=split(/\s*:\s*/, $header_out);
         $r->headers_out($k, $v);
     }
-    foreach my $header_in (@{$opt{'header_in0'}}) {
+    foreach my $header_in (@{$opt{'headers_in'}}) {
         my ($k, $v)=split(/\s*:\s*/, $header_in);
         $r->headers_in($k, $v);
     }
@@ -162,8 +168,9 @@ sub main {
 
     #  Set header, warning output
     #
-    $r->notes('noheader', !$opt{'header'});
-    $r->notes('nowarn',   !$opt{'warn'});
+    #$r->notes('noheader', $opt{'header'} ? 0 : 1);
+    #$r->notes('nowarn',   $opt{'warn'} ? 0 : 1);
+    #die Dumper($r, \%opt);
 
 
     #  Run it and display results, or any error generated
