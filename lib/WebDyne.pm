@@ -1349,8 +1349,10 @@ sub render {
 
     #  Get CGI object
     #
-    my $cgi_or=$self->{'_CGI'} || $self->CGI() ||
-        return err ("unable to get CGI object from self ref");
+    #my $cgi_or=$self->{'_CGI'} || $self->CGI() ||
+    #    return err ("unable to get CGI object from self ref");
+    my $cgi_or=$self->{'_html_tiny_or'} || $self->html_tiny() ||
+        return err ("unable to get HTML::Tiny object from self ref");
     debug("CGI $cgi_or");
 
 
@@ -1501,7 +1503,7 @@ sub render {
             #  Normal CGI tag, with attributes and perhaps child text
             #
             return \(
-                $cgi_or->$html_tag(grep {$_} $attr_hr, $html_chld)
+                $cgi_or->$html_tag(grep {$_} $attr_hr || {}, $html_chld)
                     ||
                     return err (
                     "CGI tag '<$html_tag>' " .
@@ -3050,20 +3052,24 @@ sub CGI {
 
     #  Accessor method for CGI object
     #
+    #use Carp qw(confess);
+    #confess();
+    #die &Data::Dumper::Dumper([caller()]);
+    use CGI::Simple;
     return shift()->{'_CGI'} ||= do {
 
         #  Debug
         #
-        my $html_or=WebDyne::HTML::Tiny->new( mode=>'html' );
+        #my $html_or=WebDyne::HTML::Tiny->new( mode=>'html' );
         #my $html_or=WebDyne::HTML::Tiny->new();
-        debug("CGI init $html_or");
-        return $html_or;
+        #debug("CGI init $html_or");
+        #return $html_or;
 
 
         #  Need to turn off XHTML generation - CGI wants to turn it on every time for
         #  some reason
         #
-        $CGI::XHTML=0;
+        #$CGI::XHTML=0;
         $CGI::NOSTICKY=1;
 
 
@@ -3075,12 +3081,12 @@ sub CGI {
 
         #  And create it
         #
-        my $cgi_or=CGI::->new();
+        my $cgi_or=CGI::Simple->new();
 
 
         #  Set defaults
         #
-        $cgi_or->autoEscape($WEBDYNE_CGI_AUTOESCAPE);
+        #$cgi_or->autoEscape($WEBDYNE_CGI_AUTOESCAPE);
 
 
         #  Expand params if we need to
@@ -3094,6 +3100,14 @@ sub CGI {
 
     };
 
+}
+
+
+sub html_tiny {
+
+    return (shift()->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new( mode=>'html')) ||
+        err('unable to instantiate new WebDybe::HTTP::Tiny object');
+        
 }
 
 
@@ -3136,8 +3150,9 @@ sub dump {
     #  time it is run, and if not a WebDyne tag it would be optimised to static text by
     #  the compiler
     #
+    $Data::Dumper::Indent=1;
     my ($self, $data_ar, $attr_hr)=@_;
-    return ($WEBDYNE_DUMP_FLAG || $attr_hr->{'force'} || $attr_hr->{'display'}) ? \$self->{'_CGI'}->Dump() : \undef;
+    return ($WEBDYNE_DUMP_FLAG || $attr_hr->{'force'} || $attr_hr->{'display'}) ? \$self->{'_CGI'}->Dump(\%ENV) : \undef;
 
 }
 

@@ -189,8 +189,8 @@ sub compile {
     #  Need request object ref
     #
     my $r=$self->{'_r'} || $self->r() || return err ();
-
-
+    
+    
     #  Get CGI ref
     #
     #my $cgi_or=$self->{'_CGI'} ||= $self->CGI() || return err ();
@@ -656,7 +656,8 @@ sub optimise_one {
 
     #  Get CGI object
     #
-    my $cgi_or=$self->{'_CGI'} ||= $self->CGI({ noshortcut=>1 }) ||
+    #my $cgi_or=$self->{'_CGI'} ||= $self->CGI({ noshortcut=>1 }) ||
+    my $cgi_or=$self->{'_html_tiny_or'} ||= $self->html_tiny() ||
     #my $cgi_or=WebDyne::HTML::Tiny->new({
     #    mode		=> 'html',
     #    noshortcut	=>  1
@@ -835,7 +836,7 @@ sub optimise_one {
                     #  Use errsubst as CGI may have DIEd during eval and be caught by WebDyne SIG handler
                     return errsubst(
                     "CGI tag '<$html_tag>': %s",
-                    $@ || "undefined error rendering tag '$html_tag'"
+                    $@ || sprintf("undefined error rendering tag '$html_tag', attr_hr:%s, data_child:%s", Dumper($attr_hr, \@data_child))
                     );
 
 
@@ -902,7 +903,8 @@ sub optimise_two {
 
     #  Get CGI object
     #
-    my $cgi_or=$self->{'_CGI'} ||= $self->CGI({ noshortcut=>1 }) ||
+    #my $cgi_or=$self->{'_CGI'} ||= $self->CGI({ noshortcut=>1 }) ||
+    my $cgi_or=$self->{'_html_tiny_or'} ||= $self->html_tiny() ||
     #my $cgi_or=$self->{'_CGI'} ||
         return err ("unable to get CGI object from self ref");
     #diag("optimise_two $cgi_or");
@@ -1374,3 +1376,9 @@ sub parse {
 
 }
 
+sub html_tiny {
+
+    return (shift()->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new( mode=>'html')) ||
+        err('unable to instantiate new WebDybe::HTTP::Tiny object');
+        
+}

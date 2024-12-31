@@ -418,7 +418,7 @@ sub _radio_checkbox_group {
     #  Build a checkbox or radio group
     #
     my ($self, $tag, $attr_hr)=@_;
-    
+    debug("in _radio_checbox_group tag:$tag attr: %s", Dumper($attr_hr));
 
     #  Hold generated HTML in array until end
     #
@@ -431,6 +431,19 @@ sub _radio_checkbox_group {
     foreach my $attr (qw(defaults disabled)) {
         map { $attr_group{$attr}{$_}=1 } @{(ref($attr_hr->{$attr}) eq 'ARRAY') ? $attr_hr->{$attr} : [$attr_hr->{$attr}] }
             if $attr_hr->{$attr};
+    }
+
+
+    #  If values is a hash not an array then convert to array and use hash as values
+    #
+    if (ref($attr_hr->{'values'}) eq 'HASH') {
+    
+        
+        #  It's a hash - use as labels, and push keys to values
+        #
+        $attr_hr->{'labels'}=(my $hr=delete $attr_hr->{'values'});
+        $attr_hr->{'values'}=[keys %{$hr}]
+      
     }
     
     
@@ -449,6 +462,7 @@ sub _radio_checkbox_group {
             (%{ $attr_hr->{'attributes'}{$value} }) :
             ();
         $attr_tag{'name'}=$attr_hr->{'name'} if $attr_hr->{'name'};
+        $attr_tag{'value'}=$value;
         
         #  Note use of empty array for checked and disabled values as per HTML::Tiny specs
         $attr_tag{'checked'}=[] if $attr_group{'defaults'}{$value};
@@ -486,6 +500,8 @@ sub popup_menu {
     #
     my ($self, $attr_hr)=@_;
     my %attr=%{$attr_hr};
+    debug('in popup_menu: %s', Dumper($attr_hr));
+    
     
 
     #  Hold generated HTML in array until end
@@ -500,11 +516,10 @@ sub popup_menu {
         
         #  It's a hash - use as labels, and push keys to values
         #
-        $attr{'labels'}=(my $hr=delete $attr{'labels'});
+        $attr{'labels'}=(my $hr=delete $attr{'values'});
         $attr{'values'}=[keys %{$hr}]
         
     }
-    
     
     #  Convert arrays of default values (i.e checked/enabled) and any disabled entries into hash - easier to check
     #
@@ -523,6 +538,7 @@ sub popup_menu {
     #        map { $_=>$_ } @{$attr_group{'values'}}
     #    }
     #}
+    debug('in popup_menu attr_group: %s', Dumper(\%attr_group));
     
     
     #  Convert 'defaults' key to 'selected'

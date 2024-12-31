@@ -55,38 +55,44 @@ $VERSION='1.251';
 debug("Loading %s version $VERSION", __PACKAGE__);
 
 
-#  Make a hash of our implictly closed tags. TODO, expand to full list,
-#  instead of most used.
+#  Make a hash of our implictly closed tags. 
 #
-#%CGI_TAG_IMPLICIT=map { $_=>1 } (
-#
-#    'popup_menu',
-#    'textfield',
-#    'textarea',
-#    'radio_group',
-#    'password_field',
-#    'filefield',
-#    'scrolling_list',
-#    'checkbox_group',
-#    'checkbox',
-#    'hidden',
-#    'submit',
-#    'reset',
-#    'dump'
-#
-#   );
+%CGI_TAG_IMPLICIT=map { $_=>1 } (qw(
+
+    textfield
+    textarea
+    filefield
+    password_field
+    hidden
+    checkbox
+    checkbox_group
+    submit
+    reset
+    defaults
+    radio_group
+    popup_menu
+    scrolling_list
+    image_button
+    start_form
+    end_form
+    start_multipart_form
+    end_multipart_form
+    isindex
+    dump
+
+));
 
 
 #  Update - get from CGI module, add special dump tag
-%CGI_TAG_IMPLICIT=map {$_ => 1} (
-
-    @{$CGI::EXPORT_TAGS{':form'}},
-    'dump'
-
-);
-delete @CGI_TAG_IMPLICIT{qw(
-    button
-)};
+#%CGI_TAG_IMPLICIT=map {$_ => 1} (
+#
+#    @{$CGI::EXPORT_TAGS{':form'}},
+#    'dump'
+#D#
+#);
+#delete @CGI_TAG_IMPLICIT{qw(
+#    button
+#)};
 
 
 #  Get WebDyne tags from main module
@@ -97,6 +103,7 @@ delete @CGI_TAG_IMPLICIT{qw(
 #  The tags below need to be handled specially at compile time - see the method
 #  associated with each tag below.
 #
+#map {$CGI_TAG_SPECIAL{$_}++} qw(perl script style start_html end_html include);
 map {$CGI_TAG_SPECIAL{$_}++} qw(perl script style start_html end_html include);
 
 
@@ -415,12 +422,14 @@ sub block {
 
 sub script {
 
-    my ($self, $method, $tag, $attr_hr)=@_;
+    #my ($self, $method, $tag, $attr_hr)=@_;
+    my ($self, $method)=(shift, shift);
     debug('script');
     $Text_fg='script';
-    my $or=$self->$method($tag, $attr_hr, @_);
-    $or->postinsert('</script>') if $attr_hr->{'src'};
-    $or;
+    #my $or=$self->$method($tag, $attr_hr, @_);
+    #$or->postinsert('</script>') if $attr_hr->{'src'};
+    #$or;
+    $self->$method(@_);
 
 }
 
