@@ -288,7 +288,7 @@ sub compile {
     #my @data=($WEBDYNE_DTD);
     my $html_fn=(File::Spec->splitpath($html_cn))[2];
     my %meta=(
-        manifest => [$html_fn]
+        manifest => [$html_cn]
     );
     my $data_ar=$self->parse($tree_or, \%meta) || do {
         $tree_or->delete;

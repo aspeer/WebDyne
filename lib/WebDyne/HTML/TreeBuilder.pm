@@ -104,7 +104,7 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #  associated with each tag below.
 #
 #map {$CGI_TAG_SPECIAL{$_}++} qw(perl script style start_html end_html include);
-map {$CGI_TAG_SPECIAL{$_}++} qw(perl script style start_html end_html include);
+map {$CGI_TAG_SPECIAL{$_}++} qw(perl script style start_html end_html include div);
 
 
 #  Nullify Entities encode & decode
@@ -434,6 +434,19 @@ sub script {
 }
 
 
+sub json {
+
+
+    #  No special handling needed, just log for debugging purposes
+    #
+    my ($self, $method)=(shift, shift);
+    $Text_fg='json';
+    debug("json self $self, method $method, @_ text_fg $Text_fg");
+    $self->$method(@_);
+
+}
+
+
 sub style {
 
     my ($self, $method)=(shift, shift);
@@ -733,3 +746,17 @@ sub include {
 }
 
 
+sub div {
+
+    my ($self, $method, $tag, $attr_hr, @param)=@_;
+    if (grep {/^data-webdyne/} keys %{$attr_hr}) {
+        debug('hit on webdyne div tag !');
+        #my $or=HTML::Element->new('dump', force=>1);
+        #return $self->tag_parse('SUPER::start', $or)
+        $attr_hr->{'force'}=1;
+        return $self->$method('dump', $attr_hr, @param);
+    }
+    debug("in $tag, method:$method attr:%s", Dumper($attr_hr));
+    $self->$method($tag, $attr_hr, @param);
+    
+}

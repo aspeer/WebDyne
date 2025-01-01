@@ -20,28 +20,73 @@
 <title>WebDyne Error !{! $_[1]->{'r'}->status !}</title>
 
 
-<!-- Embedded style sheet for formatting -->
+<!-- Embedded style sheet for formatting, keep everything in one file -->
 
-<style type="text/css">
-body {font-family:"Verdana"; font-weight:normal; font-size:.7em; color:black;} 
-p    {font-family:"Verdana"; font-weight:normal; color:black; margin-top:-5px}
-b    {font-family:"Verdana"; font-weight:bold; color:black; margin-top:-5px}
-h1   {font-family:"Verdana"; font-weight:normal; font-size:18pt; color:red }
-h2   {font-family:"Verdana"; font-weight:normal; font-size:14pt; color:maroon}
-tt   {font-family:"Lucida Console"; font-size:.9em}
-pre  {font-family:"Lucida Console"; font-size:.9em}
+<style>
+    body0 {
+        font-family: "Verdana", sans-serif;
+        font-weight: normal;
+        font-size: 0.9em;
+        color: black;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 20px;
+    }
+
+    h10 {
+        font-size: 2rem;
+        color: red;
+    }
+
+    h20 {
+        font-size: 1.5rem;
+        color: maroon;
+    }
+
+    pre0, tt0 {
+        font-family: "Lucida Console", monospace;
+        font-size: 1em;
+        background-color: #f4f4f4;
+        padding: 10px;
+        border-radius: 5px;
+        overflow-x: auto;
+    }
+
+    .error-content0 {
+        background-color: #fff;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .highlight0 {
+        color: red;
+    }
+
+    .table-striped tr:nth-child(odd) {
+        background-color: #f9f9f9;
+    }
+
 </style>
+
 </head>
 
 
 <!-- Begin body -->
 
-<body bgcolor="white">
+<body>
 
 
 <!-- Status code and server status message -->
 
-<h1>WebDyne Error !{! $_[1]->{'r'}->status !}</h1><hr align="left" width="80%" size="1"><h2><i>!{! \&HTTP::Status::status_message($_[1]->{'r'}->status) !}</i></h2>
+<header>
+<h1>WebDyne Error !{! $_[1]->{'r'}->status !}</h1>
+<hr align="left" width="80%" size="1">
+</header>
+
+<section>
+<h2><i>!{! \&HTTP::Status::status_message($_[1]->{'r'}->status) !}</i></h2>
 
 
 <!-- Perl section to populate blocks with error messages, backtraces etc. -->
@@ -219,7 +264,8 @@ if ($WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW && $html_line_no_tag_start) {
 	#  Iterate through source lines till we get to area, then print
 	#
 	if ($srce_fn && $html_line_no_tag_start) {
-            my $fh=IO::File->new($srce_fn, &Fcntl::O_RDONLY) || die;
+            my $fh=IO::File->new($srce_fn, &Fcntl::O_RDONLY) ||
+                die("unable to open source file: $srce_fn");
             my $line_no;
             while (my $line=<$fh>) {
                 if ($line_no++ > ($html_line_no_tag_start - $lines_pre)) {
@@ -332,6 +378,7 @@ return \undef;
 
 
 <!-- Start of error table -->
+
 
 <table width="80%">
 
@@ -457,15 +504,19 @@ ${cgi_param_dump}
 </block>
 
 <br>
+</section>
 
-<hr align="left" width="80%" size="1">
+<footer>
+    <hr align="left" width="80%" size="1">
 
 
-<!-- And finally WebDyne version information -->
+    <!-- And finally WebDyne version information -->
 
-<block name="version">
-<b>Version Information:</b>&nbsp; WebDyne Version:!{! $WebDyne::VERSION !}
-</block>
+    <block name="version">
+    <b>Version Information:</b>&nbsp; WebDyne Version:!{! $WebDyne::VERSION !}
+    </block>
+
+</footer>
 
 </body>
 </html>

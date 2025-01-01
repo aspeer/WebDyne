@@ -28,6 +28,7 @@ use strict qw(vars);
 use vars qw($VERSION %CGI_TAG_WEBDYNE @ISA $AUTOLOAD);
 use warnings;
 no warnings qw(uninitialized redefine once);
+use overload;
 
 
 #  WebDyne constants, base modules
@@ -46,7 +47,7 @@ use Tie::IxHash;
 use Digest::MD5 qw(md5_hex);
 use File::Spec::Unix;
 use Data::Dumper;
-use overload;
+use HTML::Entities qw(decode_entities);
 
 
 #  Inherit from the Compile module, not loaded until needed though.
@@ -79,6 +80,7 @@ require WebDyne::Err;
     'perl',
     'subst',
     'dump',
+    'json',
     'include',
 
 );
@@ -933,6 +935,7 @@ sub init_class {
         #  Get self ref
         #
         my ($self, $data_ar, $eval_param_hr, $eval_text, $index, $tag_fg)=@_;
+        $eval_text=decode_entities($eval_text);
 
 
         #  Debug
@@ -2222,6 +2225,30 @@ sub block {
 
 }
 
+sub json {
+
+    #  Called when we encounter a <json> tag
+    #
+    my ($self, $data_ar, $attr_hr, $param_data_hr, $text)=@_;
+    #$attr_hr->{'type'} ||= 'application/json';
+    debug("rendering json tag in block $data_ar, attr %s", $attr_hr);
+    my $json_xr=$self->perl(undef, { json=>1 , %{$attr_hr}});
+    debug("json_xr %s", Dumper($json_xr));
+    my $html_or=$self->html_tiny() ||
+        return err();
+    my $json=$html_or->json_encode($json_xr) ||
+        return err('error on json_encode of %s', Dumper($json_xr));
+    debug("json %s", Dumper($json));
+    my %attr=(
+        type	=> 'application/json',
+        %{$attr_hr}
+    );
+    delete @attr{qw(package class method)};
+    my $html=($html_or->script(\%attr, $json ));
+    return \$html
+    
+}
+
 
 sub perl {
 
@@ -2229,8 +2256,14 @@ sub perl {
     #  Called when we encounter a <perl> tag
     #
     my ($self, $data_ar, $attr_hr, $param_data_hr, $text)=@_;
+    debug("rendering perl tag in block $data_ar, attr %s", Dumper($attr_hr));
 
-    #debug("rendering perl tag in block $data_ar, attr %s");
+    
+    #  Add current working directory to @INC for any use or require commands
+    #  in perl code
+    #
+    local @INC=@INC;
+    push @INC, $self->cwd();
 
 
     #  If inline, run now
@@ -2246,10 +2279,46 @@ sub perl {
         #  Run the same code as the inline eval (!{! ... !}) would run,
         #  for consistancy
         #
-        return $Package{'_eval_cr'}{'!'}->($self, $data_ar, $perl_param_hr, $perl_code) ||
+        my $html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $perl_param_hr, $perl_code) ||
             err ();
+            
+        
+        #  Return unless hidden
+        #
+        return $attr_hr->{'hidden'} ? \undef : $html_sr;
+        
 
 
+    }
+    elsif (my $perl_require=$attr_hr->{'require'}) {
+    
+        
+        #  Get current inode
+        #
+        my $inode=$self->{'_inode'} || 'ANON';
+        debug("about to load require module: $perl_require into inode package space: $inode");
+    
+        
+        #  Need to load a module
+        #
+        my $eval=sprintf(q[package WebDyne::%s; require '%s'], $inode, $perl_require);
+        debug("eval code: $eval");
+        
+        
+        #  Run the eval code
+        #
+        local $SIG{__DIE__};
+        eval {undef} if $@; #Clear $@;
+        eval($eval);
+        $@ && 
+            return err("attempt to load $perl_require returned error $@");
+        
+        
+        #  Done
+        #
+        return \undef;
+            
+        
     }
     else {
 
@@ -2257,6 +2326,7 @@ sub perl {
         #  Not inline, must want to call a handler, get method and caller
         #
         #my $function=join('::', grep {$_} @{$attr_hr}{qw(package class method)}) ||
+        #my $function=join('::', grep {$_} map {exists($attr_hr->{$_}) && $attr_hr->{$_}} qw(package class method)) ||
         my $function=join('::', grep {$_} map {exists($attr_hr->{$_}) && $attr_hr->{$_}} qw(package class method)) ||
             return err ('could not determine perl routine to run');
 
@@ -2293,8 +2363,8 @@ sub perl {
 
             #  Add psp file cwd to INC incase package stored in same dir
             #
-            local @INC=@INC;
-            push @INC, $self->cwd();
+            #local @INC=@INC;
+            #push @INC, $self->cwd();
             eval {require $package_fn} ||
                 return errsubst(
                 "error loading package '$package', %s", errstr() || $@ || 'undefined error'
@@ -2327,7 +2397,19 @@ sub perl {
 
         #  Debug
         #
-        #debug('perl eval return %s', Dumper($html_sr));
+        debug('perl eval return %s', Dumper($html_sr));
+        
+
+        #  Shift perl data_ar ref from stack
+        #
+        shift @{$self->{'_perl'}};
+        
+
+        #  Return if we want the data for a JSON tag (above)
+        #
+        if ($attr_hr->{'json'}) {
+            return $html_sr
+        }
 
 
         #  Modify return value if we were returned an array. COMMENTED OUT - is done in eval
@@ -2345,7 +2427,7 @@ sub perl {
 
             #  Error occurred. Pop data ref off stack and return
             #
-            shift @{$self->{'_perl'}};
+            #shift @{$self->{'_perl'}}; # Done above
             return err ("error in perl method '$method'- code did not return a SCALAR ref value.");
 
         };
@@ -2355,11 +2437,13 @@ sub perl {
         #
         #$self->{'_print_ar'} && do {
         #    $html_sr=\ join(undef, grep {$_} map { ref($_) ? ${$_} : $_ } @{delete $self->{'_print_ar'}}) };
-
-
-        #  Shift perl data_ar ref from stack
+        
+        #  Sometimes might not want the results displayed;
         #
-        shift @{$self->{'_perl'}};
+        #die Dumper($attr_hr);
+        return $attr_hr->{'hidden'} ? \undef : $html_sr;
+
+
 
 
         #  And return scalar val
@@ -2387,7 +2471,7 @@ sub perl_init {
     #$Package{'_cache'}{$inode}{'perl_init'}++ && return \undef;
     debug("init perl code $perl_ar, %s", Dumper($perl_ar));
     *{"WebDyne::${inode}::err"}=\&err;
-    *{"WebDyne::${inode}::self"}=sub     {$self};
+    *{"WebDyne::${inode}::self"}=sub{$self};
     *{"WebDyne::${inode}::AUTOLOAD"}=sub {die("unknown function $AUTOLOAD")};
 
 
@@ -3152,7 +3236,9 @@ sub dump {
     #
     $Data::Dumper::Indent=1;
     my ($self, $data_ar, $attr_hr)=@_;
-    return ($WEBDYNE_DUMP_FLAG || $attr_hr->{'force'} || $attr_hr->{'display'}) ? \$self->{'_CGI'}->Dump(\%ENV) : \undef;
+    my $cgi_or=$self->CGI() ||
+        return err();
+    return ($WEBDYNE_DUMP_FLAG || $attr_hr->{'force'} || $attr_hr->{'display'}) ? \$cgi_or->Dump(\%ENV) : \undef;
 
 }
 
@@ -3487,7 +3573,7 @@ sub AUTOLOAD {
 
     #  If we get here, we could not find the method in any caller. Error
     #
-        err ("unable to find method '$method' in call stack: %s", join(', ', @caller));
+    err ("unable to find method '$method' in call stack: %s", join(', ', @caller));
     goto RENDER_ERROR;
 
 }
