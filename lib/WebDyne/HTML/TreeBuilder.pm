@@ -287,7 +287,7 @@ sub tag_parse {
         $self->{'_head'}->preinsert($pos);
         $self->{'_head'}->detach();
         $pos->push_content($self->{'_head'});
-        $self->$method(@_);
+        $html_or=$self->$method(@_);
 
     }
 
@@ -300,7 +300,7 @@ sub tag_parse {
         $self->{'_body'}->preinsert($pos);
         $self->{'_body'}->detach();
         $pos->push_content($self->{'_body'});
-        $self->$method(@_);
+        $html_or=$self->$method(@_);
 
     }
 
@@ -425,7 +425,7 @@ sub script {
     #my ($self, $method, $tag, $attr_hr)=@_;
     my ($self, $method)=(shift, shift);
     debug('script');
-    $Text_fg='script';
+    $Text_fg ||='script';
     #my $or=$self->$method($tag, $attr_hr, @_);
     #$or->postinsert('</script>') if $attr_hr->{'src'};
     #$or;
@@ -440,7 +440,7 @@ sub json {
     #  No special handling needed, just log for debugging purposes
     #
     my ($self, $method)=(shift, shift);
-    $Text_fg='json';
+    $Text_fg ||='json';
     debug("json self $self, method $method, @_ text_fg $Text_fg");
     $self->$method(@_);
 
@@ -451,7 +451,7 @@ sub style {
 
     my ($self, $method)=(shift, shift);
     debug('style');
-    $Text_fg='style';
+    $Text_fg ||='style';
     $self->$method(@_);
 
 }
@@ -481,7 +481,7 @@ sub perl {
         #  added here
         #
         $HTML_Perl_or=$html_perl_or;
-        $Text_fg='perl';
+        $Text_fg ||='perl';
 
 
         #  And return it
@@ -543,6 +543,7 @@ sub start {
 
 }
 
+my @div_stack;
 
 sub end {
 
@@ -552,8 +553,70 @@ sub end {
     #
     my ($self, $tag)=(shift, shift);
     ref($tag) || ($tag=lc($tag));
-    debug("end $tag, text_fg $Text_fg, line $Line_no");
+    debug("end $tag, text_fg $Text_fg, line $Line_no, self $self");
     my $html_or;
+    if ($tag eq 'div') {
+        #debug('div stack: %s', Dumper(\@div_stack));
+        if (my $div_ar=pop(@div_stack)) {
+            my ($div_or, $webdyne_tag, $webdyne_tag_or)=@{$div_ar};
+            debug("popped div tag: $div_or, %s, about to end webdyne tag: $webdyne_tag", $div_or->tag());
+            $Text_fg=$webdyne_tag;
+            ##$self->end($webdyne_tag);
+            debug("ending $tag now");
+            $html_or=$self->SUPER::end($tag, @_);
+            my $webdyne_html_or;
+            if (my @child=$div_or->content_list()) {
+                debug("child nodes: %s", scalar @child);
+                $webdyne_html_or=pop(@child);
+            }
+            elsif (my @right=$div_or->right()) {
+                debug("right nodes: %s", scalar @right);
+                $webdyne_html_or=pop(@right);
+            }
+            #debug("webdyne_html_or: $webdyne_html_or, ref:%s, tag:%s", ref($webdyne_html_or), $webdyne_html_or->tag());
+            
+            #@child || 
+            #    return err("unable to get child list from div tag, expecting $webdyne_tag");
+            #my $webdyne_html_or=pop(@child);
+            debug("looking at ref");
+            ##ref($webdyne_html_or) ||
+            ##    return err("expected HTML::Element ref for webdyne tag, got: $webdyne_html_or");
+            ##debug("looking at tag");
+            ##unless ($webdyne_html_or->tag() eq $webdyne_tag) {
+            ##    return err("expected tag $webdyne_tag as child or right element, got: %s", $webdyne_html_or->tag());
+            ##}
+            
+            ##debug("got webdyne tag: $webdyne_tag HTML::Element $webdyne_html_or, tag:%s", $webdyne_html_or->tag());
+
+            $Text_fg=undef;
+            #
+            #return $html_or;
+
+            ##$webdyne_html_or->push_content($div_or->detach_content());
+            $webdyne_tag_or->push_content($div_or->detach_content());
+            
+            ##$div_or->replace_with($webdyne_html_or);
+            $div_or->replace_with($webdyne_tag_or);
+            return $html_or;
+
+            #my $html_or=HTML::Element->new('perl');
+            #$html_or->push_content($div_or->detach_content());
+            
+            
+            
+            #$div_or->push_content($html_or);
+            #$div_or->replace_with($html_or);
+            $Text_fg=undef;
+            return $html_or;
+            
+            
+            #$html_or=$self->SUPER::end($webdyne_tag_or->tag(), @_)
+        }
+        else {
+            debug('undef pop off div stack');
+            $html_or=$self->SUPER::end($tag, @_);
+        }
+    }
     if ($Text_fg && ($tag eq $Text_fg)) {
         $Text_fg=undef;
         $html_or=$self->SUPER::end($tag, @_)
@@ -564,6 +627,8 @@ sub end {
     else {
         $html_or=$self->SUPER::end($tag, @_)
     }
+    debug("html_or $html_or");
+    #debug('ending element %s', $self->pos->tag());
     $html_or;
 
 
@@ -749,14 +814,83 @@ sub include {
 sub div {
 
     my ($self, $method, $tag, $attr_hr, @param)=@_;
-    if (grep {/^data-webdyne/} keys %{$attr_hr}) {
-        debug('hit on webdyne div tag !');
+    debug("in $tag, method:$method attr:%s", Dumper($attr_hr));
+#    return $self->pos->replace_with(HTML::Element->new('p'));
+    #die ref($self);
+    #$self->pos->push_content(
+    if (my @tag=grep {/^data-webdyne-/} keys %{$attr_hr}) {
+
+        my $webdyne_tag=$tag[0];
+        delete $attr_hr->{$webdyne_tag};
+        $webdyne_tag=~s/^data-webdyne-//;
+        debug("found webdyne tag $webdyne_tag in div");
+        my $html_tiny_tag="start_${webdyne_tag}";
+        my $webdyne_tag_or;
+        my $div_or=$self->$method($tag, $attr_hr, @param);
+        if (0) {
+            push @HTML_Wedge, $self->{'_html_tiny_or'}->$html_tiny_tag(grep {$_} $attr_hr || {}, @param);
+        }
+        else {
+            $webdyne_tag_or=$self->tag_parse('SUPER::start', $webdyne_tag, $attr_hr, @param);
+            debug("created webdyne_tag_or: $webdyne_tag_or");
+        }
+            
+        push @div_stack, [$div_or, $webdyne_tag, $webdyne_tag_or];
+        return $div_or;
+
+
+        return $self->$method($tag, $attr_hr, @param);
+        
+
+
+        my $or=$self->$webdyne_tag($method, $tag, $attr_hr, @param);
+        #[A$Text_fg='div';
+
+
+        #my $or=$self->$tag($method, $tag, $attr_hr);
+
+        #my $or=$self->$webdyne_tag($attr_hr);
+        #$or->push_content($div_or->detach_content());
+        #$div_or->push_content($or);
+        debug("pushing $div_or onto div stack");
+        #push @div_stack, $div_or;
+        
+        
+        #@{$or}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no);
+        #debug("or $or");
+        #my $html_or=$self->tag_parse('SUPER::text', $or);
+        #push @div_stack, $html_or;
+        #debug("pushed $html_or onto stack");
+        #return $html_or;
+        
+
+        debug("hit on webdyne div tag for: $tag");
         #my $or=HTML::Element->new('dump', force=>1);
         #return $self->tag_parse('SUPER::start', $or)
-        $attr_hr->{'force'}=1;
-        return $self->$method('dump', $attr_hr, @param);
+        #$attr_hr->{'force'}=1;
+
+        #my $or=HTML::Element->new($tag, $attr_hr);
+        # $self->pos->preinsert(                                                                                                                                                       
+        #   ['br'],                                                                                                                                                                  
+        #   ['ul',                                                                                                                                                                   
+        #     map ['li', $_], qw(Peaches Apples Pears Mangos)                                                                                                                        
+        #   ]                                                                                                                                                                        
+        # ); 
+        # #$self->pos->detach();
+        # #$self->stunt();
+        # return $self->$method($tag, $attr_hr, @param);   
+
+        #delete $attr_hr->{"data-webdyne-${tag}"};
+        #my $or=HTML::Element->new($tag, $attr_hr);
+        #return $self->tag_parse('SUPER::start', $or, @param);
+        return $self->$method($tag, $attr_hr, @param);
     }
-    debug("in $tag, method:$method attr:%s", Dumper($attr_hr));
-    $self->$method($tag, $attr_hr, @param);
+    else {
+        push @div_stack, undef;
+        debug('hit on vanilla div tag');
+        return $self->$method($tag, $attr_hr, @param);
+    }
     
 }
+
+1;

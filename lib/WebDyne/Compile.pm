@@ -248,7 +248,7 @@ sub compile {
     #  Tell it if we also want to see comments, use XML mode
     #
     $tree_or->store_comments($WEBDYNE_STORE_COMMENTS);
-    $tree_or->xml_mode(1);
+    $tree_or->xml_mode(1); # Older versions on HTML::TreeBuilder
 
 
     #  No space compacting ?
@@ -261,51 +261,76 @@ sub compile {
     #
     my $parse_cr=$tree_or->parse_fh($html_fh) ||
         return err ();
+        
 
 
     #  Muck around with strictness of P tags
     #
     #$tree_or->implicit_tags(0);
-    $tree_or->p_strict(1);
-
+    #$tree_or->p_strict(1);
+    #$tree_or->implicit_body_p_tag(1);
+    
 
     #  Now parse through the file, running eof at end as per HTML::TreeBuilder
     #  man page.
     #
     $tree_or->parse($parse_cr);
-    $tree_or->eof();
-
-
-    #  And close the file handle
+    
+    
+    #  Close handler if anything goes wrong below
     #
+    my $close_cr=sub {
+    
+        $tree_or->delete;
+        undef $tree_or;
+        
+    };
+    
+    
+    #  Any errors ? Make sure clean-up before throwing error.
+    # 
+    if (errstr()) {
+        return err($close_cr->())
+    }
+    
+    
+    #  So far so good. Close tree and file
+    #
+    $tree_or->eof();
     $html_fh->close();
+
+
+    #  Elementify
+    #
+    $tree_or->elementify() ||
+        return $close_cr->();
 
 
     #  Now start iterating through the treebuilder object, creating
     #  our own array tree structure. Do this in a separate method that
     #  is rentrant as the tree is descended
     #
-    #my @data=($WEBDYNE_DTD);
-    my $html_fn=(File::Spec->splitpath($html_cn))[2];
+    #my $html_fn=(File::Spec->splitpath($html_cn))[2];
     my %meta=(
         manifest => [$html_cn]
     );
     my $data_ar=$self->parse($tree_or, \%meta) || do {
-        $tree_or->delete;
-        undef $tree_or;
-        return err ();
+        return err($close_cr->());
+        #$tree_or->delete;
+        #undef $tree_or;
+        #return err ();
     };
-    #my @data=($WEBDYNE_DTD, $data_ar);
     debug("meta after parse %s", Dumper(\%meta));
 
 
     #  Now destroy the HTML::Treebuilder object, or else mem leak occurs
     #
-    $tree_or=$tree_or->delete;
-    undef $tree_or;
+    $close_cr->();
+    #$tree_or=$tree_or->delete;
+    #undef $tree_or;
     
     
-    #  Meta block
+    #  Meta block. Add any webdyne meta data to parse tree
     #
     my $head_ar=$self->find_node(
         {
@@ -324,7 +349,7 @@ sub compile {
         }) || return err ();
     foreach my $tag_ar (@{$meta_ar}) {
         my $attr_hr=$tag_ar->[$WEBDYNE_NODE_ATTR_IX] || next;
-        if ($attr_hr->{'name'} eq 'WebDyne') {
+        if ($attr_hr->{'name'}=~/^webdyne$/i) {
             my @meta=split(/;/, $attr_hr->{'content'});
             debug('meta %s', Dumper(\@meta));
             foreach my $meta (@meta) {

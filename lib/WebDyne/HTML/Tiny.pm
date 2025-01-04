@@ -344,7 +344,7 @@ sub comment {
 
 
 
-#  Link tag, expand any array into multiple link tags 
+#  Meta tag
 #
 sub meta {
 
@@ -377,6 +377,8 @@ sub meta {
 }
 
 
+#  Link tag - expand array into multiple if needed
+#
 sub link {
 
     my ($self, $attr_hr)=@_;
