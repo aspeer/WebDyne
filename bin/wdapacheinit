@@ -16,26 +16,13 @@
 
 #  Init Apache config files
 #
-sub BEGIN {
-
-    #  Massage warnings and @INC path
-    $^W=0;
-    use File::Spec;
-    use FindBin qw($RealBin $Script);
-    foreach my $dn ($RealBin, File::Spec->path()) {
-        if (-f (my $fn=File::Spec->catfile($dn, 'perl5lib.pl'))) {
-            require $fn;
-            perl5lib->import(File::Spec->catdir($dn, File::Spec->updir()));
-            last;
-        }
-    }
-}
 use strict qw(vars);
 use vars qw($VERSION);
 use Cwd qw(realpath);
 use WebDyne::Base;
 use Getopt::Long;
 use Pod::Usage;
+use FindBin qw($RealBin $Script);
 
 
 #  Version info
