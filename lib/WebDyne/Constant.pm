@@ -179,7 +179,8 @@ my $MP2=($Mod_perl_version > 1.99) ? 1 : 0;
 
     #  Encoding
     #
-    WEBDYNE_CHARSET => 'ISO-8859-1',
+    #WEBDYNE_HTML_CHARSET => do {
+    #    'UTF-8',
 
 
     #  Include a Content-Type meta tag ?
@@ -189,7 +190,7 @@ my $MP2=($Mod_perl_version > 1.99) ? 1 : 0;
 
     #  Default <html> tag paramaters, eg { lang	=>'en-US' }
     #
-    WEBDYNE_HTML_PARAM => undef,
+    WEBDYNE_HTML_PARAM => { lang => 'en' },
 
 
     #  Ignore ignorable whitespace in compile. Play around with these settings if
@@ -200,9 +201,15 @@ my $MP2=($Mod_perl_version > 1.99) ? 1 : 0;
     WEBDYNE_COMPILE_NO_SPACE_COMPACTING => 0,
 
 
+    # Other Compile settings
+    #
+    WEBDYNE_COMPILE_P_STRICT => 1,
+    WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG => 1,
+
+
     #  Store and render comments ?
     #
-    WEBDYNE_STORE_COMMENTS => 0,
+    WEBDYNE_STORE_COMMENTS => 1,
 
 
     #  Send no-cache headers ?
@@ -288,13 +295,23 @@ my $MP2=($Mod_perl_version > 1.99) ? 1 : 0;
     #
     WEBDYNE_ERROR_SHOW_ALTERNATE =>
         'error display disabled - enable WEBDYNE_ERROR_SHOW to show errors, or review web server error log.',
+        
+        
+    #  Default title 
+    #
+    WEBDYNE_HTML_DEFAULT_TITLE => 'Untitled Document',
 
 
     #  Development mode - recompile loaded modules
     #
     WEBDYNE_RELOAD => 0,
-
-
+    
+    
+    #  Use JSON canonical mode ?
+    #
+    WEBDYNE_JSON_CANONICAL => 1,
+    
+    
     #  Mod_perl level. Do not change unless you know what you are
     #  doing.
     #
