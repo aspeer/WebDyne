@@ -99,6 +99,11 @@
 use WebDyne::Constant;
 
 
+#  Need CGI::Simple object
+#
+my $cgi_or=CGI::Simple->new();
+
+
 #  Get self ref, extract supplied params
 #
 my ($self, $param_hr)=@_;
@@ -156,7 +161,7 @@ if ($WEBDYNE_ERROR_SHOW) {
 	#  massage line numbers displayed so make more sense in context of source file.
 	#
 	my $errstr_display=$errstr;
-	$errstr_display=&CGI::escapeHTML($errstr_display);
+	$errstr_display=$cgi_or->escapeHTML($errstr_display);
 	$errstr_display=~s/\n/<br>/g;
 	$errstr_display=~s/[\x00]+/./g;
 
@@ -273,7 +278,7 @@ if ($WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW && $html_line_no_tag_start) {
                         $line=(length($line) > $line_fragment_max) ?
                             substr($line,0,$line_fragment_max) . '...' : $line;
                     }
-                    $line=&CGI::escapeHTML($line);
+                    $line=$cgi_or->escapeHTML($line);
                     my $line_no_formatted=sprintf("\%-${sprintf_max}d",$line_no);
                     $line_no_formatted=~s/ /&nbsp;/g;
                     my $line_error=($line_no >= $html_line_no_tag_start && $line_no <= $html_line_no_tag_end);
@@ -325,7 +330,7 @@ if ($WEBDYNE_ERROR_EVAL_CONTEXT_SHOW && $eval_text_sr) {
                     $line=(length($line) > $line_fragment_max) ?
                         substr($line,0,$line_fragment_max) . '...' : $line;
                 }
-                $line=&CGI::escapeHTML($line);
+                $line=$cgi_or->escapeHTML($line);
                 my $line_no_formatted=sprintf("\%-${sprintf_max}d", $line_no );
                 $line_no_formatted=~s/ /&nbsp;/g;
                 my $line_error=($eval_line_no == $line_no);
@@ -356,7 +361,7 @@ if ($WEBDYNE_ERROR_CGI_PARAM_SHOW && %_) {
     #
     local $Data::Dumper::Indent=1;
     my $cgi_param_dump=Data::Dumper::Dumper(\%_);
-    $cgi_param_dump=&CGI::escapeHTML($cgi_param_dump);
+    $cgi_param_dump=$cgi_or->escapeHTML($cgi_param_dump);
     $cgi_param_dump=~s/[\x00]+/,/g;
     $self->render_block('cgi_param', cgi_param_dump=>$cgi_param_dump );
 
@@ -524,5 +529,5 @@ ${cgi_param_dump}
 __PERL__
 
 use HTTP::Status qw(status_message);
-use CGI::Simple qw(escapeHTML);
+use CGI::Simple;
 
