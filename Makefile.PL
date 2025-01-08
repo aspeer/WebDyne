@@ -48,6 +48,7 @@ my %makefile=(
 	'CGI::Simple'				    =>  0,
 	'HTML::Tiny'                =>  0,
 	'JSON'                      =>  0,
+	'IO::String'                =>  0,
 	'Digest::MD5'			    =>  0,
 	'HTTP::Status'			    =>  0,
 	'HTML::Tagset'			    =>  0,
