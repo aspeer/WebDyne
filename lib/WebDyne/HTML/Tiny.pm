@@ -58,6 +58,11 @@ $VERSION='1.251';
 debug("Loading %s version $VERSION", __PACKAGE__);
 
 
+#  Trick to allow use of illegal subroutine name to suppport treebuilder comment format
+#
+*{'WebDyne::HTML::Tiny::~comment'}=\&_comment;
+
+
 #  All done. Positive return
 #
 return ${&_init()} || err('error running init code');
@@ -200,17 +205,29 @@ sub _start_html {
     #  Get self ref and any attributes passed
     #
     my ($self, $attr_hr, @param)=@_;
+    debug("$self _start_html, attr: %s, param: %s", Dumper($attr_hr, \@param));
     #return $self->SUPER::start_html($attr_hr, @param) if $self->{'_passthrough'};
+    
+    
+    #  Attributes we are going to use
+    #
+    debug('WEBDYNE_HTML_PARAM: %s', Dumper($WEBDYNE_HTML_PARAM));
+    my %attr=(
+        %{ $WEBDYNE_HTML_PARAM },
+        %{ $attr_hr }
+    );
+    debug('attr: %s', Dumper(\%attr));
 
 
     #  If no attributes passed used defaults from constants file
     #
-    keys %{$attr_hr} || ($attr_hr=$WEBDYNE_HTML_PARAM);
+    #keys %{$attr_hr} || ($attr_hr=$WEBDYNE_HTML_PARAM);
     
     
     #  Pull out meta attributes leaving rest presumably native html tag attribs
     #
-    my %attr_page=map {$_=>delete $attr_hr->{$_}} qw(
+    #my %attr_page=map {$_=>delete $attr_hr->{$_}} qw(
+    my %attr_page=map {$_=>delete $attr{$_}} qw(
         title
         meta
         style
@@ -224,16 +241,26 @@ sub _start_html {
     #  Start with the DTD
     #
     my @html=$WEBDYNE_DTD;
-    #my @html;
     
     
     #  Add meta section
     #
-    my @meta=$self->meta({ content=>$attr_page{'meta'} })
-        if $attr_page{'meta'};
-    #while (my ($name, $content)=each %{$attr_page{'meta'}}) {
-    #    push @meta, $self->meta({ name=>$name, content=>$content });
-    #}
+    my @meta;
+    if (my $hr=$attr_page{'meta'}) {
+        debug('have meta hr: %s', Dumper($hr));
+        @meta=$self->meta({ content=>$attr_page{'meta'} })
+    }
+    else {
+        debug('no meta run');
+    }
+    #  Logic error below
+    #
+    #my @meta=$self->meta({ content=>$attr_page{'meta'} })
+    #    if $attr_page{'meta'};
+    debug('meta: %s', Dumper(\@meta));
+    while (my ($name, $content)=each %{$attr_page{'meta'}}) {
+        push @meta, $self->meta({ name=>$name, content=>$content });
+    }
     while (my ($name, $content)=each %{$WEBDYNE_META}) {
         push @meta, $self->meta({ $name=>$content });
     }
@@ -255,7 +282,7 @@ sub _start_html {
     #
     my $head=$self->head(join($/,
         grep {$_}
-        $self->title($attr_page{'title'} ? $attr_page{'title'} : ''),
+        $self->title($attr_page{'title'} ? $attr_page{'title'} : $WEBDYNE_HTML_DEFAULT_TITLE),
         @meta,
         @link
     ));
@@ -263,7 +290,9 @@ sub _start_html {
     
     #  Put all together and return
     #
-    push @html, $self->open('html', $attr_hr), $head . $self->open('body');
+    #push @html, $self->open('html', $attr_hr), $head . $self->open('body');
+    push @html, $self->open('html', \%attr), $head . $self->open('body');
+    debug('html: %s', Dumper(\@html));
     return join($/, @html);
     
 }
@@ -333,15 +362,15 @@ sub _end_multipart_form {
 }
 
 
-#  Support CGI comment syntax
+#  Support CGI comment syntax. See aliasing to ~comment in top section
 #
-sub comment {
+sub _comment {
     
-    my $s=shift();
-    return sprintf('<!-- '.shift().' -->', @_);
+    my ($self, $attr_hr)=@_;
+    debug("$self comment, attr:%s", Dumper($attr_hr));
+    return sprintf('<!-- %s -->', $attr_hr->{'text'});
     
 }
-
 
 
 #  Meta tag
@@ -349,9 +378,10 @@ sub comment {
 sub meta {
 
     my ($self, $attr_hr)=@_;
-    debug('in meta, attr %s', Dumper($attr_hr));
+    debug("$self in meta, attr %s", Dumper($attr_hr));
     my @html;
     if (ref($attr_hr->{'content'}) eq 'HASH') {
+        debug('meta is HASH');
         while (my ($name, $content)=each %{$attr_hr->{'content'}}) {
             if ((my ($key,$value)=split(/=/, $name))==2) {
                 #  Self contained
@@ -370,6 +400,7 @@ sub meta {
         }
     }
     else {
+        debug('meta is plain');
         push @html, $self->SUPER::meta($attr_hr)
     }
     return join($/, @html);
@@ -602,12 +633,8 @@ sub scrolling_list {
     
 }
 
-sub Dumper {
-    return &Data::Dumper::Dumper(@_);
-}
 
 sub AUTOLOAD {
-    #print "AUTOLOAD: $AUTOLOAD\n";
     if (my ($action, $tag) = ($AUTOLOAD =~ /\:\:(start|end|open|close)_([^:]+)$/)) {
         *{$AUTOLOAD}=sub { shift()->$action($tag, @_) };
         return &{$AUTOLOAD}(@_);
