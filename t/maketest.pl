@@ -27,12 +27,19 @@ $Storable::canonical=1;
 #
 use WebDyne::Request::Fake;
 use WebDyne::Compile;
+use WebDyne::Err;
 use WebDyne;
+use WebDyne::Base;
+
+#  Error handler
+#
+#*err=\&WebDyne::Err::err;
+#*err=\&WebDyne::Err::errdump;
 
 
 #  Run
 #
-exit(${&main(\@ARGV) || die err ()} || 0);    # || 0 stops warnings
+exit(${&main(\@ARGV) || die err()} || 0);    # || 0 stops warnings
 
 #==================================================================================================
 
@@ -43,8 +50,14 @@ sub main {
     #  command line given
     #
     my @test_fn=@{shift()};
+    @test_fn=map { glob $_ } @test_fn;
     my $wanted_cr=sub { push (@test_fn, $File::Find::name) if /\.psp$/ };
-    find($wanted_cr, $RealBin) unless @ARGV;
+    find($wanted_cr, $RealBin) unless @test_fn;
+    
+    
+    #  Dest dir
+    #
+    my $data_dn='data';
 
 
     #  Create a new compile instance
@@ -60,24 +73,22 @@ sub main {
 
         #  Create WebDyne render of PSP file and capture to file
         #
-        my $test_fp=abs_path($test_fn) ||
-            return err("unable to determine full path of $test_fn");
-        (-f $test_fp) ||
-            return err("unable to find file: $test_fn");
-        $test_fn=(File::Spec->splitpath($test_fp))[2];
+        debug("test_fn $test_fn");
         diag("processing: $test_fn");
+        my $test_cn=abs_path($test_fn);
+        (-f $test_cn) ||
+            return err("unable to find file: $test_fn");
         
-        
+
         #  Start stepping through compile stages
         #
         foreach my $stage ((0..5), 'final') {
 
 
-            #  Create dest file name
+            #  Debug
             #
             diag("processing: $test_fn stage: $stage");
-            (my $dest_fp=$test_fp)=~s/\.psp$/\.dat\.${stage}/;
-            my $dest_fn=(File::Spec->splitpath($dest_fp))[2];
+            debug("processing: $test_fn stage: $stage");
             
 
             #  Compile to desired stage
@@ -85,14 +96,15 @@ sub main {
             my $stage_name=($stage eq 'final') ? $stage : "stage${stage}";
 
 
-            #  Options. Use test_fn rather than test_fp so manifest only has file name
+            #  Options.
             #
             my %opt=(
 
-                srce        	=> $test_fn,
+                srce        	=> $test_cn,
                 nofilter	=> 1,
                 noperl		=> 1,
                 notimestamp	=> 1,
+                nomanifest	=> 1,
                 $stage_name	=> 1
                 
             );
@@ -100,31 +112,55 @@ sub main {
             
             #  Compile
             #
+            debug("compile opt: %s", Dumper(\%opt));
             my $data_ar=$compile_or->compile(\%opt) ||
-                return err ();
+                return err (&WebDyne::Err::errdump);
+            debug("compile OK: $data_ar");
+            
+
+            #  Create dest file name
+            #
+            my ($dest_dn, $dest_fn)=(File::Spec->splitpath($test_cn))[1,2];
             
             
+            #  Create data dir if not exist
+            #
+            my $data_pn=File::Spec->catdir($dest_dn, $data_dn);
+            ((-d $data_pn) || mkdir($data_pn)) ||
+                return err("unable to create $data_pn");
+                
+            
+            #  Now the dest files
+            #
+            my $dest_cn=File::Spec->catfile($dest_dn, $data_dn, $dest_fn);
+            $dest_cn=~s/\.psp$/\.dat\.${stage}/;
+            
+
             #  Save result
             #
-            #diag("wrote: $dest_fn");
-            lock_store($data_ar, $dest_fp);
+            debug("writing output to $dest_cn");
+            lock_store($data_ar, $dest_cn);
 
         }
         
         
-        #  Now HTML
+        #  Now HTML. Create dest file name and eender
         #
-        diag("processing: $test_fn stage: render");
-        (my $dest_fp=$test_fp)=~s/\.psp$/\.html/;
-        &render($test_fn, $dest_fp) ||
+        diag("processing: $test_fn stage: HTML render");
+        my ($dest_dn, $dest_fn)=(File::Spec->splitpath($test_cn))[1,2];
+        my $dest_cn=File::Spec->catfile($dest_dn, $data_dn, $dest_fn);
+        $dest_cn=~s/\.psp$/\.html/;
+        debug("render to $dest_cn");
+        &render($test_fn, $dest_cn) ||
             return err();
         
         
         #  And tree
         #
         diag("processing: $test_fn stage: treebuild");
-        ($dest_fp=$test_fp)=~s/\.psp$/\.tree/;
-        &treebuild($test_fn, $dest_fp) ||
+        $dest_cn=~s/\.html$/\.tree/;
+        debug("treebuild to $dest_cn");
+        &treebuild($test_fn, $dest_cn) ||
             return err();
 
         
