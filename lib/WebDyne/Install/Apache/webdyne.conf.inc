@@ -112,20 +112,43 @@ $OUT=join($/, @out);
 #  Block access to any module .pm files that might available in public
 #  areas as a precaution
 #
+#<Files ~ "\.pm$">
+
+#  Apache 2.2
+#Order allow,deny
+#Deny from all
+#</Files>
+
+#  Apache 2.4
 <Files ~ "\.pm$">
-Order allow,deny
-Deny from all
+Require all denied
 </Files>
+
 
 
 #  Set disk cache dir and allow apache access
 #
 PerlSetVar WEBDYNE_CACHE_DN "<!-- $WEBDYNE_CACHE_DN -->"
+
+#  Apache 2.2
+#<Directory "<!-- $WEBDYNE_CACHE_DN -->">
+#Order allow,deny
+#Allow from all
+#Deny from none
+#</Directory>
+
+#  Apache 2.4
 <Directory "<!-- $WEBDYNE_CACHE_DN -->">
-Order allow,deny
-Allow from all
-Deny from none
+Require all granted
 </Directory>
+
+
+#  Optional debugging. Everything or some things
+#
+#PerlSetEnv WEBDYNE_DEBUG 1
+#PerlSetEnv WEBDYNE_DEBUG "_start_html,meta"
+# 
+#PerlSetEnv WEBDYNE_DEBUG_FILE "/var/log/webdyne_debug.log"
 
 
 #  Some config setting defaults. See documentation for full range. Commented out
