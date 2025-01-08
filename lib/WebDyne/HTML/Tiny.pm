@@ -1,7 +1,7 @@
 #
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2024 by Andrew Speer <andrew@webdyne.org>.
+#  This software is Copyright (c) 2025 by Andrew Speer <andrew@webdyne.org>.
 #
 #  This is free software, licensed under:
 #
@@ -50,7 +50,7 @@ use constant {
 
 #  Version information
 #
-$VERSION='2.000';
+$VERSION='2.001_70227895';
 
 
 #  Debug load

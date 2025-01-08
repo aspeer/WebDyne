@@ -14,7 +14,7 @@
 
 use strict qw(vars);
 use vars qw($VERSION);
-$VERSION='2.000';
+$VERSION='2.001_70227895';
 if (($ENV{'MOD_PERL'}=~/1\.99/) && ($ENV{'MOD_PERL_API_VERSION'} < 2)) {
   eval ("use Apache::compat");
   eval { undef } if $@;
