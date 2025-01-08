@@ -70,22 +70,21 @@ sub import {
     my $caller=(caller(0))[0] || return undef;
 
 
-    #  fh we will write to
+    #  fn, fh we will write to
     #
-    my $debug_fh;
+    my ($debug_fn,$debug_fh);
 
 
     #  Environment var overrides all
     #
-    if ($ENV{'WEBDYNE_DEBUG_FILE'}) {
+    if ($debug_fn=$ENV{'WEBDYNE_DEBUG_FILE'}) {
 
         #  fn is whatever spec'd
         #
-        my $fn=$ENV{'WEBDYNE_DEBUG_FILE'};
-        $debug_fh=IO::File->new($fn, O_CREAT | O_APPEND | O_WRONLY) || do {
-            warn("unable to open file '$fn', $!");
+        $debug_fh=IO::File->new($debug_fn, O_CREAT | O_APPEND | O_WRONLY) || do {
+            warn("unable to open file '$debug_fn', $!");
             undef;
-            }
+        };
 
     }
     elsif ($ENV{'WEBDYNE_DEBUG'}) {
@@ -102,34 +101,34 @@ sub import {
 
         #  Debug is hash ref, extract filename etc and open
         #
-        my ($fn, $mode, $package)=@{$debug_hr}{qw(filename mode package)};
-        $fn ||= $debug_hr->{'file'};    #Alias
-        if ($fn && ($package ? ($package eq $caller) : 1)) {
+        $debug_fn=$debug_hr->{'file'} || $debug_hr->{'filename'};
+        my ($mode, $package)=@{$debug_hr}{qw(mode package)};
+        if ($debug_fn && ($package ? ($package eq $caller) : 1)) {
             $mode ||= O_CREAT | O_APPEND | O_WRONLY;
             $debug_fh=(
-                $Package{'debug_fh'}{$fn} ||= (
-                    IO::File->new($fn, $mode) || do {
-                        warn("unable to open file '$fn', $!");
+                $Package{'debug_fh'}{$debug_fn} ||= (
+                    IO::File->new($debug_fn, $mode) || do {
+                        warn("unable to open file '$debug_fn', $!");
                         undef;
-                        }
-                ));
+                    }
+             ));
         }
-        elsif (!$fn) {
+        elsif (!$debug_fn) {
             warn(sprintf('no file name specified in DEBUG hash %s', Dumper($debug_hr)));
         }
 
     }
-    elsif (!ref(my $fn=${"${caller}::DEBUG"}) && ${"${caller}::DEBUG"}) {
+    elsif (!ref($debug_fn=${"${caller}::DEBUG"}) && ${"${caller}::DEBUG"}) {
 
         #  Just file name spec'd. Open
         #
         $debug_fh=(
-            $Package{'debug_fh'}{$fn} ||= (
-                IO::File->new($fn, O_CREAT | O_APPEND | O_WRONLY) || do {
-                    warn("unable to open file '$fn', $!");
+            $Package{'debug_fh'}{$debug_fn} ||= (
+                IO::File->new($debug_fn, O_CREAT | O_APPEND | O_WRONLY) || do {
+                    warn("unable to open file '$debug_fn', $!");
                     undef;
-                    }
-            ));
+                }
+        ));
     }
 
 
@@ -146,9 +145,7 @@ sub import {
             (my $subroutine=$method)=~s/^.*:://;
             if ($ENV{'WEBDYNE_DEBUG'} && ($ENV{'WEBDYNE_DEBUG'} ne '1')) {
                 my @debug_target=split(/[,;:]/, $ENV{'WEBDYNE_DEBUG'});
-                #die &Data::Dumper::Dumper(\@debug_target);
                 foreach my $debug_target (@debug_target) {
-                    #print "test: $debug_target vs $caller, $method\n";
                     if (($caller eq $debug_target) || ($method=~/\Q$debug_target\E$/)) {
                         CORE::print $debug_fh "[$subroutine] ", sprintf(shift(), @_), $/;
                     }
@@ -157,9 +154,9 @@ sub import {
             else {
                 CORE::print $debug_fh "[$subroutine] ", $_[1] ? sprintf(shift(), @_ ) : $_[0], $/;
             }
-            }
-            unless UNIVERSAL::can($caller, 'debug');
-        *{"${caller}::Dumper"}=\&Data::Dumper::Dumper unless UNIVERSAL::can($caller, 'Dumper');
+        }   unless UNIVERSAL::can($caller, 'debug');
+        *{"${caller}::Dumper"}=\&Data::Dumper::Dumper 
+            unless UNIVERSAL::can($caller, 'Dumper');
 
     }
     else {
@@ -168,8 +165,8 @@ sub import {
         #
         *{"${caller}::debug"}=sub { }
             unless UNIVERSAL::can($caller, 'debug');
-
-        #*{"${caller}::Dumper"}= sub {} unless UNIVERSAL::can($caller, 'Dumper');
+        *{"${caller}::Dumper"}= sub { } 
+            unless UNIVERSAL::can($caller, 'Dumper');
 
     }
 
