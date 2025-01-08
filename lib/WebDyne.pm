@@ -1176,7 +1176,7 @@ sub init_class {
         '@' => $eval_array_cr,
         '%' => $eval_hash_cr,
         '!' => $eval_code_cr,
-        '+' => sub {return \($_[0]->{'_CGI'}->param($_[3]))},
+        '+' => sub {return \($_[0]->CGI()->param($_[3]))},
         '*' => sub {return \$ENV{$_[3]}},
         '^' => sub {
             my $m=$_[3]; my $r=$_[0]->{'_r'};
