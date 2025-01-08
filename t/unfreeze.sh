@@ -1,1 +1,0 @@
-perl -MStorable -MData::Dumper -e '$Data::Dumper::Indent=1; print Dumper(retrieve(shift(@ARGV)))' -- $@

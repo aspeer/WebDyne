@@ -1,12 +1,15 @@
 requires 'CGI';
+requires 'CGI::Simple';
 requires 'CGI::Util';
 requires 'Digest::MD5';
 requires 'Env::Path';
 requires 'File::Temp';
 requires 'HTML::Entities';
 requires 'HTML::Tagset';
+requires 'HTML::Tiny';
 requires 'HTML::TreeBuilder';
 requires 'HTTP::Status';
+requires 'JSON';
 requires 'Storable';
 requires 'Text::Template';
 requires 'Tie::IxHash';
@@ -40,5 +43,8 @@ on configure => sub {
 on test => sub {
     requires 'Digest::MD5';
     requires 'File::Temp';
+    requires 'IO::String';
+    requires 'Storable';
     requires 'Test::More';
+    suggests 'Text::Diff';
 };
