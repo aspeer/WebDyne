@@ -16,25 +16,6 @@
 #
 #  Dump the compiled version of WebDyne HTML scripts, as stored in the cache dir
 #
-package main;
-
-
-#  Compiler pragma
-#
-sub BEGIN {
-
-    #  Massage warnings and @INC path
-    $^W=0;
-    use File::Spec;
-    use FindBin qw($RealBin $Script);
-    foreach my $dn ($RealBin, File::Spec->path()) {
-        if (-f (my $fn=File::Spec->catfile($dn, 'perl5lib.pl'))) {
-            require $fn;
-            perl5lib->import(File::Spec->catdir($dn, File::Spec->updir()));
-            last;
-        }
-    }
-}
 use strict qw(vars);
 use vars qw($VERSION);
 
@@ -50,6 +31,7 @@ use Getopt::Long;
 use Pod::Usage;
 use Data::Dumper;
 use Storable;
+use FindBin qw($RealBin $Script);
 
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
