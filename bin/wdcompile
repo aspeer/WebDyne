@@ -92,6 +92,7 @@ sub main {
         stage5|5|final
         meta
         data
+        nomanifest
         dest|dest_fn:s
         all
         timestamp
