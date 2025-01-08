@@ -510,10 +510,10 @@ sub optimise_one {
 
     #  Get CGI object and disable shortcut tags (e.g. start_html);
     #
-    my $cgi_or=$self->{'_html_tiny_or'} ||= $self->html_tiny() ||
+    my $html_tiny_or=$self->{'_html_tiny_or'} ||= $self->html_tiny() ||
         return err ("unable to get CGI object from self ref");
-    debug("CGI $cgi_or");
-    $cgi_or->shortcut_disable();
+    debug("CGI $html_tiny_or");
+    $html_tiny_or->shortcut_disable();
 
 
     #  Recursive anon sub to do the render
@@ -676,8 +676,8 @@ sub optimise_one {
                 my @data_child=$data_ar->[$WEBDYNE_NODE_CHLD_IX] ? @{$data_ar->[$WEBDYNE_NODE_CHLD_IX]} : undef;
                 debug("about to call $html_tag with attr_hr:%s, data_child: %s", Dumper($attr_hr, \@data_child));
                 my $html=eval {
-                    $cgi_or->$html_tag(grep {$_} $attr_hr || {}, join(undef, @data_child))
-                    #$cgi_or->$html_tag($attr_hr || {}, join(undef, grep {$_} @data_child))
+                    $html_tiny_or->$html_tag(grep {$_} $attr_hr || {}, join(undef, @data_child))
+                    #$html_tiny_or->$html_tag($attr_hr || {}, join(undef, grep {$_} @data_child))
                 } ||
 
                     #  Use errsubst as CGI may have DIEd during eval and be caught by WebDyne SIG handler
@@ -745,9 +745,9 @@ sub optimise_two {
 
     #  Get CGI object and turn off shortcuts like start_html
     #
-    my $cgi_or=$self->{'_html_tiny_or'} ||= $self->html_tiny() ||
+    my $html_tiny_or=$self->{'_html_tiny_or'} ||= $self->html_tiny() ||
         return err ("unable to get CGI object from self ref");
-    $cgi_or->shortcut_disable();
+    $html_tiny_or->shortcut_disable();
 
 
     #  Recursive anon sub to do the render
@@ -871,7 +871,7 @@ sub optimise_two {
                 my ($html_start, $html_end)=map {
                     debug("render tag $_");
                     eval {
-                        $cgi_or->$_(grep {$_} $attr_hr)
+                        $html_tiny_or->$_(grep {$_} $attr_hr)
                     } ||
 
                         #  Use errsubst as CGI may have DIEd during eval and be caught by WebDyne SIG handler
@@ -988,7 +988,7 @@ sub optimise_two {
             my ($html_start, $html_end)=map {
                 debug("render tag $_");
                 eval {
-                    $cgi_or->$_(grep {$_} $attr_hr)
+                    $html_tiny_or->$_(grep {$_} $attr_hr)
                 } ||
                     return errsubst(
                     "CGI tag '<$_>': %s",
