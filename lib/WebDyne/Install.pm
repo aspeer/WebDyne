@@ -119,11 +119,11 @@ sub uninstall {
         message "removing cache directory '$cache_dn'";
         rmdir $cache_dn unless ($cache_dn eq File::Spec->tmpdir);
     }
-    if ($prefix) {
-        message "updating perl5lib config.";
-        &perl5lib::del($prefix) if $prefix;
-        rmdir($prefix) if $prefix;
-    }
+    #if ($prefix) {
+    #    message "updating perl5lib config.";
+    #    &perl5lib::del($prefix) if $prefix;
+    #    rmdir($prefix) if $prefix;
+    #}
 
 
     #  Done
@@ -168,8 +168,8 @@ sub install {
 
     #  Add prefix to perl5lib store
     #
-    message "updating perl5lib config.";
-    &perl5lib::add($prefix) if $prefix;
+    #message "updating perl5lib config.";
+    #&perl5lib::add($prefix) if $prefix;
 
 
     # Done

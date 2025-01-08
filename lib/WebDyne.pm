@@ -789,6 +789,9 @@ sub init_class {
             require Apache2::Response;
             require Apache2::SubRequest;
             require Apache2::Const; Apache2::Const->import(-compile => qw(OK DECLINED));
+            require Apache2::RequestRec;
+            require Apache2::RequestUtil;
+            require Apache2::RequestIO;
             require APR::Table;
         };
         eval {undef} if $@;

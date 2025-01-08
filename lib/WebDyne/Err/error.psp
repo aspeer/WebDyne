@@ -524,5 +524,5 @@ ${cgi_param_dump}
 __PERL__
 
 use HTTP::Status qw(status_message);
-use CGI qw(escapeHTML);
+use CGI::Simple qw(escapeHTML);
 

@@ -174,10 +174,18 @@ sub compile {
     }
 
 
-    #  Get new TreeBuilder object
+    #  Get new TreeBuilder object. Note api_version flows through to HTML::Parser constructor
     #
-    my $tree_or=WebDyne::HTML::TreeBuilder->new() ||
-        return err ('unable to create HTML::TreeBuilder object');
+    my $tree_or=WebDyne::HTML::TreeBuilder->new(
+    
+        api_version	=> 3,
+
+    ) || return err ('unable to create HTML::TreeBuilder object');
+    
+    
+    #  Make sure this is off
+    #
+    $tree_or->unbroken_text(0);
 
 
     #  Tell HTML::TreeBuilder we do *not* want to ignore tags it

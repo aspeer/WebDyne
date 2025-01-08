@@ -181,8 +181,10 @@ sub parse_fh {
     #  numbers and wedge in extra code
     #
     my $parse_cr=sub {
-
-        #$Line_no++;
+    
+        
+        #  Read in lines of HTML, allowing for "wedged" bits, e.g. from start_html
+        #
         my $line;
         my $html=@HTML_Wedge ? shift @HTML_Wedge : ($line=<$html_fh>);
         if ($line) {
@@ -192,7 +194,19 @@ sub parse_fh {
             $Line_no_next=$Line_no+@cr;
             debug("Line $Line_no, Line_no_next $Line_no_next, Line_no_start $Line_no_start cr %s", scalar @cr);
         }
-        return $html;
+        
+
+        #  To this or last line not processed by HTML::Parser properly (in one chunk) if no CR
+        #
+        if ($html_fh->eof() && $html) {
+            debug("add CR at EOF");
+            $html.=$/ unless $html=~/(?:\r?\n|\r)$/;
+        }
+        
+
+        #  Done, return HTML
+        #
+        $html;
 
     };
     return $parse_cr;
@@ -646,8 +660,13 @@ sub text {
     #
     my ($self, $text)=@_;
     debug("text *$text*, text_fg $Text_fg, pos %s", $self->{'_pos'});
-
-
+    
+    
+    #  Ignore empty text
+    #
+    return if ($text =~ /^\r?\n?$/);
+    
+    
     #  Are we in an inline perl block ?
     #
     if ($Text_fg eq 'perl') {
