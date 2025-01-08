@@ -170,7 +170,6 @@ sub main {
     #
     #$r->notes('noheader', $opt{'header'} ? 0 : 1);
     #$r->notes('nowarn',   $opt{'warn'} ? 0 : 1);
-    #die Dumper($r, \%opt);
 
 
     #  Run it and display results, or any error generated
