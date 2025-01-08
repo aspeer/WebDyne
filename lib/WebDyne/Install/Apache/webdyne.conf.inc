@@ -63,7 +63,7 @@ else {
 	$perl5lib_fn=File::Spec->canonpath($perl5lib_fn);
 }
 
-$OUT=qq[PerlRequire "$perl5lib_fn"]
+$OUT=qq[#PerlRequire "$perl5lib_fn"]
 
 -->
 
@@ -76,7 +76,7 @@ use Config;
 my $installbin_dn=$DIR_INSTALLBIN || $Config{'installbin'};
 
 my $mod_perl_1_99_compat_fn=File::Spec->catfile($installbin_dn, $FILE_MOD_PERL_1_99_COMPAT);
-$OUT=qq[PerlRequire "$mod_perl_1_99_compat_fn"]
+$OUT=qq[#PerlRequire "$mod_perl_1_99_compat_fn"]
 
 -->
 
