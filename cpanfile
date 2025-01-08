@@ -1,6 +1,4 @@
-requires 'CGI';
 requires 'CGI::Simple';
-requires 'CGI::Util';
 requires 'Digest::MD5';
 requires 'Env::Path';
 requires 'File::Temp';
@@ -44,7 +42,6 @@ on configure => sub {
 };
 
 on test => sub {
-    requires 'Digest::MD5';
     requires 'File::Temp';
     requires 'IO::String';
     requires 'Storable';
