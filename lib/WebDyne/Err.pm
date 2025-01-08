@@ -48,7 +48,6 @@ debug("%s loaded, version $VERSION", __PACKAGE__);
 #  Package wide vars
 #
 my %Package;
-*debug=\&WebDyne::debug;
 
 
 #  Fix issues if mod_perl loads legacy Carp with modern Carp::Heavy
@@ -120,7 +119,7 @@ sub err_html {
     #  Try to get CGI object from class, or create if not present - may
     #  not have been initialised before error occured);
     #
-    my $cgi_or=$self->{'_CGI'} || CGI->new();
+    my $cgi_or=$self->{'_CGI'} || CGI::Simple->new();
     debug("cgi_or $cgi_or");
 
 
@@ -306,9 +305,3 @@ sub err_eval {
 
 }
 
-use Carp qw(croak confess);
-sub Dumper {
-
-    confess Data::Dumper::Dumper(\@_);
-    
-}
