@@ -46,6 +46,8 @@ my %makefile=(
     PREREQ_PM				    =>	do { $prereq_hr={
 
 	'CGI::Simple'				    =>  0,
+	'HTML::Tiny'                =>  0,
+	'JSON'                      =>  0,
 	'Digest::MD5'			    =>  0,
 	'HTTP::Status'			    =>  0,
 	'HTML::Tagset'			    =>  0,
