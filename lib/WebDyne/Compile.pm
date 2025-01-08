@@ -37,8 +37,6 @@ use WebDyne;
 use WebDyne::HTML::TreeBuilder;
 use Storable;
 use IO::File;
-use CGI qw(-no_xhtml);
-#use CGI::Util;
 use Data::Dumper;
 
 
@@ -59,27 +57,10 @@ $VERSION='1.251';
 debug("Loading %s version $VERSION", __PACKAGE__);
 
 
-#  Tags that are case sensitive
-#
-#our %CGI_Tag_Ucase=map {$_ => ucfirst($_)} (
-
-#    qw(select tr link delete accept sub header button)
-
-#);
-
-
 #  Get WebDyne and CGI tags from TreeBuilder module
 #
 *CGI_TAG_WEBDYNE=\%WebDyne::CGI_TAG_WEBDYNE;
 *CGI_TAG_IMPLICIT=\%WebDyne::HTML::TreeBuilder::CGI_TAG_IMPLICIT;
-
-
-#  Need the start/end_html code ref for later on
-#
-#my $CGI_start_html_cr=UNIVERSAL::can(CGI, 'start_html');
-#my $CGI_end_html_cr=UNIVERSAL::can(CGI, 'end_html');
-##my $CGI_start_html_cr=UNIVERSAL::can(WebDyne::HTML::Tiny, 'start_html') || die;
-#my $CGI_end_html_cr=UNIVERSAL::can(WebDyne::HTML::Tiny, 'end_html') || die;
 
 
 #  Var to hold package wide hash, for data shared across package
@@ -106,25 +87,10 @@ sub new {
     my ($class, $opt_hr)=@_;
     
     
-    #  What HTML tag generation module should we compile with 
-    #
-    #my $html_tag_module=$opt_hr->{'html_tag_module'} || 
-    #    return die('no html_tag_module option supplied');
-    #print "HTML tag module: $html_tag_module\n";
-    
-    
     #  Get appropriate cgi_or
     #
-    #my $html_tag_or; 
-    #if ($html_tag_module eq 'CGI') {
-    #    $html_tag_or=CGI->new();
-    #}
-    #elsif ($html_tag_module eq 'WebDyne::HTML::Tiny') {
-    #else {
-    my $html_tag_or=WebDyne::HTML::Tiny->new( mode=>'html' );
-    #}
-    #$html_tag_or ||
-    #    return die("unable to create new html_tag_or from module $ $html_tag_module");
+    my $html_tag_or=WebDyne::HTML::Tiny->new( mode=>'html' ) ||
+        return err('unable to get new WebDyne::HTML::Tiny object');
         
 
     #  Init WebDyne module
@@ -139,10 +105,7 @@ sub new {
     my %self=(
 
         _r    => $r,
-        #_CGI  => CGI->new(),
-        #_CGI  => WebDyne::HTML::Tiny->new( mode=>'html' ),
-        _CGI  => $html_tag_or,
-        #_time => time()
+        #_CGI  => $html_tag_or,
 
     );
 
@@ -166,7 +129,6 @@ sub compile {
     #  Start timer so we can log how long it takes us to compile a file
     #
     my $time=($self->{'_time'}=time());
-    #die Dumper($param_hr);
 
 
     #  Init class if not yet done
@@ -191,26 +153,6 @@ sub compile {
     my $r=$self->{'_r'} || $self->r() || return err ();
     
     
-    #  Get CGI ref
-    #
-    #my $cgi_or=$self->{'_CGI'} ||= $self->CGI() || return err ();
-    #my $cgi_or=$self->{'_CGI'} || return err ();
-    #*diag=\&Test::More::diag;
-    #*diag=sub { printf(shift() . $/,  grep {$_} @_) };
-    #diag("compile $cgi_or");
-
-
-    #  Turn off xhtml in CGI - should work in pragma, seems dodgy - seems like
-    #  we must do every time we compile a page
-    #
-    #$CGI::XHTML=0;
-
-
-    #  Nostick
-    #
-    #$CGI::NOSTICKY=1;
-
-
     #  Open the file
     #
     my $html_fh=IO::File->new($html_cn, O_RDONLY) ||
@@ -263,12 +205,11 @@ sub compile {
         return err ();
         
 
-
     #  Muck around with strictness of P tags
     #
     #$tree_or->implicit_tags(0);
-    #$tree_or->p_strict(1);
-    #$tree_or->implicit_body_p_tag(1);
+    $tree_or->p_strict($WEBDYNE_COMPILE_P_STRICT);
+    $tree_or->implicit_body_p_tag($WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG);
     
 
     #  Now parse through the file, running eof at end as per HTML::TreeBuilder
@@ -310,15 +251,11 @@ sub compile {
     #  our own array tree structure. Do this in a separate method that
     #  is rentrant as the tree is descended
     #
-    #my $html_fn=(File::Spec->splitpath($html_cn))[2];
     my %meta=(
-        manifest => [$html_cn]
+        manifest => $param_hr->{'nomanifest'} ? undef : [$html_cn]
     );
     my $data_ar=$self->parse($tree_or, \%meta) || do {
         return err($close_cr->());
-        #$tree_or->delete;
-        #undef $tree_or;
-        #return err ();
     };
     debug("meta after parse %s", Dumper(\%meta));
 
@@ -326,8 +263,6 @@ sub compile {
     #  Now destroy the HTML::Treebuilder object, or else mem leak occurs
     #
     $close_cr->();
-    #$tree_or=$tree_or->delete;
-    #undef $tree_or;
     
     
     #  Meta block. Add any webdyne meta data to parse tree
@@ -376,7 +311,6 @@ sub compile {
     #  Construct final webdyne container
     #
     my @container=(keys %meta ? \%meta : undef, $data_ar);
-    #my @container=(keys %meta ? \%meta : undef, \@data);
 
 
     #  Quit if user wants to see tree at this stage (stage0 | opt0)
@@ -435,7 +369,6 @@ sub compile {
     #  Optimise tree, first step
     #
     $data_ar=$self->optimise_one($data_ar) || return err ();
-    #$data_ar=$self->optimise_one(\@data) || return err ();
     $container[1]=$data_ar;
 
 
@@ -446,10 +379,7 @@ sub compile {
 
     #  Optimise tree, second step
     #
-    #my @data=($WEBDYNE_DTD, $data_ar);
-    $data_ar=$self->optimise_two($data_ar) ||
-    #$data_ar=$self->optimise_two(\@data) ||
-        return err ();
+    $data_ar=$self->optimise_two($data_ar) || return err ();
     $container[1]=$data_ar;
 
 
@@ -539,59 +469,6 @@ sub compile {
 }
 
 
-sub compile_init0 {
-
-
-    #  Used to init package, move ugliness out of handler
-    #
-    my $class=shift();
-    debug("in compile_init class $class");
-
-
-    #  Init some CGI custom routines we need for correct compilation etc.
-    #
-    *{'CGI::~comment'}=sub {sprintf('<!--%s-->', $_[1]->{'text'})};
-    $CGI::XHTML=0;
-    $CGI::NOSTICKY=1;
-    #*CGI::start_html_cgi=$CGI_start_html_cr;
-    #*CGI::end_html_cgi=$CGI_end_html_cr;
-    *CGI::start_html=sub {
-        my ($self, $attr_hr)=@_;
-
-        #CORE::print Data::Dumper::Dumper($attr_hr);
-        keys %{$attr_hr} || ($attr_hr=$WEBDYNE_HTML_PARAM);
-        my $html_attr=join(' ', map {qq($_="$attr_hr->{$_}")} keys %{$attr_hr});
-        return $WEBDYNE_DTD . ($html_attr ? "<html $html_attr>" : '<html>');
-    };
-    *CGI::end_html=sub {
-        '</html>'
-    };
-    *CGI::html=sub {
-        my ($self, $attr_hr, @html)=@_;
-        return join(undef, CGI->start_html($attr_hr), @html, $self->end_html);
-    };
-
-
-    #  Get rid of the simple escape routine, which mangles attribute characters we
-    #  want to keep
-    #
-    *CGI::Util::simple_escape=sub {shift()};
-
-
-    #  Get rid of compiler warnings on start and end routines
-    #
-    #0 && *CGI::start_html;
-    #0 && *CGI::end_html;
-
-
-    #  All done
-    #
-    return \undef;
-
-
-}
-
-
 sub compile_init {
 
 
@@ -599,65 +476,17 @@ sub compile_init {
     #
     my $class=shift();
     debug("in compile_init class $class");
-
-
-    #  Init some CGI custom routines we need for correct compilation etc.
+    
+    
+    #  Used to do some custom stuff here but now stub. Add anything wanted
     #
-    if (0) {
-        *{'CGI::~comment'}=sub {sprintf('<!--%s-->', $_[1]->{'text'})};
-        $CGI::XHTML=0;
-        $CGI::NOSTICKY=1;
-        #*CGI::start_html_cgi=$CGI_start_html_cr;
-        #*CGI::end_html_cgi=$CGI_end_html_cr;
-        *CGI::start_html=sub {
-            my ($self, $attr_hr)=@_;
-
-            #CORE::print Data::Dumper::Dumper($attr_hr);
-            keys %{$attr_hr} || ($attr_hr=$WEBDYNE_HTML_PARAM);
-            my $html_attr=join(' ', map {qq($_="$attr_hr->{$_}")} keys %{$attr_hr});
-            return $WEBDYNE_DTD . ($html_attr ? "<html $html_attr>" : '<html>');
-        };
-        *CGI::end_html=sub {
-            '</html>'
-        };
-        *CGI::html=sub {
-            my ($self, $attr_hr, @html)=@_;
-            return join(undef, CGI->start_html($attr_hr), @html, $self->end_html);
-        };
-    };
-
-    #*{'CGI::~comment'}=sub {sprintf('<!--%s-->', $_[1]->{'text'})};
-    #*WebDyne::HTML::Tiny::start_html_cgi=$CGI_start_html_cr;
-    #*WebDyne::HTML::Tiny::end_html_cgi=$CGI_end_html_cr;
-    *WebDyne::HTML::Tiny::start_html0=sub {
-        my ($self, $attr_hr)=@_;
-
-        #CORE::print Data::Dumper::Dumper($attr_hr);
-        keys %{$attr_hr} || ($attr_hr=$WEBDYNE_HTML_PARAM);
-        my $html_attr=join(' ', map {qq($_="$attr_hr->{$_}")} keys %{$attr_hr});
-        return $WEBDYNE_DTD . ($html_attr ? "<html $html_attr>" : '<html>');
-    };
-    #*WebDyne::HTML::Tiny::end_html=sub {
-    #    '</html>'
+    #*WebDyne::HTML::Tiny::start_html0=sub {
+    #    my ($self, $attr_hr)=@_;
+    #    keys %{$attr_hr} || ($attr_hr=$WEBDYNE_HTML_PARAM);
+    #    my $html_attr=join(' ', map {qq($_="$attr_hr->{$_}")} keys %{$attr_hr});
+    #    return $WEBDYNE_DTD . ($html_attr ? "<html $html_attr>" : '<html>');
     #};
-    #*WebDyne::HTML::Tiny::html=sub {
-    #    my ($self, $attr_hr, @html)=@_;
-    #    return join(undef, WebDyne::HTML::Tiny->start_html($attr_hr), @html, $self->end_html);
-    #};
-
-
-    #  Get rid of the simple escape routine, which mangles attribute characters we
-    #  want to keep
-    #
-    *CGI::Util::simple_escape=sub {shift()};
-
-
-    #  Get rid of compiler warnings on start and end routines
-    #
-    #0 && *CGI::start_html;
-    #0 && *CGI::end_html;
-
-
+    
     #  All done
     #
     return \undef;
@@ -679,20 +508,13 @@ sub optimise_one {
     debug('optimise stage one');
 
 
-    #  Get CGI object
+    #  Get CGI object and disable shortcut tags (e.g. start_html);
     #
-    #my $cgi_or=$self->{'_CGI'} ||= $self->CGI({ noshortcut=>1 }) ||
     my $cgi_or=$self->{'_html_tiny_or'} ||= $self->html_tiny() ||
-    #my $cgi_or=WebDyne::HTML::Tiny->new({
-    #    mode		=> 'html',
-    #    noshortcut	=>  1
-    #});
-        
-    #my $cgi_or=$self->{'_CGI'} ||
         return err ("unable to get CGI object from self ref");
-    #debug("CGI $cgi_or");
+    debug("CGI $cgi_or");
     $cgi_or->shortcut_disable();
-    #diag("optimise_one $cgi_or");
+
 
     #  Recursive anon sub to do the render
     #
@@ -897,12 +719,7 @@ sub optimise_one {
     #  If scalar ref returned it is all HTML - return as plain scalar
     #
     if (ref($data_ar) eq 'SCALAR') {
-        #$data_ar=$WEBDYNE_DTD.${$data_ar}
         $data_ar=${$data_ar}
-    }
-    else {
-        #die Dumper([$WEBDYNE_DTD, $data_ar]);
-        #$data_ar=[$WEBDYNE_DTD, $data_ar]
     }
 
 
@@ -926,13 +743,10 @@ sub optimise_two {
     debug('optimise stage two');
 
 
-    #  Get CGI object
+    #  Get CGI object and turn off shortcuts like start_html
     #
-    #my $cgi_or=$self->{'_CGI'} ||= $self->CGI({ noshortcut=>1 }) ||
     my $cgi_or=$self->{'_html_tiny_or'} ||= $self->html_tiny() ||
-    #my $cgi_or=$self->{'_CGI'} ||
         return err ("unable to get CGI object from self ref");
-    #diag("optimise_two $cgi_or");
     $cgi_or->shortcut_disable();
 
 
@@ -1050,15 +864,6 @@ sub optimise_two {
                 #
                 my ($html_tag_start, $html_tag_end)=
                     ("start_${html_tag}", "end_${html_tag}");
-                #my ($html_tag_start, $html_tag_end);
-                #if ($html_tag eq 'html') {
-                #    ($html_tag_start, $html_tag_end)=
-                #        ("open_${html_tag}", "close_${html_tag}");
-                #}
-                #else {
-                #    ($html_tag_start, $html_tag_end)=
-                #        ("start_${html_tag}", "end_${html_tag}");
-                #}
 
 
                 #  Translate tags into HTML
@@ -1174,15 +979,9 @@ sub optimise_two {
             #  get start and end tag methods
             #
             debug("compile_cr: if 3");
-            #my ($html_tag_start, $html_tag_end);
-            #if ($html_tag eq 'html') {
-            #    ($html_tag_start, $html_tag_end)=
-            #        ("open_${html_tag}", "close_${html_tag}");
-            #}
-            #else {
-            my    ($html_tag_start, $html_tag_end)=
+            my ($html_tag_start, $html_tag_end)=
                     ("start_${html_tag}", "end_${html_tag}");
-            #}
+
 
             #  Get resulting start and ending HTML
             #
@@ -1255,12 +1054,6 @@ sub optimise_two {
     else {
         return [$data_ar];
     }
-    #return ref($data_ar)
-    #    ?
-    #    $compile_cr->($compile_cr, $data_ar, undef) || err ()
-    #    :
-    #    [$data_ar];
-
 
 }
 
@@ -1276,8 +1069,6 @@ sub parse {
     my ($line_no, $line_no_tag_end)=@{$html_or}{'_line_no', '_line_no_tag_end'};
     my $html_fn_sr=\$meta_hr->{'manifest'}[0];
     debug("parse $self, $html_or line_no $line_no line_no_tag_end $line_no_tag_end");
-
-    #debug("parse $html_or, %s", Dumper($html_or));
 
 
     #  Create array to hold this data node
@@ -1300,19 +1091,6 @@ sub parse {
     #  Get tag
     #
     my $html_tag=$html_or->tag();
-
-
-    #  Check special cases like tr that need to be uppercased (Tr) to work correctly
-    #  in CGI
-    #
-    #$html_tag=$CGI_Tag_Ucase{$html_tag} || $html_tag;
-
-
-    #  Check valid
-    #
-    #unless (UNIVERSAL::can('CGI', $html_tag) || $CGI_TAG_WEBDYNE{$html_tag}) {
-    #    return err ("unknown CGI/WebDyne tag: <$html_tag>, line $line_no in source file ${$html_fn_sr}")
-    #}
 
 
     #  Get tag attr
