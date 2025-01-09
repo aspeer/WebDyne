@@ -486,7 +486,7 @@ sub perl {
     my $html_perl_or=$self->$method($tag, $attr_hr);
     my $inline;
     if ($tag eq 'perl') {
-        unless (grep {exists $attr_hr->{$_}} qw(package class method handler)) {
+        unless (grep {exists $attr_hr->{$_}} qw(package method handler)) {
             $html_perl_or->attr(inline => ++$inline);
         }
     }
@@ -613,10 +613,29 @@ sub end {
             $Text_fg=undef;
             
             
-            #  Now replace div tag with webdyne output
+            #  Now replace div tag with webdyne output unless a wrap attribute exists - in which
+            #  case the output will be wrapped in that tag and any class, style or id tags presevered
             #
-            $webdyne_tag_or->push_content($div_or->detach_content());
-            $div_or->replace_with($webdyne_tag_or);
+            if (my $tag=$div_or->attr('wrap')) {
+
+                #  Want to wrap output in anothe tag
+                #
+                $webdyne_tag_or->push_content($div_or->detach_content());
+                my %tag_attr=(
+                    map { $_ => $div_or->attr($_) }
+                    grep { $div_or->attr($_) }
+                    qw (class style id)
+                );
+                debug('tag_attr: %s', Dumper(\%tag_attr));
+                my $tag_or=HTML::Element->new($tag, %tag_attr);
+                $tag_or->push_content($webdyne_tag_or);
+                $div_or->replace_with($tag_or);
+                
+            }
+            else {
+                $webdyne_tag_or->push_content($div_or->detach_content());
+                $div_or->replace_with($webdyne_tag_or);
+            }
             return $ret;
 
         }

@@ -2242,7 +2242,7 @@ sub json {
         type	=> 'application/json',
         %{$attr_hr}
     );
-    delete @attr{qw(package class method handler)};
+    delete @attr{qw(package method handler)};
     
     
     #  Render and return
@@ -2312,12 +2312,12 @@ sub perl {
         
 
     }
-    elsif (grep {$attr_hr->{$_}} qw(package class method handler)) {
+    elsif (grep {$attr_hr->{$_}} qw(package method handler)) {
 
 
         #  Not inline, must want to call a handler, get method and caller. package synonym for class, method for handler
         #
-        my $function=join('::', grep {$_} map {exists($attr_hr->{$_}) && $attr_hr->{$_}} qw(package class method handler)) ||
+        my $function=join('::', grep {$_} map {exists($attr_hr->{$_}) && $attr_hr->{$_}} qw(package method handler)) ||
             return err ('could not determine perl routine to run');
         debug("found call to perl function: $function");
 
