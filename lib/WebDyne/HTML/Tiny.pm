@@ -532,6 +532,148 @@ sub popup_menu {
     #  Build a checkbox or radio group
     #
     my ($self, $attr_hr)=@_;
+    my %attr_select=%{$attr_hr};
+    debug('in popup_menu: %s', Dumper($attr_hr));
+    
+    
+
+    #  Hold generated HTML in array until end
+    #
+    my @html;
+    
+
+    #  If values is a hash not an array then convert to array and use hash as values
+    #
+    if (ref($attr_select{'values'}) eq 'HASH') {
+    
+        
+        #  It's a hash - use as labels, and push keys to values
+        #
+        $attr_select{'labels'}=(my $hr=delete $attr_select{'values'});
+        $attr_select{'values'}=[keys %{$hr}]
+        
+    }
+    
+    #  Convert arrays of default values (i.e checked/enabled) and any disabled entries into hash - easier to check
+    #
+    my %attr_option=(
+        values		=> delete $attr_select{'values'},
+        attributes	=> delete $attr_select{'attributes'},
+        labels		=> delete $attr_select{'labels'}
+    );	
+    
+    
+    #  Carefully handle options
+    #
+    foreach my $attr (qw(default selected disabled)) {
+        
+        next unless exists $attr_select{$attr};
+        my @values;
+        if (ref($attr_select{$attr}) eq 'ARRAY') {
+            @values=@{$attr_select{$attr}}
+        }
+        else {
+            #  Single value
+            @values=($attr_select{$attr})
+        }
+        
+        unless ($attr eq 'disabled') {
+            foreach my $value (@values) {
+                debug("value $value");
+                $attr_option{$attr}{$value}=1;
+            }
+            delete $attr_select{$attr};
+        }
+        else { # handle disabled attr carefully
+            if (@values) {
+                foreach my $value (@values) {
+                    $attr_option{$attr}{$value}=1;
+                }
+                delete $attr_select{$attr};
+            }
+            else {
+                $attr_select{$attr}=[];
+            }
+        }
+    }
+            
+        
+    #  Debug
+    #
+    debug('in popup_menu attr_option: %s', Dumper(\%attr_option));
+    
+    
+    #  Convert 'defaults' key to 'selected'
+    #
+    do { $attr_option{'selected'} ||= delete $attr_option{'defaults'} }
+        if $attr_option{'defaults'};
+    
+    
+    #  If disabled option is an array but is empty then it is meant for the parent tag
+    #
+    #if ($attr_option{'disabled'} && !@{$attr_option{'disabled'}}) {
+    #if ($attr_option{'disabled'} && !@{$attr_options{'disabled'}}) {
+    #if (exists $attr_option{'disabled'} && !(keys %{$attr_option{'disabled'}})) {
+    
+        #  Yes, it is empty, so user wants whole option disabled
+        #
+    #    debug('disable entire popup_menu');
+    #    $attr_select{'disabled'}=[]
+
+    #}
+    #else {
+    
+    #    debug('deleting attr_select disabled attr');
+    #    delete $attr_select{'disabled'};
+        
+    #}
+    
+    #map { delete $attr_select{$_} } (qw(default selected disabled));
+    
+    
+    #  Fix multiple tag if true
+    #
+    $attr_select{'multiple'}=[] if $attr_select{'multiple'};
+    #map { delete $attr_select{$_} } (qw(default selected disabled));    
+    debug('in popup_menu attr_select: %s', Dumper(\%attr_select));
+    
+
+    #  Now iterate and build actual tag, push onto HTML array
+    #
+    foreach my $value (@{$attr_option{'values'}}) {
+        my %attr_tag = $attr_option{'attributes'}{$value} ?
+            (%{ $attr_option{'attributes'}{$value} }) :
+            ();
+        $attr_tag{'value'}=$value;
+        
+        #  Note use of empty array for checked and disabled values as per HTML::Tiny specs
+        $attr_tag{'selected'}=[] if $attr_option{'selected'}{$value};
+        $attr_tag{'disabled'}=[] if $attr_option{'disabled'}{$value};
+        my $label=$attr_option{'labels'}{$value} ? $attr_option{'labels'}{$value} : $value;
+        #if ($label) {
+        #    push @html, $self->label($self->option(\%attr_tag) . $label);
+        #}
+        #else {
+            debug("pushing option tag with label: $label, attr_tag: %s", Dumper(\%attr_tag));
+            push @html, $self->option(\%attr_tag, $label)
+        #}
+    }
+    
+    
+    #  Return
+    #
+    debug('creating select group with attr: %s, options:%s', Dumper(\%attr_select, \@html));
+    return $self->select(\%attr_select, join($/, @html)); 
+    
+}
+
+
+sub popup_menu0 {
+
+
+    #  Build a checkbox or radio group
+    #
+    my ($self, $attr_hr)=@_;
     my %attr=%{$attr_hr};
     debug('in popup_menu: %s', Dumper($attr_hr));
     
@@ -563,8 +705,8 @@ sub popup_menu {
     );	
     foreach my $attr (qw(default selected disabled)) {
         map { $attr_group{$attr}{$_}=1 } @{(ref($attr{$attr}) eq 'ARRAY') ? $attr{$attr} : [$attr{$attr}] }
-            if $attr{$attr};
-        delete $attr{$attr};
+            if exists $attr{$attr};
+        #delete $attr{$attr};
     }
     #unless ($attr_group{'labels'}) {
     #    $attr_group{'labels'}={
@@ -582,7 +724,8 @@ sub popup_menu {
     
     #  If disabled option is an array but is empty then it is meant for the parent tag
     #
-    if ($attr_group{'disabled'} && !@{$attr_group{'disabled'}}) {
+    #if ($attr_group{'disabled'} && !@{$attr_group{'disabled'}}) {
+    if (exists $attr_group{'disabled'} && !(keys %{$attr_group{'disabled'}})) {
     
         #  Yes, it is empty, so user wants whole option disabled
         #

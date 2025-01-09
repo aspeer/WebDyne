@@ -924,7 +924,7 @@ sub init_class {
                 my $err=$@; eval {undef};
                 return err("eval of code returned error: $err");
             }
-            elsif (!$ret) {
+            elsif (!defined($ret)) {
                 return err("eval of code did not return a true value");
             }
             elsif (!ref($ret) eq 'CODE') {
@@ -974,7 +974,7 @@ sub init_class {
 
                 #  Some other problem
                 #
-                return err ('code did not return a true value: %s', $eval_text);
+                #return err ('code did not return a true value: %s, %s', $eval_text, Dumper(\@eval));
 
             }
 
