@@ -439,6 +439,29 @@ sub script {
 
     my ($self, $method, $tag, $attr_hr, @param)=@_;
     debug("$self script, attr: %s", Dumper($attr_hr));
+    my $script_or=$self->$method($tag, $attr_hr, @param);
+    if ($attr_hr->{'type'} eq 'application/perl') {
+    
+        my $perl_or=HTML::Element->new('perl', inline => 1);
+        push @{$self->{'_script_stack'}}, [$script_or, 'perl', $perl_or];
+        debug('perl script !');
+
+    }
+    else {
+        
+        push @{$self->{'_script_stack'}}, undef;
+        $Text_fg ||='script';
+    }
+    #$self->$method($tag, $attr_hr, @param);
+    return $script_or;
+
+}
+
+
+sub script0 {
+
+    my ($self, $method, $tag, $attr_hr, @param)=@_;
+    debug("$self script, attr: %s", Dumper($attr_hr));
     if ($attr_hr->{'type'} eq 'application/perl') {
         debug('perl script !');
     }
@@ -650,6 +673,53 @@ sub end {
             $ret=$self->SUPER::end($tag, @_);
         }
     }
+    elsif ($tag eq 'script') {
+    
+
+        #  Script tag, presumablt of type application/perl
+        #
+        debug('hit on script tag');
+
+
+        #  Can we pop an array ref off script_stack ? If so means was webdyne tag
+        #
+        if (my $script_ar=pop(@{$self->{'_script_stack'}})) {
+        
+            
+            #  Get vars from array ref
+            #
+            my ($script_or, $perl_tag, $perl_tag_or)=@{$script_ar};
+            debug("popped script tag: $script_or, %s, about to end perl tag: $perl_tag", $script_or->tag());
+            
+            
+            #  End perl tag
+            #
+            debug("end $perl_tag now");
+            $self->SUPER::end($perl_tag, @_);
+            
+            
+            #  End script tag
+            #
+            debug("end $tag now");
+            $self->SUPER::end($tag,@_);
+            
+            
+            #  Re-arrange tree
+            #
+            debug('script content %s', Dumper($script_or->content_list));
+            #$perl_tag_or->push_content($script_or->detach_content());
+            $perl_tag_or->attr('perl', $script_or->detach_content());
+            $script_or->replace_with($perl_tag_or)
+
+        }
+        else {
+            
+            debug('null script stack pop, ignoring');
+            #return err('could not pop script stack !')
+        }
+    }
+        
+        
     if ($Text_fg && ($tag eq $Text_fg)) {
         $Text_fg=undef;
         $ret=$self->SUPER::end($tag, @_)
