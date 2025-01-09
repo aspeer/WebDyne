@@ -567,7 +567,7 @@ sub end {
     #
     my ($self, $tag)=(shift, shift);
     ref($tag) || ($tag=lc($tag));
-    debug("$self end $tag, text_fg $Text_fg, line $Line_no, self %s", Dumper($self));
+    debug("$self end $tag, text_fg $Text_fg, line $Line_no");
 
 
     #  Var to hold HTML::Element ref if returned, but most methods don't seem to return a HTML ref, just an integer ?
@@ -613,20 +613,21 @@ sub end {
             $Text_fg=undef;
             
             
-            #  Now replace div tag with webdyne output unless a wrap attribute exists - in which
+            #  Now replace div tag with webdyne output unless a wrap attribute exists or class etc. given - in which
             #  case the output will be wrapped in that tag and any class, style or id tags presevered
             #
-            if (my $tag=$div_or->attr('wrap')) {
+            my @div_attr_name=grep { $div_or->attr($_) } qw(class style id);
+            if ((my $tag=$div_or->attr('wrap')) || @div_attr_name) {
 
-                #  Want to wrap output in anothe tag
+                #  Want to wrap output in another tag or use <div> if class etc. given but no tag
                 #
+                $tag ||= 'div';
                 $webdyne_tag_or->push_content($div_or->detach_content());
                 my %tag_attr=(
                     map { $_ => $div_or->attr($_) }
-                    grep { $div_or->attr($_) }
-                    qw (class style id)
+                    @div_attr_name
                 );
-                debug('tag_attr: %s', Dumper(\%tag_attr));
+                debug("tag: $tag, tag_attr: %s", Dumper(\%tag_attr));
                 my $tag_or=HTML::Element->new($tag, %tag_attr);
                 $tag_or->push_content($webdyne_tag_or);
                 $div_or->replace_with($tag_or);
