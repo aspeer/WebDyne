@@ -51,20 +51,20 @@ $OUT=join($/, @out);
 #  module
 #
 <!--
-use Config;
-
-my $installbin_dn=$DIR_INSTALLBIN || $Config{'installbin'};
-my $perl5lib_fn;
-
-unless ($perl5lib_fn=$INC{$FILE_PERL5LIB}) {
-	$perl5lib_fn=File::Spec->catfile($installbin_dn, $FILE_PERL5LIB);
-}
-else {
-	$perl5lib_fn=File::Spec->canonpath($perl5lib_fn);
-}
-
-$OUT=qq[#PerlRequire "$perl5lib_fn"]
-
+##use Config;
+##
+##my $installbin_dn=$DIR_INSTALLBIN || $Config{'installbin'};
+##my $perl5lib_fn;
+##
+##unless ($perl5lib_fn=$INC{$FILE_PERL5LIB}) {
+##	$perl5lib_fn=File::Spec->catfile($installbin_dn, $FILE_PERL5LIB);
+##}
+##else {
+##	$perl5lib_fn=File::Spec->canonpath($perl5lib_fn);
+##}
+##
+##$OUT=qq[#PerlRequire "$perl5lib_fn"]
+##
 -->
 
 
@@ -80,6 +80,11 @@ $OUT=qq[#PerlRequire "$mod_perl_1_99_compat_fn"]
 
 -->
 
+
+#  Adjust and uncomment if using local::lib for installs
+#
+$PerlSwitches -I/opt/perl5/lib
+#
 
 #  Load WebDyne modules
 #
