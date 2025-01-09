@@ -3627,6 +3627,13 @@ sub DESTROY {
 }
 
 
+sub webdyne_status {
+
+    return \%Package;
+    
+}
+
+
 sub AUTOLOAD {
 
 

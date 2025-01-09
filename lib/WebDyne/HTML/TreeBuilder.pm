@@ -670,7 +670,7 @@ sub end {
             #  Vanilla div tag, nothing to do
             #
             debug('undef pop off div stack');
-            $ret=$self->SUPER::end($tag, @_);
+            return $ret=$self->SUPER::end($tag, @_);
         }
     }
     elsif ($tag eq 'script') {
@@ -709,12 +709,14 @@ sub end {
             debug('script content %s', Dumper($script_or->content_list));
             #$perl_tag_or->push_content($script_or->detach_content());
             $perl_tag_or->attr('perl', $script_or->detach_content());
-            $script_or->replace_with($perl_tag_or)
+            $script_or->replace_with($perl_tag_or);
+            return 1;
 
         }
         else {
             
             debug('null script stack pop, ignoring');
+            return $ret=$self->SUPER::end($tag, @_);
             #return err('could not pop script stack !')
         }
     }
