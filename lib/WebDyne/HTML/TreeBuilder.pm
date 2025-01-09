@@ -437,14 +437,15 @@ sub block {
 
 sub script {
 
-    #my ($self, $method, $tag, $attr_hr)=@_;
-    my ($self, $method)=(shift, shift);
-    debug('script');
-    $Text_fg ||='script';
-    #my $or=$self->$method($tag, $attr_hr, @_);
-    #$or->postinsert('</script>') if $attr_hr->{'src'};
-    #$or;
-    $self->$method(@_);
+    my ($self, $method, $tag, $attr_hr, @param)=@_;
+    debug("$self script, attr: %s", Dumper($attr_hr));
+    if ($attr_hr->{'type'} eq 'application/perl') {
+        debug('perl script !');
+    }
+    else {
+        $Text_fg ||='script';
+    }
+    $self->$method($tag, $attr_hr, @param);
 
 }
 

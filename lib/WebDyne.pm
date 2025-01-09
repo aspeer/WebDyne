@@ -934,7 +934,7 @@ sub init_class {
             
             #  Store code away for error handling
             #
-            $Package{'_cache'}{$inode}{'eval_code'}{$data_ar}{$index}=$eval;
+            #$Package{'_cache'}{$inode}{'eval_code'}{$data_ar}{$index}=$eval;
 
             #eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;\n" . "#line $_[2]\n" . "sub{${$_[1]}\n}");
             #&eval_cr($inode, \$eval_text, $html_line_no) || return
@@ -978,6 +978,25 @@ sub init_class {
 
             }
 
+        }
+        elsif ($eval[0] eq $self) {
+            
+            
+            #  $self fell through, probably means no explicit return was done, e.g perl code was sub foo {} 
+            #
+            undef @eval;
+            
+        }
+        
+        
+        #  Quick sanity check on return
+        #
+        if (grep {ref($_) && (ref($_)!~/(?:SCALAR|ARRAY|HASH)/)} @eval ) {
+            
+            #  Whatever it is we can't render it unless SCALAR or ARRAY
+            #
+            return err('return from eval of ref type \'%s\' not supported', join(',', grep {$_} map {ref($_)} @eval));
+            
         }
 
 
