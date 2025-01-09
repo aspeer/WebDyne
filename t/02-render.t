@@ -79,7 +79,7 @@ sub main {
     #  Iterate over files
     #
     diag('');
-    foreach my $test_fn (sort {$a cmp $b } @test_fn) {
+    FILE: foreach my $test_fn (sort {$a cmp $b } @test_fn) {
 
 
         #  Create WebDyne render of PSP file and capture to file
@@ -130,6 +130,10 @@ sub main {
             
             #  Get previous version
             #
+            (-f $data_cn) || do {
+                diag("skipping $test_fn, no data file - run maketest.pl");
+                next FILE;
+            };
             my $data_thaw_ar=lock_retrieve($data_cn) ||
                 return err;
 
@@ -172,6 +176,11 @@ sub main {
         my $html_live_sr=&render($test_cn) ||
             return err();
         #diag(${$html_sr});
+
+        (-f $data_cn) || do {
+            diag("skipping $test_fn, no data file - run maketest.pl");
+            next;
+        };
         my $html_thaw_fh=IO::File->new($data_cn, O_RDONLY) ||
             return err("unable to open $data_cn, $!");
         local $/;
