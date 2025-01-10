@@ -12,12 +12,10 @@ use vars   qw($VERSION);
 use Test::More qw(no_plan);
 use FindBin qw($RealBin $Script);
 use File::Temp qw(tempfile);
-#use Digest::MD5;
 use File::Find qw(find);
 use Data::Dumper;
 use IO::File;
 use IO::String;
-#use Text::Diff;
 use Cwd qw(abs_path);
 $Data::Dumper::Indent=1;
 use Storable qw(lock_retrieve freeze);
@@ -37,7 +35,7 @@ exit(${&main(\@ARGV) || die err ()} || 0);    # || 0 stops warnings
 #==================================================================================================
 
 
-sub err {
+sub err_carp {
 
     require Carp;
     $Carp::CarpLevel=0;

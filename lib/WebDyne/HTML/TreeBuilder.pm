@@ -617,13 +617,14 @@ sub end {
             #  Yes, separate out to components stored by div subroutine
             #
             my ($div_or, $webdyne_tag, $webdyne_tag_or)=@{$div_ar};
-            debug("popped div tag: $div_or, %s, about to end webdyne tag: $webdyne_tag", $div_or->tag());
+            debug("popped div tag: $div_or, %s, about to end webdyne tag: $webdyne_tag (%s)", $div_or->tag(), $webdyne_tag_or->tag());
             
             
             #  Set the Text_fg to whatever the webdyne tag was (e.g. perl, etc), that way they will see a match and
             #  turn off text mode. NOTE: Not sure this works ?
             #
-            $Text_fg=$webdyne_tag;
+            $Text_fg &&= $webdyne_tag_or->tag();
+            debug("Text_fg now $Text_fg, ending $webdyne_tag");
             $self->SUPER::end($webdyne_tag, @_);
             
             #  Now end the original div tag
@@ -689,12 +690,14 @@ sub end {
             #  Get vars from array ref
             #
             my ($script_or, $perl_tag, $perl_tag_or)=@{$script_ar};
-            debug("popped script tag: $script_or, %s, about to end perl tag: $perl_tag", $script_or->tag());
+            debug("popped script tag: $script_or, %s, about to end perl tag: $perl_tag (%s)", $script_or->tag(), $perl_tag_or->tag());
             
             
             #  End perl tag
             #
             debug("end $perl_tag now");
+            $Text_fg &&= $perl_tag_or->tag();
+            debug("Text_fg now $Text_fg, ending $perl_tag");
             $self->SUPER::end($perl_tag, @_);
             
             
@@ -702,6 +705,7 @@ sub end {
             #
             debug("end $tag now");
             $self->SUPER::end($tag,@_);
+            $Text_fg=undef;
             
             
             #  Re-arrange tree
@@ -713,9 +717,10 @@ sub end {
             return 1;
 
         }
-        else {
+        elsif(0) {
             
             debug('null script stack pop, ignoring');
+            $Text_fg=undef;
             return $ret=$self->SUPER::end($tag, @_);
             #return err('could not pop script stack !')
         }
@@ -723,13 +728,16 @@ sub end {
         
         
     if ($Text_fg && ($tag eq $Text_fg)) {
+        debug("match on tag $tag to Text_fg $Text_fg, clearing Text_fg");
         $Text_fg=undef;
         $ret=$self->SUPER::end($tag, @_)
     }
     elsif ($Text_fg) {
+        debug("text segment via Text_fg $Text_fg, passing to text handler");
         $ret=$self->text($_[0])
     }
     else {
+        debug("normal tag end");
         $ret=$self->SUPER::end($tag, @_)
     }
     

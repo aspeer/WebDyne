@@ -46,6 +46,11 @@ my $Mod_perl_version=$mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_
 my $MP2=($Mod_perl_version > 1.99) ? 1 : 0;
 
 
+#  Temp location to hold vars we propagate into multiple constants below.
+#
+my %constant_temp;
+
+
 #  Hash of constants
 #
 %Constant=(
@@ -156,20 +161,13 @@ my $MP2=($Mod_perl_version > 1.99) ? 1 : 0;
     WEBDYNE_DUMP_FLAG => 0,
 
 
-    #  DTD to use when generating HTML
-    #
-    #WEBDYNE_DTD =>
-    #    '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" ' .
-    #    '"http://www.w3.org/TR/html4/loose.dtd">',
-    WEBDYNE_DTD     => '<!DOCTYPE html>',
-    WEBDYNE_META    => {
-        charset     => 'UTF-8'
-    },
 
 
     #  Content-type for text/html. Combined with charset to produce Content-type header
     #
-    WEBDYNE_CONTENT_TYPE_HTML => 'text/html',
+    WEBDYNE_CONTENT_TYPE_HTML => do {
+        $constant_temp{'webdyne_content_type_html'} = 'text/html'
+    },
 
 
     #  Content-type for text/plain. As above
@@ -179,8 +177,18 @@ my $MP2=($Mod_perl_version > 1.99) ? 1 : 0;
 
     #  Encoding
     #
-    #WEBDYNE_HTML_CHARSET => do {
-    #    'UTF-8',
+    WEBDYNE_HTML_CHARSET => do {
+        $constant_temp{'webdyne_html_charset'} = 'UTF-8'
+    },
+
+
+    #  DTD to use when generating HTML
+    #
+    WEBDYNE_DTD     => '<!DOCTYPE html>',
+    WEBDYNE_META    => {
+        charset     => $constant_temp{'webdyne_html_charset'}
+    },
+
 
 
     #  Include a Content-Type meta tag ?
@@ -310,6 +318,23 @@ my $MP2=($Mod_perl_version > 1.99) ? 1 : 0;
     #  Use JSON canonical mode ?
     #
     WEBDYNE_JSON_CANONICAL => 1,
+    
+    
+    #  Headers
+    #
+    WEBDYNE_HTTP_HEADER => {
+    
+        'Content-Type'          => sprintf('%s; %s', @constant_temp{qw(webdyne_content_type_html webdyne_html_charset)}),
+        'Cache-Control'         => 'no-cache, no-store, must-revalidate',
+        'Pragma'                => 'no-cache',
+        'Expires'               => '0',
+        'X-Content-Type-Options' => 'nosniff',
+        'X-Frame-Options'       => 'SAMEORIGIN',
+        'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains; preload',
+        'Content-Security-Policy' => "default-src 'self';",
+        'Referrer-Policy'       => 'strict-origin-when-cross-origin',
+        
+    },
     
     
     #  Mod_perl level. Do not change unless you know what you are

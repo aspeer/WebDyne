@@ -669,11 +669,12 @@ sub handler : method {
 
         'Content-Length' => length ${$html_sr},
 
-        ($meta_hr->{'no_cache'} || $WEBDYNE_NO_CACHE) && (
-            'Cache-Control' => 'no-cache',
-            'Pragma'        => 'no-cache',
-            'Expires'       => '-5'
-            )
+        #($meta_hr->{'no_cache'} || $WEBDYNE_NO_CACHE) && (
+        #    'Cache-Control' => 'no-cache',
+        #    'Pragma'        => 'no-cache',
+        #    'Expires'       => '-5'
+        #    )
+        %{$WEBDYNE_HTTP_HEADER}
 
     );
     foreach (keys %header_out) {$header_out_hr->{$_}=$header_out{$_}}
