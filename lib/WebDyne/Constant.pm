@@ -331,7 +331,7 @@ my %constant_temp;
         'X-Content-Type-Options' => 'nosniff',
         'X-Frame-Options'       => 'SAMEORIGIN',
         'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains; preload',
-        'Content-Security-Policy' => "default-src 'self';",
+        'Content-Security-Policy' => "default-src 'self'; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';",
         'Referrer-Policy'       => 'strict-origin-when-cross-origin',
         
     },
