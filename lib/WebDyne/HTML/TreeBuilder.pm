@@ -763,9 +763,10 @@ sub text {
     debug("text *$text*, text_fg $Text_fg, pos %s", $self->{'_pos'});
     
     
-    #  Ignore empty text
+    #  Ignore empty text. UPDATE - don't ignore or you will mangle CR in <pre> sections, especially if they contain tags
+    #  like <span> in the <pre> section. Process and keep them inline.
     #
-    return if ($text =~ /^\r?\n?$/);
+    #return if ($text =~ /^\r?\n?$/);
     
     
     #  Are we in an inline perl block ?
@@ -823,7 +824,8 @@ sub text {
         #  Normal text, process by parent class after handling any subst flags in code
         #
         #if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/gs) {
-        if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/s) {
+        ##if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/s) {
+        if ($text =~ /([\$!+\^*]+)\{([\$!+]?)(.*?)\2\}/s) {
 
             #  Meeds subst. Get rid of cr's at start and end of text after a <perl> tag, stuffs up formatting in <pre> sections
             #
