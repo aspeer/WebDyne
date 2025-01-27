@@ -412,7 +412,7 @@ sub handler : method {
         #
         #delete $self->{'_CGI'} if $WEBDYNE_CGI_PARAM_EXPAND;
         if ((my $cgi_or=$self->{'_CGI'}) && $WEBDYNE_CGI_PARAM_EXPAND) {
-            $cgi_or->init();
+            $cgi_or->_initialize();
         }
 
 
