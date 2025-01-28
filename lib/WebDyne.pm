@@ -1093,11 +1093,19 @@ sub init_class {
         };
 
 
-        #  Any 'printed data ? Prepend to output
+        #  Any 'printed data ? Prepend to output. Used to do $self->{'_print_ar'}{$data_ar} but changed to
+        #  just $self->{'_print_ar'}. See code history for background
         #
-        if (my $print_ar=delete $self->{'_print_ar'}{$data_ar}) {
-            my $print_html=join(undef, grep {$_} map {(ref($_) eq 'SCALAR') ? ${$_} : $_} @{$print_ar});
-            $html_sr=ref($html_sr) ? \(${$html_sr} . $print_html) : $html_sr . $print_html;
+        if (my $print_ar=delete $self->{'_print_ar'}) {
+            debug("print_ar: $print_ar %s", Dumper($print_ar));
+            foreach my $item_ar (reverse @{$print_ar}) {
+                debug("prepending printed data %s for data_ar: $data_ar, %s", Dumper($item_ar, $data_ar));
+                my $print_html=join(undef, grep {$_} map {(ref($_) eq 'SCALAR') ? ${$_} : $_} @{$item_ar});
+                $html_sr=ref($html_sr) ? \($print_html . ${$html_sr}) : ($print_html . $html_sr) ;
+            }
+        }
+        else {
+            debug('no printed data detected');
         }
 
 
@@ -1155,12 +1163,21 @@ sub init_class {
         }
 
 
-        #  Any 'printed data ? Prepend to output
+        #  Any 'printed data ? Prepend to output. Used to do $self->{'_print_ar'}{$data_ar} but changed to
+        #  just $self->{'_print_ar'}. See code history for background
         #
-        if (my $print_ar=delete $self->{'_print_ar'}{$data_ar}) {
-            my $print_html=join(undef, grep {$_} map {(ref($_) eq 'SCALAR') ? ${$_} : $_} @{$print_ar});
-            $html_sr=ref($html_sr) ? \(${$html_sr} . $print_html) : $html_sr . $print_html;
+        if (my $print_ar=delete $self->{'_print_ar'}) {
+            debug("print_ar: $print_ar %s", Dumper($print_ar));
+            foreach my $item_ar (reverse @{$print_ar}) {
+                debug("prepending printed data %s for data_ar: $data_ar, %s", Dumper($item_ar, $data_ar));
+                my $print_html=join(undef, grep {$_} map {(ref($_) eq 'SCALAR') ? ${$_} : $_} @{$item_ar});
+                $html_sr=ref($html_sr) ? \($print_html . ${$html_sr}) : ($print_html . $html_sr) ;
+            }
         }
+        else {
+            debug('no printed data detected');
+        }
+        
 
         #  Make sure we return a ref
         #
@@ -2736,6 +2753,7 @@ sub subst {
 
     #  Done
     #
+    debug("return *$text*");
     return \$text;
 
 
@@ -3582,18 +3600,16 @@ sub data_ar_html_line_no {
 sub print {
 
     my $self=shift();
-    my $data_ar=$self->{'_data_ar'};
-    push @{$self->{'_print_ar'}{$data_ar} ||= []}, @_;
+    push @{$self->{'_print_ar'} ||= []}, [@_];
     return \undef;
-
+    
 }
 
 
 sub printf {
 
     my $self=shift();
-    my $data_ar=$self->{'_data_ar'};
-    push @{$self->{'_print_ar'}{$data_ar} ||= []}, sprintf(shift(), @_);
+    push @{$self->{'_print_ar'} ||= []}, [sprintf(shift(), @_)];
     return \undef;
 
 }
@@ -3686,11 +3702,13 @@ sub AUTOLOAD {
 #  Package to tie select()ed output handle to so we can override print() command
 #
 package WebDyne::TieHandle;
+*debug=\&WebDyne::debug;
 
 
 sub TIEHANDLE {
 
     my ($class, $self)=@_;
+    debug("$self TIEHANDLE class: $class");
     bless \$self, $class;
 }
 
@@ -3698,6 +3716,7 @@ sub TIEHANDLE {
 sub PRINT {
 
     my $self=shift();
+    debug("$self PRINT %s", join('*', @_));
     return ${$self}->print(@_);
 
 }
@@ -3706,20 +3725,28 @@ sub PRINT {
 sub PRINTF {
 
     my $self=shift();
+    debug("$self PRINTF %s", join('*', @_));
     return ${$self}->printf(@_);
 
 }
 
 
 sub DESTROY {
+    my $self=shift();
+    debug("$self DESTROY %s", join('*', @_));
+    delete ${$self}->{'_print_ar'};
 }
 
 
 sub UNTIE {
+    my $self=shift();
+    debug("$self UNTIE %s", join('*', @_));
+    delete ${$self}->{'_print_ar'};
 }
 
 
 sub AUTOLOAD {
+    debug("AUTOLOAD %s", join('*', @_));
 }
 
 
