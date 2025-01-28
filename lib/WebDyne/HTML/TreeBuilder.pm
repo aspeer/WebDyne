@@ -188,7 +188,7 @@ sub parse_fh {
         my $line;
         my $html=@HTML_Wedge ? shift @HTML_Wedge : ($line=<$html_fh>);
         if ($line) {
-            debug("line $line");
+            debug("line *$line*");
             my @cr=($line=~/\n/g);
             $Line_no=$Line_no_next || 1;
             $Line_no_next=$Line_no+@cr;
@@ -206,7 +206,7 @@ sub parse_fh {
 
         #  Done, return HTML
         #
-        $html;
+        return $html;
 
     };
     return $parse_cr;
@@ -260,7 +260,7 @@ sub tag_parse {
 
     #  Debug
     #
-    debug("tag_parse $method, $tag, line $Line_no, line_no_start $Line_no_start");
+    debug("tag_parse $method, *$tag*, line $Line_no, line_no_start $Line_no_start");
 
 
     #  Get the parent tag
@@ -429,7 +429,7 @@ sub block {
     #  No special handling needed, just log for debugging purposes
     #
     my ($self, $method)=(shift, shift);
-    debug("block self $self, method $method, @_ text_fg $Text_fg");
+    debug("block self $self, method $method, *%s* text_fg $Text_fg", join('*', @_));
     $self->$method(@_);
 
 }
@@ -764,7 +764,8 @@ sub text {
     
     
     #  Ignore empty text. UPDATE - don't ignore or you will mangle CR in <pre> sections, especially if they contain tags
-    #  like <span> in the <pre> section. Process and keep them inline.
+    #  like <span> in the <pre> section. Process and keep them inline. See also fact that trailing and leading CR's are 
+    #  converted to space characters by HTML::Parser as per convention.
     #
     #return if ($text =~ /^\r?\n?$/);
     
