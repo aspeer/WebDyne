@@ -1371,6 +1371,12 @@ sub render {
     my $cgi_or=$self->{'_html_tiny_or'} || $self->html_tiny() ||
         return err ("unable to get HTML::Tiny object from self ref");
     debug("CGI $cgi_or");
+    
+    
+    #  Stub out entity_encode - we don't want attributes escaped
+    #
+    local *HTML::Tiny::entity_encode=sub { $_[1] } unless
+        $WEBDYNE_CGI_AUTOESCAPE;
 
 
     #  Any data params for this render
@@ -1519,6 +1525,7 @@ sub render {
 
             #  Normal CGI tag, with attributes and perhaps child text
             #
+            debug("rendering normal HTML tag: $html_tag with attr: %s", Dumper($attr_hr));
             return \(
                 $cgi_or->$html_tag(grep {$_} $attr_hr || {}, $html_chld)
                     ||
@@ -1533,6 +1540,7 @@ sub render {
 
             #  Normal CGI tag, no attributes but with child text
             #
+            debug("rendering normal HTML tag: $html_tag, no attributes but with child text");
             return \(
                 $cgi_or->$html_tag($html_chld)
                     ||
@@ -1547,6 +1555,7 @@ sub render {
 
             #  Empty CGI object, eg <hr>
             #
+            debug("rendering empty HTML tag: $html_tag");
             return \(
                 $cgi_or->$html_tag()
                     ||
