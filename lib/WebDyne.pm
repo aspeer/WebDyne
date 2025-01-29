@@ -956,7 +956,7 @@ sub init_class {
             #  get to ..
             local *_=$param_hr;
             debug('eval call starting');
-            @eval=$eval_cr->($self, $eval_param_hr);
+            @eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar  $eval_cr->($self, $eval_param_hr);
             debug("eval call complete, $@, %s", Dumper(\@eval));
 
         };
@@ -994,7 +994,7 @@ sub init_class {
         #
         if (grep {ref($_) && (ref($_)!~/(?:SCALAR|ARRAY|HASH)/)} @eval ) {
             
-            #  Whatever it is we can't render it unless SCALAR or ARRAY
+            #  Whatever it is we can't render it unless SCALAR, ARRAY or HASH
             #
             return err('return from eval of ref type \'%s\' not supported', join(',', grep {$_} map {ref($_)} @eval));
             
@@ -1124,6 +1124,7 @@ sub init_class {
 
         #  Run eval and turn into tied hash
         #
+        debug('eval_hash_cr, %s', Dumper(\@_));
         tie(my %hr, 'Tie::IxHash', @{$eval_perl_cr->(@_) || return err ()});
         return \%hr;
 
@@ -1138,6 +1139,7 @@ sub init_class {
 
         #  Run eval and return default - which is an array ref
         #
+        debug('eval_array_cr, %s', Dumper(\@_));
         return $eval_perl_cr->(@_) || err ();
 
     };
@@ -2793,6 +2795,7 @@ sub subst_attr {
         #  Skip perl attr, as that is perl code, do not do any regexp on perl code, as we will
         #  probably botch it.
         #
+        debug("subst_attr $attr_name: $attr_value");
         next if ($attr_name eq 'perl');
 
 
@@ -2806,6 +2809,7 @@ sub subst_attr {
             #  with string, e.g. <popup_list values="foo=@{qw(bar)}" dont make sense
             #
             my ($oper, $eval_text)=($1, $3);
+            debug("subst_attr path 1: oper:$oper, eval_text: $eval_text");
             my $eval=$eval_cr->{$oper}->($self, $data_ar, $param_hr, $eval_text, $index++, 1) ||
                 return err ();
             $attr{$attr_name}=(ref($eval) eq 'SCALAR') ? ${$eval} : $eval;
@@ -2816,6 +2820,7 @@ sub subst_attr {
             #  Trickier - might be interspersed in strings, e.g <submit name="foo=1&${bar}=2&car=${dar}"/>
             #  Substitution needed
             #
+            debug("subst_attr path 2: $attr_name, $attr_value");
             my $cr=sub {
                 my $sr=$eval_cr->{$_[0]}($self, $data_ar, $param_hr, $_[1], $_[2]) ||
                     return err ();
