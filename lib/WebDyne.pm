@@ -2747,7 +2747,8 @@ sub subst {
             return err ("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
         $sr;
     };
-    $text=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++) || return err()}/ge;
+    #$text=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++) || return err()}/ge;
+    $text =~ s/([\$!+*^]){(\1?)(.*?)\2}/${$cr->($1, $3, $index++) || return err()}/ge;
 
 
     #  Done
@@ -2800,7 +2801,8 @@ sub subst_attr {
         #
         #if ($attr_value=~/^\s*([\$@%!+*^]){1}{(\1?)([^{]+)\2}\s*$/so ) {
         #if ($attr_value=~/^\s*([\$@%!+*^]){1}{(\1?)(.*)\2}\s*$/so ) {
-        if ($attr_value=~/^\s*([\@%!+*^]){1}{(\1?)(.*)\2}\s*$/so || $attr_value=~/^\s*(\$){1}{(\1?)([^{]+)\2}\s*$/so) {
+        #if ($attr_value=~/^\s*([\@%!+*^]){1}{(\1?)(.*)\2}\s*$/so || $attr_value=~/^\s*(\$){1}{(\1?)([^{]+)\2}\s*$/so) {
+        if ($attr_value=~/^\s*([\@%!+*^]){(\1?)(.*)\2}\s*$/so || $attr_value=~/^\s*(\$){(\1?)([^{]+)\2}\s*$/so) {
 
             #  Straightforward $@%!+^ operator, must be only content of value (can't be mixed
             #  with string, e.g. <popup_list values="foo=@{qw(bar)}" dont make sense
