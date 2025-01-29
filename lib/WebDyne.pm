@@ -848,24 +848,6 @@ sub init_class {
     errnofatal(1);
 
 
-    #  Turn off XHTML in CGI. -no_xhtml should do it above, but this makes sure
-    #
-    ##$CGI::XHTML=0;
-    ##$CGI::NOSTICKY=1;
-
-
-    #  CGI good practice
-    #
-    #$CGI::Simple::DISABLE_UPLOADS=$WEBDYNE_CGI_DISABLE_UPLOADS;
-    #$CGI::Simple::POST_MAX=$WEBDYNE_CGI_POST_MAX;
-
-
-    #  Apparently not such good practice - but needed.
-    #  Update. Now done via local() closer to method.
-    #
-    ##$CGI::LIST_CONTEXT_WARN=0;
-
-
     #  Alias request method to just 'r' also
     #
     *WebDyne::r=\&WebDyne::request || *WebDyne::r;
@@ -920,15 +902,15 @@ sub init_class {
             );
             local $SIG{__DIE__};
             eval {undef} if $@; #Clear $@;
-            my $ret=eval ($eval);
+            my $sub_cr=eval ($eval);
             if ($@) {
                 my $err=$@; eval {undef};
                 return err("eval of code returned error: $err");
             }
-            elsif (!defined($ret)) {
+            elsif (!defined($sub_cr)) {
                 return err("eval of code did not return a true value");
             }
-            elsif (!ref($ret) eq 'CODE') {
+            elsif (!ref($sub_cr) eq 'CODE') {
                 return err("eval of code did not return a code ref");
             }
             
@@ -936,14 +918,20 @@ sub init_class {
             #  Store code away for error handling
             #
             #$Package{'_cache'}{$inode}{'eval_code'}{$data_ar}{$index}=$eval;
-
+            
+            
+            #  Old way we did it code
+            #
             #eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;\n" . "#line $_[2]\n" . "sub{${$_[1]}\n}");
             #&eval_cr($inode, \$eval_text, $html_line_no) || return
             #    $self->err_eval("$@", \$eval_text);
             
-            $ret
-        };
+            
+            #  Done
+            # 
+            $sub_cr;
 
+        };
         #debug("eval done, eval_cr $eval_cr");
 
 
@@ -3298,7 +3286,10 @@ sub CGI {
 
 sub html_tiny {
 
-    return (shift()->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new( mode=>'html')) ||
+
+    my $self=shift();
+    debug("$self get HTML::Tiny object");
+    return ($self->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new( mode=>'html')) ||
         err('unable to instantiate new WebDybe::HTTP::Tiny object');
         
 }
@@ -3614,6 +3605,7 @@ sub data_ar_html_line_no {
 sub print {
 
     my $self=shift();
+    debug("$self in print, %s", Dumper(\@_));
     push @{$self->{'_print_ar'} ||= []}, [@_];
     return \undef;
     
@@ -3623,6 +3615,7 @@ sub print {
 sub printf {
 
     my $self=shift();
+    debug("$self in printf, %s", Dumper(\@_));
     push @{$self->{'_print_ar'} ||= []}, [sprintf(shift(), @_)];
     return \undef;
 
