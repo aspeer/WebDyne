@@ -173,6 +173,7 @@ sub parse_fh {
     undef $Line_no;
     undef $Line_no_start;
     undef $Line_no_next;
+    delete $self->{'_html_wedge_ar'};
 
 
     #  Return closure code ref that understands how to count line
@@ -342,8 +343,7 @@ sub tag_parse {
            debug('end tag so changing method to SUPER::end');
            $method='SUPER::end' 
         }
-        #Rif (UNIVERSAL::can('WebDyne::HTML::Tiny', $tag) {
-            
+        #if (UNIVERSAL::can('WebDyne::HTML::Tiny', $tag) {
         $html_or=$self->tag_parse($method, $tag_actual, $attr_hr);
         
 
@@ -449,21 +449,6 @@ sub script {
     }
     #$self->$method($tag, $attr_hr, @param);
     return $script_or;
-
-}
-
-
-sub script0 {
-
-    my ($self, $method, $tag, $attr_hr, @param)=@_;
-    debug("$self script, attr: %s", Dumper($attr_hr));
-    if ($attr_hr->{'type'} eq 'application/perl') {
-        debug('perl script !');
-    }
-    else {
-        $Text_fg ||='script';
-    }
-    $self->$method($tag, $attr_hr, @param);
 
 }
 
@@ -761,6 +746,8 @@ sub text {
     #  like <span> in the <pre> section. Process and keep them inline. See also fact that trailing and leading CR's are 
     #  converted to space characters by HTML::Parser as per convention.
     #
+    #  Leave this here as a reminder.
+    #
     #return if ($text =~ /^\r?\n?$/);
     
     
@@ -784,7 +771,6 @@ sub text {
 
     #  Used to do this so __PERL__ block would only count if at end of file.
     #elsif (($text=~/^\W*__CODE__/ || $text=~/^\W*__PERL__/) && !$self->{'_pos'}) {
-
     elsif (($text=~/^\W*__CODE__/ || $text=~/^\W*__PERL__/)) {
 
 
@@ -818,8 +804,6 @@ sub text {
 
         #  Normal text, process by parent class after handling any subst flags in code
         #
-        #if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/gs) {
-        ##if ($text=~/([$|!|+|^|*]+)\{([$|!|+]?)(.*?)\2\}/s) {
         if ($text =~ /([\$!+\^*]+)\{([\$!+]?)(.*?)\2\}/s) {
 
             #  Meeds subst. Get rid of cr's at start and end of text after a <perl> tag, stuffs up formatting in <pre> sections
@@ -831,7 +815,7 @@ sub text {
                 if (($html_or->tag() eq 'perl') && !$html_or->attr('inline')) {
                     debug('hit !');
                     
-                    #  Why did I remove this again ?
+                    #  Why did I comment this out ?
                     #
                     #$text=~s/^\n//;
                     #$text=~s/\n$//;
@@ -955,7 +939,6 @@ sub div {
         
         #  Now push onto div stack and return div HTML::Element ref
         #
-        #push @div_stack, [$div_or, $webdyne_tag, $webdyne_tag_or];
         push @{$self->{'_div_stack'}}, [$div_or, $webdyne_tag, $webdyne_tag_or];
         return $div_or;
 
@@ -964,7 +947,6 @@ sub div {
     
         #  Normal div tag, push undef onto stack to denote vanilla
         #
-        #push @div_stack, undef;
         push @{$self->{'_div_stack'}}, undef;
         debug('hit on vanilla div tag');
         return $div_or;
