@@ -18,7 +18,7 @@ package WebDyne::Base;
 #
 sub BEGIN {$^W=0}
 use strict qw(vars);
-use vars qw($VERSION @EXPORT);
+use vars   qw($VERSION @EXPORT);
 use warnings;
 no warnings qw(uninitialized redefine once);
 
@@ -72,7 +72,7 @@ sub import {
 
     #  fn, fh we will write to
     #
-    my ($debug_fn,$debug_fh);
+    my ($debug_fn, $debug_fh);
 
 
     #  Environment var overrides all
@@ -111,7 +111,7 @@ sub import {
                         warn("unable to open file '$debug_fn', $!");
                         undef;
                     }
-             ));
+                ));
         }
         elsif (!$debug_fn) {
             warn(sprintf('no file name specified in DEBUG hash %s', Dumper($debug_hr)));
@@ -128,7 +128,7 @@ sub import {
                     warn("unable to open file '$debug_fn', $!");
                     undef;
                 }
-        ));
+            ));
     }
 
 
@@ -152,10 +152,11 @@ sub import {
                 }
             }
             else {
-                CORE::print $debug_fh "[$subroutine] ", $_[1] ? sprintf(shift(), @_ ) : $_[0], $/;
+                CORE::print $debug_fh "[$subroutine] ", $_[1] ? sprintf(shift(), @_) : $_[0], $/;
             }
-        }   unless UNIVERSAL::can($caller, 'debug');
-        *{"${caller}::Dumper"}=\&Data::Dumper::Dumper 
+            }
+            unless UNIVERSAL::can($caller, 'debug');
+        *{"${caller}::Dumper"}=\&Data::Dumper::Dumper
             unless UNIVERSAL::can($caller, 'Dumper');
 
     }
@@ -165,7 +166,7 @@ sub import {
         #
         *{"${caller}::debug"}=sub { }
             unless UNIVERSAL::can($caller, 'debug');
-        *{"${caller}::Dumper"}= sub { } 
+        *{"${caller}::Dumper"}=sub { }
             unless UNIVERSAL::can($caller, 'Dumper');
 
     }
@@ -417,7 +418,7 @@ sub errdump {
         formline $format[1], 'Date', scalar(localtime());
         formline $format[0];
         formline $format[1], 'Error', $message;
-        (formline $format[2], $message) if $message;
+        (formline $format[2], $message)        if $message;
         map {formline $format[2], $_} @message if @message;
         formline $format[0];
 

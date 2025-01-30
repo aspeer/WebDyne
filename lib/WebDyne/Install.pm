@@ -18,7 +18,7 @@ package WebDyne::Install;
 #
 sub BEGIN {$^W=0}
 use strict qw(vars);
-use vars qw($VERSION @EXPORT_OK @ISA);
+use vars   qw($VERSION @EXPORT_OK @ISA);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -119,6 +119,7 @@ sub uninstall {
         message "removing cache directory '$cache_dn'";
         rmdir $cache_dn unless ($cache_dn eq File::Spec->tmpdir);
     }
+
     #if ($prefix) {
     #    message "updating perl5lib config.";
     #    &perl5lib::del($prefix) if $prefix;
@@ -155,7 +156,7 @@ sub install {
         #
         message "creating cache directory '$cache_dn'.";
         File::Path::mkpath($cache_dn, 0, 0755) || do {
-            return err ("unable to create dir $cache_dn") unless (-d $cache_dn)
+            return err("unable to create dir $cache_dn") unless (-d $cache_dn)
         };
 
     }

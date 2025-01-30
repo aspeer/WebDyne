@@ -17,7 +17,7 @@ package WebDyne::Constant;
 #  Pragma
 #
 use strict qw(vars);
-use vars qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
+use vars   qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
 use warnings;
 no warnings qw(uninitialized);
 local $^W=0;
@@ -38,9 +38,9 @@ $VERSION='2.002_58801625';
 
 #  Get mod_perl version. Clear $@ after evals
 #
-eval     {require mod_perl2 if ($ENV{'MOD_PERL_API_VERSION'} == 2)} ||
-    eval {require Apache2   if $ENV{'MOD_PERL'}=~/1.99/}            ||
-    eval {require mod_perl  if $ENV{'MOD_PERL'}};
+eval {require mod_perl2 if ($ENV{'MOD_PERL_API_VERSION'} == 2)} ||
+    eval {require Apache2 if $ENV{'MOD_PERL'}=~/1.99/} ||
+    eval {require mod_perl if $ENV{'MOD_PERL'}};
 eval {undef} if $@;
 my $Mod_perl_version=$mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION};
 my $MP2=($Mod_perl_version > 1.99) ? 1 : 0;
@@ -161,12 +161,10 @@ my %constant_temp;
     WEBDYNE_DUMP_FLAG => 0,
 
 
-
-
     #  Content-type for text/html. Combined with charset to produce Content-type header
     #
     WEBDYNE_CONTENT_TYPE_HTML => do {
-        $constant_temp{'webdyne_content_type_html'} = 'text/html'
+        $constant_temp{'webdyne_content_type_html'}='text/html'
     },
 
 
@@ -178,17 +176,16 @@ my %constant_temp;
     #  Encoding
     #
     WEBDYNE_HTML_CHARSET => do {
-        $constant_temp{'webdyne_html_charset'} = 'UTF-8'
+        $constant_temp{'webdyne_html_charset'}='UTF-8'
     },
 
 
     #  DTD to use when generating HTML
     #
-    WEBDYNE_DTD     => '<!DOCTYPE html>',
-    WEBDYNE_META    => {
-        charset     => $constant_temp{'webdyne_html_charset'}
+    WEBDYNE_DTD  => '<!DOCTYPE html>',
+    WEBDYNE_META => {
+        charset => $constant_temp{'webdyne_html_charset'}
     },
-
 
 
     #  Include a Content-Type meta tag ?
@@ -198,7 +195,7 @@ my %constant_temp;
 
     #  Default <html> tag paramaters, eg { lang	=>'en-US' }
     #
-    WEBDYNE_HTML_PARAM => { lang => 'en' },
+    WEBDYNE_HTML_PARAM => {lang => 'en'},
 
 
     #  Ignore ignorable whitespace in compile. Play around with these settings if
@@ -211,7 +208,7 @@ my %constant_temp;
 
     # Other Compile settings
     #
-    WEBDYNE_COMPILE_P_STRICT => 1,
+    WEBDYNE_COMPILE_P_STRICT            => 1,
     WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG => 1,
 
 
@@ -303,45 +300,45 @@ my %constant_temp;
     #
     WEBDYNE_ERROR_SHOW_ALTERNATE =>
         'error display disabled - enable WEBDYNE_ERROR_SHOW to show errors, or review web server error log.',
-        
-        
-    #  Default title 
+
+
+    #  Default title
     #
     WEBDYNE_HTML_DEFAULT_TITLE => 'Untitled Document',
-    
-    
+
+
     #  HTML Tiny mode, XML or HTML
     #
-    WEBDYNE_HTML_TINY_MODE	=> 'html',
+    WEBDYNE_HTML_TINY_MODE => 'html',
 
 
     #  Development mode - recompile loaded modules
     #
     WEBDYNE_RELOAD => 0,
-    
-    
+
+
     #  Use JSON canonical mode ?
     #
     WEBDYNE_JSON_CANONICAL => 1,
-    
-    
+
+
     #  Headers
     #
     WEBDYNE_HTTP_HEADER => {
-    
-        'Content-Type'          => sprintf('%s; %s', @constant_temp{qw(webdyne_content_type_html webdyne_html_charset)}),
-        'Cache-Control'         => 'no-cache, no-store, must-revalidate',
-        'Pragma'                => 'no-cache',
-        'Expires'               => '0',
-        'X-Content-Type-Options' => 'nosniff',
-        'X-Frame-Options'       => 'SAMEORIGIN',
+
+        'Content-Type'              => sprintf('%s; %s', @constant_temp{qw(webdyne_content_type_html webdyne_html_charset)}),
+        'Cache-Control'             => 'no-cache, no-store, must-revalidate',
+        'Pragma'                    => 'no-cache',
+        'Expires'                   => '0',
+        'X-Content-Type-Options'    => 'nosniff',
+        'X-Frame-Options'           => 'SAMEORIGIN',
         'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains; preload',
-        'Content-Security-Policy' => "default-src 'self'; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';",
-        'Referrer-Policy'       => 'strict-origin-when-cross-origin',
-        
+        'Content-Security-Policy'   => "default-src 'self'; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';",
+        'Referrer-Policy'           => 'strict-origin-when-cross-origin',
+
     },
-    
-    
+
+
     #  Mod_perl level. Do not change unless you know what you are
     #  doing.
     #
@@ -465,7 +462,7 @@ sub local_constant_cn {
     else {
         $local_constant_cn=File::Spec->catfile(
             File::Spec->rootdir(), 'etc', $local_constant_fn
-            )
+        )
     }
     return $local_constant_cn;
 

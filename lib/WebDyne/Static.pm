@@ -18,7 +18,7 @@ package WebDyne::Static;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars qw($VERSION);
+use vars   qw($VERSION);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -52,8 +52,8 @@ sub import {
     #  Will only work if called from within a __PERL__ block in WebDyne
     #
     my $self_cr=UNIVERSAL::can(scalar caller, 'self') || return;
-    my $self=$self_cr->() || return;
-    my $meta_hr=$self->meta() || return err ();
+    my $self=$self_cr->()                             || return;
+    my $meta_hr=$self->meta()                         || return err();
     $meta_hr->{'static'}=1;
 
 }

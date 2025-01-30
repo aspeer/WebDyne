@@ -36,7 +36,7 @@ sub BEGIN {
     }
 }
 use strict qw(vars);
-use vars qw($VERSION);
+use vars   qw($VERSION);
 
 
 #  Use the base modules
@@ -53,9 +53,9 @@ use Data::Dumper;
 use File::Find;
 use File::Spec;
 use IO::File;
-use Cwd qw(realpath);
-use File::Temp qw(tempfile);
-use File::Copy qw(move);
+use Cwd                 qw(realpath);
+use File::Temp          qw(tempfile);
+use File::Copy          qw(move);
 use ExtUtils::MakeMaker qw(prompt);
 
 
@@ -93,9 +93,9 @@ sub main {
             man
             directory:s
             yes
-            ));
+        ));
     pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
-    pod2usage(-verbose => 2) if $opt{'man'};
+    pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {print "$Script version: $VERSION\n"; exit 0};
 
 
@@ -145,14 +145,14 @@ sub main {
     else {
         $webdyne_pm=File::Spec->catfile($webdyne_dn, 'WebDyne.pm');
         unless (-f $webdyne_pm) {
-            return err ("unable to find Webdyne.pm in directory: $webdyne_dn !");
+            return err("unable to find Webdyne.pm in directory: $webdyne_dn !");
         }
     }
     if (!$debug_fn || ($debug_fn && ($webdyne_pm=~/\Q$debug_fn\E$/))) {
         $debug_cr->($webdyne_pm) ||
-            return err ();
+            return err();
         &status($webdyne_pm, $webdyne_dn) ||
-            return err ();
+            return err();
         $webdyne_fn{$webdyne_pm}++;
     }
 
@@ -177,9 +177,9 @@ sub main {
             return unless $File::Find::name=~/\Q$debug_fn\E$/
         }
         $debug_cr->($File::Find::name) ||
-            return err ();
+            return err();
         &status($File::Find::name, $webdyne_display_dn) ||
-            return err ();
+            return err();
     };
     find($wanted_cr, $webdyne_dn);
 
@@ -195,7 +195,7 @@ sub main {
 sub enable {
 
     my $fn=shift();
-    my $fh=IO::File->new($fn, O_RDONLY) || return err (
+    my $fh=IO::File->new($fn, O_RDONLY) || return err(
         "unable to open file $fn for read, $!"
     );
     my ($temp_fh, $temp_fn)=tempfile();
@@ -208,7 +208,7 @@ sub enable {
             }
         }
         print $temp_fh $line or
-            return err ("unable to print to temp file handle, $!");
+            return err("unable to print to temp file handle, $!");
     }
     $fh->close();
     $temp_fh->close();
@@ -222,7 +222,7 @@ sub enable {
             chmod($perm | 0600, $fn);
         }
         move($temp_fn, $fn) ||
-            return err ("unable to move $temp_fn=>$fn, $!");
+            return err("unable to move $temp_fn=>$fn, $!");
         chmod($perm, $fn) if $perm;
     }
 
@@ -234,7 +234,7 @@ sub enable {
 sub disable {
 
     my $fn=shift();
-    my $fh=IO::File->new($fn, O_RDONLY) || return err (
+    my $fh=IO::File->new($fn, O_RDONLY) || return err(
         "unable to open file $fn for read, $!"
     );
     my ($temp_fh, $temp_fn)=tempfile();
@@ -251,7 +251,7 @@ sub disable {
             }
         }
         print $temp_fh $line or
-            return err ("unable to print to temp file handle, $!");
+            return err("unable to print to temp file handle, $!");
     }
     $fh->close();
     $temp_fh->close();
@@ -265,7 +265,7 @@ sub disable {
             chmod($perm | 0600, $fn);
         }
         move($temp_fn, $fn) ||
-            return err ("unable to move $temp_fn=>$fn, $!");
+            return err("unable to move $temp_fn=>$fn, $!");
         chmod($perm, $fn) if $perm;
     }
 

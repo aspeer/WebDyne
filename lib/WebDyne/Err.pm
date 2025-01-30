@@ -17,7 +17,7 @@ package WebDyne::Err;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars qw($VERSION);
+use vars   qw($VERSION);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -85,9 +85,9 @@ sub err_html {
     #  Get errstr from stack if not supplied, or add if it
     #  has been
     #
-    if ($errstr) {err ($errstr)}
+    if ($errstr) {err($errstr)}
     else {
-        $errstr=errstr() || do {err ($_='undefined error from handler'); $_}
+        $errstr=errstr() || do {err($_='undefined error from handler'); $_}
     }
 
     #$errstr ? err($errstr) : ($errstr=errstr() || do {err($_='undefined error from handler'); $_});
@@ -268,8 +268,8 @@ sub err_html {
         #
         if ($@ || !$status) {
             debug("unable to render HTML template, reverting to text");
-                err ($@) if $@;
-                err ('previous error stack %s', Data::Dumper::Dumper(\@errstack));
+            err($@) if $@;
+            err('previous error stack %s', Data::Dumper::Dumper(\@errstack));
             my $webdyne_error_text_save=$WEBDYNE_ERROR_TEXT;
             $WEBDYNE_ERROR_TEXT=1;
             $status=$self->err_html($errstr);

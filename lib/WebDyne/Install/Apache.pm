@@ -19,7 +19,7 @@ package WebDyne::Install::Apache;
 #
 sub BEGIN {$^W=0}
 use strict qw(vars);
-use vars qw($VERSION);
+use vars   qw($VERSION);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -98,11 +98,11 @@ sub install {
     #
     unless ($Uninstall_fg) {
         WebDyne::Install->install($prefix, $installbin_dn) ||
-            return err ();
+            return err();
     }
     else {
         WebDyne::Install->uninstall($prefix, $installbin_dn) ||
-            return err ();
+            return err();
     }
 
 
@@ -114,7 +114,7 @@ sub install {
     #  Load constants, get full path for class and constants from INC
     #
     $class_dn=$INC{$class_dn} ||
-        return err ("unable to find location for $class in \%INC");
+        return err("unable to find location for $class in \%INC");
 
 
     #  Get file name component, then cut file out to get directory,
@@ -147,7 +147,7 @@ sub install {
 
     #  Cannot do anything without Apache binary
     #
-    return err ("unable to find apache binary")
+    return err("unable to find apache binary")
         unless $config_hr->{'HTTPD_BIN'};
 
 
@@ -165,23 +165,23 @@ sub install {
         type   => 'FILE',
         source => $template_fn,
 
-    ) || return err ("unable to open template $template_fn, $!");
+    ) || return err("unable to open template $template_fn, $!");
 
 
     #  Fill in with out self ref as a hash
     #
     my $webdyne_conf=$template_or->fill_in(
 
-        HASH => $config_hr,
+        HASH       => $config_hr,
         DELIMITERS => ['<!--', '-->'],
 
-    ) || return err ("unable to fill in template $template_fn, $Text::Template::ERROR");
+    ) || return err("unable to fill in template $template_fn, $Text::Template::ERROR");
 
 
     #  Get apache config dir
     #
     my $apache_conf_dn=$config_hr->{'DIR_APACHE_CONF'} ||
-        return err ('unable to determine Apache config directory');
+        return err('unable to determine Apache config directory');
 
 
     #  Work out config file name
@@ -195,7 +195,7 @@ sub install {
     unless ($Uninstall_fg) {
         message "writing Apache config file '$webdyne_conf_fn'.";
         my $webdyne_conf_fh=$opt_hr->{'text'} ? *STDOUT : IO::File->new($webdyne_conf_fn, O_CREAT | O_WRONLY | O_TRUNC) ||
-            return err ("unable to open file $webdyne_conf_fn, $!");
+            return err("unable to open file $webdyne_conf_fn, $!");
         print $webdyne_conf_fh $webdyne_conf;
         $webdyne_conf_fh->close();
     }
@@ -218,13 +218,13 @@ sub install {
         #  Get Apache config file, append root if not absolute
         #
         my $apache_conf_fn=$config_hr->{'HTTPD_SERVER_CONFIG_FILE'} ||
-            return err ("unable to determine main server config file");
+            return err("unable to determine main server config file");
         ($apache_conf_fn=~/^\//) || (
             $apache_conf_fn=File::Spec->catfile(
                 $config_hr->{'HTTPD_ROOT'}, $apache_conf_fn
             ));
         my $apache_conf_fh=$opt_hr->{'text'} ? *STDOUT : IO::File->new($apache_conf_fn, O_RDONLY) ||
-            return err ("unable to open file $apache_conf_fn, $!");
+            return err("unable to open file $apache_conf_fn, $!");
         message "Apache config file '$apache_conf_fn'";
 
 
@@ -247,7 +247,7 @@ sub install {
         #
         if (@delim != 2 and @delim != 0) {
 
-            return err (
+            return err(
                 "found %s '$delim' delimiter%s in $apache_conf_fn at line%s %s, expected exactly 2 delimiters",
                 scalar @delim,
                 ($#delim ? 's' : '') x 2,
@@ -326,17 +326,17 @@ sub install {
                 type   => 'FILE',
                 source => $template_fn,
 
-            ) || return err ("unable to open template $template_fn, $!");
+            ) || return err("unable to open template $template_fn, $!");
 
 
             #  Fill in with out self ref as a hash
             #
             my $apache_conf=$template_or->fill_in(
 
-                HASH => $config_hr,
+                HASH       => $config_hr,
                 DELIMITERS => ['<!--', '-->'],
 
-            ) || return err ("unable to fill in template $template_fn, $Text::Template::ERROR");
+            ) || return err("unable to fill in template $template_fn, $Text::Template::ERROR");
 
 
             #  Splice in now, but write out at end of block
@@ -352,7 +352,7 @@ sub install {
         #
         unless ($Uninstall_fg && ($delim[0] == $delim[1])) {
             $apache_conf_fh=IO::File->new($apache_conf_fn, O_TRUNC | O_WRONLY) ||
-                return err ("unable to open file $apache_conf_fn, $!");
+                return err("unable to open file $apache_conf_fn, $!");
             print $apache_conf_fh join('', @apache_conf);
             $apache_conf_fh->close();
             message "Apache config file '$apache_conf_fn' updated.";
@@ -379,7 +379,7 @@ sub install {
                 message
                     "Granting Apache ($APACHE_UNAME.$APACHE_GNAME) ownership of cache directory '$cache_dn'.";
                 chown($APACHE_UID, $APACHE_GID, $cache_dn) ||
-                    return err ("unable to chown $cache_dn to $APACHE_UNAME.$APACHE_GNAME");
+                    return err("unable to chown $cache_dn to $APACHE_UNAME.$APACHE_GNAME");
 
 
                 #  Selinx fixup

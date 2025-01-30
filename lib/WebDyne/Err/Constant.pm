@@ -17,7 +17,7 @@ package WebDyne::Err::Constant;
 #  Pragma
 #
 use strict qw(vars);
-use vars qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
+use vars   qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
 use warnings;
 no warnings qw(uninitialized);
 local $^W=0;

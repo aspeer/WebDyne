@@ -242,7 +242,7 @@ sub httpd_bin {
     unless ($httpd_bin=$ENV{'HTTPD_BIN'}) {
 
         my @dir=grep {-d $_} split(Env::Path->PathSeparator, $path);
-        my %dir=map {$_ => 1} @dir;
+        my %dir=map  {$_ => 1} @dir;
         DIR: foreach my $dir (@dir) {
             next unless delete $dir{$dir};
             next unless -d $dir;
@@ -280,7 +280,7 @@ sub find_bin {
     my $fn;
     unless ($fn=$ENV{"${bin}_BIN"}) {
         my @dir=grep {-d $_} split(Env::Path->PathSeparator, $path);
-        my %dir=map {$_ => 1} @dir;
+        my %dir=map  {$_ => 1} @dir;
         foreach my $dir (@dir) {
             next unless delete $dir{$dir};
             next unless -d $dir;
@@ -326,7 +326,7 @@ sub httpd_config {
         $value ||= '';
         $value=~s/^\"//;
         $value=~s/\"$//;
-        $key=~/^HTTPD/ || ($key="HTTPD_${key}");
+        $key=~/^HTTPD/       || ($key="HTTPD_${key}");
         $config{$key}=$value || 1;
 
     }

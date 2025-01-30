@@ -17,7 +17,7 @@
 #  Dump the compiled version of WebDyne HTML scripts, as stored in the cache dir
 #
 use strict qw(vars);
-use vars qw($VERSION);
+use vars   qw($VERSION);
 
 
 #  Use the base module
@@ -61,7 +61,7 @@ sub main {
     GetOptions(\%opt, 'help|?', 'man', 'version') ||
         pod2usage(2);
     pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
-    pod2usage(-verbose => 2) if $opt{'man'};
+    pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {print "$Script version: $VERSION\n"; exit 0};
 
     #  Get srce file

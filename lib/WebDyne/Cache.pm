@@ -17,7 +17,7 @@ package WebDyne::Cache;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars qw($VERSION);
+use vars   qw($VERSION);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -52,9 +52,9 @@ sub import {
     #
     my ($class, @param)=@_;
     my $self_cr=UNIVERSAL::can(scalar caller, 'self') || return;
-    my $self=$self_cr->() || return;
+    my $self=$self_cr->()                             || return;
     my %param=(@param == 1) ? (cache => @param) : @param;
-    my $meta_hr=$self->meta() || return err ();
+    my $meta_hr=$self->meta() || return err();
     $meta_hr->{'cache'}=$param{'cache'};
 
 }

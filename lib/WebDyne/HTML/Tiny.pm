@@ -17,7 +17,7 @@ package WebDyne::HTML::Tiny;
 #  Pragma
 #
 use strict qw(vars);
-use vars qw($VERSION);
+use vars   qw($VERSION);
 use warnings;
 
 
@@ -42,8 +42,8 @@ use WebDyne::Base;
 #
 use constant {
 
-    URL_ENCODED     => 'application/x-www-form-urlencoded',
-    MULTIPART       => 'multipart/form-data'
+    URL_ENCODED => 'application/x-www-form-urlencoded',
+    MULTIPART   => 'multipart/form-data'
 
 };
 
@@ -84,18 +84,18 @@ sub new {
     else {
         %param=@param;
     }
-    
+
     #  Shortcuts (start_html, start_form etc.) enabled by default
     #
     &shortcut_enable() unless
         $param{'noshortcut'};
-        
-        
+
+
     #  Done
     #
     return $class->SUPER::new(@param);
-    
-}        
+
+}
 
 
 sub _init {
@@ -103,35 +103,36 @@ sub _init {
 
     #  Initialise various subs
     #
-    *HTML::Tiny::start= \&HTML::Tiny::open  || *HTML::Tiny::start; # || *HTML::Tiny::Start stops warning
-    *HTML::Tiny::end=   \&HTML::Tiny::close || *HTML::Tiny::end; # || as above
-    
+    *HTML::Tiny::start=\&HTML::Tiny::open || *HTML::Tiny::start;    # || *HTML::Tiny::Start stops warning
+    *HTML::Tiny::end=\&HTML::Tiny::close  || *HTML::Tiny::end;      # || as above
+
 
     #  Re-impliment CGI input shortcut tags
     #
     foreach my $tag (qw(textfield password_field filefield button submit reset defaults image_button hidden button)) {
 
         my %type=(
-            textfield       => 'text',
-            password_field  => 'password',
-            filefield       => 'file',
-            defaults        => 'submit',
-            image_button    => 'image',
-            button          => 'button'
+            textfield      => 'text',
+            password_field => 'password',
+            filefield      => 'file',
+            defaults       => 'submit',
+            image_button   => 'image',
+            button         => 'button'
         );
 
-        *{$tag}=sub { 
-            my ($s, $attr_hr)=(shift(),shift());
+        *{$tag}=sub {
+            my ($s, $attr_hr)=(shift(), shift());
             debug("s:$s, attr_hr:$attr_hr, param:%s", Dumper(\@_));
             if ($attr_hr) {
-                return $s->input({ type=>$type{$tag} || $tag, %{$attr_hr} }, @_);
+                return $s->input({type => $type{$tag} || $tag, %{$attr_hr}}, @_);
             }
             else {
-                return $s->input({ type=>$type{$tag} || $tag }, @_)
-            };
+                return $s->input({type => $type{$tag} || $tag}, @_)
+            }
 
-        } unless UNIVERSAL::can(__PACKAGE__, $tag);
-        
+            }
+            unless UNIVERSAL::can(__PACKAGE__, $tag);
+
     }
 
 
@@ -140,18 +141,18 @@ sub _init {
     foreach my $tag (qw(isindex)) {
 
         no strict qw(refs);
-        *{$tag}=sub { shift()->closed($tag, @_) }
+        *{$tag}=sub {shift()->closed($tag, @_)}
             unless UNIVERSAL::can(__PACKAGE__, $tag);
-        
+
     }
-    
-    
+
+
     #  Done return OK
     #
     return \1;
 
-}    
-    
+}
+
 
 sub shortcut {
 
@@ -164,22 +165,24 @@ sub shortcut {
     else {
         return $self->{'_shortcut'}
     }
-    
+
 }
 
 
 sub shortcut_disable {
 
     no warnings qw(redefine);
-    foreach my $sub (grep {/^(?:_start|_end)/} keys %{__PACKAGE__.'::'}) {
+    foreach my $sub (grep {/^(?:_start|_end)/} keys %{__PACKAGE__ . '::'}) {
         (my $sub_start=$sub)=~s/^_//;
+
         #print "disable $sub_start=>$sub";
-        if (my ($action, $tag) = ($sub_start =~ /^(start|end)_([^:]+)$/)) {
+        if (my ($action, $tag)=($sub_start=~/^(start|end)_([^:]+)$/)) {
+
             #print "action: $action, tag: $tag\n";
-            *{$sub_start}=sub { shift()->$action($tag, @_) };
+            *{$sub_start}=sub {shift()->$action($tag, @_)};
         }
     }
-    *start_html=sub { shift()->_start_html_bare(@_) };
+    *start_html=sub {shift()->_start_html_bare(@_)};
 
 }
 
@@ -187,11 +190,13 @@ sub shortcut_disable {
 sub shortcut_enable {
 
     no warnings qw(redefine);
-    foreach my $sub (grep {/^(?:_start|_end])/} keys %{__PACKAGE__.'::'}) {
+    foreach my $sub (grep {/^(?:_start|_end])/} keys %{__PACKAGE__ . '::'}) {
         (my $sub_start=$sub)=~s/^_//;
+
         #print "enable $sub_start=>$sub";
         *{$sub_start}=\&{$sub};
     }
+
     #*start_html=\&_start_html_bare;
 
 }
@@ -201,20 +206,21 @@ sub shortcut_enable {
 #
 sub _start_html {
 
-    
+
     #  Get self ref and any attributes passed
     #
     my ($self, $attr_hr, @param)=@_;
     debug("$self _start_html, attr: %s, param: %s", Dumper($attr_hr, \@param));
+
     #return $self->SUPER::start_html($attr_hr, @param) if $self->{'_passthrough'};
-    
-    
+
+
     #  Attributes we are going to use
     #
     debug('WEBDYNE_HTML_PARAM: %s', Dumper($WEBDYNE_HTML_PARAM));
     my %attr=(
-        %{ $WEBDYNE_HTML_PARAM },
-        %{ $attr_hr }
+        %{$WEBDYNE_HTML_PARAM},
+        %{$attr_hr}
     );
     debug('attr: %s', Dumper(\%attr));
 
@@ -222,12 +228,12 @@ sub _start_html {
     #  If no attributes passed used defaults from constants file
     #
     #keys %{$attr_hr} || ($attr_hr=$WEBDYNE_HTML_PARAM);
-    
-    
+
+
     #  Pull out meta attributes leaving rest presumably native html tag attribs
     #
     #my %attr_page=map {$_=>delete $attr_hr->{$_}} qw(
-    my %attr_page=map {$_=>delete $attr{$_}} qw(
+    my %attr_page=map {$_ => delete $attr{$_}} qw(
         title
         meta
         style
@@ -241,75 +247,80 @@ sub _start_html {
     #  Start with the DTD
     #
     my @html=$WEBDYNE_DTD;
-    
-    
+
+
     #  Add meta section
     #
     my @meta;
     if (my $hr=$attr_page{'meta'}) {
         debug('have meta hr: %s', Dumper($hr));
-        @meta=$self->meta({ content=>$attr_page{'meta'} })
+        @meta=$self->meta({content => $attr_page{'meta'}})
     }
     else {
         debug('no meta run');
     }
+
     #  Logic error below
     #
     #my @meta=$self->meta({ content=>$attr_page{'meta'} })
     #    if $attr_page{'meta'};
     debug('meta: %s', Dumper(\@meta));
     while (my ($name, $content)=each %{$attr_page{'meta'}}) {
-        push @meta, $self->meta({ name=>$name, content=>$content });
+        push @meta, $self->meta({name => $name, content => $content});
     }
     while (my ($name, $content)=each %{$WEBDYNE_META}) {
-        push @meta, $self->meta({ $name=>$content });
+        push @meta, $self->meta({$name => $content});
     }
-    
-    
+
+
     #  Add any stylesheets
     #
     my @link;
-    if($attr_page{'style'}) {
-        push @link, $self->link({ rel=>'stylesheet', href=>$attr_page{'style' }} )
+    if ($attr_page{'style'}) {
+        push @link, $self->link({rel => 'stylesheet', href => $attr_page{'style'}})
     }
     if (my $author=$attr_page{'author'}) {
         $author=$self->url_encode($author);
-        push @link, $self->link({ rel=>'author', href=>sprintf('mailto:%s', $author) });
+        push @link, $self->link({rel => 'author', href => sprintf('mailto:%s', $author)});
     }
-    
-    
+
+
     #  Build head, adding a title section, empty if none specified
     #
-    my $head=$self->head(join($/,
-        grep {$_}
-        $self->title($attr_page{'title'} ? $attr_page{'title'} : $WEBDYNE_HTML_DEFAULT_TITLE),
-        @meta,
-        @link
-    ));
-    
-    
+    my $head=$self->head(
+        join(
+            $/,
+            grep {$_}
+                $self->title($attr_page{'title'} ? $attr_page{'title'} : $WEBDYNE_HTML_DEFAULT_TITLE),
+            @meta,
+            @link
+        ));
+
+
     #  Put all together and return
     #
     #push @html, $self->open('html', $attr_hr), $head . $self->open('body');
     push @html, $self->open('html', \%attr), $head . $self->open('body');
     debug('html: %s', Dumper(\@html));
     return join($/, @html);
-    
+
 }
 
 
 sub _end_html {
-    
+
     #  Stub for WebDyne UNIVERSAL::can to find
     #
     #shift()->SUPER::end_html(@_);
     my ($self, $attr_hr)=@_;
+
     #return $self->SUPER::end_html($attr_hr) if $self->{'_passthrough'};
     my @html;
     push @html, $self->close('body'), $self->close('html');
     return join($/, @html);
+
     #return shift()->close('html', @_);
-    
+
 }
 
 
@@ -328,8 +339,9 @@ sub _start_html_bare {
     #
     #die &Data::Dumper::Dumper(\@_);
     return $WEBDYNE_DTD . shift()->SUPER::open('html', @_);
+
     #return $WEBDYNE_DTD
-    
+
 }
 
 
@@ -342,18 +354,17 @@ sub _start_form {
         method  => 'post',
         enctype => +URL_ENCODED
     );
-    map { $attr_hr->{$_} ||= $default{$_} }
+    map {$attr_hr->{$_} ||= $default{$_}}
         keys %default;
     return $s->start('form', $attr_hr, @param);
 
 }
 
 
-
 #  Start multi-part form shortcut
 #
 sub _start_multipart_form {
-    return shift()->start_form({ enctype=>+MULTIPART, %{$_[0] ? shift() : {}} }, @_);
+    return shift()->start_form({enctype => +MULTIPART, %{$_[0] ? shift() : {}}}, @_);
 }
 
 
@@ -365,11 +376,11 @@ sub _end_multipart_form {
 #  Support CGI comment syntax. See aliasing to ~comment in top section
 #
 sub _comment {
-    
+
     my ($self, $attr_hr)=@_;
     debug("$self comment, attr:%s", Dumper($attr_hr));
     return sprintf('<!-- %s -->', $attr_hr->{'text'});
-    
+
 }
 
 
@@ -383,19 +394,20 @@ sub meta {
     if (ref($attr_hr->{'content'}) eq 'HASH') {
         debug('meta is HASH');
         while (my ($name, $content)=each %{$attr_hr->{'content'}}) {
-            if ((my ($key,$value)=split(/=/, $name))==2) {
+            if ((my ($key, $value)=split(/=/, $name)) == 2) {
+
                 #  Self contained
                 #
                 debug("split to $key: $value");
                 if ($content) {
-                    push @html, $self->SUPER::meta({ $key=>$value, content=>$content });
+                    push @html, $self->SUPER::meta({$key => $value, content => $content});
                 }
                 else {
-                    push @html, $self->SUPER::meta({ $key=>$value });
+                    push @html, $self->SUPER::meta({$key => $value});
                 }
             }
             else {
-                push @html, $self->SUPER::meta({ name=>$name, content=>$content });
+                push @html, $self->SUPER::meta({name => $name, content => $content});
             }
         }
     }
@@ -404,7 +416,7 @@ sub meta {
         push @html, $self->SUPER::meta($attr_hr)
     }
     return join($/, @html);
-    
+
 }
 
 
@@ -417,13 +429,13 @@ sub link {
     my @html;
     if (ref($attr_hr->{'href'}) eq 'ARRAY') {
         my $href_ar=delete($attr_hr->{'href'});
-        map { push @html, $self->SUPER::link({ %{$attr_hr}, href=>$_ }) } @{$href_ar}
+        map {push @html, $self->SUPER::link({%{$attr_hr}, href => $_})} @{$href_ar}
     }
     else {
         push @html, $self->SUPER::link($attr_hr)
     }
     return join($/, @html);
-    
+
 }
 
 
@@ -434,12 +446,12 @@ sub _radio_checkbox {
     #
     my ($self, $tag, $attr_hr)=@_;
     if (my $label=delete $attr_hr->{'label'}) {
-        return $self->label($self->input({ type=>$tag, %{$attr_hr} }) . $label);
+        return $self->label($self->input({type => $tag, %{$attr_hr}}) . $label);
     }
     else {
-        return $self->input({ type=>$tag, %{$attr_hr} });
+        return $self->input({type => $tag, %{$attr_hr}});
     }
-    
+
 }
 
 
@@ -456,13 +468,13 @@ sub _radio_checkbox_group {
     #  Hold generated HTML in array until end
     #
     my @html;
-    
-    
+
+
     #  Convert arrays of default values (i.e checked/enabled) and any disabled entries into hash - easier to check
     #
     my %attr_group;
     foreach my $attr (qw(defaults disabled)) {
-        map { $attr_group{$attr}{$_}=1 } @{(ref($attr_hr->{$attr}) eq 'ARRAY') ? $attr_hr->{$attr} : [$attr_hr->{$attr}] }
+        map {$attr_group{$attr}{$_}=1} @{(ref($attr_hr->{$attr}) eq 'ARRAY') ? $attr_hr->{$attr} : [$attr_hr->{$attr}]}
             if $attr_hr->{$attr};
     }
 
@@ -470,58 +482,63 @@ sub _radio_checkbox_group {
     #  If values is a hash not an array then convert to array and use hash as values
     #
     if (ref($attr_hr->{'values'}) eq 'HASH') {
-    
-        
+
+
         #  It's a hash - use as labels, and push keys to values
         #
         $attr_hr->{'labels'}=(my $hr=delete $attr_hr->{'values'});
         $attr_hr->{'values'}=[keys %{$hr}]
-      
+
     }
-    
-    
+
+
     #  Radio groups can only have one option checked. If multiple discard and only use first one in alphabetical order
     #
     if ($tag eq 'radio') {
-        %{$attr_group{'defaults'}}=map {$_=>$attr_group{'defaults'}{$_}} ([sort keys %{$attr_group{'defaults'}}]->[0])
+        %{$attr_group{'defaults'}}=map {$_ => $attr_group{'defaults'}{$_}} ([sort keys %{$attr_group{'defaults'}}]->[0])
             if $attr_group{'defaults'};
     }
-    
-    
+
+
     #  Now iterate and build actual tag, push onto HTML array
     #
     foreach my $value (@{$attr_hr->{'values'}}) {
-        my %attr_tag = $attr_hr->{'attributes'}{$value} ?
-            (%{ $attr_hr->{'attributes'}{$value} }) :
+        my %attr_tag=$attr_hr->{'attributes'}{$value}
+            ?
+            (%{$attr_hr->{'attributes'}{$value}})
+            :
             ();
         $attr_tag{'name'}=$attr_hr->{'name'} if $attr_hr->{'name'};
         $attr_tag{'value'}=$value;
-        
+
         #  Note use of empty array for checked and disabled values as per HTML::Tiny specs
-        $attr_tag{'checked'}=[] if $attr_group{'defaults'}{$value};
+        $attr_tag{'checked'}=[]  if $attr_group{'defaults'}{$value};
         $attr_tag{'disabled'}=[] if $attr_group{'disabled'}{$value};
-        $attr_tag{'label'}= $attr_hr->{'labels'}{$value} ? $attr_hr->{'labels'}{$value} : $value;
+        $attr_tag{'label'}=$attr_hr->{'labels'}{$value} ? $attr_hr->{'labels'}{$value} : $value;
         push @html, $self->_radio_checkbox($tag, \%attr_tag);
     }
-    
-    
+
+
     #  Return, separating with linebreaks if that is what is wanted.
     #
-    return join($attr_hr->{'linebreak'} ? $self->br() : '', @html); 
-    
+    return join($attr_hr->{'linebreak'} ? $self->br() : '', @html);
+
 }
+
 
 sub checkbox_group {
     return shift()->_radio_checkbox_group('checkbox', @_)
-}    
+}
+
 
 sub radio_group {
     return shift()->_radio_checkbox_group('radio', @_)
-}    
+}
+
 
 sub checkbox {
     return shift()->_radio_checkbox('checkbox', @_)
-}    
+}
 
 
 #  Popup menu or scrolling list
@@ -534,39 +551,38 @@ sub popup_menu {
     my ($self, $attr_hr)=@_;
     my %attr_select=%{$attr_hr};
     debug('in popup_menu: %s', Dumper($attr_hr));
-    
-    
+
 
     #  Hold generated HTML in array until end
     #
     my @html;
-    
+
 
     #  If values is a hash not an array then convert to array and use hash as values
     #
     if (ref($attr_select{'values'}) eq 'HASH') {
-    
-        
+
+
         #  It's a hash - use as labels, and push keys to values
         #
         $attr_select{'labels'}=(my $hr=delete $attr_select{'values'});
         $attr_select{'values'}=[keys %{$hr}]
-        
+
     }
-    
+
     #  Convert arrays of default values (i.e checked/enabled) and any disabled entries into hash - easier to check
     #
     my %attr_option=(
-        values		=> delete $attr_select{'values'},
-        attributes	=> delete $attr_select{'attributes'},
-        labels		=> delete $attr_select{'labels'}
-    );	
-    
-    
+        values     => delete $attr_select{'values'},
+        attributes => delete $attr_select{'attributes'},
+        labels     => delete $attr_select{'labels'}
+    );
+
+
     #  Carefully handle options
     #
     foreach my $attr (qw(default selected disabled)) {
-        
+
         next unless exists $attr_select{$attr};
         my @values;
         if (ref($attr_select{$attr}) eq 'ARRAY') {
@@ -576,7 +592,7 @@ sub popup_menu {
             #  Single value
             @values=($attr_select{$attr})
         }
-        
+
         unless ($attr eq 'disabled') {
             foreach my $value (@values) {
                 debug("value $value");
@@ -584,7 +600,7 @@ sub popup_menu {
             }
             delete $attr_select{$attr};
         }
-        else { # handle disabled attr carefully
+        else {    # handle disabled attr carefully
             if (@values) {
                 foreach my $value (@values) {
                     $attr_option{$attr}{$value}=1;
@@ -596,75 +612,80 @@ sub popup_menu {
             }
         }
     }
-            
-        
+
+
     #  Debug
     #
     debug('in popup_menu attr_option: %s', Dumper(\%attr_option));
-    
-    
+
+
     #  Convert 'defaults' key to 'selected'
     #
-    do { $attr_option{'selected'} ||= delete $attr_option{'defaults'} }
+    do {$attr_option{'selected'} ||= delete $attr_option{'defaults'}}
         if $attr_option{'defaults'};
-    
-    
+
+
     #  If disabled option is an array but is empty then it is meant for the parent tag
     #
     #if ($attr_option{'disabled'} && !@{$attr_option{'disabled'}}) {
     #if ($attr_option{'disabled'} && !@{$attr_options{'disabled'}}) {
     #if (exists $attr_option{'disabled'} && !(keys %{$attr_option{'disabled'}})) {
-    
-        #  Yes, it is empty, so user wants whole option disabled
-        #
+
+    #  Yes, it is empty, so user wants whole option disabled
+    #
     #    debug('disable entire popup_menu');
     #    $attr_select{'disabled'}=[]
 
     #}
     #else {
-    
+
     #    debug('deleting attr_select disabled attr');
     #    delete $attr_select{'disabled'};
-        
+
     #}
-    
+
     #map { delete $attr_select{$_} } (qw(default selected disabled));
-    
-    
+
+
     #  Fix multiple tag if true
     #
     $attr_select{'multiple'}=[] if $attr_select{'multiple'};
-    #map { delete $attr_select{$_} } (qw(default selected disabled));    
+
+    #map { delete $attr_select{$_} } (qw(default selected disabled));
     debug('in popup_menu attr_select: %s', Dumper(\%attr_select));
-    
+
 
     #  Now iterate and build actual tag, push onto HTML array
     #
     foreach my $value (@{$attr_option{'values'}}) {
-        my %attr_tag = $attr_option{'attributes'}{$value} ?
-            (%{ $attr_option{'attributes'}{$value} }) :
+        my %attr_tag=$attr_option{'attributes'}{$value}
+            ?
+            (%{$attr_option{'attributes'}{$value}})
+            :
             ();
         $attr_tag{'value'}=$value;
-        
+
         #  Note use of empty array for checked and disabled values as per HTML::Tiny specs
         $attr_tag{'selected'}=[] if $attr_option{'selected'}{$value};
         $attr_tag{'disabled'}=[] if $attr_option{'disabled'}{$value};
         my $label=$attr_option{'labels'}{$value} ? $attr_option{'labels'}{$value} : $value;
+
         #if ($label) {
         #    push @html, $self->label($self->option(\%attr_tag) . $label);
         #}
         #else {
-            debug("pushing option tag with label: $label, attr_tag: %s", Dumper(\%attr_tag));
-            push @html, $self->option(\%attr_tag, $label)
+        debug("pushing option tag with label: $label, attr_tag: %s", Dumper(\%attr_tag));
+        push @html, $self->option(\%attr_tag, $label)
+
         #}
     }
-    
-    
+
+
     #  Return
     #
     debug('creating select group with attr: %s, options:%s', Dumper(\%attr_select, \@html));
-    return $self->select(\%attr_select, join($/, @html)); 
-    
+    return $self->select(\%attr_select, join($/, @html));
+
 }
 
 
@@ -676,94 +697,99 @@ sub popup_menu0 {
     my ($self, $attr_hr)=@_;
     my %attr=%{$attr_hr};
     debug('in popup_menu: %s', Dumper($attr_hr));
-    
-    
+
 
     #  Hold generated HTML in array until end
     #
     my @html;
-    
+
 
     #  If values is a hash not an array then convert to array and use hash as values
     #
     if (ref($attr{'values'}) eq 'HASH') {
-    
-        
+
+
         #  It's a hash - use as labels, and push keys to values
         #
         $attr{'labels'}=(my $hr=delete $attr{'values'});
         $attr{'values'}=[keys %{$hr}]
-        
+
     }
-    
+
     #  Convert arrays of default values (i.e checked/enabled) and any disabled entries into hash - easier to check
     #
     my %attr_group=(
-        values		=> delete $attr{'values'},
-        attributes	=> delete $attr{'attributes'},
-        labels		=> delete $attr{'labels'}
-    );	
+        values     => delete $attr{'values'},
+        attributes => delete $attr{'attributes'},
+        labels     => delete $attr{'labels'}
+    );
     foreach my $attr (qw(default selected disabled)) {
-        map { $attr_group{$attr}{$_}=1 } @{(ref($attr{$attr}) eq 'ARRAY') ? $attr{$attr} : [$attr{$attr}] }
+        map {$attr_group{$attr}{$_}=1} @{(ref($attr{$attr}) eq 'ARRAY') ? $attr{$attr} : [$attr{$attr}]}
             if exists $attr{$attr};
+
         #delete $attr{$attr};
     }
+
     #unless ($attr_group{'labels'}) {
     #    $attr_group{'labels'}={
     #        map { $_=>$_ } @{$attr_group{'values'}}
     #    }
     #}
     debug('in popup_menu attr_group: %s', Dumper(\%attr_group));
-    
-    
+
+
     #  Convert 'defaults' key to 'selected'
     #
-    do { $attr_group{'selected'} ||= delete $attr_group{'defaults'} }
+    do {$attr_group{'selected'} ||= delete $attr_group{'defaults'}}
         if $attr_group{'defaults'};
-    
-    
+
+
     #  If disabled option is an array but is empty then it is meant for the parent tag
     #
     #if ($attr_group{'disabled'} && !@{$attr_group{'disabled'}}) {
     if (exists $attr_group{'disabled'} && !(keys %{$attr_group{'disabled'}})) {
-    
+
         #  Yes, it is empty, so user wants whole option disabled
         #
         $attr{'disabled'}=[]
 
     }
-    
-    
+
+
     #  Fix multiple tag if true
     #
     $attr{'multiple'}=[] if $attr{'multiple'};
-    
-    
+
+
     #  Now iterate and build actual tag, push onto HTML array
     #
     foreach my $value (@{$attr_group{'values'}}) {
-        my %attr_tag = $attr_group{'attributes'}{$value} ?
-            (%{ $attr_group{'attributes'}{$value} }) :
+        my %attr_tag=$attr_group{'attributes'}{$value}
+            ?
+            (%{$attr_group{'attributes'}{$value}})
+            :
             ();
         $attr_tag{'value'}=$value;
-        
+
         #  Note use of empty array for checked and disabled values as per HTML::Tiny specs
         $attr_tag{'selected'}=[] if $attr_group{'selected'}{$value};
         $attr_tag{'disabled'}=[] if $attr_group{'disabled'}{$value};
         my $label=$attr_group{'labels'}{$value} ? $attr_group{'labels'}{$value} : $value;
+
         #if ($label) {
         #    push @html, $self->label($self->option(\%attr_tag) . $label);
         #}
         #else {
-            push @html, $self->option(\%attr_tag, $label)
+        push @html, $self->option(\%attr_tag, $label)
+
         #}
     }
-    
-    
+
+
     #  Return
     #
-    return $self->select(\%attr, join($/, @html)); 
-    
+    return $self->select(\%attr, join($/, @html));
+
 }
 
 
@@ -772,14 +798,14 @@ sub scrolling_list {
     #  Only difference between popup_menu and scrolling list is size attrribute, which we calculate  -if
     #  supplied will overwrite calculated value
     #
-    return shift()->popup_menu({ size=>scalar @{$_[0]->{'values'}}, %{shift()}}, @_);
-    
+    return shift()->popup_menu({size => scalar @{$_[0]->{'values'}}, %{shift()}}, @_);
+
 }
 
 
 sub AUTOLOAD {
-    if (my ($action, $tag) = ($AUTOLOAD =~ /\:\:(start|end|open|close)_([^:]+)$/)) {
-        *{$AUTOLOAD}=sub { shift()->$action($tag, @_) };
+    if (my ($action, $tag)=($AUTOLOAD=~/\:\:(start|end|open|close)_([^:]+)$/)) {
+        *{$AUTOLOAD}=sub {shift()->$action($tag, @_)};
         return &{$AUTOLOAD}(@_);
     }
 }

@@ -17,7 +17,7 @@ package WebDyne::HTML::TreeBuilder;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars qw($VERSION @ISA %CGI_TAG_WEBDYNE %CGI_TAG_IMPLICIT %CGI_TAG_SPECIAL);
+use vars   qw($VERSION @ISA %CGI_TAG_WEBDYNE %CGI_TAG_IMPLICIT %CGI_TAG_SPECIAL);
 use warnings;
 no warnings qw(uninitialized redefine once);
 
@@ -55,31 +55,31 @@ $VERSION='2.002_58801625';
 debug("Loading %s version $VERSION", __PACKAGE__);
 
 
-#  Make a hash of our implictly closed tags. 
+#  Make a hash of our implictly closed tags.
 #
-%CGI_TAG_IMPLICIT=map { $_=>1 } (qw(
+%CGI_TAG_IMPLICIT=map {$_ => 1} (qw(
 
-    textfield
-    textarea
-    filefield
-    password_field
-    hidden
-    checkbox
-    checkbox_group
-    submit
-    reset
-    defaults
-    radio_group
-    popup_menu
-    scrolling_list
-    image_button
-    start_form
-    end_form
-    start_multipart_form
-    end_multipart_form
-    isindex
-    dump
-    json
+        textfield
+        textarea
+        filefield
+        password_field
+        hidden
+        checkbox
+        checkbox_group
+        submit
+        reset
+        defaults
+        radio_group
+        popup_menu
+        scrolling_list
+        image_button
+        start_form
+        end_form
+        start_multipart_form
+        end_multipart_form
+        isindex
+        dump
+        json
 
 ));
 
@@ -145,15 +145,15 @@ our ($Text_fg, $Line_no, $Line_no_next, $Line_no_start, $HTML_Perl_or);
 sub new {
 
     my $class=shift();
-    debug('in %s new(), class: %s', __PACKAGE__, ref($class) || $class );
+    debug('in %s new(), class: %s', __PACKAGE__, ref($class) || $class);
     my $self=$class->SUPER::new(@_) ||
         return err('unable to initialize from %s, using ISA: %s', ref($class) || $class, Dumper(\@ISA));
     $self->{'_html_tiny_or'}=
-        WebDyne::HTML::Tiny->new( mode=>'html' );
+        WebDyne::HTML::Tiny->new(mode => 'html');
     return $self;
-    
+
 }
-    
+
 
 sub parse_fh {
 
@@ -180,8 +180,8 @@ sub parse_fh {
     #  numbers and wedge in extra code
     #
     my $parse_cr=sub {
-    
-        
+
+
         #  Read in lines of HTML, allowing for "wedged" bits, e.g. from start_html
         #
         my $line;
@@ -193,7 +193,7 @@ sub parse_fh {
             $Line_no_next=$Line_no+@cr;
             debug("Line $Line_no, Line_no_next $Line_no_next, Line_no_start $Line_no_start cr %s", scalar @cr);
         }
-        
+
 
         #  To this or last line not processed by HTML::Parser properly (in one chunk) if no CR
         #
@@ -201,7 +201,7 @@ sub parse_fh {
             debug("add CR at EOF");
             $html.=$/ unless $html=~/(?:\r?\n|\r)$/;
         }
-        
+
 
         #  Done, return HTML
         #
@@ -333,19 +333,20 @@ sub tag_parse {
     }
 
 
-    elsif ((my($modifier, $tag_actual)=($tag=~/^(start_|end_)(.*)/i)) && ($method ne 'SUPER::text')) {
+    elsif ((my ($modifier, $tag_actual)=($tag=~/^(start_|end_)(.*)/i)) && ($method ne 'SUPER::text')) {
 
 
         #  Yes, is WebDyne tag
         #
         debug("webdyne tag start|end ($tag) dispatch, method $method");
-        if ($modifier=~/end_/) { 
-           debug('end tag so changing method to SUPER::end');
-           $method='SUPER::end' 
+        if ($modifier=~/end_/) {
+            debug('end tag so changing method to SUPER::end');
+            $method='SUPER::end'
         }
+
         #if (UNIVERSAL::can('WebDyne::HTML::Tiny', $tag) {
         $html_or=$self->tag_parse($method, $tag_actual, $attr_hr);
-        
+
 
     }
 
@@ -436,17 +437,18 @@ sub script {
     debug("$self script, attr: %s", Dumper($attr_hr));
     my $script_or=$self->$method($tag, $attr_hr, @param);
     if ($attr_hr->{'type'} eq 'application/perl') {
-    
+
         my $perl_or=HTML::Element->new('perl', inline => 1);
         push @{$self->{'_script_stack'}}, [$script_or, 'perl', $perl_or];
         debug('perl script !');
 
     }
     else {
-        
+
         push @{$self->{'_script_stack'}}, undef;
-        $Text_fg ||='script';
+        $Text_fg ||= 'script';
     }
+
     #$self->$method($tag, $attr_hr, @param);
     return $script_or;
 
@@ -459,7 +461,7 @@ sub json {
     #  No special handling needed, just log for debugging purposes
     #
     my ($self, $method)=(shift, shift);
-    $Text_fg ||='json';
+    $Text_fg ||= 'json';
     debug("json self $self, method $method, @_ text_fg $Text_fg");
     $self->$method(@_);
 
@@ -470,7 +472,7 @@ sub style {
 
     my ($self, $method)=(shift, shift);
     debug('style');
-    $Text_fg ||='style';
+    $Text_fg ||= 'style';
     $self->$method(@_);
 
 }
@@ -500,7 +502,7 @@ sub perl {
         #  added here
         #
         $HTML_Perl_or=$html_perl_or;
-        $Text_fg ||='perl';
+        $Text_fg ||= 'perl';
 
 
         #  And return it
@@ -546,7 +548,7 @@ sub start {
     my $text=$_[2];
     ref($tag) || ($tag=lc($tag));
     debug("$self start tag '$tag' Line_no $Line_no, @_, %s", Data::Dumper::Dumper(\@_));
-    
+
     my $html_or;
     if ($Text_fg) {
         $html_or=$self->text($text)
@@ -582,46 +584,46 @@ sub end {
     #  Div tag gets handles specially as start tag might have been a webdyne tag aliases into a div tag (see div tag for more details)
     #
     if ($tag eq 'div') {
-    
+
         #  Hit on div, check
         #
         debug("hit on div tag: $tag");
-        
-        
+
+
         #  Can we pop an array ref off div_stack ? If so means was webdyne tag
         #
         #if (my $div_ar=pop(@div_stack)) {
         if (my $div_ar=pop(@{$self->{'_div_stack'}})) {
-        
-            
+
+
             #  Yes, separate out to components stored by div subroutine
             #
             my ($div_or, $webdyne_tag, $webdyne_tag_or)=@{$div_ar};
             debug("popped div tag: $div_or, %s, about to end webdyne tag: $webdyne_tag (%s)", $div_or->tag(), $webdyne_tag_or->tag());
-            
-            
+
+
             #  Set the Text_fg to whatever the webdyne tag was (e.g. perl, etc), that way they will see a match and
             #  turn off text mode. NOTE: Not sure this works ?
             #
             $Text_fg &&= $webdyne_tag_or->tag();
             debug("Text_fg now $Text_fg, ending $webdyne_tag");
             $self->SUPER::end($webdyne_tag, @_);
-            
+
             #  Now end the original div tag
             #
             debug("ending $tag now");
             $ret=$self->SUPER::end($tag, @_);
-            
-            
+
+
             #  Can now unset text flag. See NOTE above, need to check this
             #
             $Text_fg=undef;
-            
-            
+
+
             #  Now replace div tag with webdyne output unless a wrap attribute exists or class etc. given - in which
             #  case the output will be wrapped in that tag and any class, style or id tags presevered
             #
-            my @div_attr_name=grep { $div_or->attr($_) } qw(class style id);
+            my @div_attr_name=grep {$div_or->attr($_)} qw(class style id);
             if ((my $tag=$div_or->attr('wrap')) || @div_attr_name) {
 
                 #  Want to wrap output in another tag or use <div> if class etc. given but no tag
@@ -629,14 +631,14 @@ sub end {
                 $tag ||= 'div';
                 $webdyne_tag_or->push_content($div_or->detach_content());
                 my %tag_attr=(
-                    map { $_ => $div_or->attr($_) }
-                    @div_attr_name
+                    map {$_ => $div_or->attr($_)}
+                        @div_attr_name
                 );
                 debug("tag: $tag, tag_attr: %s", Dumper(\%tag_attr));
                 my $tag_or=HTML::Element->new($tag, %tag_attr);
                 $tag_or->push_content($webdyne_tag_or);
                 $div_or->replace_with($tag_or);
-                
+
             }
             else {
                 $webdyne_tag_or->push_content($div_or->detach_content());
@@ -646,8 +648,8 @@ sub end {
 
         }
         else {
-        
-            
+
+
             #  Vanilla div tag, nothing to do
             #
             debug('undef pop off div stack');
@@ -655,7 +657,7 @@ sub end {
         }
     }
     elsif ($tag eq 'script') {
-    
+
 
         #  Script tag, presumablt of type application/perl
         #
@@ -665,47 +667,48 @@ sub end {
         #  Can we pop an array ref off script_stack ? If so means was webdyne tag
         #
         if (my $script_ar=pop(@{$self->{'_script_stack'}})) {
-        
-            
+
+
             #  Get vars from array ref
             #
             my ($script_or, $perl_tag, $perl_tag_or)=@{$script_ar};
             debug("popped script tag: $script_or, %s, about to end perl tag: $perl_tag (%s)", $script_or->tag(), $perl_tag_or->tag());
-            
-            
+
+
             #  End perl tag
             #
             debug("end $perl_tag now");
             $Text_fg &&= $perl_tag_or->tag();
             debug("Text_fg now $Text_fg, ending $perl_tag");
             $self->SUPER::end($perl_tag, @_);
-            
-            
+
+
             #  End script tag
             #
             debug("end $tag now");
-            $self->SUPER::end($tag,@_);
+            $self->SUPER::end($tag, @_);
             $Text_fg=undef;
-            
-            
+
+
             #  Re-arrange tree
             #
             debug('script content %s', Dumper($script_or->content_list));
+
             #$perl_tag_or->push_content($script_or->detach_content());
             $perl_tag_or->attr('perl', $script_or->detach_content());
             $script_or->replace_with($perl_tag_or);
             return 1;
 
         }
-        elsif(0) {
-            
+        elsif (0) {
+
             debug('null script stack pop, ignoring');
             $Text_fg=undef;
             return $ret=$self->SUPER::end($tag, @_);
         }
     }
-        
-        
+
+
     if ($Text_fg && ($tag eq $Text_fg)) {
         debug("match on tag $tag to Text_fg $Text_fg, clearing Text_fg");
         $Text_fg=undef;
@@ -719,8 +722,8 @@ sub end {
         debug("normal tag end");
         $ret=$self->SUPER::end($tag, @_)
     }
-    
-    
+
+
     #  Done, return
     #
     debug("end ret $ret");
@@ -740,17 +743,17 @@ sub text {
     #
     my ($self, $text)=@_;
     debug("text *$text*, text_fg $Text_fg, pos %s", $self->{'_pos'});
-    
-    
+
+
     #  Ignore empty text. UPDATE - don't ignore or you will mangle CR in <pre> sections, especially if they contain tags
-    #  like <span> in the <pre> section. Process and keep them inline. See also fact that trailing and leading CR's are 
+    #  like <span> in the <pre> section. Process and keep them inline. See also fact that trailing and leading CR's are
     #  converted to space characters by HTML::Parser as per convention.
     #
     #  Leave this here as a reminder.
     #
     #return if ($text =~ /^\r?\n?$/);
-    
-    
+
+
     #  Are we in an inline perl block ?
     #
     if ($Text_fg eq 'perl') {
@@ -804,7 +807,7 @@ sub text {
 
         #  Normal text, process by parent class after handling any subst flags in code
         #
-        if ($text =~ /([\$!+\^*]+)\{([\$!+]?)(.*?)\2\}/s) {
+        if ($text=~/([\$!+\^*]+)\{([\$!+]?)(.*?)\2\}/s) {
 
             #  Meeds subst. Get rid of cr's at start and end of text after a <perl> tag, stuffs up formatting in <pre> sections
             #
@@ -814,7 +817,7 @@ sub text {
                 debug("parent %s", $html_or->tag());
                 if (($html_or->tag() eq 'perl') && !$html_or->attr('inline')) {
                     debug('hit !');
-                    
+
                     #  Why did I comment this out ?
                     #
                     #$text=~s/^\n//;
@@ -855,8 +858,8 @@ sub comment {
     #
     my $self=shift()->SUPER::comment(@_);
     debug("$self comment: %s, tag: %s", Dumper(\@_));
-    
-    
+
+
     #  Change tag to 'comment' from '~comment' so we can call comment render sub in WebDyne::HTML::Tidy (can't call sub starting with ~ in perl)
     #
     #$self->tag('comment'); # No longer needed, make ~comment sub work in WebDyne::HTML::Tiny
@@ -872,7 +875,7 @@ sub start_html {
     my ($self, $method, $tag, $attr_hr)=@_;
     push @{$self->{'_html_wedge_ar'}}, (my $html=$self->{'_html_tiny_or'}->$tag($attr_hr));
     return $self;
-    
+
 }
 
 
@@ -901,16 +904,16 @@ sub div {
     #
     my ($self, $method, $tag, $attr_hr, @param)=@_;
     debug("$self in $tag, method:$method attr:%s", Dumper($attr_hr));
-    
-    
+
+
     #  Get the div tag HTML::Element ref
     #
     my $div_or=$self->$method($tag, $attr_hr, @param) ||
         return err('unable to get HTML::Element ref for div tag: $tag, attr:%s', Dumper($attr_hr));
-        
+
 
     #  Do we have a pseudo webdyne command aliased in a div tag with a "data-webdyne" attributre  (usually to keep a HTML editor happy
-    #  because it doesn't know anything about native webdyne tags 
+    #  because it doesn't know anything about native webdyne tags
     #
     if (my @tag=grep {/^data-webdyne-/} keys %{$attr_hr}) {
 
@@ -918,25 +921,25 @@ sub div {
         #  Yes, we have one, get it
         #
         my $webdyne_tag=$tag[0];
-        
-        
+
+
         #  And delete it from attribute list so it doesn't pollute, strip off data-webdyne lead
         #
         delete $attr_hr->{$webdyne_tag};
         $webdyne_tag=~s/^data-webdyne-//;
         debug("found webdyne tag $webdyne_tag in div");
-        
+
         #  Convert to a start tag for HTML Tiny
         #
         my $html_tiny_tag="start_${webdyne_tag}";
-        
-        
+
+
         #  Var to hold HTML::Element version of tag
         #
         my $webdyne_tag_or=$self->tag_parse('SUPER::start', $webdyne_tag, $attr_hr, @param) ||
             return err("unable to create HTML::Element ref for tag:$webdyne_tag, attr_hr:%s", Dumper($attr_hr));
-        
-        
+
+
         #  Now push onto div stack and return div HTML::Element ref
         #
         push @{$self->{'_div_stack'}}, [$div_or, $webdyne_tag, $webdyne_tag_or];
@@ -944,7 +947,7 @@ sub div {
 
     }
     else {
-    
+
         #  Normal div tag, push undef onto stack to denote vanilla
         #
         push @{$self->{'_div_stack'}}, undef;
@@ -952,7 +955,7 @@ sub div {
         return $div_or;
 
     }
-    
+
 }
 
 1;

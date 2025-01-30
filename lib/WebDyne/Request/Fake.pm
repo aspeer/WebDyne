@@ -18,7 +18,7 @@ package WebDyne::Request::Fake;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars qw($VERSION $AUTOLOAD);
+use vars   qw($VERSION $AUTOLOAD);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -77,7 +77,7 @@ sub headers_out {
         return ($r->{'headers_out'} ||= {});
     }
     else {
-        return err ('incorrect usage of %s headers_out object, r->headers_out(%s)', +__PACKAGE__, join(',', @_[1..$#_]));
+        return err('incorrect usage of %s headers_out object, r->headers_out(%s)', +__PACKAGE__, join(',', @_[1..$#_]));
     }
 
 }
@@ -110,7 +110,7 @@ sub log_error {
 sub lookup_file {
 
     my ($r, $fn)=@_;
-    my $r_child=ref($r)->new(filename => $fn) || return err ();
+    my $r_child=ref($r)->new(filename => $fn) || return err();
 
 }
 
@@ -153,7 +153,7 @@ sub notes {
         return ($r->{'_notes'} ||= {});
     }
     else {
-        return err ('incorrect usage of %s notes object, r->notes(%s)', +__PACKAGE__, join(',', @_[1..$#_]));
+        return err('incorrect usage of %s notes object, r->notes(%s)', +__PACKAGE__, join(',', @_[1..$#_]));
     }
 
 }
@@ -273,6 +273,7 @@ sub content_type {
 
     my ($r, $content_type)=@_;
     $r->{'headers_out'}{'Content-Type'}=$content_type;
+
     #CORE::print("Content-Type: $content_type\n");
 
 }

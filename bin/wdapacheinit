@@ -17,8 +17,8 @@
 #  Init Apache config files
 #
 use strict qw(vars);
-use vars qw($VERSION);
-use Cwd qw(realpath);
+use vars   qw($VERSION);
+use Cwd    qw(realpath);
 use WebDyne::Base;
 use Getopt::Long;
 use Pod::Usage;

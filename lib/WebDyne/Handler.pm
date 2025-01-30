@@ -17,7 +17,7 @@ package WebDyne::Handler;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars qw($VERSION);
+use vars   qw($VERSION);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -52,7 +52,7 @@ sub import {
     #
     my ($class, @param)=@_;
     my $self_cr=UNIVERSAL::can(scalar caller, 'self') || return;
-    my $self=$self_cr->() || return;
+    my $self=$self_cr->()                             || return;
     my %param=(@param == 1) ? (handler => @param) : @param;
     $self->set_handler($param{'handler'});
 
