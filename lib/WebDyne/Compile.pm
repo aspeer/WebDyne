@@ -592,11 +592,8 @@ sub optimise_one {
         #  Check to see if any of the attributes will require a subst to be carried out
         #
         my @subst_oper;
-
-        #my $subst_fg=grep { $_=~/([$|@|%|!|+|^|*]{1})\{([$|@|%|!|+|^|*]?)(.*?)\2\}/s && push (@subst_oper, $1) } values %{$attr_hr};
-        #my $subst_fg=grep { $_=~/([\$@%!+*^]){1}{(\1?)(.*?)\2}/ && push (@subst_oper, $1) } values %{$attr_hr};
         my $subst_fg=$data_ar->[$WEBDYNE_NODE_SBST_IX] || delete $attr_hr->{'subst'} ||
-            grep {$_=~/([\$@%!+*^]){1}{(\1?)(.*?)\2}/ && push(@subst_oper, $1)} values %{$attr_hr};
+            grep {$_=~/([\$@%!+*^])\{(\1?)(.*?)\2\}/ && push(@subst_oper, $1)} values %{$attr_hr};
 
 
         #  Do not subst comments
@@ -708,7 +705,7 @@ sub optimise_one {
 
         }
         else {
-            debug("not if 1");
+            debug('fell through node render, no webdyne, subst tags etc.');
         }
 
 
@@ -821,9 +818,8 @@ sub optimise_two {
 
         #  Check if this tag attributes will need substitution (eg ${foo});
         #
-        #my $subst_fg=grep { $_=~/([$|@|%|!|+|^|*]{1})\{([$|@|%|!|+|^|*]?)(.*?)\2\}/s } values %{$attr_hr};
         my $subst_fg=$data_ar->[$WEBDYNE_NODE_SBST_IX] || delete $attr_hr->{'subst'} ||
-            grep {$_=~/([\$@%!+*^]){1}{(\1?)(.*?)\2}/so} values %{$attr_hr};
+            grep {$_=~/([\$@%!+*^])\{(\1?)(.*?)\2\}/so} values %{$attr_hr};
 
 
         #  If subst_fg present, means we must do a subst on attr vars. Flag, also get static flag
@@ -1187,9 +1183,12 @@ sub parse {
 
 }
 
+
 sub html_tiny {
 
-    return (shift()->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new( mode=>'html')) ||
-        err('unable to instantiate new WebDybe::HTTP::Tiny object');
+    my $self=shift();
+    debug("$self html_tiny instantiate, mode:$WEBDYNE_HTML_TINY_MODE, existing: %s", $self->{'_html_tiny_or'});
+    return (shift()->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new( mode=>$WEBDYNE_HTML_TINY_MODE)) ||
+        err('unable to instantiate new WebDybe::HTML::Tiny object');
         
 }

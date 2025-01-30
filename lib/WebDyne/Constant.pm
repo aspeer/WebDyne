@@ -308,6 +308,11 @@ my %constant_temp;
     #  Default title 
     #
     WEBDYNE_HTML_DEFAULT_TITLE => 'Untitled Document',
+    
+    
+    #  HTML Tiny mode, XML or HTML
+    #
+    WEBDYNE_HTML_TINY_MODE	=> 'html',
 
 
     #  Development mode - recompile loaded modules
