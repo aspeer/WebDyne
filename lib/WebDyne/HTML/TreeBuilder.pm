@@ -131,7 +131,7 @@ push @HTML::TreeBuilder::p_closure_barriers, keys %CGI_TAG_WEBDYNE;
 
 #  Local vars neeeded for cross sub comms
 #
-our ($Text_fg, $Line_no, $Line_no_next, $Line_no_start, $HTML_Perl_or, @HTML_Wedge);
+our ($Text_fg, $Line_no, $Line_no_next, $Line_no_start, $HTML_Perl_or);
 
 
 #  All done. Positive return
@@ -150,7 +150,6 @@ sub new {
         return err('unable to initialize from %s, using ISA: %s', ref($class) || $class, Dumper(\@ISA));
     $self->{'_html_tiny_or'}=
         WebDyne::HTML::Tiny->new( mode=>'html' );
-    #die Dumper($self);
     return $self;
     
 }
@@ -174,7 +173,6 @@ sub parse_fh {
     undef $Line_no;
     undef $Line_no_start;
     undef $Line_no_next;
-    undef @HTML_Wedge;
 
 
     #  Return closure code ref that understands how to count line
@@ -186,7 +184,7 @@ sub parse_fh {
         #  Read in lines of HTML, allowing for "wedged" bits, e.g. from start_html
         #
         my $line;
-        my $html=@HTML_Wedge ? shift @HTML_Wedge : ($line=<$html_fh>);
+        my $html=@{$self->{'_html_wedge_ar'}} ? shift @{$self->{'_html_wedge_ar'}} : ($line=<$html_fh>);
         if ($line) {
             debug("line *$line*");
             my @cr=($line=~/\n/g);
@@ -234,7 +232,7 @@ sub delete {
     undef $Line_no;
     undef $Line_no_next;
     undef $Line_no_start;
-    undef @HTML_Wedge;
+    delete $self->{'_html_wedge_ar'};
 
 
     #  Run real deal from parent
@@ -329,9 +327,6 @@ sub tag_parse {
         #  Yes, is WebDyne tag
         #
         debug("webdyne tag_special ($tag) dispatch");
-        #die(Dumper($self));
-        #my $cgi_or=$self->CGI() ||
-        #    return err('unable to get CGI object');
         $html_or=$self->$tag($method, $tag, $attr_hr);
 
     }
@@ -722,7 +717,6 @@ sub end {
             debug('null script stack pop, ignoring');
             $Text_fg=undef;
             return $ret=$self->SUPER::end($tag, @_);
-            #return err('could not pop script stack !')
         }
     }
         
@@ -836,7 +830,9 @@ sub text {
                 debug("parent %s", $html_or->tag());
                 if (($html_or->tag() eq 'perl') && !$html_or->attr('inline')) {
                     debug('hit !');
-
+                    
+                    #  Why did I remove this again ?
+                    #
                     #$text=~s/^\n//;
                     #$text=~s/\n$//;
                 }
@@ -890,43 +886,14 @@ sub comment {
 sub start_html {
 
     my ($self, $method, $tag, $attr_hr)=@_;
-    push @HTML_Wedge, (my $html=$self->{'_html_tiny_or'}->$tag($attr_hr));
-    #die Dumper(\@HTML_Wedge);
+    push @{$self->{'_html_wedge_ar'}}, (my $html=$self->{'_html_tiny_or'}->$tag($attr_hr));
     return $self;
     
 }
 
+
 sub end_html {
     &start_html(@_);
-}
-
-
-sub start_html0 {
-
-    #  Need to handle this specially ..
-    my ($self, $method, $tag, $attr_hr)=@_;
-    debug('in start_html');
-    if ($WEBDYNE_CONTENT_TYPE_HTML_META) {
-        $attr_hr->{'head'} ||= &CGI::meta({"http-equiv" => "Content-Type", content => $WEBDYNE_CONTENT_TYPE_HTML})
-    }
-    #my $html=&CGI::start_html_cgi($attr_hr);
-    my $html=WebDyne::HTML::Tiny->new->start_html_cgi($attr_hr);
-    debug("html is $html");
-    push @HTML_Wedge, $html;
-    $self;
-}
-
-
-sub end_html0 {
-
-    #  Need to handle this specially ..
-    my ($self, $method, $tag, $attr_hr)=@_;
-    debug('in end_html');
-    #my $html=&CGI::end_html_cgi($attr_hr);
-    my $html=WebDyne::HTML::Tiny->new->end_html_cgi($attr_hr);
-    debug("html is $html");
-    push @HTML_Wedge, $html;
-    $self;
 }
 
 
