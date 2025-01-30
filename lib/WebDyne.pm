@@ -2434,42 +2434,39 @@ sub perl {
 
         #  Shift perl data_ar ref from stack
         #
-        shift @{$self->{'_perl'}};
+        #shift @{$self->{'_perl'}};
         
 
         #  Return if we want the data for a JSON tag (above)
         #
-        if ($attr_hr->{'json'}) {
-            return $html_sr
-        }
-
-
-        #  Modify return value if we were returned an array. COMMENTED OUT - is done in eval
-        #
-        #(ref($html_sr) eq 'ARRAY') && do {
-        #    $html_sr=\ join(undef, map { ref($_) ? ${$_} : $_ } @{$html_sr})
-        #};
-
-
-        #  Unless we have a scalar ref by now, the eval returned the
-        #  wrong type of value.
-        #
-        (ref($html_sr) eq 'SCALAR') || do {
-
-
-            #  Error occurred. Pop data ref off stack and return
-            #
-            #shift @{$self->{'_perl'}}; # Done above
-            return err ("error in perl method '$method'- code did not return a SCALAR ref value.");
-
-        };
-
-
-        #  Any printed data ?  COMMENTED OUT - is done in eval
-        #
-        #$self->{'_print_ar'} && do {
-        #    $html_sr=\ join(undef, grep {$_} map { ref($_) ? ${$_} : $_ } @{delete $self->{'_print_ar'}}) };
+        debug('attr: %s', Dumper($attr_hr));
+        if (!$attr_hr->{'json'}) {
+            if ((my $ref=ref($html_sr)) eq 'HASH') {
         
+                #  Render with HASH ref supplied.
+                #
+                debug('HASH ref detected, rendering');
+                $html_sr=$self->render(%{$html_sr}) ||
+                    return err();
+                    
+            }
+            elsif ($ref ne 'SCALAR') {
+        
+                # If not JSON or HASH ref should be scalar. If not error
+                #
+                return err ("error in perl method '$method'- code did not return a SCALAR ref value.");
+            }
+        
+        }
+        else {
+            debug('returning json data');
+        }
+        
+        
+        #  If get to here shift perl data_ar ref from stack
+        #
+        shift @{$self->{'_perl'}};
+
 
     }
     
@@ -3745,14 +3742,14 @@ sub PRINTF {
 
 sub DESTROY {
     my $self=shift();
-    debug("$self DESTROY %s", join('*', @_));
+    debug("$self DESTROY");
     delete ${$self}->{'_print_ar'};
 }
 
 
 sub UNTIE {
     my $self=shift();
-    debug("$self UNTIE %s", join('*', @_));
+    debug("$self UNTIE");
     delete ${$self}->{'_print_ar'};
 }
 
