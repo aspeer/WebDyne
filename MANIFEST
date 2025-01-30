@@ -258,6 +258,15 @@ t/data/perl_block.dat.5
 t/data/perl_block.dat.final
 t/data/perl_block.html
 t/data/perl_block.tree
+t/data/perl_hash.dat.0
+t/data/perl_hash.dat.1
+t/data/perl_hash.dat.2
+t/data/perl_hash.dat.3
+t/data/perl_hash.dat.4
+t/data/perl_hash.dat.5
+t/data/perl_hash.dat.final
+t/data/perl_hash.html
+t/data/perl_hash.tree
 t/data/perl_head.dat.0
 t/data/perl_head.dat.1
 t/data/perl_head.dat.2
@@ -515,6 +524,7 @@ t/json_bare.psp
 t/maketest.pl
 t/noninline.psp
 t/perl_block.psp
+t/perl_hash.psp
 t/perl_head.psp
 t/perl_inline_handler.psp
 t/perl_inline_simple.psp
