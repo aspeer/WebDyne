@@ -47,6 +47,7 @@ use Tie::IxHash;
 use Digest::MD5 qw(md5_hex);
 use File::Spec::Unix;
 use Data::Dumper;
+$Data::Dumper::Indent=1;
 use HTML::Entities qw(decode_entities);
 use CGI::Simple;
 use JSON;
@@ -579,12 +580,11 @@ sub handler : method {
 
     #  Debug
     #
-    #debug('about to render');
+    debug('about to render');
 
 
     #  Set default content type to text/html, can be overridden by render code if needed
     #
-    #$r->content_type('text/html');
     $r->content_type($WEBDYNE_CONTENT_TYPE_HTML);
 
 
@@ -915,7 +915,7 @@ sub init_class {
             }
             
             
-            #  Store code away for error handling
+            #  Store code away for error handling. Keep this and next bit to jog memory
             #
             #$Package{'_cache'}{$inode}{'eval_code'}{$data_ar}{$index}=$eval;
             
@@ -1136,11 +1136,18 @@ sub init_class {
     #  Code ref eval routine
     #
     my $eval_code_cr=sub {
-
+    
+    
+        #  Need to eval some code. Dispatch to perl code ref
+        #
         my ($self, $data_ar, $eval_param_hr, $eval_text, $index, $tag_fg)=@_;
         debug("eval code start $eval_text");
         my $html_ar=$eval_perl_cr->(@_) || return err ();
         debug("eval code finish %s", Dumper($html_ar));
+        
+        
+        #  We only accept first item of any array ref returned (which might be an array ref itself)
+        #
         my $html_sr=$html_ar->[0];
 
 
@@ -2239,6 +2246,7 @@ sub block {
 
 sub json {
 
+
     #  Called when we encounter a <json> tag
     #
     my ($self, $data_ar, $attr_hr, $param_data_hr, $text)=@_;
@@ -2594,7 +2602,6 @@ sub perl_init {
     *{"WebDyne::${inode}::AUTOLOAD"}=sub {die("unknown function $AUTOLOAD")};
 
 
-
     #  Run each piece of perl code
     #
     foreach my $ix (0..$#{$perl_ar}) {
@@ -2747,7 +2754,6 @@ sub subst {
             return err ("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
         $sr;
     };
-    #$text=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++) || return err()}/ge;
     $text =~ s/([\$!+*^])\{(\1?)(.*?)\2}/${$cr->($1, $3, $index++) || return err()}/ge;
 
 
@@ -2799,9 +2805,6 @@ sub subst_attr {
 
         #  Look for attribute value strings that need substitution. First and second attemps did'nt work as single regexp
         #
-        #if ($attr_value=~/^\s*([\$@%!+*^]){1}{(\1?)([^{]+)\2}\s*$/so ) {
-        #if ($attr_value=~/^\s*([\$@%!+*^]){1}{(\1?)(.*)\2}\s*$/so ) {
-        #if ($attr_value=~/^\s*([\@%!+*^]){1}{(\1?)(.*)\2}\s*$/so || $attr_value=~/^\s*(\$){1}{(\1?)([^{]+)\2}\s*$/so) {
         if ($attr_value=~/^\s*([\@%!+*^])\{(\1?)(.*)\2}\s*$/so || $attr_value=~/^\s*(\$)\{(\1?)([^{]+)\2}\s*$/so) {
 
             #  Straightforward $@%!+^ operator, must be only content of value (can't be mixed
@@ -3303,6 +3306,7 @@ sub CGI_param_expand {
     #
     my $cgi_or=shift() ||
         return err ("unable to get CGI object");
+    debug("$cgi_or param_expand");
     ##local ($CGI::LIST_CONTEXT_WARN)=0;
     foreach my $param (grep /=/, $cgi_or->param()) {
         my (@pairs)=split(/[&;]/, $param);
@@ -3311,6 +3315,7 @@ sub CGI_param_expand {
             $value ||= $cgi_or->param($param);
             $key=&CGI::Simple::unescape($key);
             $value=&CGI::Simple::unescape($value);
+            debug("$cgi_or param $key => $value");
             $cgi_or->param($key, $value);
         }
         $cgi_or->delete($param);
@@ -3336,7 +3341,6 @@ sub dump {
     #  time it is run, and if not a WebDyne tag it would be optimised to static text by
     #  the compiler
     #
-    $Data::Dumper::Indent=1;
     my ($self, $data_ar, $attr_hr)=@_;
     my $cgi_or=$self->CGI() ||
         return err();
@@ -3541,7 +3545,6 @@ sub set_handler {
     my $meta_hr=$self->meta() || return err ();
     @_ && ($meta_hr->{'handler'}=shift());
     \$meta_hr->{'handler'};
-
 
 }
 
