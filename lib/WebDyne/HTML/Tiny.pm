@@ -445,11 +445,12 @@ sub _radio_checkbox {
     #  Return a radio or checkboxinput field, adding label tags if needed
     #
     my ($self, $tag, $attr_hr)=@_;
-    if (my $label=delete $attr_hr->{'label'}) {
-        return $self->label($self->input({type => $tag, %{$attr_hr}}) . $label);
+    my %attr=%{$attr_hr};
+    if (my $label=delete $attr{'label'}) {
+        return $self->label($self->input({type => $tag, %attr}) . $label);
     }
     else {
-        return $self->input({type => $tag, %{$attr_hr}});
+        return $self->input({type => $tag, %attr});
     }
 
 }
@@ -464,6 +465,7 @@ sub _radio_checkbox_group {
     #
     my ($self, $tag, $attr_hr)=@_;
     debug("in _radio_checbox_group tag:$tag attr: %s", Dumper($attr_hr));
+    my %attr=%{$attr_hr};
 
     #  Hold generated HTML in array until end
     #
@@ -474,20 +476,20 @@ sub _radio_checkbox_group {
     #
     my %attr_group;
     foreach my $attr (qw(defaults disabled)) {
-        map {$attr_group{$attr}{$_}=1} @{(ref($attr_hr->{$attr}) eq 'ARRAY') ? $attr_hr->{$attr} : [$attr_hr->{$attr}]}
-            if $attr_hr->{$attr};
+        map {$attr_group{$attr}{$_}=1} @{(ref($attr{$attr}) eq 'ARRAY') ? $attr{$attr} : [$attr{$attr}]}
+            if $attr{$attr};
     }
 
 
     #  If values is a hash not an array then convert to array and use hash as values
     #
-    if (ref($attr_hr->{'values'}) eq 'HASH') {
+    if (ref($attr{'values'}) eq 'HASH') {
 
 
         #  It's a hash - use as labels, and push keys to values
         #
-        $attr_hr->{'labels'}=(my $hr=delete $attr_hr->{'values'});
-        $attr_hr->{'values'}=[keys %{$hr}]
+        $attr{'labels'}=(my $hr=delete $attr{'values'});
+        $attr{'values'}=[keys %{$hr}]
 
     }
 
@@ -502,26 +504,26 @@ sub _radio_checkbox_group {
 
     #  Now iterate and build actual tag, push onto HTML array
     #
-    foreach my $value (@{$attr_hr->{'values'}}) {
-        my %attr_tag=$attr_hr->{'attributes'}{$value}
+    foreach my $value (@{$attr{'values'}}) {
+        my %attr_tag=$attr{'attributes'}{$value}
             ?
-            (%{$attr_hr->{'attributes'}{$value}})
+            (%{$attr{'attributes'}{$value}})
             :
             ();
-        $attr_tag{'name'}=$attr_hr->{'name'} if $attr_hr->{'name'};
+        $attr_tag{'name'}=$attr{'name'} if $attr{'name'};
         $attr_tag{'value'}=$value;
 
         #  Note use of empty array for checked and disabled values as per HTML::Tiny specs
         $attr_tag{'checked'}=[]  if $attr_group{'defaults'}{$value};
         $attr_tag{'disabled'}=[] if $attr_group{'disabled'}{$value};
-        $attr_tag{'label'}=$attr_hr->{'labels'}{$value} ? $attr_hr->{'labels'}{$value} : $value;
+        $attr_tag{'label'}=$attr{'labels'}{$value} ? $attr{'labels'}{$value} : $value;
         push @html, $self->_radio_checkbox($tag, \%attr_tag);
     }
 
 
     #  Return, separating with linebreaks if that is what is wanted.
     #
-    return join($attr_hr->{'linebreak'} ? $self->br() : '', @html);
+    return join($attr{'linebreak'} ? $self->br() : '', @html);
 
 }
 
@@ -685,110 +687,6 @@ sub popup_menu {
     #
     debug('creating select group with attr: %s, options:%s', Dumper(\%attr_select, \@html));
     return $self->select(\%attr_select, join($/, @html));
-
-}
-
-
-sub popup_menu0 {
-
-
-    #  Build a checkbox or radio group
-    #
-    my ($self, $attr_hr)=@_;
-    my %attr=%{$attr_hr};
-    debug('in popup_menu: %s', Dumper($attr_hr));
-
-
-    #  Hold generated HTML in array until end
-    #
-    my @html;
-
-
-    #  If values is a hash not an array then convert to array and use hash as values
-    #
-    if (ref($attr{'values'}) eq 'HASH') {
-
-
-        #  It's a hash - use as labels, and push keys to values
-        #
-        $attr{'labels'}=(my $hr=delete $attr{'values'});
-        $attr{'values'}=[keys %{$hr}]
-
-    }
-
-    #  Convert arrays of default values (i.e checked/enabled) and any disabled entries into hash - easier to check
-    #
-    my %attr_group=(
-        values     => delete $attr{'values'},
-        attributes => delete $attr{'attributes'},
-        labels     => delete $attr{'labels'}
-    );
-    foreach my $attr (qw(default selected disabled)) {
-        map {$attr_group{$attr}{$_}=1} @{(ref($attr{$attr}) eq 'ARRAY') ? $attr{$attr} : [$attr{$attr}]}
-            if exists $attr{$attr};
-
-        #delete $attr{$attr};
-    }
-
-    #unless ($attr_group{'labels'}) {
-    #    $attr_group{'labels'}={
-    #        map { $_=>$_ } @{$attr_group{'values'}}
-    #    }
-    #}
-    debug('in popup_menu attr_group: %s', Dumper(\%attr_group));
-
-
-    #  Convert 'defaults' key to 'selected'
-    #
-    do {$attr_group{'selected'} ||= delete $attr_group{'defaults'}}
-        if $attr_group{'defaults'};
-
-
-    #  If disabled option is an array but is empty then it is meant for the parent tag
-    #
-    #if ($attr_group{'disabled'} && !@{$attr_group{'disabled'}}) {
-    if (exists $attr_group{'disabled'} && !(keys %{$attr_group{'disabled'}})) {
-
-        #  Yes, it is empty, so user wants whole option disabled
-        #
-        $attr{'disabled'}=[]
-
-    }
-
-
-    #  Fix multiple tag if true
-    #
-    $attr{'multiple'}=[] if $attr{'multiple'};
-
-
-    #  Now iterate and build actual tag, push onto HTML array
-    #
-    foreach my $value (@{$attr_group{'values'}}) {
-        my %attr_tag=$attr_group{'attributes'}{$value}
-            ?
-            (%{$attr_group{'attributes'}{$value}})
-            :
-            ();
-        $attr_tag{'value'}=$value;
-
-        #  Note use of empty array for checked and disabled values as per HTML::Tiny specs
-        $attr_tag{'selected'}=[] if $attr_group{'selected'}{$value};
-        $attr_tag{'disabled'}=[] if $attr_group{'disabled'}{$value};
-        my $label=$attr_group{'labels'}{$value} ? $attr_group{'labels'}{$value} : $value;
-
-        #if ($label) {
-        #    push @html, $self->label($self->option(\%attr_tag) . $label);
-        #}
-        #else {
-        push @html, $self->option(\%attr_tag, $label)
-
-        #}
-    }
-
-
-    #  Return
-    #
-    return $self->select(\%attr, join($/, @html));
 
 }
 

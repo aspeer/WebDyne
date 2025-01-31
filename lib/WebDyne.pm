@@ -894,17 +894,10 @@ sub init_class {
             no strict;
             no integer;
             debug("calling eval sub: $eval_text");
-
-
-            my $eval=join(
-                $/,
-                "package WebDyne::${inode}; $WebDyne::WEBDYNE_EVAL_USE_STRICT;",
-                "#line ${html_line_no}",
-                "sub { ${eval_text} }",
-            );
-            local $SIG{__DIE__};
-            eval {undef} if $@;    #Clear $@;
-            my $sub_cr=eval($eval);
+            
+            #  Get code ref. Do this way so run in sub with no access to vars in this scope
+            #
+            my $sub_cr=&eval_cr($inode, \$eval_text, $html_line_no);
             if ($@) {
                 my $err=$@; eval {undef};
                 return err("eval of code returned error: $err");
@@ -1340,20 +1333,20 @@ sub render {
 
     #  Debug
     #
-    debug('in render');
+    debug('in render, param data %s, stack: %s', $param_hr->{'data'}, join('*', @{$self->{'_perl'}}));
 
 
     #  Get node array ref
     #
     my $data_ar=$param_hr->{'data'} || $self->{'_perl'}[0][$WEBDYNE_NODE_CHLD_IX] ||
         return err('unable to get HTML data array');
-
     #$self->{'_perl'}[0] ||= $data_ar;
 
 
     #  Debug
     #
-    debug("render data_ar $data_ar %s", Dumper($data_ar));
+    #debug("render data_ar $data_ar %s", Dumper($data_ar));
+    debug("render data_ar $data_ar");
 
 
     #  If block name spec'd register it now
@@ -2406,6 +2399,7 @@ sub perl {
         #
         #unshift @{$self->{'_perl'}}, $data_ar->[$WEBDYNE_NODE_CHLD_IX];
         unshift @{$self->{'_perl'}}, $data_ar;
+        debug("unshift $data_ar onto perl stack, stack:%s",join('*',@{$self->{'_perl'}}));
 
 
         #  Contruct subroutine call
@@ -2425,6 +2419,7 @@ sub perl {
             #
             debug("error occured on eval, passing to error handler, $@");
             shift @{$self->{'_perl'}};
+            debug("shift off perl stack, stack:%s",join('*',@{$self->{'_perl'}}));
             return err();
 
 
@@ -2434,11 +2429,6 @@ sub perl {
         #  Debug
         #
         debug('perl eval return %s', Dumper($html_sr));
-
-
-        #  Shift perl data_ar ref from stack
-        #
-        #shift @{$self->{'_perl'}};
 
 
         #  Return if we want the data for a JSON tag (above)
@@ -2469,8 +2459,8 @@ sub perl {
 
         #  If get to here shift perl data_ar ref from stack
         #
+        debug("shift off perl stack, stack:%s",join('*',@{$self->{'_perl'}}));
         shift @{$self->{'_perl'}};
-
 
     }
 
@@ -2586,6 +2576,43 @@ sub eval_require {
 }
 
 
+sub eval_cr {
+
+
+    #  Return eval subroutine ref for inode ($_[0]) and eval code ref ($_[1]). Avoid using
+    #  var names so not available in eval code
+    #
+    #eval("package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;\n" . "#line $_[2]\n" . "sub{${$_[1]}\n}");
+    my $eval=join(
+        $/,
+        "package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;",
+        "#line $_[2]",
+        "sub{${$_[1]}}"
+    );
+    return eval($eval);
+
+
+}
+
+
+sub perl_init_eval {
+
+
+    #  Eval routine for perl_init code. Avoid using var names so things like $self not available 
+    #  in eval code;
+    local $SIG{__DIE__};    
+    my $eval=join(
+        $/,
+        "package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;",
+        "#line $_[2]",
+        "${$_[1]}",
+        ';1'
+    );
+    return eval($eval);
+
+}
+
+
 sub perl_init {
 
 
@@ -2631,7 +2658,7 @@ sub perl_init {
 
             #  An error has occurred. Deregister self subroutine call in package
             #
-            undef *{"WebDyne::${inode}::self"};
+            #undef *{"WebDyne::${inode}::self"};
 
 
             #  Make up a fake data block with details of error
@@ -2686,18 +2713,9 @@ sub perl_init {
         else {
 
 
-            #  Now run eval
+            #  Now run eval after getting eval string;
             #
-            my $eval=join(
-                $/,
-                "package WebDyne::${inode}; $WebDyne::WEBDYNE_EVAL_USE_STRICT;",
-                "#line ${perl_line_no}",
-                "${${perl_sr}}",
-                "1;"
-            );
-
-            local $SIG{__DIE__};
-            $ret=eval($eval);
+            $ret=&perl_init_eval($inode, $perl_sr, $perl_line_no);
 
         }
 
@@ -2793,10 +2811,17 @@ sub subst_attr {
     my %attr=%{$attr_hr};
 
 
-    #  Go through each attribute and value
+    #  Go through each attribute and value. *MUST BE DETERMINISTIC AND IN SAME ORDER EACH RUN*. If not the eval cached using
+    #  $index may change ! So don't use while 
     #
     my $index;
-    while (my ($attr_name, $attr_value)=each %attr) {
+    foreach my $attr_name (sort keys %attr) {
+    
+        
+        #  Get value
+        #
+        my $attr_value=$attr{$attr_name};
+        
 
 
         #  Skip perl attr, as that is perl code, do not do any regexp on perl code, as we will
@@ -2814,7 +2839,7 @@ sub subst_attr {
             #  with string, e.g. <popup_list values="foo=@{qw(bar)}" dont make sense
             #
             my ($oper, $eval_text)=($1, $3);
-            debug("subst_attr path 1: oper:$oper, eval_text: $eval_text");
+            debug("subst_attr $attr_name path 1: oper:$oper, eval_text: $eval_text");
             my $eval=$eval_cr->{$oper}->($self, $data_ar, $param_hr, $eval_text, $index++, 1) ||
                 return err();
             $attr{$attr_name}=(ref($eval) eq 'SCALAR') ? ${$eval} : $eval;

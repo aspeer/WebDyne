@@ -89,7 +89,7 @@ sub main {
             return err("unable to find file: $test_fn");
         diag("processing: $test_fn");
         
-        
+        for (0..1) {
         foreach my $stage ((0..5), 'final') {
 
 
@@ -201,6 +201,7 @@ sub main {
             );
             diag("diff: $diff");
             diag(sprintf('%s:%s', Dumper($html_live_sr, \$html_thaw)));
+        }
         }
 
         #ok(${$html_sr} eq $html, "$test_fn pass on stage: render");

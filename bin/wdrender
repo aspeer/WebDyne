@@ -97,6 +97,7 @@ sub main {
         'headers_out|header_out=s@',
         'headers_in|header_in=s@',
         'outfile=s',
+        'repeat|r|n=s',
         'man',
         'version'
     ) || pod2usage(2);
@@ -175,7 +176,10 @@ sub main {
 
     #  Run it and display results, or any error generated
     #
-    defined($handler->handler($r)) || return err();
+    for (1 .. ($opt{'repeat'} || 1)) {
+        defined($handler->handler($r)) || return err();
+        print $/;
+    }
 
 
     #  Manual cleanup
