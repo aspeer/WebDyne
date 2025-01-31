@@ -501,6 +501,15 @@ t/data/table.dat.5
 t/data/table.dat.final
 t/data/table.html
 t/data/table.tree
+t/data/table_plain.dat.0
+t/data/table_plain.dat.1
+t/data/table_plain.dat.2
+t/data/table_plain.dat.3
+t/data/table_plain.dat.4
+t/data/table_plain.dat.5
+t/data/table_plain.dat.final
+t/data/table_plain.html
+t/data/table_plain.tree
 t/data/whitespace.dat.0
 t/data/whitespace.dat.1
 t/data/whitespace.dat.2
@@ -562,4 +571,5 @@ t/start_html_perl.psp
 t/start_html_text.psp
 t/subsitution.psp
 t/table.psp
+t/table_plain.psp
 t/whitespace.psp
