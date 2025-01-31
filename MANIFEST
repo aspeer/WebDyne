@@ -339,6 +339,15 @@ t/data/perl_require_module.dat.5
 t/data/perl_require_module.dat.final
 t/data/perl_require_module.html
 t/data/perl_require_module.tree
+t/data/perl_table.dat.0
+t/data/perl_table.dat.1
+t/data/perl_table.dat.2
+t/data/perl_table.dat.3
+t/data/perl_table.dat.4
+t/data/perl_table.dat.5
+t/data/perl_table.dat.final
+t/data/perl_table.html
+t/data/perl_table.tree
 t/data/popup_menu.dat.0
 t/data/popup_menu.dat.1
 t/data/popup_menu.dat.2
@@ -535,6 +544,7 @@ t/perl_require_file.psp
 t/perl_require_file_head.psp
 t/perl_require_module.pm
 t/perl_require_module.psp
+t/perl_table.psp
 t/popup_menu.psp
 t/popup_menu_disabled.psp
 t/popup_menu_tied_hash.psp
