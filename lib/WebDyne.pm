@@ -2812,15 +2812,18 @@ sub subst_attr {
 
 
     #  Go through each attribute and value. *MUST BE DETERMINISTIC AND IN SAME ORDER EACH RUN*. If not the eval cached using
-    #  $index may change ! So don't use while 
+    #  $index may change ! So don't use while.
     #
-    my $index;
-    foreach my $attr_name (sort keys %attr) {
+    #  Actually can use while - but have to use attribute name as index so always deterministic
+    #
+    #my $index;
+    #foreach my $attr_name (sort keys %attr) {
+    while (my($attr_name, $attr_value)=each %attr) {
     
         
         #  Get value
         #
-        my $attr_value=$attr{$attr_name};
+        #my $attr_value=$attr{$attr_name};
         
 
 
@@ -2840,7 +2843,8 @@ sub subst_attr {
             #
             my ($oper, $eval_text)=($1, $3);
             debug("subst_attr $attr_name path 1: oper:$oper, eval_text: $eval_text");
-            my $eval=$eval_cr->{$oper}->($self, $data_ar, $param_hr, $eval_text, $index++, 1) ||
+            #my $eval=$eval_cr->{$oper}->($self, $data_ar, $param_hr, $eval_text, $index++, 1) ||
+            my $eval=$eval_cr->{$oper}->($self, $data_ar, $param_hr, $eval_text, $attr_name, 1) ||
                 return err();
             $attr{$attr_name}=(ref($eval) eq 'SCALAR') ? ${$eval} : $eval;
 
@@ -2858,7 +2862,8 @@ sub subst_attr {
                     return err("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
                 $sr;
             };
-            $attr_value=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++) || return err()}/ge;
+            #$attr_value=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++) || return err()}/ge;
+            $attr_value=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$attr_name) || return err()}/ge;
             $attr{$attr_name}=$attr_value;
 
         }
