@@ -230,7 +230,7 @@ sub httpd_bin {
         #  without getting root's path
         #
         $path=join(Env::Path->PathSeparator, $ENV{'PATH'}, @{+PATH});
-        @name_bin=qw(httpd httpd2 httpd2.2 apache apache2 apache2.2);
+        @name_bin=qw(httpd httpd2 httpd2.2 httpd2.4 apache apache2 apache2.2 apache2.4);
     }
     debug("apache final search path: '$path'");
     debug('apache names %s', Dumper(\@name_bin));
@@ -312,14 +312,19 @@ sub httpd_config {
     #  Need to get httpd config as series of key/val pairs
     #
     my %config;
-    my @httpd_config=qx(\"$Httpd_Bin\" -V);
+    my $devnull=File::Spec->devnull();
+    my @httpd_config=qx(\"$Httpd_Bin\" -V 2>$devnull);
     debug('httpd_config: %s', Dumper(\@httpd_config));
 
 
     #  Go through
     #
     foreach my $httpd_config (@httpd_config) {
-
+    
+        if ($httpd_config =~ /Apache\/(\d+\.\d+)/) {
+            $config{'HTTPD_VER'}=$1;
+            next;
+        }
         next unless ($httpd_config=~/\s*\-D\s*(.*)/);
         my ($key, $value)=split(/\=/, $1);
         $key=~s/\s+.*$//g;

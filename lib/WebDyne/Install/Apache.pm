@@ -176,7 +176,7 @@ sub install {
         DELIMITERS => ['<!--', '-->'],
 
     ) || return err("unable to fill in template $template_fn, $Text::Template::ERROR");
-
+    
 
     #  Get apache config dir
     #
@@ -197,7 +197,8 @@ sub install {
         my $webdyne_conf_fh=$opt_hr->{'text'} ? *STDOUT : IO::File->new($webdyne_conf_fn, O_CREAT | O_WRONLY | O_TRUNC) ||
             return err("unable to open file $webdyne_conf_fn, $!");
         print $webdyne_conf_fh $webdyne_conf;
-        $webdyne_conf_fh->close();
+        $webdyne_conf_fh->close() unless ($webdyne_conf_fh eq '*main::STDOUT');
+        return \undef if $opt_hr->{'text'};
     }
     else {
 
@@ -265,7 +266,8 @@ sub install {
 
         #  Close
         #
-        $apache_conf_fh->close();
+        $apache_conf_fh->close() unless ($apache_conf_fh eq '*main::STDOUT');
+        exit if $opt_hr->{'text'};
 
 
         #  Splice the lines between the delimiters out

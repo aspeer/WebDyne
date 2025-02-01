@@ -46,11 +46,10 @@ $OUT=join($/, @out);
 
 -->
 
-
+<!--
 #  Fix up @INC path, do any other init stuff before loading WebDyne
 #  module
 #
-<!--
 ##use Config;
 ##
 ##my $installbin_dn=$DIR_INSTALLBIN || $Config{'installbin'};
@@ -81,9 +80,16 @@ $OUT=qq[#PerlRequire "$mod_perl_1_99_compat_fn"]
 -->
 
 
-#  Adjust and uncomment if using local::lib for installs
+#  Adjust and/or uncomment if using local::lib for installs
 #
-$PerlSwitches -I/opt/perl5/lib
+<!--
+if (my $perl5lib=$ENV{'PERL5LIB'}) {
+    $OUT=sprintf('PerlSwitches -I%s', $perl5lib);
+}
+else {
+    $OUT='#PerlSwitches -I/opt/perl5'
+}
+-->
 #
 
 #  Load WebDyne modules
@@ -110,49 +116,80 @@ else {
        	);
 }
 $OUT=join($/, @out);
-
 -->
 
 
 #  Block access to any module .pm files that might available in public
 #  areas as a precaution
 #
-#<Files ~ "\.pm$">
 
-#  Apache 2.2
-#Order allow,deny
-#Deny from all
-#</Files>
+<!-- 
 
-#  Apache 2.4
+if ($HTTPD_VER eq '2.2') {
+$OUT=<<__PM_DENY_22__;
+
+#  Apache 2.2 block config
+#
+<Files ~ "\.pm$">
+Order allow,deny
+Deny from all
+</Files>
+__PM_DENY_22__
+
+}
+elsif ($HTTPD_VER eq '2.4') {
+
+$OUT=<<__PM_DENY_24__;
+
+#  Apache 2.4 block config
+#
 <Files ~ "\.pm$">
 Require all denied
 </Files>
 
+__PM_DENY_24__
 
+}
+
+-->
 
 #  Set disk cache dir and allow apache access
 #
 PerlSetVar WEBDYNE_CACHE_DN "<!-- $WEBDYNE_CACHE_DN -->"
 
-#  Apache 2.2
-#<Directory "<!-- $WEBDYNE_CACHE_DN -->">
-#Order allow,deny
-#Allow from all
-#Deny from none
-#</Directory>
+<!-- 
 
-#  Apache 2.4
-<Directory "<!-- $WEBDYNE_CACHE_DN -->">
-Require all granted
+if ($HTTPD_VER eq '2.2') {
+$OUT=<<"__CACHE_ALLOW_22__";
+
+#  Apache 2.2 cache allow config
+#
+<Directory "$WEBDYNE_CACHE_DN">
+Order allow,deny
+Allow from all
+Deny from none
 </Directory>
 
+__CACHE_ALLOW_22__
+}
+elsif ($HTTPD_VER eq '2.4') {
+$OUT=<<"__CACHE_ALLOW_24__";
 
-#  Optional debugging. Everything or some things
+#  Apache 2.4 cache allow config
+#
+<Directory "$WEBDYNE_CACHE_DN">
+Require all granted
+</Directory>
+__CACHE_ALLOW_24__
+}
+
+-->
+
+#  Optional debugging. Everything or some things. Note debuggin only enabled if
+#  WebDybe installed with WEBDYNE_DEBUG=1; perl Makefile.PL; make install
 #
 #PerlSetEnv WEBDYNE_DEBUG 1
-#PerlSetEnv WEBDYNE_DEBUG "_start_html,meta"
-# 
+#PerlSetEnv WEBDYNE_DEBUG "render,perl"
 #PerlSetEnv WEBDYNE_DEBUG_FILE "/var/log/webdyne_debug.log"
 
 
