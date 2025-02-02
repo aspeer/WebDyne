@@ -193,6 +193,23 @@ sub register_cleanup {
 }
 
 
+sub cleanup_register {
+
+    &register_cleanup(@_);
+
+}
+
+
+sub pool {
+
+    #  Used by mod_perl2, usually for cleanup_register in the form of $r->pool->cleanup_register(), so just
+    #  return $r and let the code then call cleanup_register
+    #
+    my $r=shift();
+
+}
+
+
 sub run {
 
     my ($r, $self)=@_;
