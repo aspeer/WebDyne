@@ -14,14 +14,6 @@
 package WebDyne;
 
 
-#  Packace init, attempt to load optional Time::HiRes module
-sub BEGIN {
-    local $SIG{__DIE__};
-    $^W=0;
-    eval("use Time::HiRes qw(time)") || eval {undef};
-}
-
-
 #  Pragma
 #
 use strict qw(vars);
@@ -112,7 +104,16 @@ if ($WEBDYNE_EVAL_SAFE) {die "WEBDYNE_EVAL_SAFE disabled in this version\n"}
 #==================================================================================================
 
 
-sub handler : method {
+#  Packace init, attempt to load optional Time::HiRes module
+#
+BEGIN {
+    eval{ require Time::HiRes; Time::HiRes->import('time') }
+}
+
+
+#  Main handler for mod_perl
+#
+sub handler : method { # no subsort
 
 
     #  Get self ref/class, request ref

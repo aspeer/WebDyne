@@ -28,6 +28,7 @@ no warnings qw(uninitialized);
 use Cwd qw(cwd);
 use Data::Dumper;
 use HTTP::Status (RC_OK);
+use WebDyne::Base;
 
 
 #  Version information
@@ -135,6 +136,7 @@ sub main {
 sub new {
 
     my ($class, %r)=@_;
+    debug("$class, r:%s", Dumper(\%r));
     return bless \%r, $class;
 
 }
@@ -187,8 +189,11 @@ sub print {
 
 sub register_cleanup {
 
-    my $r=shift();
-    push @{$r->{'register_cleanup'} ||= []}, @_;
+    #my $r=shift();
+    my ($r, $cr)=@_;
+    push @{$r->{'register_cleanup'} ||= []}, $cr;
+    #my $ar=$r->{'register_cleanup'} ||= [];
+    #push @
 
 }
 
@@ -233,9 +238,10 @@ sub uri {
 }
 
 
-sub debug {
+sub debug0 {
 
     #  Stub
+    
     #printf(shift().$/, @_);
 }
 
@@ -290,7 +296,6 @@ sub content_type {
 
     my ($r, $content_type)=@_;
     $r->{'headers_out'}{'Content-Type'}=$content_type;
-
     #CORE::print("Content-Type: $content_type\n");
 
 }
@@ -309,6 +314,7 @@ sub custom_response {
 sub AUTOLOAD {
 
     my ($r, $v)=@_;
+    debug("$r AUTOLOAD: $AUTOLOAD, v: $v");
     my $k=($AUTOLOAD=~/([^:]+)$/) && $1;
     warn(sprintf("Unhandled '%s' method, using AUTOLOAD", $k));
     $v ? $r->{$k}=$v : $r->{$k};
@@ -320,9 +326,11 @@ sub AUTOLOAD {
 sub DESTROY {
 
     my $r=shift();
+    debug("$r DESTROY");
     if (my $cr_ar=delete $r->{'register_cleanup'}) {
         foreach my $cr (@{$cr_ar}) {
             $cr->($r);
         }
     }
+    
 }

@@ -44,6 +44,7 @@ use WebDyne::Request::Fake;
 use Getopt::Long;
 use Pod::Usage;
 use IO::File;
+#use Devel::Gladiator;
 
 
 #  Error handling
@@ -97,7 +98,9 @@ sub main {
         'headers_out|header_out=s@',
         'headers_in|header_in=s@',
         'outfile=s',
-        'repeat|r|n=s',
+        'repeat|r|num|n=s',
+        'loop',
+        'leak',
         'man',
         'version'
     ) || pod2usage(2);
@@ -127,64 +130,82 @@ sub main {
         pod2usage("$Script: input file not found !");
 
 
+    #  Split out header in/out arrays as Request::Fake uses hash to hold them (should be array one day)
+    #
+    my ($header_out_ar, $header_in_ar)=map { delete $opt{$_} } qw(
+        headers_out
+        headers_in
+    );
+
+
     #  Get new request object
     #
-    my $r=WebDyne::Request::Fake->new(
+    LOOP: while (1) {
+        for (1 .. ($opt{'repeat'} || 1)) {
+        
+            #  Get new request handler
+            #
+            my $r=WebDyne::Request::Fake->new(
 
-        filename => $srce_fn,
-        %opt
+                filename => $srce_fn,
+                %opt
 
-        #select          =>  $dest_fh,
-        #status          =>  $opt{'status'},
+                #select          =>  $dest_fh,
+                #status          =>  $opt{'status'},
 
-    ) || return err();
+            ) || return err();
 
 
-    #  Set headers
-    #
-    foreach my $header_out (@{$opt{'headers_out'}}) {
-        my ($k, $v)=split(/\s*:\s*/, $header_out);
-        $r->headers_out($k, $v);
+            #  Set headers
+            #
+            foreach my $header_out (@{$header_out_ar}) {
+                my ($k, $v)=split(/\s*:\s*/, $header_out);
+                $r->headers_out($k, $v);
+            }
+            foreach my $header_in (@{$header_in_ar}) {
+                my ($k, $v)=split(/\s*:\s*/, $header_in);
+                $r->headers_in($k, $v);
+            }
+
+
+            #  Get handler
+            #
+            my $handler=$opt{'handler'};
+
+
+            #  Load up whichever handler we are using
+            #
+            eval("require $handler") ||
+                return err("$Script: unable to load handler $handler, $@");
+
+
+            #  Set text errors only
+            #
+            $WebDyne::Err::WEBDYNE_ERROR_TEXT=1 if ($opt{'error'} eq 'text');
+
+
+            #  Set header, warning output
+            #
+            #$r->notes('noheader', $opt{'header'} ? 0 : 1);
+            #$r->notes('nowarn',   $opt{'warn'} ? 0 : 1);
+
+
+            #  Run it and display results, or any error generated
+            #
+            defined($handler->handler($r)) || return err();
+            print $/;
+            #my $gladiator_ar=Devel::Gladiator::walk_arena();
+
+
+            #  Manual cleanup
+            #
+            $r->DESTROY();
+            #print("SV: ",  scalar @{$gladiator_ar}, "\n") if $opt{'leak'};
+            #@{$gladiator_ar} = ();
+            last unless $opt{'loop'};
+
+        }
     }
-    foreach my $header_in (@{$opt{'headers_in'}}) {
-        my ($k, $v)=split(/\s*:\s*/, $header_in);
-        $r->headers_in($k, $v);
-    }
-
-
-    #  Get handler
-    #
-    my $handler=$opt{'handler'};
-
-
-    #  Load up whichever handler we are using
-    #
-    eval("require $handler") ||
-        return err("$Script: unable to load handler $handler, $@");
-
-
-    #  Set text errors only
-    #
-    $WebDyne::Err::WEBDYNE_ERROR_TEXT=1 if ($opt{'error'} eq 'text');
-
-
-    #  Set header, warning output
-    #
-    #$r->notes('noheader', $opt{'header'} ? 0 : 1);
-    #$r->notes('nowarn',   $opt{'warn'} ? 0 : 1);
-
-
-    #  Run it and display results, or any error generated
-    #
-    for (1 .. ($opt{'repeat'} || 1)) {
-        defined($handler->handler($r)) || return err();
-        print $/;
-    }
-
-
-    #  Manual cleanup
-    #
-    $r->DESTROY();
 
 
     #  Done, return success

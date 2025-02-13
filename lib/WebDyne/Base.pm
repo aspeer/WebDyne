@@ -144,7 +144,7 @@ sub import {
             my $method=(caller(1))[3] || 'main';
             (my $subroutine=$method)=~s/^.*:://;
             if ($ENV{'WEBDYNE_DEBUG'} && ($ENV{'WEBDYNE_DEBUG'} ne '1')) {
-                my @debug_target=split(/[,;:]/, $ENV{'WEBDYNE_DEBUG'});
+                my @debug_target=split(/[,;]/, $ENV{'WEBDYNE_DEBUG'});
                 foreach my $debug_target (@debug_target) {
                     if (($caller eq $debug_target) || ($method=~/\Q$debug_target\E$/)) {
                         CORE::print $debug_fh "[$subroutine] ", sprintf(shift(), @_), $/;
