@@ -17,7 +17,7 @@
 
 <!-- Heading section with status code as page title -->
 
-<title>WebDyne Error !{! $_[1]->{'r'}->status !}</title>
+<title>WebDyne Error !{! $_[3]->{'r'}->status !}</title>
 
 
 <!-- Embedded style sheet for formatting, keep everything in one file -->
@@ -81,18 +81,18 @@
 <!-- Status code and server status message -->
 
 <header>
-<h1>WebDyne Error !{! $_[1]->{'r'}->status !}</h1>
+<h1>WebDyne Error !{! $_[1]->status !}</h1>
 <hr align="left" width="80%" size="1">
 </header>
 
 <section>
-<h2><i>!{! \&HTTP::Status::status_message($_[1]->{'r'}->status) !}</i></h2>
+<h2><i>!{! \&HTTP::Status::status_message($_[1]->status) !}</i></h2>
 
 
 <!-- Perl section to populate blocks with error messages, backtraces etc. -->
 
 
-<perl param="!{! $_[1] !}">
+<perl param="!{! return $_[3]; die &Data::Dumper::Dumper($_[3]) !}">
 
 #  Need WebDyne Constants
 #
@@ -101,12 +101,14 @@ use WebDyne::Constant;
 
 #  Need CGI::Simple object
 #
-my $cgi_or=CGI::Simple->new();
+#my $cgi_or=CGI::Simple->new();
 
 
 #  Get self ref, extract supplied params
 #
-my ($self, $param_hr)=@_;
+use Data::Dumper;
+#die Dumper($_[3]);
+my ($self, $r, $cgi_or, $param_hr)=@_;
 
 
 #  Local vars used across all routines
@@ -451,7 +453,7 @@ ${i}&nbsp;&nbsp;${package}, line ${line}<br>
 <b>#&nbsp;&nbsp;&nbsp;Source</b> ${srce_fn}<br>
 <br>
 <block name="context_line">
-<span style="!{! $_[1]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
+<span style="!{! $_[3]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
 </block>
 </tt></td></tr>
 </block>
@@ -472,7 +474,7 @@ ${i}&nbsp;&nbsp;${package}, line ${line}<br>
 <b>#&nbsp;&nbsp;&nbsp;Source</b> ${srce_fn}<br>
 <br>
 <block name="eval_line">
-<span style="!{! $_[1]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
+<span style="!{! $_[3]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
 </block>
 </tt></td></tr>
 </block>

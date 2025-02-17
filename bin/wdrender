@@ -202,7 +202,7 @@ sub main {
             $r->DESTROY();
             #print("SV: ",  scalar @{$gladiator_ar}, "\n") if $opt{'leak'};
             #@{$gladiator_ar} = ();
-            last unless $opt{'loop'};
+            last LOOP unless $opt{'loop'};
 
         }
     }

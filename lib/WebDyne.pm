@@ -876,10 +876,9 @@ sub init_class {
 
         #  Get CGI vars
         #
+        my $cgi_or=$self->{'_CGI'} || $self->CGI();
         my $param_hr=(
             $self->{'_eval_cgi_hr'} ||= do {
-
-                my $cgi_or=$self->{'_CGI'} || $self->CGI();
                 $cgi_or->Vars();
 
             }
@@ -941,7 +940,8 @@ sub init_class {
             #  get to ..
             local *_=$param_hr;
             debug('eval call starting');
-            @eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $eval_param_hr);
+            #@eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $eval_param_hr);
+            @eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $self->{'_r'}, $cgi_or, $eval_param_hr);
             debug("eval call complete, $@, %s", Dumper(\@eval));
 
         };
@@ -993,7 +993,7 @@ sub init_class {
     };
 
 
-    #  The code ref for the eval statement if using Safe module
+    #  The code ref for the eval statement if using Safe module. NOTE: old and unmaintained.
     #
     my $eval_safe_cr=sub {
 
@@ -1010,10 +1010,10 @@ sub init_class {
 
         #  Get CGI vars
         #
+        my $cgi_or=$self->{'_CGI'} || $self->CGI();
         my $param_hr=(
             $self->{'_eval_cgi_hr'} ||= do {
 
-                my $cgi_or=$self->{'_CGI'} || $self->CGI();
                 $cgi_or->Vars();
 
             }
@@ -1042,7 +1042,9 @@ sub init_class {
         local *_=$param_hr;
         ${$safe_or->varglob('_self')}=$self;
         ${$safe_or->varglob('_eval_param_hr')}=$eval_param_hr;
-        my $html_sr=$safe_or->reval("sub{$eval_text}->(\$::_self, \$::_eval_param_hr)", $WebDyne::WEBDYNE_EVAL_USE_STRICT) ||
+        ${$safe_or->varglob('_r')}=$self->{'_r'};
+        ${$safe_or->varglob('_CGI')}=$cgi_or;
+        my $html_sr=$safe_or->reval("sub{$eval_text}->(\$::_self, \$::_r, \$::_CGI, \$::_eval_param_hr)", $WebDyne::WEBDYNE_EVAL_USE_STRICT) ||
             return errstr() ? err() : err($@ || 'undefined return from Safe->reval()');
 
 
@@ -3306,7 +3308,9 @@ sub CGI {
 
         #  And create it
         #
-        my $cgi_or=CGI::Simple->new();
+        my $cgi_or=CGI::Simple->new($MOD_PERL && $self->{'_r'});
+        #my $cgi_or=CGI::Simple->new(); # Needs PerlOpt +GlobalRequest
+        #$cgi_or->delete(ref($self->{'_r'})) # Pretty crappy way of doing it
 
 
         #  Expand params if we need to
