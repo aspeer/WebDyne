@@ -26,7 +26,7 @@ no warnings qw(uninitialized);
 
 #  Webmod Modules
 #
-use WebDyne::Base;
+use WebDyne::Util;
 
 
 #  External Modules

@@ -11,7 +11,7 @@
 #
 #  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
 #
-package WebDyne::Base;
+package WebDyne::Util;
 
 
 #  Compiler Pragma
@@ -27,6 +27,7 @@ no warnings qw(uninitialized redefine once);
 #
 use Data::Dumper;
 use IO::File;
+use POSIX qw(strftime);
 
 
 #  Use Exporter
@@ -36,7 +37,7 @@ require Exporter;
 
 #  Exports
 #
-@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal);
+@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal debug);
 
 
 #  Version information
@@ -55,6 +56,12 @@ my (%Package, @Err);
 
 
 #==================================================================================================
+
+#  Packace init, attempt to load optional Time::HiRes module
+#
+BEGIN {
+    eval{ require Time::HiRes; Time::HiRes->import(qw(time gettimeofday)) };
+}
 
 
 sub import {
@@ -139,7 +146,9 @@ sub import {
         #  Yes, setup debug routine
         #
         $debug_fh->autoflush(1);
-        *{"${caller}::debug"}=sub {
+        $Package{'debug_fh'}=$debug_fh;
+
+        if (0) {*{"${caller}::debug"}=sub {
             local $|=1;
             my $method=(caller(1))[3] || 'main';
             (my $subroutine=$method)=~s/^.*:://;
@@ -158,16 +167,17 @@ sub import {
             unless UNIVERSAL::can($caller, 'debug');
         *{"${caller}::Dumper"}=\&Data::Dumper::Dumper
             unless UNIVERSAL::can($caller, 'Dumper');
+        }
 
     }
     else {
 
         #  No, null our debug and Dumper routine
         #
-        *{"${caller}::debug"}=sub { }
-            unless UNIVERSAL::can($caller, 'debug');
-        *{"${caller}::Dumper"}=sub { }
-            unless UNIVERSAL::can($caller, 'Dumper');
+        #*{"${caller}::debug"}=sub { }
+        #    unless UNIVERSAL::can($caller, 'debug');
+        #*{"${caller}::Dumper"}=sub { }
+        #    unless UNIVERSAL::can($caller, 'Dumper');
 
     }
 
@@ -189,6 +199,58 @@ sub import {
 
 }
 
+
+sub debug {
+
+    
+    #  Send debug message to log file. Turn off buffering and get file handle
+    #
+    local $|=1;
+    my $debug_fh=$Package{'debug_fh'} ||
+        return undef;
+        
+    
+    #  Get caller
+    #
+    #  Get who is calling us
+    #
+    my $caller=(caller(0))[0] || 
+        return undef;
+    my $method=(caller(1))[3] || 'main';
+    (my $subroutine=$method)=~s/^.*:://;
+    
+    
+    #  Time in human readable format
+    #
+    my ($sec, $msec)=gettimeofday();
+    #my $timestamp=strftime("%Y-%m-%d %H:%M:%S", localtime($sec)) . sprintf(".%04d", $msec);
+    my $timestamp=strftime("%H:%M:%S", localtime($sec)) . sprintf('.%06d', $msec);
+
+    
+    
+    #  Filtering ?
+    #
+    if ($ENV{'WEBDYNE_DEBUG'} && ($ENV{'WEBDYNE_DEBUG'} ne '1')) {
+    
+
+        #  Yes - check we are getting from caller we are interested in
+        #
+        my @debug_target=split(/[,;]/, $ENV{'WEBDYNE_DEBUG'});
+        foreach my $debug_target (@debug_target) {
+            if (($caller eq $debug_target) || ($method=~/\Q$debug_target\E$/)) {
+                CORE::print $debug_fh "[$timestamp $subroutine] ", sprintf(shift(), @_), $/;
+            }
+        }
+    }
+    else {
+
+        #  No filtering. Open floodgates
+        #
+        CORE::print $debug_fh "[$timestamp $subroutine] ", $_[1] ? sprintf(shift(), @_) : $_[0], $/;
+    }
+
+}
+ 
 
 sub errnofatal {
 

@@ -35,7 +35,7 @@ use HTML::Tiny;
 #  WebDyne Modules
 #
 use WebDyne::Constant;
-use WebDyne::Base;
+use WebDyne::Util;
 
 
 #  Constants

@@ -25,8 +25,8 @@ use overload;
 
 #  WebDyne constants, base modules
 #
+use WebDyne::Util;
 use WebDyne::Constant;
-use WebDyne::Base;
 use WebDyne::HTML::Tiny;
 
 
@@ -107,8 +107,9 @@ if ($WEBDYNE_EVAL_SAFE) {die "WEBDYNE_EVAL_SAFE disabled in this version\n"}
 #  Packace init, attempt to load optional Time::HiRes module
 #
 BEGIN {
-    eval{ require Time::HiRes; Time::HiRes->import('time') }
+    eval{ require Time::HiRes; Time::HiRes->import('time') };
 }
+
 
 
 #  Main handler for mod_perl
@@ -269,7 +270,7 @@ sub handler : method { # no subsort
         #  Debug
         #
         debug(
-            "compile/reload needed _compile %s, cache_inode_hr mtime %s, srce_mtime $srce_mtime, WEBDYNE::RELOAD $WEBDYNE::RELOAD",
+            "compile/reload needed _compile %s, cache_inode_hr mtime %s, srce_mtime $srce_mtime, WEBDYNE::RELOAD $WEBDYNE_RELOAD",
             $self->{'_compile'}, $cache_inode_hr->{'mtime'});
 
 
@@ -289,9 +290,13 @@ sub handler : method { # no subsort
 
         #  Null out cache_inode to clear any flags
         #
-        foreach my $key (keys %{$cache_inode_hr}) {
-            $cache_inode_hr->{$key}=undef;
-        }
+        #foreach my $key (keys %{$cache_inode_hr}) {
+        #    debug("nulling out cache_inode_hr key: $key");
+        #    $cache_inode_hr->{$key}=undef;
+        #}
+        delete $Package{'_cache'}{$srce_inode};
+        $cache_inode_hr={};
+        debug('package %s', Dumper(\%Package));
 
 
         #  Try to clear/reset package name space if possible
@@ -890,7 +895,9 @@ sub init_class {
         #
         my $eval_cr=$Package{'_cache'}{$inode}{'eval_cr'}{$data_ar}{$index} ||= do {
 
-            $Package{'_cache'}{$inode}{'perl_init'}{+undef} ||= $self->perl_init();
+            #  Why did I do this ? No vars to perl_init so nothing created ?
+            #
+            #$Package{'_cache'}{$inode}{'perl_init'}{+undef} ||= $self->perl_init();
             no strict;
             no integer;
             debug("calling eval sub: $eval_text");
@@ -2642,10 +2649,12 @@ sub perl_init {
         #
         my $perl_sr=$perl_ar->[$ix];
         my ($perl_line_no, $perl_srce_fn)=@{$perl_debug_ar->[$ix]};
+        debug("about to run $perl_sr at line:$perl_line_no from fn:$perl_srce_fn");
 
 
         #  Do not execute twice
         #
+        debug('execution current count is: %s', $Package{'_cache'}{$inode}{'perl_init'}{$perl_sr} ||= 0);
         $Package{'_cache'}{$inode}{'perl_init'}{$perl_sr}++ && next;
 
 
@@ -2718,6 +2727,7 @@ sub perl_init {
 
             #  Now run eval after getting eval string;
             #
+            debug("running perl_init_eval on $perl_sr now, line $perl_line_no");
             $ret=&perl_init_eval($inode, $perl_sr, $perl_line_no);
 
         }
@@ -3752,7 +3762,7 @@ sub AUTOLOAD {
 #  Package to tie select()ed output handle to so we can override print() command
 #
 package WebDyne::TieHandle;
-*debug=\&WebDyne::debug;
+*debug=\&WebDyne::Util::debug;
 
 
 sub TIEHANDLE {

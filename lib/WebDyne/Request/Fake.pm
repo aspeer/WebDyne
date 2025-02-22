@@ -28,7 +28,7 @@ no warnings qw(uninitialized);
 use Cwd qw(cwd);
 use Data::Dumper;
 use HTTP::Status (RC_OK);
-use WebDyne::Base;
+use WebDyne::Util;
 
 
 #  Version information

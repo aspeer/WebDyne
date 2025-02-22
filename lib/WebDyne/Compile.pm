@@ -44,7 +44,7 @@ use Data::Dumper;
 #
 use WebDyne::HTML::Tiny;
 use WebDyne::Constant;
-use WebDyne::Base;
+use WebDyne::Util;
 
 
 #  Version information

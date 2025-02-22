@@ -27,7 +27,7 @@ no warnings qw(uninitialized redefine once);
 use WebDyne;
 use WebDyne::Constant;
 use WebDyne::HTML::Tiny;
-use WebDyne::Base;
+use WebDyne::Util;
 
 
 #  External Modules. Keep HTML::Entities or nullification of encode/decode

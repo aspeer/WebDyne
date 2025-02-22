@@ -25,7 +25,7 @@ local $^W=0;
 
 #  External modules
 #
-use WebDyne::Base;
+use WebDyne::Util;
 use File::Spec;
 use Data::Dumper;
 require Opcode;

@@ -25,7 +25,7 @@ no warnings qw(uninitialized);
 #  WebDyne Modules.
 #
 use WebDyne::Constant;
-use WebDyne::Base;
+use WebDyne::Util;
 
 
 #  Version information

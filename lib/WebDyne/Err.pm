@@ -26,13 +26,15 @@ no warnings qw(uninitialized);
 #
 use WebDyne::Constant;
 use WebDyne::Err::Constant;
-use WebDyne::Base;
+use WebDyne::Util;
 
 
 #  External modules
 #
 use HTTP::Status qw(is_success is_error RC_INTERNAL_SERVER_ERROR);
 use File::Spec;
+use Data::Dumper;
+$Data::Dumper::Indent=1;
 
 
 #  Version information
@@ -119,7 +121,7 @@ sub err_html {
     #  Try to get CGI object from class, or create if not present - may
     #  not have been initialised before error occured);
     #
-    my $cgi_or=$self->{'_CGI'} || CGI::Simple->new();
+    my $cgi_or=$self->{'_CGI'} || CGI::Simple->new($r);
     debug("cgi_or $cgi_or");
 
 
@@ -221,14 +223,16 @@ sub err_html {
             local $SIG{__DIE__};
             require WebDyne::Compile;
             my $container_ar=(
-                $Package{'container_ar'} ||= &WebDyne::Compile::compile(
-                    $self,
-                    {
+            
+                #  Don't cache it - only minor penalty to recompile and WEBDYNE_RELOAD=1 breaks error handler
+                #  if multiple errors.
+                #$Package{'container_ar'} ||= &WebDyne::Compile::compile(
+                $self->WebDyne::Compile::compile({
 
-                        srce     => $WEBDYNE_ERR_TEMPLATE,
-                        nofilter => 1
+                    srce     => $WEBDYNE_ERR_TEMPLATE,
+                    nofilter => 1
 
-                    })) || return $self->err_html('fatal problem in error handler during compile !');
+            })) || return $self->err_html('fatal problem in error handler during compile !');
 
 
             #  Get the data portion of the container (meta info not needed) and render. Bit of cheating
@@ -240,13 +244,12 @@ sub err_html {
             #  Reset render state and render error page
             #
             $self->render_reset($data_ar);
-            my $html_sr=$self->render(
-                {
+            my $html_sr=$self->render({
 
                     data  => $data_ar,
                     param => \%param
 
-                }) || return $self->err_html('fatal problem in error handler during render: %s !', errstr() || 'undefined error');
+            }) || return $self->err_html('fatal problem in error handler during render: %s !', errstr() || 'undefined error');
 
 
             #  Set custom handler

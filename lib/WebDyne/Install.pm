@@ -32,7 +32,7 @@ require Exporter;
 
 #  WebDyne Modules
 #
-use WebDyne::Base;
+use WebDyne::Util;
 
 
 #  Constants

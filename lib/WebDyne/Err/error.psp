@@ -91,8 +91,164 @@
 
 <!-- Perl section to populate blocks with error messages, backtraces etc. -->
 
+<perl handler="err_display" param="!{! $_[1] !}"/>
 
-<perl param="!{! return $_[3]; die &Data::Dumper::Dumper($_[3]) !}">
+
+
+<!-- Start of error table -->
+
+
+<table width="80%">
+
+
+<!-- The error string -->
+
+<block name="error">
+<tr><td><b>Error: </b></tr></td>
+
+<tr><td bgcolor="#eeeeee">
+<br>
+<tt>
+${errstr}
+</tt>
+<br>
+</td></tr>
+</block>
+
+<block name="error_extended_disabled">
+<tr><td>
+<br>
+<br>
+<b>Backtrace: </b></tr></td>
+
+<tr><td bgcolor="#eeeeee">
+<br>
+<tt>
+Set WEBDYNE_ERROR_SHOW_EXTENDED=1 to display backtrace and other information.
+</tt>
+</tr></td>
+</block>
+
+<!-- Module backtrace -->
+
+<block name="backtrace">
+<tr><td>
+<br>
+<br>
+<b>Backtrace: </b>
+</td></tr>
+
+<tr><td bgcolor="#eeeeee">
+<tt>
+<b>#&nbsp;&nbsp;&nbsp;Module</b><br>
+<br>
+<block name="backtrace_line">
+${i}&nbsp;&nbsp;${package}, line ${line}<br>
+</block>
+</tt></td></tr>
+</block>
+
+
+<!-- The HTML source context -->
+
+<block name="context">
+<tr><td>
+<br>
+<br>
+<b>Context: </b>
+</td></tr>
+
+
+<tr><td bgcolor="#eeeeee">
+<tt>
+<b>#&nbsp;&nbsp;&nbsp;Source</b> ${srce_fn}<br>
+<br>
+<block name="context_line">
+<span style="!{! $_[3]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
+</block>
+</tt></td></tr>
+</block>
+
+
+<!-- Any Eval context -->
+
+<block name="eval">
+<tr><td>
+<br>
+<br>
+<b>Code: </b>
+</td></tr>
+
+
+<tr><td bgcolor="#eeeeee">
+<tt>
+<b>#&nbsp;&nbsp;&nbsp;Source</b> ${srce_fn}<br>
+<br>
+<block name="eval_line">
+<span style="!{! $_[3]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
+</block>
+</tt></td></tr>
+</block>
+
+
+<!-- CGI Paramaters -->
+
+<block name="cgi_param">
+<tr><td>
+<br>
+<br>
+<b>CGI Parameters: </b>
+</td></tr>
+
+<tr><td bgcolor="#eeeeee">
+<br>
+<span style="color:black">
+<pre>
+${cgi_param_dump}
+</pre>
+</span>
+</td></tr>
+</block>
+
+</table>
+
+
+<!-- End of error table. Display requested URI -->
+
+<br>
+
+<block name="uri">
+<b>Requested URI: </b>!{! shift()->r->uri().'' !}
+</block>
+
+<br>
+</section>
+
+<footer>
+    <hr align="left" width="80%" size="1">
+
+
+    <!-- And finally WebDyne version information -->
+
+    <block name="version">
+    <b>Version Information:</b>&nbsp; WebDyne Version:!{! $WebDyne::VERSION !}
+    </block>
+
+</footer>
+
+</body>
+</html>
+
+__PERL__
+
+use HTTP::Status qw(status_message);
+#use WebDyne::Err::Client;
+use CGI::Simple;
+
+sub err_display {
+
+#<perl0 param="!{! return $_[1]; die &Data::Dumper::Dumper($_[3]) !}">
+
 
 #  Need WebDyne Constants
 #
@@ -381,155 +537,5 @@ $self->render_block('version') if $WEBDYNE_ERROR_VERSION_SHOW;
 #
 return \undef;
 
-</perl>
-
-
-<!-- Start of error table -->
-
-
-<table width="80%">
-
-
-<!-- The error string -->
-
-<block name="error">
-<tr><td><b>Error: </b></tr></td>
-
-<tr><td bgcolor="#eeeeee">
-<br>
-<tt>
-${errstr}
-</tt>
-<br>
-</td></tr>
-</block>
-
-<block name="error_extended_disabled">
-<tr><td>
-<br>
-<br>
-<b>Backtrace: </b></tr></td>
-
-<tr><td bgcolor="#eeeeee">
-<br>
-<tt>
-Set WEBDYNE_ERROR_SHOW_EXTENDED=1 to display backtrace and other information.
-</tt>
-</tr></td>
-</block>
-
-<!-- Module backtrace -->
-
-<block name="backtrace">
-<tr><td>
-<br>
-<br>
-<b>Backtrace: </b>
-</td></tr>
-
-<tr><td bgcolor="#eeeeee">
-<tt>
-<b>#&nbsp;&nbsp;&nbsp;Module</b><br>
-<br>
-<block name="backtrace_line">
-${i}&nbsp;&nbsp;${package}, line ${line}<br>
-</block>
-</tt></td></tr>
-</block>
-
-
-<!-- The HTML source context -->
-
-<block name="context">
-<tr><td>
-<br>
-<br>
-<b>Context: </b>
-</td></tr>
-
-
-<tr><td bgcolor="#eeeeee">
-<tt>
-<b>#&nbsp;&nbsp;&nbsp;Source</b> ${srce_fn}<br>
-<br>
-<block name="context_line">
-<span style="!{! $_[3]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
-</block>
-</tt></td></tr>
-</block>
-
-
-<!-- Any Eval context -->
-
-<block name="eval">
-<tr><td>
-<br>
-<br>
-<b>Code: </b>
-</td></tr>
-
-
-<tr><td bgcolor="#eeeeee">
-<tt>
-<b>#&nbsp;&nbsp;&nbsp;Source</b> ${srce_fn}<br>
-<br>
-<block name="eval_line">
-<span style="!{! $_[3]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
-</block>
-</tt></td></tr>
-</block>
-
-
-<!-- CGI Paramaters -->
-
-<block name="cgi_param">
-<tr><td>
-<br>
-<br>
-<b>CGI Parameters: </b>
-</td></tr>
-
-<tr><td bgcolor="#eeeeee">
-<br>
-<span style="color:black">
-<pre>
-${cgi_param_dump}
-</pre>
-</span>
-</td></tr>
-</block>
-
-</table>
-
-
-<!-- End of error table. Display requested URI -->
-
-<br>
-
-<block name="uri">
-<b>Requested URI: </b>!{! shift()->r->uri().'' !}
-</block>
-
-<br>
-</section>
-
-<footer>
-    <hr align="left" width="80%" size="1">
-
-
-    <!-- And finally WebDyne version information -->
-
-    <block name="version">
-    <b>Version Information:</b>&nbsp; WebDyne Version:!{! $WebDyne::VERSION !}
-    </block>
-
-</footer>
-
-</body>
-</html>
-
-__PERL__
-
-use HTTP::Status qw(status_message);
-use CGI::Simple;
-
+}
+#</perl>
