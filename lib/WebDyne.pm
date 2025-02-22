@@ -284,6 +284,7 @@ sub handler : method { # no subsort
                 return $self->err_html('unable to load Module::Reload - is it installed ?') if $@;
             }
             debug('running Module::Reload->check');
+            $Module::Reload::Debug=1;
             Module::Reload->check();
         }
 

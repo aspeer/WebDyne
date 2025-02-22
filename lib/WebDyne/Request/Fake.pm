@@ -31,6 +31,11 @@ use HTTP::Status (RC_OK);
 use WebDyne::Util;
 
 
+#  Var to hold package wide hash, for data shared across package
+#
+my %Package;
+
+
 #  Version information
 #
 $VERSION='2.002_58801625';
@@ -60,7 +65,8 @@ sub dir_config {
 sub filename {
 
     my $r=shift();
-    File::Spec->rel2abs($r->{'filename'}, cwd());
+    #  Store cwd as takes a fair bit of processing time.
+    File::Spec->rel2abs($r->{'filename'}, ($Package{'_cwd'} ||= cwd()));
 
 }
 
