@@ -281,8 +281,10 @@ my %constant_temp;
     #  Show eval trace. Uses SOURCE_CONTEXT_LINES to determine number of lines to show
     WEBDYNE_ERROR_EVAL_CONTEXT_SHOW => 1,
 
-    #  CGI Params
+    #  CGI and other info
     WEBDYNE_ERROR_CGI_PARAM_SHOW => 1,
+    WEBDYNE_ERROR_ENV_SHOW => 1,
+    WEBDYNE_ERROR_WEBDYNE_CONSTANT_SHOW => 1,
 
     #  URI and version
     WEBDYNE_ERROR_URI_SHOW     => 1,
@@ -300,7 +302,6 @@ my %constant_temp;
     #
     WEBDYNE_ERROR_SHOW_ALTERNATE =>
         'error display disabled - enable WEBDYNE_ERROR_SHOW to show errors, or review web server error log.',
-
 
     #  Default title
     #

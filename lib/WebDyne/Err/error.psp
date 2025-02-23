@@ -11,38 +11,78 @@
 #
 #  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
 #
-<html>
+<html lang="en">
 <head>
-
 
 <!-- Heading section with status code as page title -->
 
-<title>WebDyne Error !{! $_[1]->status !}</title>
-
+<title>WebDyne Error ^{status}</title>
+<meta charset="!{! $WEBDYNE_META->{'charset'} !}"/>
 
 <!-- Embedded style sheet for formatting -->
+<style>
 
-<style type="text/css">
-body {font-family:"Verdana"; font-weight:normal; font-size:.7em; color:black;} 
-p    {font-family:"Verdana"; font-weight:normal; color:black; margin-top:-5px}
-b    {font-family:"Verdana"; font-weight:bold; color:black; margin-top:-5px}
-h1   {font-family:"Verdana"; font-weight:normal; font-size:18pt; color:red }
-h2   {font-family:"Verdana"; font-weight:normal; font-size:14pt; color:maroon}
-tt   {font-family:"Lucida Console"; font-size:.9em}
-pre  {font-family:"Lucida Console"; font-size:.9em}
+h1 {
+    font-size:1.75rem; 
+    color:red;
+    font-weight: 600; 
+}
+
+h2 {
+    font-size:1.5rem; 
+    color:maroon;
+    font-weight: 600;
+}
+
+body {
+    background-color: #f5f5f5; /* Light gray background */
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+html {  
+    font-family: sans-serif;
+    font-size: 12px; /* or any other size you prefer */
+}
+
+td {
+/*  padding: 0.75rem; */
+    border-bottom: 1px solid #ebebeb;
+    color: #555;
+/* font-size: 0.95rem; */
+
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+.td {
+    background-color: #eeeeee
+}
+
+.monospace {
+    font-family: monospace;
+}
+
+
 </style>
 </head>
 
 
 <!-- Begin body -->
 
-<body bgcolor="white">
+<body>
 
 
 <!-- Status code and server status message -->
 
-<h1>WebDyne Error !{! $_[1]->status !}</h1><hr align="left" width="80%" size="1"><h2><i>!{! \&HTTP::Status::status_message($_[1]->status) !}</i></h2>
-
+<h1>WebDyne Error ^{status} </h1>
+<hr>
+<h2><i>!{! \&HTTP::Status::status_message($_[1]->status) !}</i></h2>
 
 <!-- Perl section to populate blocks with error messages, backtraces etc. -->
 
@@ -50,21 +90,23 @@ pre  {font-family:"Lucida Console"; font-size:.9em}
 
 <!-- Start of error table -->
 
-<table width="80%">
+<table>
 
 <!-- The error string -->
 
 <block name="error">
 <tr><td><b>Error: </b></tr></td>
 
-<tr><td bgcolor="#eeeeee">
+<tr><td class="td">
 <br>
-<tt>
+<span class="monospace">
 ${errstr}
-</tt>
+</span>
 <br>
 </td></tr>
 </block>
+
+<!-- Render this if extended errors disabled -->
 
 <block name="error_extended_disabled">
 <tr><td>
@@ -72,11 +114,11 @@ ${errstr}
 <br>
 <b>Backtrace: </b></tr></td>
 
-<tr><td bgcolor="#eeeeee">
+<tr><td>
 <br>
-<tt>
+<span class="monospace">
 Set WEBDYNE_ERROR_SHOW_EXTENDED=1 to display backtrace and other information.
-</tt>
+</span>
 </tr></td>
 </block>
 
@@ -89,14 +131,14 @@ Set WEBDYNE_ERROR_SHOW_EXTENDED=1 to display backtrace and other information.
 <b>Backtrace: </b>
 </td></tr>
 
-<tr><td bgcolor="#eeeeee">
-<tt>
+<tr><td class="td">
+<span class="monospace">
 <b>#&nbsp;&nbsp;&nbsp;Module</b><br>
 <br>
 <block name="backtrace_line">
 ${i}&nbsp;&nbsp;${package}, line ${line}<br>
 </block>
-</tt></td></tr>
+</span></td></tr>
 </block>
 
 
@@ -110,14 +152,15 @@ ${i}&nbsp;&nbsp;${package}, line ${line}<br>
 </td></tr>
 
 
-<tr><td bgcolor="#eeeeee">
-<tt>
+<tr><td class="td">
+<span class="monospace">
 <b>#&nbsp;&nbsp;&nbsp;Source</b> ${srce_fn}<br>
 <br>
 <block name="context_line">
-<span style="!{! $_[1]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
+<span style="!{! $_[1]->{'line_error'} ? 'color:red' : '' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
+<!-- ${line_no}&nbsp;&nbsp;${line}<br> -->
 </block>
-</tt></td></tr>
+</span></td></tr>
 </block>
 
 
@@ -131,14 +174,14 @@ ${i}&nbsp;&nbsp;${package}, line ${line}<br>
 </td></tr>
 
 
-<tr><td bgcolor="#eeeeee">
-<tt>
+<tr><td class="td">
+<span class="monospace">
 <b>#&nbsp;&nbsp;&nbsp;Source</b> ${srce_fn}<br>
 <br>
 <block name="eval_line">
-<span style="!{! $_[1]->{'line_error'} ? 'color:red' : 'color:black' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
+<span style="!{! $_[1]->{'line_error'} ? 'color:red' : '' !}">${line_no}&nbsp;&nbsp;${line}</span><br>
 </block>
-</tt></td></tr>
+</span></td></tr>
 </block>
 
 
@@ -151,15 +194,50 @@ ${i}&nbsp;&nbsp;${package}, line ${line}<br>
 <b>CGI Parameters: </b>
 </td></tr>
 
-<tr><td bgcolor="#eeeeee">
+<tr><td class="td">
 <br>
-<span style="color:black">
 <pre>
 ${cgi_param_dump}
 </pre>
-</span>
 </td></tr>
 </block>
+
+
+<!-- Environment -->
+
+<block name="env">
+<tr><td>
+<br>
+<br>
+<b>Environment:</b>
+</td></tr>
+
+<tr><td class="td">
+<br>
+<pre>
+${env}
+</pre>
+</td></tr>
+</block>
+
+
+<!-- WebDyne Constants -->
+<block name="webdyne_constant">
+<tr><td>
+<br>
+<br>
+<b>WebDyne Constants:</b>
+</td></tr>
+
+<tr><td class="td">
+<br>
+<pre>
+${webdyne_constant}
+</pre>
+</td></tr>
+</block>
+
+<!-- End of error table -->
 
 </table>
 
@@ -169,12 +247,12 @@ ${cgi_param_dump}
 <br>
 
 <block name="uri">
-<b>Requested URI: </b>!{! $_[1]->uri().'' !}
+<b>Requested URI: </b>^{uri}
 </block>
 
 <br>
 
-<hr align="left" width="80%" size="1">
+<hr>
 
 
 <!-- And finally WebDyne version information -->
@@ -187,14 +265,24 @@ ${cgi_param_dump}
 </html>
 
 __PERL__
+#!perl 
+#line 269
 
-#  Need WebDyne Constants
+#  Pragma
+#
+use strict();
+
+
+#  Need WebDyne Constants and some other modules
 #
 use WebDyne::Constant;
 use HTTP::Status qw(status_message);
+use Tie::IxHash;
+use Data::Dumper;
+local $Data::Dumper::Indent=1;
+
 
 sub err_display {
-
 
 
     #  Get self ref, extract supplied params
@@ -276,9 +364,9 @@ sub err_display {
     else {
 
 
-            #  Output generic error message
-            #
-            my $errstr_display=$WEBDYNE_ERROR_SHOW_ALTERNATE;
+        #  Output generic error message
+        #
+        my $errstr_display=$WEBDYNE_ERROR_SHOW_ALTERNATE;
         $self->render_block('error', errstr=>$errstr_display);
         
         
@@ -452,11 +540,40 @@ sub err_display {
 
         #  Get message
         #
-        local $Data::Dumper::Indent=1;
-        my $cgi_param_dump=Data::Dumper::Dumper(\%_);
+        my $cgi_param_ix=tie(my %cgi_param, 'Tie::IxHash', %_);
+        $cgi_param_ix->SortByKey();
+        my $cgi_param_dump=Dumper(\%cgi_param);
         $cgi_param_dump=$cgi_or->escapeHTML($cgi_param_dump);
         $cgi_param_dump=~s/[\x00]+/,/g;
         $self->render_block('cgi_param', cgi_param_dump=>$cgi_param_dump );
+
+    }
+
+
+    if ($WEBDYNE_ERROR_ENV_SHOW) {
+
+
+        #  Get environment
+        #
+        my $env_ix=tie(my %env, 'Tie::IxHash', %ENV);
+        $env_ix->SortByKey();
+        my $env_dumper=Dumper(\%env);
+        $env_dumper=$cgi_or->escapeHTML($env_dumper);
+        $self->render_block('env', env=>$env_dumper );
+
+    }
+
+
+    if ($WEBDYNE_ERROR_WEBDYNE_CONSTANT_SHOW) {
+
+
+        #  Get environment
+        #
+        my $webdyne_constant_ix=tie(my %webdyne_constant, 'Tie::IxHash', map { $_=>${"WebDyne::$_"} } keys %WebDyne::Constant::Constant);
+        $webdyne_constant_ix->SortByKey();
+        my $webdyne_constant_dumper=Dumper(\%webdyne_constant);
+        $webdyne_constant_dumper=$cgi_or->escapeHTML($webdyne_constant_dumper);
+        $self->render_block('webdyne_constant', webdyne_constant=>$webdyne_constant_dumper );
 
     }
 
