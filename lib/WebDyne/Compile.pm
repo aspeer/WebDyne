@@ -160,9 +160,10 @@ sub compile {
         return err("unable to open file $html_cn, $!");
 
 
-    #  Read over file handle until we get to the first non-comment line (ignores auto added copyright statements)
+    #  Read over file handle until we get to the first non-comment line (ignores auto added copyright statements). Update - do
+    #  this in Treebuilder code now so can account for comments when counting line numbers
     #
-    while (1) {
+    while (0) {
         my $pos=tell($html_fh);
         my $line=<$html_fh>;
         if ($line=~/^#/) {

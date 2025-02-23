@@ -176,6 +176,23 @@ sub parse_fh {
     delete $self->{'_html_wedge_ar'};
 
 
+    #  Read over file handle until we get to the first non-comment line (ignores auto added copyright statements)
+    #
+    while (1) {
+        my $pos=tell($html_fh);
+        my $line=<$html_fh>;
+        if ($line=~/^#/) {
+            ($Line_no ||=0)++;
+            $Line_no_next=$Line_no+1;
+            next;
+        }
+        else {
+            seek($html_fh, $pos, 0);
+            last;
+        }
+    }
+
+
     #  Return closure code ref that understands how to count line
     #  numbers and wedge in extra code
     #
