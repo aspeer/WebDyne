@@ -547,7 +547,7 @@ sub start {
     my ($self, $tag)=(shift, shift);
     my $text=$_[2];
     ref($tag) || ($tag=lc($tag));
-    debug("$self start tag '$tag' Line_no $Line_no, @_, %s", Data::Dumper::Dumper(\@_));
+    debug("$self start tag '$tag' Line_no $Line_no, @_");
 
     my $html_or;
     if ($Text_fg) {
@@ -742,7 +742,7 @@ sub text {
     #  get self ref, text we will process
     #
     my ($self, $text)=@_;
-    debug("text *$text*, text_fg $Text_fg, pos %s", $self->{'_pos'});
+    debug("text *$text*, text_fg $Text_fg, pos: " . $self->{'_pos'});
 
 
     #  Ignore empty text. UPDATE - don't ignore or you will mangle CR in <pre> sections, especially if they contain tags
@@ -857,7 +857,7 @@ sub comment {
     #  Handle comments in HTML. Get HTML::Element ref
     #
     my $self=shift()->SUPER::comment(@_);
-    debug("$self comment: %s, tag: %s", Dumper(\@_));
+    debug("$self comment: %s", Dumper(\@_));
 
 
     #  Change tag to 'comment' from '~comment' so we can call comment render sub in WebDyne::HTML::Tidy (can't call sub starting with ~ in perl)

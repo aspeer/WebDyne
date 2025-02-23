@@ -244,14 +244,6 @@ sub uri {
 }
 
 
-sub debug0 {
-
-    #  Stub
-    
-    #printf(shift().$/, @_);
-}
-
-
 sub output_filters {
 
     #  Stub
@@ -261,6 +253,8 @@ sub output_filters {
 sub location {
 
     #  Stub
+    shift()->{'location'}
+
 }
 
 

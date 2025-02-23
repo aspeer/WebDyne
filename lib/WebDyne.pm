@@ -286,18 +286,16 @@ sub handler : method { # no subsort
             debug('running Module::Reload->check');
             $Module::Reload::Debug=1;
             Module::Reload->check();
+            #delete $Package{'_cache'}{$srce_inode};
         }
 
 
         #  Null out cache_inode to clear any flags
         #
-        #foreach my $key (keys %{$cache_inode_hr}) {
-        #    debug("nulling out cache_inode_hr key: $key");
-        #    $cache_inode_hr->{$key}=undef;
-        #}
-        delete $Package{'_cache'}{$srce_inode};
-        $cache_inode_hr={};
-        debug('package %s', Dumper(\%Package));
+        foreach my $key (keys %{$cache_inode_hr}) {
+            debug("nulling out cache_inode_hr key: $key");
+            $cache_inode_hr->{$key}=undef;
+        }
 
 
         #  Try to clear/reset package name space if possible

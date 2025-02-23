@@ -48,6 +48,11 @@ use constant {
 };
 
 
+#  Package state
+#
+my %Package;
+
+
 #  Version information
 #
 $VERSION='2.002_58801625';
@@ -85,11 +90,10 @@ sub new {
         %param=@param;
     }
 
-    #  Shortcuts (start_html, start_form etc.) enabled by default
+    #  Shortcuts (start_html, start_form etc.) enabled by default. 
     #
     &shortcut_enable() unless
-        $param{'noshortcut'};
-
+        $param{'noshortcut'} || $Package{'_shortcut_enable'};
 
     #  Done
     #
@@ -182,6 +186,7 @@ sub shortcut_disable {
             *{$sub_start}=sub {shift()->$action($tag, @_)};
         }
     }
+    delete $Package{'_shortcut_enable'};
     *start_html=sub {shift()->_start_html_bare(@_)};
 
 }
@@ -190,13 +195,22 @@ sub shortcut_disable {
 sub shortcut_enable {
 
     no warnings qw(redefine);
+    debug('in sub_start');
     foreach my $sub (grep {/^(?:_start|_end])/} keys %{__PACKAGE__ . '::'}) {
         (my $sub_start=$sub)=~s/^_//;
 
-        #print "enable $sub_start=>$sub";
+        #if ( *{__PACKAGE__ . "::${sub_start}"}{'CODE'} eq \&{$sub} ) {
+        #    debug("code for $sub_start exists, skipping");
+        #    last;
+        #}
+        #else {
+        #    debug("code for $sub_start needed, creating");
+        #}
+
+        debug("enable $sub_start=>$sub, %s", *{__PACKAGE__ . "::${sub_start}"}{'CODE'});
         *{$sub_start}=\&{$sub};
     }
-
+    $Package{'_shortcut_enable'}++;
     #*start_html=\&_start_html_bare;
 
 }

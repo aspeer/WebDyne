@@ -225,7 +225,11 @@ sub debug {
     my ($sec, $msec)=gettimeofday();
     #my $timestamp=strftime("%Y-%m-%d %H:%M:%S", localtime($sec)) . sprintf(".%04d", $msec);
     my $timestamp=strftime("%H:%M:%S", localtime($sec)) . sprintf('.%06d', $msec);
-
+    
+    
+    #  Get the debug message
+    #
+    my $debug=$_[1] ? sprintf(shift(), @_) : shift();
     
     
     #  Filtering ?
@@ -238,7 +242,8 @@ sub debug {
         my @debug_target=split(/[,;]/, $ENV{'WEBDYNE_DEBUG'});
         foreach my $debug_target (@debug_target) {
             if (($caller eq $debug_target) || ($method=~/\Q$debug_target\E$/)) {
-                CORE::print $debug_fh "[$timestamp $subroutine] ", sprintf(shift(), @_), $/;
+                #CORE::print $debug_fh "[$timestamp $subroutine] ", $_[1] ? sprintf(shift(), @_) : $_[0], $/;
+                CORE::print $debug_fh "[$timestamp $subroutine] ", $debug, $/;
             }
         }
     }
@@ -246,7 +251,8 @@ sub debug {
 
         #  No filtering. Open floodgates
         #
-        CORE::print $debug_fh "[$timestamp $subroutine] ", $_[1] ? sprintf(shift(), @_) : $_[0], $/;
+        #CORE::print $debug_fh "[$timestamp $subroutine] ", $_[1] ? sprintf(shift(), @_) : $_[0], $/;
+        CORE::print $debug_fh "[$timestamp $subroutine] ", $debug, $/;
     }
 
 }
