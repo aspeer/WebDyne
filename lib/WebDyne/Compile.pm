@@ -14,15 +14,6 @@
 package WebDyne::Compile;
 
 
-#  Packace init, attempt to load optional Time::HiRes module
-#
-sub BEGIN {
-    local $SIG{__DIE__};
-    $^W=0;
-    eval("use Time::HiRes qw(time)") || eval {undef};
-}
-
-
 #  Pragma
 #
 use strict qw(vars);
@@ -38,6 +29,7 @@ use WebDyne::HTML::TreeBuilder;
 use Storable;
 use IO::File;
 use Data::Dumper;
+use Devel::Confess;
 
 
 #  WebDyne Modules
@@ -74,6 +66,13 @@ my %Package;
 
 
 #==================================================================================================
+
+
+#  Packace init, attempt to load optional Time::HiRes module
+#
+BEGIN {
+    eval{ require Time::HiRes; Time::HiRes->import('time') };
+}
 
 
 sub new {

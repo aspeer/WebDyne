@@ -35,6 +35,7 @@ use HTTP::Status qw(is_success is_error RC_INTERNAL_SERVER_ERROR);
 use File::Spec;
 use Data::Dumper;
 $Data::Dumper::Indent=1;
+use Devel::Confess;
 
 
 #  Version information
@@ -198,9 +199,11 @@ sub err_html {
 
             errstr      => $errstr,
             errstack_ar => \@errstack,
-            errperl_sr  => $self->{'_err_perl_sr'},
+            #errperl_sr  => $self->{'_err_perl_sr'},
+            errperl_sr  => $self->{'_err_eval_perl_sr'},
+            erreval_line => $self->{'_err_eval_line'},
             data_ar     => $self->{'_data_ar'},
-            r           => $r
+            r           => $r,
 
         );
 
@@ -293,13 +296,26 @@ sub err_eval {
 
     #  Special handler for eval errors
     #
-    my ($self, $message, $perl_sr)=@_;
+    my ($self, $message, $perl_sr, $inode)=@_;
     debug("err_eval $message, %s, caller %s", Dumper($perl_sr), Dumper([caller()]));
+    
+    
+    #  Try to scrape line from message
+    #
+    my ($eval_line)=($message=~/\s+line\s+(\d+).$/);
+    debug("err_eval eval_line:$eval_line");
 
 
     #  Store away for future ref by error handler
     #
-    $self->{'_err_perl_sr'}=$perl_sr;
+    $self->{'_err_eval_perl_sr'}=$perl_sr;
+    $self->{'_err_eval_line'}=$eval_line;
+    
+    
+    #  Caller
+    #
+    #$self->{'_err_eval_caller'}=[caller(1)];
+    #debug('caller(1): %s', Dumper([caller(0)]));
 
 
     #  Send message off to main error handler and return

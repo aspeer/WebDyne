@@ -43,6 +43,7 @@ $Data::Dumper::Indent=1;
 use HTML::Entities qw(decode_entities);
 use CGI::Simple;
 use JSON;
+use Devel::Confess;
 
 
 #  Inherit from the Compile module, not loaded until needed though.
@@ -2595,7 +2596,7 @@ sub eval_cr {
     my $eval=join(
         $/,
         "package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;",
-        "#line $_[2]",
+        "#line $_[2] WebDyne::$_[0]",
         "sub{${$_[1]}}"
     );
     return eval($eval);
@@ -2609,11 +2610,11 @@ sub perl_init_eval {
 
     #  Eval routine for perl_init code. Avoid using var names so things like $self not available 
     #  in eval code;
-    local $SIG{__DIE__};    
+    #local $SIG{__DIE__};    
     my $eval=join(
         $/,
         "package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;",
-        "#line $_[2]",
+        "#line $_[2] WebDyne::$_[0]",
         "${$_[1]}",
         ';1'
     );
@@ -2737,7 +2738,7 @@ sub perl_init {
         if (my $err=($@ || errstr())) {
             $error_cr->();
             eval {undef};    #Clear $@
-            return $self->err_eval("error in __PERL__block: $err");
+            return $self->err_eval("error in __PERL__block: $err", $perl_sr, $inode);
         }
         elsif (!$ret) {
             $error_cr->();

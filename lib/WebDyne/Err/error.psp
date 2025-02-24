@@ -36,7 +36,7 @@ h2 {
 
 body {
     background-color: #f5f5f5; /* Light gray background */
-    margin: 0;
+    margin: 1rem;
     padding: 0;
     color: #333;
 }
@@ -164,7 +164,7 @@ ${i}&nbsp;&nbsp;${package}, line ${line}<br>
 </block>
 
 
-<!-- Any Eval context -->
+<!-- Any Eval/Code context -->
 
 <block name="eval">
 <tr><td>
@@ -254,6 +254,9 @@ ${webdyne_constant}
 
 <hr>
 
+<pre>
+<perl handler="err_display_dump" param="!{! $_[1] !}"/>
+</pre>
 
 <!-- And finally WebDyne version information -->
 
@@ -282,12 +285,19 @@ use Data::Dumper;
 local $Data::Dumper::Indent=1;
 
 
+sub err_display_dump {
+
+    my ($self, $r, $cgi_or, $param_hr)=@_;
+    return Dumper($param_hr);
+    
+}
+    
+
 sub err_display {
 
 
     #  Get self ref, extract supplied params
     #
-    #return \undef;
     my ($self, $r, $cgi_or, $param_hr)=@_;
 
 
@@ -480,9 +490,60 @@ sub err_display {
     }
 
 
+
     #  Now any eval backtrace
     #
     if ($WEBDYNE_ERROR_EVAL_CONTEXT_SHOW && $eval_text_sr) {
+
+        my $err_eval_line=$param_hr->{'erreval_line'};
+
+        #  Pretty printing
+        #
+        my $sprintf_max=length($err_eval_line + $lines_post);
+        $sprintf_max=2 if ($sprintf_max<2);
+        
+        
+
+        
+        #  Iterate through source lines till we get to area, then print
+        #
+        if ($srce_fn && $html_line_no_tag_start) {
+
+
+                my $fh=IO::File->new($srce_fn, &Fcntl::O_RDONLY) || die;
+                my $line_no;
+                while (my $line=<$fh>) {
+                    if ($line_no++ > ($err_eval_line - $lines_pre)) {
+                        if ($line_fragment_max) {
+                            $line=(length($line) > $line_fragment_max) ?
+                                substr($line,0,$line_fragment_max) . '...' : $line;
+                        }
+                        $line=$cgi_or->escapeHTML($line);
+                        my $line_no_formatted=sprintf("\%-${sprintf_max}d",$line_no);
+                        $line_no_formatted=~s/ /&nbsp;/g;
+                        my $line_error=($line_no == $err_eval_line);
+                        
+                        #  Render line
+                        #
+                        $self->render_block('eval_line',
+                            line_no=>$line_no_formatted, line=>$line, line_error=>$line_error)
+                    }
+                    last if ($line_no > ($err_eval_line + $lines_post));
+                }
+                $fh->close()
+        }
+        
+        #  Render block
+        #
+        $self->render_block('eval', srce_fn=>$srce_fn_display);
+
+
+    }
+
+
+    #  Now any eval backtrace
+    #
+    if (0 && $WEBDYNE_ERROR_EVAL_CONTEXT_SHOW && $eval_text_sr) {
 
 
         #  Get message
