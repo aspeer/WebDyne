@@ -29,7 +29,6 @@ use WebDyne::HTML::TreeBuilder;
 use Storable;
 use IO::File;
 use Data::Dumper;
-use Devel::Confess;
 
 
 #  WebDyne Modules
@@ -72,6 +71,7 @@ my %Package;
 #
 BEGIN {
     eval{ require Time::HiRes; Time::HiRes->import('time') };
+    eval{ require Devel::Confess; Devel::Confess->import() };
 }
 
 

@@ -82,7 +82,7 @@ table {
 
 <h1>WebDyne Error ^{status} </h1>
 <hr>
-<h2><i>!{! \&HTTP::Status::status_message($_[1]->status) !}</i></h2>
+<h2><i>!{! status_message($_[1]->status) !}</i></h2>
 
 <!-- Perl section to populate blocks with error messages, backtraces etc. -->
 
@@ -254,10 +254,6 @@ ${webdyne_constant}
 
 <hr>
 
-<pre>
-<perl handler="err_display_dump" param="!{! $_[1] !}"/>
-</pre>
-
 <!-- And finally WebDyne version information -->
 
 <block name="version">
@@ -268,13 +264,6 @@ ${webdyne_constant}
 </html>
 
 __PERL__
-#!perl 
-#line 269
-
-#  Pragma
-#
-use strict();
-
 
 #  Need WebDyne Constants and some other modules
 #
@@ -282,16 +271,8 @@ use WebDyne::Constant;
 use HTTP::Status qw(status_message);
 use Tie::IxHash;
 use Data::Dumper;
-local $Data::Dumper::Indent=1;
+$Data::Dumper::Indent=1;
 
-
-sub err_display_dump {
-
-    my ($self, $r, $cgi_or, $param_hr)=@_;
-    return Dumper($param_hr);
-    
-}
-    
 
 sub err_display {
 
@@ -317,31 +298,13 @@ sub err_display {
 
     #  Get any eval text if supplied
     #
-    my $eval_text_sr=$param_hr->{'errperl_sr'};
+    my $eval_text_sr=$param_hr->{'err_eval_perl_sr'};
 
 
     #  Source file name and tag start/finish line numbers for this error
     #
     my $srce_fn=$self->data_ar_html_srce_fn($data_ar) if $data_ar;
     my $srce_fn_display=$srce_fn if $WEBDYNE_ERROR_SOURCE_FILENAME_SHOW;
-
-
-    #  Try to get line number of eval error 
-    #
-    my $eval_line_no;
-    for (my $i=1; defined($errtrace_ar->[$i]); $i++) {
-        my $method=$errtrace_ar->[$i][0]  ||  last;
-        next unless ($method=~/^WebDyne::\w{32}/);
-        $eval_line_no=$errtrace_ar->[$i][2];
-        last;
-    }
-    unless ($eval_line_no) {
-        #  Might be syntax error - last resort
-        #
-        if ($errstr=~/syntax error at.*?line\s+(\w+)/) {
-            $eval_line_no=$1;
-        }
-    }
 
 
     #  Display error string
@@ -448,6 +411,8 @@ sub err_display {
 
     #  Print source file region that caused error to show context. Only do if show source flag set
     #  and we have found a line number.
+    #  
+    #  Cache file in case needed for next block
     #
     if ($WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW && $html_line_no_tag_start) {
 
@@ -491,11 +456,15 @@ sub err_display {
 
 
 
-    #  Now any eval backtrace
+    #  Now any eval backtrace ?
     #
     if ($WEBDYNE_ERROR_EVAL_CONTEXT_SHOW && $eval_text_sr) {
 
-        my $err_eval_line=$param_hr->{'erreval_line'};
+
+        #  Get the eval line
+        #        
+        my $err_eval_line=$param_hr->{'err_eval_line'};
+
 
         #  Pretty printing
         #
@@ -503,11 +472,9 @@ sub err_display {
         $sprintf_max=2 if ($sprintf_max<2);
         
         
-
-        
         #  Iterate through source lines till we get to area, then print
         #
-        if ($srce_fn && $html_line_no_tag_start) {
+        if ($srce_fn && $err_eval_line) {
 
 
                 my $fh=IO::File->new($srce_fn, &Fcntl::O_RDONLY) || die;
@@ -537,59 +504,6 @@ sub err_display {
         #
         $self->render_block('eval', srce_fn=>$srce_fn_display);
 
-
-    }
-
-
-    #  Now any eval backtrace
-    #
-    if (0 && $WEBDYNE_ERROR_EVAL_CONTEXT_SHOW && $eval_text_sr) {
-
-
-        #  Get message
-        #
-        my $errstr=$param_hr->{'errstr'};
-        
-        
-            #  Get each line of the eval code
-            #	
-            my @eval_line=split(/\n/, ${$eval_text_sr});
-            
-
-            #  Pretty printing
-            #
-            my $sprintf_max=length($eval_line_no + $lines_post);
-            $sprintf_max=2 if ($sprintf_max<2);
-            
-            
-
-            #  Iterate through eval source lines till we get to area, then print
-            #
-            foreach my $line_no ($html_line_no_tag_start .. ($eval_line_no+$lines_post)) {
-                my $line=shift(@eval_line);
-                if ($line_no > ($eval_line_no-$lines_pre)) {
-                    if ($line_fragment_max) {
-                        $line=(length($line) > $line_fragment_max) ?
-                            substr($line,0,$line_fragment_max) . '...' : $line;
-                    }
-                    $line=$cgi_or->escapeHTML($line);
-                    my $line_no_formatted=sprintf("\%-${sprintf_max}d", $line_no );
-                    $line_no_formatted=~s/ /&nbsp;/g;
-                    my $line_error=($eval_line_no == $line_no);
-                    
-                    #  Render line
-                    #
-                    $self->render_block('eval_line',
-                        line_no=>$line_no_formatted, line=>$line, line_error=>$line_error)
-                }
-                #  Don't show excess lines if not needed.
-                last if ($line_no >= ($eval_line_no + scalar @eval_line));
-            }
-            
-            
-            #  Render block
-            #
-            $self->render_block('eval', srce_fn=>$srce_fn_display);
 
     }
 

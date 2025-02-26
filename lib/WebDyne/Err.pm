@@ -35,7 +35,6 @@ use HTTP::Status qw(is_success is_error RC_INTERNAL_SERVER_ERROR);
 use File::Spec;
 use Data::Dumper;
 $Data::Dumper::Indent=1;
-use Devel::Confess;
 
 
 #  Version information
@@ -197,13 +196,11 @@ sub err_html {
         my @errstack=@{&errstack()};
         my %param=(
 
-            errstr      => $errstr,
-            errstack_ar => \@errstack,
-            #errperl_sr  => $self->{'_err_perl_sr'},
-            errperl_sr  => $self->{'_err_eval_perl_sr'},
-            erreval_line => $self->{'_err_eval_line'},
-            data_ar     => $self->{'_data_ar'},
-            r           => $r,
+            errstr              => $errstr,
+            errstack_ar         => \@errstack,
+            err_eval_perl_sr    => $self->{'_err_eval_perl_sr'},
+            err_eval_line       => $self->{'_err_eval_line'},
+            data_ar             => $self->{'_data_ar'},
 
         );
 
@@ -302,22 +299,23 @@ sub err_eval {
     
     #  Try to scrape line from message
     #
-    my ($eval_line)=($message=~/\s+line\s+(\d+).$/);
-    debug("err_eval eval_line:$eval_line");
+    my ($err_eval_line)=($message=~/WebDyne::${inode}\s+line\s+(\d+)/);
+    unless ($err_eval_line) {
+        #  Only if Devel::Confess installed will this parse work
+        #
+        #  Illegal division by zero at (eval 211)[WebDyne::6d8da02b63e4707b80466fda560173a6:5] line 1.
+        #
+        ($err_eval_line)=($message=~/\[WebDyne::${inode}:(\d+)\]/);
+    }
+    debug("err_eval eval_line:$err_eval_line");
 
 
     #  Store away for future ref by error handler
     #
     $self->{'_err_eval_perl_sr'}=$perl_sr;
-    $self->{'_err_eval_line'}=$eval_line;
+    $self->{'_err_eval_line'}=$err_eval_line;
     
     
-    #  Caller
-    #
-    #$self->{'_err_eval_caller'}=[caller(1)];
-    #debug('caller(1): %s', Dumper([caller(0)]));
-
-
     #  Send message off to main error handler and return
     #
     return &errsubst($message);

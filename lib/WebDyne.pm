@@ -43,7 +43,6 @@ $Data::Dumper::Indent=1;
 use HTML::Entities qw(decode_entities);
 use CGI::Simple;
 use JSON;
-use Devel::Confess;
 
 
 #  Inherit from the Compile module, not loaded until needed though.
@@ -105,10 +104,11 @@ if ($WEBDYNE_EVAL_SAFE) {die "WEBDYNE_EVAL_SAFE disabled in this version\n"}
 #==================================================================================================
 
 
-#  Packace init, attempt to load optional Time::HiRes module
+#  Packace init, attempt to load optional Time::HiRes, Devel::Confess modules
 #
 BEGIN {
     eval{ require Time::HiRes; Time::HiRes->import('time') };
+    eval{ require Devel::Confess; Devel::Confess->import() };
 }
 
 
@@ -907,7 +907,8 @@ sub init_class {
             my $sub_cr=&eval_cr($inode, \$eval_text, $html_line_no);
             if ($@) {
                 my $err=$@; eval {undef};
-                return err("eval of code returned error: $err");
+                #return err("eval of code returned error: $err");
+                return $self->err_eval("eval of code returned error: $err", \$eval_text, $inode);
             }
             elsif (!defined($sub_cr)) {
                 return err("eval of code did not return a true value");
@@ -956,11 +957,11 @@ sub init_class {
 
             #  An error occurred - handle it and return.
             #
-            if (errstr() || $@) {
+            if (my $err=(errstr() || $@)) {
 
                 #  Eval error or err() called during routine.
                 #
-                return $self->err_eval($@ ? $@ : undef, \$eval_text);
+                return $self->err_eval($err, \$eval_text, $inode);
 
             }
             else {
@@ -1062,11 +1063,11 @@ sub init_class {
 
             #  An error occurred - handle it and return.
             #
-            if (errstr() || $@) {
+            if (my $err=(errstr() || $@)) {
 
                 #  Eval error or err() called during routine.
                 #
-                return $self->err_eval($@ ? $@ : undef, \$eval_text);
+                return $self->err_eval($err, \$eval_text, $inode);
 
             }
             else {
