@@ -320,8 +320,8 @@ sub httpd_config {
     #  Go through
     #
     foreach my $httpd_config (@httpd_config) {
-    
-        if ($httpd_config =~ /Apache\/(\d+\.\d+)/) {
+
+        if ($httpd_config=~/Apache\/(\d+\.\d+)/) {
             $config{'HTTPD_VER'}=$1;
             next;
         }

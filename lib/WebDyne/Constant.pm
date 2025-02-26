@@ -282,8 +282,8 @@ my %constant_temp;
     WEBDYNE_ERROR_EVAL_CONTEXT_SHOW => 1,
 
     #  CGI and other info
-    WEBDYNE_ERROR_CGI_PARAM_SHOW => 1,
-    WEBDYNE_ERROR_ENV_SHOW => 1,
+    WEBDYNE_ERROR_CGI_PARAM_SHOW        => 1,
+    WEBDYNE_ERROR_ENV_SHOW              => 1,
     WEBDYNE_ERROR_WEBDYNE_CONSTANT_SHOW => 1,
 
     #  URI and version

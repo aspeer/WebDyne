@@ -44,6 +44,7 @@ use WebDyne::Request::Fake;
 use Getopt::Long;
 use Pod::Usage;
 use IO::File;
+
 #use Devel::Gladiator;
 
 
@@ -132,7 +133,7 @@ sub main {
 
     #  Split out header in/out arrays as Request::Fake uses hash to hold them (should be array one day)
     #
-    my ($header_out_ar, $header_in_ar)=map { delete $opt{$_} } qw(
+    my ($header_out_ar, $header_in_ar)=map {delete $opt{$_}} qw(
         headers_out
         headers_in
     );
@@ -141,8 +142,8 @@ sub main {
     #  Get new request object
     #
     LOOP: while (1) {
-        for (1 .. ($opt{'repeat'} || 1)) {
-        
+        for (1..($opt{'repeat'} || 1)) {
+
             #  Get new request handler
             #
             my $r=WebDyne::Request::Fake->new(
@@ -194,17 +195,19 @@ sub main {
             #
             defined($handler->handler($r)) || return err();
             print $/;
+
             #my $gladiator_ar=Devel::Gladiator::walk_arena();
 
 
             #  Manual cleanup
             #
             $r->DESTROY();
+
             #print("SV: ",  scalar @{$gladiator_ar}, "\n") if $opt{'leak'};
             #@{$gladiator_ar} = ();
 
         }
-        
+
         last LOOP unless $opt{'loop'};
     }
 

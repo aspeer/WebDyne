@@ -90,7 +90,7 @@ sub new {
         %param=@param;
     }
 
-    #  Shortcuts (start_html, start_form etc.) enabled by default. 
+    #  Shortcuts (start_html, start_form etc.) enabled by default.
     #
     &shortcut_enable() unless
         $param{'noshortcut'} || $Package{'_shortcut_enable'};
@@ -211,6 +211,7 @@ sub shortcut_enable {
         *{$sub_start}=\&{$sub};
     }
     $Package{'_shortcut_enable'}++;
+
     #*start_html=\&_start_html_bare;
 
 }

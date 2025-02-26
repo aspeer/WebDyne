@@ -107,15 +107,14 @@ if ($WEBDYNE_EVAL_SAFE) {die "WEBDYNE_EVAL_SAFE disabled in this version\n"}
 #  Packace init, attempt to load optional Time::HiRes, Devel::Confess modules
 #
 BEGIN {
-    eval{ require Time::HiRes; Time::HiRes->import('time') };
-    eval{ require Devel::Confess; Devel::Confess->import() };
+    eval {require Time::HiRes;    Time::HiRes->import('time')};
+    eval {require Devel::Confess; Devel::Confess->import()};
 }
-
 
 
 #  Main handler for mod_perl
 #
-sub handler : method { # no subsort
+sub handler : method {    # no subsort
 
 
     #  Get self ref/class, request ref
@@ -287,6 +286,7 @@ sub handler : method { # no subsort
             debug('running Module::Reload->check');
             $Module::Reload::Debug=1;
             Module::Reload->check();
+
             #delete $Package{'_cache'}{$srce_inode};
         }
 
@@ -901,12 +901,13 @@ sub init_class {
             no strict;
             no integer;
             debug("calling eval sub: $eval_text");
-            
+
             #  Get code ref. Do this way so run in sub with no access to vars in this scope
             #
             my $sub_cr=&eval_cr($inode, \$eval_text, $html_line_no);
             if ($@) {
                 my $err=$@; eval {undef};
+
                 #return err("eval of code returned error: $err");
                 return $self->err_eval("eval of code returned error: $err", \$eval_text, $inode);
             }
@@ -948,6 +949,7 @@ sub init_class {
             #  get to ..
             local *_=$param_hr;
             debug('eval call starting');
+
             #@eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $eval_param_hr);
             @eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $self->{'_r'}, $cgi_or, $eval_param_hr);
             debug("eval call complete, $@, %s", Dumper(\@eval));
@@ -1351,6 +1353,7 @@ sub render {
     #
     my $data_ar=$param_hr->{'data'} || $self->{'_perl'}[0][$WEBDYNE_NODE_CHLD_IX] ||
         return err('unable to get HTML data array');
+
     #$self->{'_perl'}[0] ||= $data_ar;
 
 
@@ -2410,7 +2413,7 @@ sub perl {
         #
         #unshift @{$self->{'_perl'}}, $data_ar->[$WEBDYNE_NODE_CHLD_IX];
         unshift @{$self->{'_perl'}}, $data_ar;
-        debug("unshift $data_ar onto perl stack, stack:%s",join('*',@{$self->{'_perl'}}));
+        debug("unshift $data_ar onto perl stack, stack:%s", join('*', @{$self->{'_perl'}}));
 
 
         #  Contruct subroutine call
@@ -2430,7 +2433,7 @@ sub perl {
             #
             debug("error occured on eval, passing to error handler, $@");
             shift @{$self->{'_perl'}};
-            debug("shift off perl stack, stack:%s",join('*',@{$self->{'_perl'}}));
+            debug("shift off perl stack, stack:%s", join('*', @{$self->{'_perl'}}));
             return err();
 
 
@@ -2470,7 +2473,7 @@ sub perl {
 
         #  If get to here shift perl data_ar ref from stack
         #
-        debug("shift off perl stack, stack:%s",join('*',@{$self->{'_perl'}}));
+        debug("shift off perl stack, stack:%s", join('*', @{$self->{'_perl'}}));
         shift @{$self->{'_perl'}};
 
     }
@@ -2609,9 +2612,9 @@ sub eval_cr {
 sub perl_init_eval {
 
 
-    #  Eval routine for perl_init code. Avoid using var names so things like $self not available 
+    #  Eval routine for perl_init code. Avoid using var names so things like $self not available
     #  in eval code;
-    #local $SIG{__DIE__};    
+    #local $SIG{__DIE__};
     my $eval=join(
         $/,
         "package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;",
@@ -2832,13 +2835,12 @@ sub subst_attr {
     #
     #my $index;
     #foreach my $attr_name (sort keys %attr) {
-    while (my($attr_name, $attr_value)=each %attr) {
-    
-        
+    while (my ($attr_name, $attr_value)=each %attr) {
+
+
         #  Get value
         #
         #my $attr_value=$attr{$attr_name};
-        
 
 
         #  Skip perl attr, as that is perl code, do not do any regexp on perl code, as we will
@@ -2857,6 +2859,7 @@ sub subst_attr {
             #
             my ($oper, $eval_text)=($1, $3);
             debug("subst_attr $attr_name path 1: oper:$oper, eval_text: $eval_text");
+
             #my $eval=$eval_cr->{$oper}->($self, $data_ar, $param_hr, $eval_text, $index++, 1) ||
             my $eval=$eval_cr->{$oper}->($self, $data_ar, $param_hr, $eval_text, $attr_name, 1) ||
                 return err();
@@ -2876,6 +2879,7 @@ sub subst_attr {
                     return err("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
                 $sr;
             };
+
             #$attr_value=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++) || return err()}/ge;
             $attr_value=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$attr_name) || return err()}/ge;
             $attr{$attr_name}=$attr_value;
@@ -3320,6 +3324,7 @@ sub CGI {
         #  And create it
         #
         my $cgi_or=CGI::Simple->new($MOD_PERL && $self->{'_r'});
+
         #my $cgi_or=CGI::Simple->new(); # Needs PerlOpt +GlobalRequest
         #$cgi_or->delete(ref($self->{'_r'})) # Pretty crappy way of doing it
 

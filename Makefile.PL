@@ -98,7 +98,6 @@ my %makefile=(
     'macro'				    =>  {
 
         COPYRIGHT			    =>  'Copyright (C) 2006-2010 Andrew Speer, All rights reserved',
-	#LICENSE				    =>  'GPL: GNU General Public License',
 
        },
 
@@ -111,7 +110,7 @@ my %makefile=(
 
     ($mm_ver < 6.31 ? () : (
 
-        LICENSE                             =>  'gpl_2',
+        LICENSE                             =>  'perl',
 
     )),
     

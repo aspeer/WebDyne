@@ -65,6 +65,7 @@ sub dir_config {
 sub filename {
 
     my $r=shift();
+
     #  Store cwd as takes a fair bit of processing time.
     File::Spec->rel2abs($r->{'filename'}, ($Package{'_cwd'} ||= cwd()));
 
@@ -198,6 +199,7 @@ sub register_cleanup {
     #my $r=shift();
     my ($r, $cr)=@_;
     push @{$r->{'register_cleanup'} ||= []}, $cr;
+
     #my $ar=$r->{'register_cleanup'} ||= [];
     #push @
 
@@ -296,6 +298,7 @@ sub content_type {
 
     my ($r, $content_type)=@_;
     $r->{'headers_out'}{'Content-Type'}=$content_type;
+
     #CORE::print("Content-Type: $content_type\n");
 
 }
@@ -332,5 +335,5 @@ sub DESTROY {
             $cr->($r);
         }
     }
-    
+
 }

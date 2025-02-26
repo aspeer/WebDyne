@@ -196,11 +196,11 @@ sub err_html {
         my @errstack=@{&errstack()};
         my %param=(
 
-            errstr              => $errstr,
-            errstack_ar         => \@errstack,
-            err_eval_perl_sr    => $self->{'_err_eval_perl_sr'},
-            err_eval_line       => $self->{'_err_eval_line'},
-            data_ar             => $self->{'_data_ar'},
+            errstr           => $errstr,
+            errstack_ar      => \@errstack,
+            err_eval_perl_sr => $self->{'_err_eval_perl_sr'},
+            err_eval_line    => $self->{'_err_eval_line'},
+            data_ar          => $self->{'_data_ar'},
 
         );
 
@@ -223,16 +223,16 @@ sub err_html {
             local $SIG{__DIE__};
             require WebDyne::Compile;
             my $container_ar=(
-            
+
                 #  Don't cache it - only minor penalty to recompile and WEBDYNE_RELOAD=1 breaks error handler
                 #  if multiple errors.
                 #$Package{'container_ar'} ||= &WebDyne::Compile::compile(
                 $self->WebDyne::Compile::compile({
 
-                    srce     => $WEBDYNE_ERR_TEMPLATE,
-                    nofilter => 1
+                        srce     => $WEBDYNE_ERR_TEMPLATE,
+                        nofilter => 1
 
-            })) || return $self->err_html('fatal problem in error handler during compile !');
+                    })) || return $self->err_html('fatal problem in error handler during compile !');
 
 
             #  Get the data portion of the container (meta info not needed) and render. Bit of cheating
@@ -249,7 +249,7 @@ sub err_html {
                     data  => $data_ar,
                     param => \%param
 
-            }) || return $self->err_html('fatal problem in error handler during render: %s !', errstr() || 'undefined error');
+                }) || return $self->err_html('fatal problem in error handler during render: %s !', errstr() || 'undefined error');
 
 
             #  Set custom handler
@@ -295,12 +295,13 @@ sub err_eval {
     #
     my ($self, $message, $perl_sr, $inode)=@_;
     debug("err_eval $message, %s, caller %s", Dumper($perl_sr), Dumper([caller()]));
-    
-    
+
+
     #  Try to scrape line from message
     #
     my ($err_eval_line)=($message=~/WebDyne::${inode}\s+line\s+(\d+)/);
     unless ($err_eval_line) {
+
         #  Only if Devel::Confess installed will this parse work
         #
         #  Illegal division by zero at (eval 211)[WebDyne::6d8da02b63e4707b80466fda560173a6:5] line 1.
@@ -314,8 +315,8 @@ sub err_eval {
     #
     $self->{'_err_eval_perl_sr'}=$perl_sr;
     $self->{'_err_eval_line'}=$err_eval_line;
-    
-    
+
+
     #  Send message off to main error handler and return
     #
     return &errsubst($message);

@@ -182,7 +182,7 @@ sub parse_fh {
         my $pos=tell($html_fh);
         my $line=<$html_fh>;
         if ($line=~/^#/) {
-            ($Line_no ||=0)++;
+            ($Line_no ||= 0)++;
             $Line_no_next=$Line_no+1;
             next;
         }
