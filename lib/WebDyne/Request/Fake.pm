@@ -314,6 +314,13 @@ sub custom_response {
 }
 
 
+sub args {
+
+    return $ENV{'QUERY_STRING'};
+    
+}
+
+
 sub AUTOLOAD {
 
     my ($r, $v)=@_;
