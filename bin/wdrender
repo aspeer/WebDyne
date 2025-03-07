@@ -34,7 +34,7 @@ use vars   qw($VERSION);
 
 #  Use the base module
 #
-use WebDyne::Base;
+use WebDyne::Util;
 
 
 #  Other external modules

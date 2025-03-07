@@ -25,7 +25,7 @@ $Storable::canonical=1;
 #  Load WebDyne
 #
 require_ok('WebDyne::Compile');
-use WebDyne::Base;
+use WebDyne::Util;
 
 
 #  Run

@@ -33,6 +33,7 @@ my %WriteMakefile=(
         'Storable'			=> 0,
         'Test::More'        => 0,
         'Tie::IxHash'		=> 0,
+	'Devel::Confess'	=> 0,
 
         #  Needed for installer - can be ignored if not using installer
         'Text::Template'    => 0,

@@ -29,7 +29,7 @@ use WebDyne::Request::Fake;
 use WebDyne::Compile;
 use WebDyne::Err;
 use WebDyne;
-use WebDyne::Base;
+use WebDyne::Util;
 
 #  Error handler
 #

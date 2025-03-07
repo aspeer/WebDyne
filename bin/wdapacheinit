@@ -19,7 +19,7 @@
 use strict qw(vars);
 use vars   qw($VERSION);
 use Cwd    qw(realpath);
-use WebDyne::Base;
+use WebDyne::Util;
 use Getopt::Long;
 use Pod::Usage;
 use FindBin qw($RealBin $Script);

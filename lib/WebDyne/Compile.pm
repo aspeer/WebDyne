@@ -72,6 +72,7 @@ my %Package;
 BEGIN {
     eval {require Time::HiRes;    Time::HiRes->import('time')};
     eval {require Devel::Confess; Devel::Confess->import()};
+    eval {} if $@;
 }
 
 
