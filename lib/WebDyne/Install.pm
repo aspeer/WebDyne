@@ -142,7 +142,8 @@ sub install {
     #  Get prefix, discard class
     #
     my (undef, $prefix)=@_;
-    $prefix=undef if ($prefix eq $Config{'prefix'});
+    #$prefix=undef if ($prefix eq $Config{'prefix'});
+    $prefix=undef if ($prefix=~/^$Config{'prefix'}/);
 
     message;
     message sprintf(q[installation source directory '%s'.], $prefix || $Config{'prefix'});
@@ -204,12 +205,15 @@ sub cache_dn {
     #
     if ($WEBDYNE_CACHE_DN) {
         $cache_dn=$WEBDYNE_CACHE_DN;
+        debug("using WEBDYNE_CACHE_DN: $WEBDYNE_CACHE_DN for cache_dn");
     }
 
     #  If installed into custom location via PREFIX, but not the same
     #  as the Perl instal,
-    elsif ($prefix && ($prefix ne $Config{'prefix'})) {
+    #elsif ($prefix && ($prefix ne $Config{'prefix'})) {
+    elsif ($prefix && ($prefix !~ /^$Config{'prefix'}/)) {
         $cache_dn=File::Spec->catdir($prefix, 'cache');
+        debug("using prefix: $prefix for cache_dn");
     }
 
 
@@ -218,6 +222,7 @@ sub cache_dn {
     #
     else {
         $cache_dn=$DIR_CACHE_DEFAULT;
+        debug("using DIR_CACHE_DEFAULT: $DIR_CACHE_DEFAULT as cache_dn");
     }
 
 

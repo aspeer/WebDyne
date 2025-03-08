@@ -23,6 +23,8 @@ use WebDyne::Util;
 use Getopt::Long;
 use Pod::Usage;
 use FindBin qw($RealBin $Script);
+use Data::Dumper;
+$Data::Dumper::Indent=1;
 
 
 #  Version info
@@ -88,6 +90,7 @@ require WebDyne::Install::Apache;
 #  Get location prefile, call install/uninstall routine
 #
 my $prefix_dn=realpath(File::Spec->rel2abs(File::Spec->updir(), $RealBin));
+debug("about to call install/uninstall with prefix_dn: $prefix_dn, RealBin: $RealBin, opt: %s", Dumper(\%opt));
 if ($opt{'uninstall'}) {
     exit ${WebDyne::Install::Apache->uninstall($prefix_dn, $RealBin, \%opt) || die errstr()}
 }
