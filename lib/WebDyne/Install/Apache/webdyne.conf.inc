@@ -185,6 +185,13 @@ __CACHE_ALLOW_24__
 
 -->
 
+
+#  Some config setting defaults. See documentation for full range. Commented out
+#  options represent defaults
+#
+PerlRequire conf.d/webdyne_constant.pl
+
+
 #  Optional debugging. Everything or some things. Note debuggin only enabled if
 #  WebDybe installed with WEBDYNE_DEBUG=1; perl Makefile.PL; make install
 #

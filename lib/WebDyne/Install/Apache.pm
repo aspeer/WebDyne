@@ -190,6 +190,8 @@ sub install {
         $apache_conf_dn, $config_hr->{'FILE_WEBDYNE_CONF'});
 
 
+
+
     #  Open, write webdyne config file unless in uninstall
     #
     unless ($Uninstall_fg) {
@@ -209,6 +211,33 @@ sub install {
         }
 
     }
+    
+
+    #  Work out constants file name
+    #
+    my $webdyne_conf_pl_fn=File::Spec->catfile(
+        $apache_conf_dn, $config_hr->{'FILE_WEBDYNE_CONF_PL'});
+    
+
+    #  Copy constants file into conf.d
+    #
+    unless ($Uninstall_fg) {
+        message("writing Webdyne config file '$webdyne_conf_pl_fn' into Apache location");
+        my $srce_fn=File::Spec->catfile(
+            $template_dn, $config_hr->{'FILE_WEBDYNE_CONF_PL'});
+        copy($srce_fn, $webdyne_conf_fn) ||
+            return err("unable to copy $srce_fn to $webdyne_conf_pl_fn, $!")
+    }
+    else {
+    
+        #  In uninstall - get rid of conf file
+        #
+        if (-f $webdyne_conf_pl_fn) {
+            unlink($webdyne_conf_pl_fn) && message "remove config file $webdyne_conf_pl_fn";
+        }
+
+    }
+        
 
 
     #  Only modify config file if no conf.d dir, denoted by var below
