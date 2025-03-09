@@ -103,7 +103,7 @@ PerlModule	WebDyne WebDyne::Compile
 my @out;
 if ($MP2_INSTALLED) {
 	@out=(
-		'AddHandler	perl-script	.psp',
+		'AddHandler	modperl	.psp',
 		'PerlHandler	WebDyne'
         );
 }
@@ -130,7 +130,7 @@ $OUT=<<__PM_DENY_22__;
 
 #  Apache 2.2 block config
 #
-<Files ~ "\.pm$">
+<Files ~ "\.pm\$">
 Order allow,deny
 Deny from all
 </Files>
@@ -143,7 +143,7 @@ $OUT=<<__PM_DENY_24__;
 
 #  Apache 2.4 block config
 #
-<Files ~ "\.pm$">
+<Files ~ "\.pm\$">
 Require all denied
 </Files>
 
@@ -192,7 +192,7 @@ __CACHE_ALLOW_24__
 PerlRequire "<!-- File::Spec->catfile($DIR_APACHE_CONF, 'webdyne_conf.pl') -->"
 
 
-#  Optional debugging. Everything or some things. Note debuggin only enabled if
+#  Optional debugging. Everything or some things. Note debugging only enabled if
 #  WebDybe installed with WEBDYNE_DEBUG=1; perl Makefile.PL; make install
 #
 #PerlSetEnv WEBDYNE_DEBUG 1

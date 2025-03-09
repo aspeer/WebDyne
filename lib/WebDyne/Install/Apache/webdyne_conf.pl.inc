@@ -1,7 +1,7 @@
 #  Config setting defaults. See documentation for full range. Commented out
 #  options represent defaults
 #
-use WebDyne::Constant;
+use WebDyne;
 
 
 #  Error display/extended display on/off. More granular options below. 
