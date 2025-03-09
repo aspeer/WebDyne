@@ -332,10 +332,13 @@ my %constant_temp;
         'Pragma'                    => 'no-cache',
         'Expires'                   => '0',
         'X-Content-Type-Options'    => 'nosniff',
-        'X-Frame-Options'           => 'SAMEORIGIN',
-        'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains; preload',
-        'Content-Security-Policy'   => "default-src 'self'; style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com/ 'unsafe-inline'; font-src https://fonts.gstatic.com",
-        'Referrer-Policy'           => 'strict-origin-when-cross-origin',
+        'X-Frame-Options'           => 'SAMEORIGIN'
+        
+        #  Set other options here, e.g.
+        #
+        #'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains; preload',
+        #'Content-Security-Policy'   => "default-src 'self'; style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com/ 'unsafe-inline'; font-src https://fonts.gstatic.com",
+        #'Referrer-Policy'           => 'strict-origin-when-cross-origin',
 
     },
 
