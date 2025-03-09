@@ -683,8 +683,12 @@ sub optimise_one {
                 my @data_child=$data_ar->[$WEBDYNE_NODE_CHLD_IX] ? @{$data_ar->[$WEBDYNE_NODE_CHLD_IX]} : undef;
                 debug("about to call $html_tag with attr_hr:%s, data_child: %s", Dumper($attr_hr, \@data_child));
                 my $html=eval {
-                    $html_tiny_or->$html_tag(grep {$_} $attr_hr || {}, join(undef, @data_child))
+                    $attr_hr=undef unless keys %{$attr_hr};
+                    $html_tiny_or->$html_tag(grep {$_} $attr_hr, join(undef, @data_child))
 
+                    #  Older attempts
+                    #
+                    #$html_tiny_or->$html_tag(grep {$_} $attr_hr || {}, join(undef, @data_child))
                     #$html_tiny_or->$html_tag($attr_hr || {}, join(undef, grep {$_} @data_child))
                 } ||
 

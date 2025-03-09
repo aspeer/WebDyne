@@ -187,7 +187,9 @@ sub shortcut_disable {
         }
     }
     delete $Package{'_shortcut_enable'};
-    *start_html=sub {shift()->_start_html_bare(@_)};
+    
+    #  || *start_html to remove warnings
+    *start_html=sub {shift()->_start_html_bare(@_)} || *start_html
 
 }
 
@@ -341,9 +343,10 @@ sub _end_html {
 
 sub html {
 
-    #my $self=shift();
-    #die Dumper(\@_);
-    return $WEBDYNE_DTD . shift()->SUPER::html(@_);
+    my $self=shift();
+    #  Move default attributes into <html> tag unless user has explicitely supplied
+    unshift (@_, $WEBDYNE_HTML_PARAM) unless (ref $_[0] eq 'HASH');
+    return $WEBDYNE_DTD . $self->SUPER::html(@_);
 
 }
 

@@ -792,6 +792,7 @@ sub init_class {
             require Apache::SubRequest;
             require Apache::Const; Apache::Const->import(-compile => qw(OK DECLINED));
             require APR::Table;
+            require APR::Pool;
         } || eval {
             require Apache2::Log;
             require Apache2::Response;
@@ -801,8 +802,9 @@ sub init_class {
             require Apache2::RequestUtil;
             require Apache2::RequestIO;
             require APR::Table;
+            require APR::Pool;
         };
-        eval {undef} if $@;
+        eval {} if $@;
         unless (UNIVERSAL::can('Apache', 'OK')) {
             if (UNIVERSAL::can('Apache2::Const', 'OK')) {
                 *Apache::OK=\&Apache2::Const::OK;
