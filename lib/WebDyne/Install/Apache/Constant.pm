@@ -125,6 +125,7 @@ my $mp2_installed=&mp2_installed();
     #
     FILE_WEBDYNE_CONF_TEMPLATE => 'webdyne.conf.inc',
     FILE_WEBDYNE_CONF          => 'webdyne.conf',
+    FILE_WEBDYNE_CONF_PL_TEMPLATE       => 'webdyne_conf.pl.inc',
     FILE_WEBDYNE_CONF_PL       => 'webdyne_conf.pl',
     FILE_APACHE_CONF_TEMPLATE  => 'apache.conf.inc',
     FILE_APACHE_CONF_DELIM     => '#*WebDyne*',

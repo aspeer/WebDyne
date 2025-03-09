@@ -1,6 +1,8 @@
 #  Config setting defaults. See documentation for full range. Commented out
 #  options represent defaults
 #
+use WebDyne::Constant;
+
 
 #  Error display/extended display on/off. More granular options below. 
 #  Set to 1 to enable, 0 to disable
@@ -92,3 +94,7 @@
 #
 #  $WebDyne::WENDYNE_RELOAD=<!-- $WEBDYNE_RELOAD -->;
 
+
+#  Alway return true value at end of load
+#
+1;

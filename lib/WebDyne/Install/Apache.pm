@@ -219,14 +219,42 @@ sub install {
         $apache_conf_dn, $config_hr->{'FILE_WEBDYNE_CONF_PL'});
     
 
+    #  Get template path name from module install dir.
+    #
+    my $template_webdyne_conf_pl_fn=File::Spec->catfile(
+        $template_dn, $config_hr->{'FILE_WEBDYNE_CONF_PL_TEMPLATE'});
+
+
+    #  Open it as a template
+    #
+    my $template_webdyne_conf_pl_or=Text::Template->new(
+
+        type   => 'FILE',
+        source => $template_webdyne_conf_pl_fn
+
+    ) || return err("unable to open template $template_fn, $!");
+
+
+    #  Fill in with out self ref as a hash
+    #
+    my $webdyne_conf_pl=$template_webdyne_conf_pl_or->fill_in(
+
+        HASH       => $config_hr,
+        DELIMITERS => ['<!--', '-->'],
+
+    ) || return err("unable to fill in template $template_webdyne_conf_pl_fn, $Text::Template::ERROR");
+
+
     #  Copy constants file into conf.d
     #
     unless ($Uninstall_fg) {
-        message("writing Webdyne config file '$webdyne_conf_pl_fn' into Apache location");
-        my $srce_fn=File::Spec->catfile(
-            $template_dn, $config_hr->{'FILE_WEBDYNE_CONF_PL'});
-        copy($srce_fn, $webdyne_conf_fn) ||
-            return err("unable to copy $srce_fn to $webdyne_conf_pl_fn, $!")
+
+        message "writing Webdyne config file '$webdyne_conf_pl_fn'.";
+        my $webdyne_conf_pl_fh=IO::File->new($webdyne_conf_pl_fn, O_CREAT | O_WRONLY | O_TRUNC) ||
+            return err("unable to open file $webdyne_conf_pl_fn, $!");
+        print $webdyne_conf_pl_fh $webdyne_conf_pl;
+        $webdyne_conf_pl_fh->close() unless ($webdyne_conf_pl_fh eq '*main::STDOUT');
+
     }
     else {
     
