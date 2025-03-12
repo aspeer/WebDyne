@@ -263,6 +263,9 @@ sub new {
                 }
                 my $uri_or=URI->new($uri);
                 $fn=File::Spec->catfile($dn, $uri_or->path());
+                
+                #  If PSP file spec'd on command line get rid of trailing /
+                $fn=~s/\.psp\/$/.psp/;
             }
 
             elsif ($fn=$ENV{'PATH_TRANSLATED'}) {
