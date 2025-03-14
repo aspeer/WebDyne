@@ -34,6 +34,8 @@ use vars   qw($VERSION @ISA);
 use File::Spec::Unix;
 use HTTP::Status qw(status_message RC_OK RC_NOT_FOUND RC_FOUND);
 use URI;
+use Data::Dumper;
+$Data::Dumper::Indent=1;
 
 
 #  WebDyne modules
@@ -256,7 +258,8 @@ sub new {
         my $fn;
         unless (($fn=$ENV{'SCRIPT_FILENAME'}) && !$r{'uri'}) {
 
-            if (my $dn=$ENV{'DOCUMENT_ROOT'}) {
+            if (my $dn=($r{'document_root'} || $Dir_config_env{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
+            #if (my $dn=($ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
                 my $uri=$r{'uri'} || $ENV{'REQUEST_URI'};
                 if (my $location=$class->location()) {
                     $uri=~s/^\Q$location\E//;
@@ -265,21 +268,33 @@ sub new {
                 $fn=File::Spec->catfile($dn, $uri_or->path());
                 
                 #  If PSP file spec'd on command line get rid of trailing /
+                debug("fn: $fn derived from uri: $uri, dn: $dn");
                 $fn=~s/\.psp\/$/.psp/;
             }
-
+            
             elsif ($fn=$ENV{'PATH_TRANSLATED'}) {
 
                 #  Feel free to let me know a better way under IIS/FastCGI ..
                 my $script_fn=(File::Spec::Unix->splitpath($ENV{'SCRIPT_NAME'}))[2];
                 $fn=~s/\Q$script_fn\E.*/$script_fn/;
+                debug("fn: $fn derived from script_fn: $script_fn");
+            }
+
+            if ($fn=~/\/$/) {
+            
+                #  Append default doc to path, which appears at moment to be a directory ?
+                #
+                debug("appending document default %s to fn:$fn", $r{'document_default'} || $Dir_config_env{'DOCUMENT_DEFAULT'} || $DOCUMENT_DEFAULT);
+                $fn=File::Spec->catfile(grep {$_} $fn,  $r{'document_default'} || $Dir_config_env{'DOCUMENT_DEFAULT'} || $DOCUMENT_DEFAULT);
+                
             }
 
         }
+        debug("final fn: $fn");
 
         $r{'filename'}=$fn || do {
-            my $env=join("\n", map {"$_=$ENV{$_}"} keys %ENV);
-            return err("unable to determine filename for request from environment: $env")
+            #my $env=join("\n", map {"$_=$ENV{$_}"} keys %ENV);
+            return err("unable to determine filename for request from environment:%s, Dir_config_env: %s", Dumper(\%ENV, \%Dir_config_env))
         };
 
     }

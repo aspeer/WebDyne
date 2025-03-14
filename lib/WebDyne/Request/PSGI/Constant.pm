@@ -44,6 +44,11 @@ my $local_fn=abs_path(__FILE__) . '.local';
     DOCUMENT_ROOT	=> undef,
     
     
+    #  Document default
+    #
+    DOCUMENT_DEFAULT	=> 'index.psp',
+    
+    
     #  Dir Config
     #
     WEBDYNE_PSGI_DIR_CONFIG => undef,

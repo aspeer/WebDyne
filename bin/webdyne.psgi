@@ -27,6 +27,7 @@ use IO::String;
 use Data::Dumper;
 
 
+
 #  WebDyne Modules
 #
 use WebDyne;
@@ -43,7 +44,7 @@ $VERSION='1.002';
 
 #  Let DOCUMENT ROOT be overridden if needed
 #
-$DOCUMENT_ROOT=shift(@ARGV) || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT;
+$DOCUMENT_ROOT=pop(@ARGV) || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT;
 
 
 #  All done. Start endless loop if called from command line or return
@@ -75,7 +76,7 @@ sub handler {
     #
     my $env_hr=shift();
     local *ENV=$env_hr;
-    $ENV{'DOCUMENT_ROOT'} ||= $DOCUMENT_ROOT;
+    #$ENV{'DOCUMENT_ROOT'} ||= $DOCUMENT_ROOT;
     debug('in handler, env: %s', Dumper(\%ENV));
 
 
@@ -84,13 +85,13 @@ sub handler {
     my ($handler, %handler);
 
 
-    #  Create new FastCGI Request object, will pull filename from
+    #  Create new PSGI Request object, will pull filename from
     #  environment. 
     #
     my $html;
     my $html_fh=IO::String->new($html);
-    my $r=WebDyne::Request::PSGI->new(select => $html_fh) ||
-        return err('unable to create new WebDyne::Request::FastCGI object: %s', 
+    my $r=WebDyne::Request::PSGI->new(select => $html_fh, document_root => $DOCUMENT_ROOT) ||
+        return err('unable to create new WebDyne::Request::PSGI object: %s', 
 			$@ || errclr() || 'unknown error');
     debug("r: $r");
 
