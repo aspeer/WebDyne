@@ -2,15 +2,14 @@
 #
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2025 by Andrew Speer <andrew@webdyne.org>.
+#  This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
 #
-#  This is free software, licensed under:
-#
-#    The GNU General Public License, Version 2, June 1991
+#  This is free software; you can redistribute it and/or modify it under
+#  the same terms as the Perl 5 programming language system itself.
 #
 #  Full license text is available at:
 #
-#  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+#  <http://dev.perl.org/licenses/>
 #
 
 #
@@ -21,13 +20,6 @@ package main;
 
 #  Compiler pragma
 #
-sub BEGIN {
-
-    #  Massage warnings and @INC path
-    $^W=0;
-    use File::Spec;
-    use FindBin qw($RealBin $Script);
-}
 use strict qw(vars);
 use vars   qw($VERSION);
 
@@ -44,8 +36,8 @@ use WebDyne::Request::Fake;
 use Getopt::Long;
 use Pod::Usage;
 use IO::File;
-
-#use Devel::Gladiator;
+use File::Spec;
+use FindBin qw($RealBin $Script);
 
 
 #  Error handling
@@ -65,7 +57,6 @@ exit ${&main(\@ARGV) || die errdump()};
 
 #===================================================================================================
 
-
 sub main {
 
 
@@ -81,7 +72,7 @@ sub main {
         handler => $ENV{'WebDyneHandler'} || 'WebDyne',
         error   => 'text',
         header  => 0,
-        warn    => 1,
+        warn    => 0,
 
     );
 
@@ -101,7 +92,6 @@ sub main {
         'outfile=s',
         'repeat|r|num|n=s',
         'loop',
-        'leak',
         'man',
         'version'
     ) || pod2usage(2);
@@ -221,10 +211,234 @@ sub main {
 
 __END__
 
+# Documentation in Markdown. Convert to POD using markpod from 
+#
+# https://github.com/aspeer/pl-markpod.git 
+
 =begin markdown
 
+# NAME
+
+wdrender - Compile and/or show compiled version of WebDyne pages
+
+# SYNOPSIS
+
+`wdrender [--option] <filename>`
+
+`wdrender time.psp`
+
+# DESCRIPTION
+
+`wdrender` will compile and/or show the compiled version of WebDyne HTML page.
+It supports various command-line options to customize the compilation process. Output is printed to STDOUT in the form of a Perl data structure representing
+the compiled .psp page.
+
+# OPTIONS
+
+- `--help | -?`
+  Display a brief help message and exit.
+
+- `--handler`
+  Specify the handler to use (default: WebDyne).
+
+- `--status`
+  Specify the status.
+
+- `--header`
+  Include headers in the output.
+
+- `--error`
+  Specify the error format (default: text).
+
+- `--headers_out | --header_out`
+  Specify headers to include in the output.
+
+- `--headers_in | --header_in`
+  Specify headers to include in the input.
+
+- `--outfile`
+  Specify the output file.
+
+- `--repeat | --r | --num | --n`
+  Specify the number of times to repeat the rendering.
+
+- `--loop`
+  Enable looping. Used for leak testing.
+
+- `--man`
+  Display the full manual.
+
+- `--version`
+  Display the script version and exit.
+
+
+# EXAMPLES
+
+```sh
+# Show the HTML rendered version of time.psp
+wdrender time.psp
+```
+
+```sh
+# Show the HTML rendered version of time.psp with headers
+wdrender --header time.psp
+```
+
+# AUTHOR
+
+Andrew Speer <andrew.speer@isolutions.com.au>
+
+# LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+<http://dev.perl.org/licenses/>
 
 =end markdown
 
+
+=head1 NAME
+
+wdrender - Compile and/or show compiled version of WebDyne pages
+
+
+=head1 SYNOPSIS
+
+C<<< wdrender [--option] <filename> >>>
+
+C<wdrender time.psp>
+
+
+=head1 DESCRIPTION
+
+C<wdrender> will compile and/or show the compiled version of WebDyne HTML page.
+It supports various command-line options to customize the compilation process. Output is printed to STDOUT in the form of a Perl data structure representing
+the compiled .psp page.
+
+
+=head1 OPTIONS
+
+=over
+
+=item -
+
+C<--help | -?>
+  Display a brief help message and exit.
+
+
+
+=item -
+
+C<--handler>
+  Specify the handler to use (default: WebDyne).
+
+
+
+=item -
+
+C<--status>
+  Specify the status.
+
+
+
+=item -
+
+C<--header>
+  Include headers in the output.
+
+
+
+=item -
+
+C<--error>
+  Specify the error format (default: text).
+
+
+
+=item -
+
+C<--headers_out | --header_out>
+  Specify headers to include in the output.
+
+
+
+=item -
+
+C<--headers_in | --header_in>
+  Specify headers to include in the input.
+
+
+
+=item -
+
+C<--outfile>
+  Specify the output file.
+
+
+
+=item -
+
+C<--repeat | --r | --num | --n>
+  Specify the number of times to repeat the rendering.
+
+
+
+=item -
+
+C<--loop>
+  Enable looping. Used for leak testing.
+
+
+
+=item -
+
+C<--man>
+  Display the full manual.
+
+
+
+=item -
+
+C<--version>
+  Display the script version and exit.
+
+
+
+=back
+
+
+=head1 EXAMPLES
+
+
+ # Show the HTML rendered version of time.psp
+ wdrender time.psp
+
+ # Show the HTML rendered version of time.psp with headers
+ wdrender --header time.psp
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2025 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>
 
 =cut

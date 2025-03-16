@@ -2,15 +2,14 @@
 #
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2025 by Andrew Speer <andrew@webdyne.org>.
+#  This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
 #
-#  This is free software, licensed under:
-#
-#    The GNU General Public License, Version 2, June 1991
+#  This is free software; you can redistribute it and/or modify it under
+#  the same terms as the Perl 5 programming language system itself.
 #
 #  Full license text is available at:
 #
-#  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+#  <http://dev.perl.org/licenses/>
 #
 
 #
@@ -71,10 +70,10 @@ sub main {
     #
     my %opt=(
 
-        nofilter    => 1,    # don't run through any filters
-        noperl      => 1,    # don't run perl code,
-        nocache     => 1,
-        notimestamp => 1
+        nofilter      => 1,    # don't run through any filters
+        noperl        => 1,    # don't run perl code,
+        notimestamp   => 1,
+        manifest      => 1,
 
         #stage5   => 1,    # default
 
@@ -86,23 +85,26 @@ sub main {
     #
     GetOptions(
         \%opt, qw(
-            stage0|0|opt0
+            stage0|0
             stage1|1
             stage2|2
-            stage3|3|opt1
-            stage4|4|opt2
+            stage3|3
+            stage4|4
             stage5|5|final
             meta
             data
-            nomanifest
+            manifest!
             dest|dest_fn:s
             all
-            timestamp
+            timestamp!
+            perl!
+            filter!
             version
             help|?
             man
+            opt
         )) || pod2usage(2);
-    pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
+    pod2usage(-verbose => 99, -sections => 'SYNOPSIS|OPTIONS', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {
         print "$Script version: $VERSION\n";
@@ -111,11 +113,21 @@ sub main {
     };
 
 
+    #  Clunky, too hard to change module logic
+    #
+    map {$opt{"no${_}"}=!($opt{$_})} qw(perl filter timestamp manifest);
+
+
     #  Get srce file, add to options
     #
     my $srce_fn=$argv_ar->[0] ||
         pod2usage("$Script: no source file specified !");
     $opt{'srce'}=$srce_fn;
+
+
+    #  Dump options for debugging
+    #
+    die Dumper(\%opt) if $opt{'opt'};
 
 
     #  Create and run compile object
@@ -149,10 +161,264 @@ sub main {
 
 __END__
 
+# Documentation in Markdown. Convert to POD using markpod from 
+#
+# https://github.com/aspeer/pl-markpod.git 
+
 =begin markdown
 
+# NAME
+
+wdcompile - This script is used to compile and/or show the compiled version of WebDyne HTML scripts at various stages of processing.
+
+# SYNOPSIS
+
+`wdcompile [--option] <filename>`
+
+`wdcompile --stage0 time.psp`
+
+# DESCRIPTION
+
+`wdcompile` will compile and/or show the compiled version of WebDyne HTML scripts at various stages of processing. 
+It supports various command-line options to customize the compilation process. Output is printed to STDOUT in the form of a Perl data structure representing
+the compiled .psp page.
+
+# OPTIONS
+
+- `--stage0 | --0`
+  Compile to stage 0.
+
+- `--stage1 | --1`
+  Compile to stage 1.
+
+- `--stage2 | --2`
+  Compile to stage 2.
+
+- `--stage3 | --3`
+  Compile to stage 3.
+
+- `--stage4 | --4`
+  Compile to stage 4.
+
+- `--stage5 | --5 | --final`
+  Compile to stage 5 (final stage - default option).
+
+- `--meta`
+  Print metadata.
+
+- `--data`
+  Print data.
+
+- `--nomanifest`
+  Do not generate a manifest.
+
+- `--dest | --dest_fn`
+  Specify the destination file.
+
+- `--all`
+  Print all data.
+
+- `--timestamp`
+  Include a timestamp.
+
+- `--version`
+  Display the script version and exit.
+
+- `--help | -?`
+  Display a brief help message and exit.
+
+- `--man`
+  Display the full manual.
+
+
+# EXAMPLES
+
+```sh
+# Show the compiled version of time.psp with all optimizations
+wdcompile time.psp
+```
+
+```sh
+# Show the compiled version of time.psp with the full HTML tree before optimization
+wdcompile --stage0 time.psp
+```
+
+# AUTHOR
+
+Andrew Speer <andrew.speer@isolutions.com.au>
+
+# LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+<http://dev.perl.org/licenses/>
 
 =end markdown
 
+
+=head1 NAME
+
+wdcompile - This script is used to compile and/or show the compiled version of WebDyne HTML scripts at various stages of processing.
+
+
+=head1 SYNOPSIS
+
+C<<< wdcompile [--option] <filename> >>>
+
+C<wdcompile --stage0 time.psp>
+
+
+=head1 DESCRIPTION
+
+C<wdcompile> will compile and/or show the compiled version of WebDyne HTML scripts at various stages of processing. 
+It supports various command-line options to customize the compilation process. Output is printed to STDOUT in the form of a Perl data structure representing
+the compiled .psp page.
+
+
+=head1 OPTIONS
+
+=over
+
+=item -
+
+C<--stage0 | --0>
+  Compile to stage 0.
+
+
+
+=item -
+
+C<--stage1 | --1>
+  Compile to stage 1.
+
+
+
+=item -
+
+C<--stage2 | --2>
+  Compile to stage 2.
+
+
+
+=item -
+
+C<--stage3 | --3>
+  Compile to stage 3.
+
+
+
+=item -
+
+C<--stage4 | --4>
+  Compile to stage 4.
+
+
+
+=item -
+
+C<--stage5 | --5 | --final>
+  Compile to stage 5 (final stage - default option).
+
+
+
+=item -
+
+C<--meta>
+  Print metadata.
+
+
+
+=item -
+
+C<--data>
+  Print data.
+
+
+
+=item -
+
+C<--nomanifest>
+  Do not generate a manifest.
+
+
+
+=item -
+
+C<--dest | --dest_fn>
+  Specify the destination file.
+
+
+
+=item -
+
+C<--all>
+  Print all data.
+
+
+
+=item -
+
+C<--timestamp>
+  Include a timestamp.
+
+
+
+=item -
+
+C<--version>
+  Display the script version and exit.
+
+
+
+=item -
+
+C<--help | -?>
+  Display a brief help message and exit.
+
+
+
+=item -
+
+C<--man>
+  Display the full manual.
+
+
+
+=back
+
+
+=head1 EXAMPLES
+
+
+ # Show the compiled version of time.psp with all optimizations
+ wdcompile time.psp
+
+ # Show the compiled version of time.psp with the full HTML tree before optimization
+ wdcompile --stage0 time.psp
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2025 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>
 
 =cut

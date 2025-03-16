@@ -16,6 +16,7 @@ my %WriteMakefile=(
         'bin/wddump',
         'bin/wdapacheinit',
         'bin/wddebug',
+        'bin/webdyne.psgi',
     ]},
     LICENSE          => 'perl',
     AUTHOR           => 'Andrew Speer <andrew.speer@isolutions.com.au>',
@@ -53,7 +54,7 @@ my %WriteMakefile=(
             }
         }
     },
-    PM_FILTER => $ENV{'PM_DEBUG'} || do {
+    PM_FILTER => $ENV{'PM_DEBUG'} || $ENV{'WEBDYNE_DEBUG'} || do {
         use IO::File;
         my $fn='.pm_filter.pf';
         my $fh=IO::File->new($fn, O_WRONLY | O_CREAT | O_TRUNC) ||

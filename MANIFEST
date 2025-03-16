@@ -3,13 +3,12 @@ LICENSE
 MANIFEST
 Makefile.PL
 README
-bin/perl5lib.pl
 bin/wdapacheinit
 bin/wdcompile
 bin/wddebug
 bin/wddump
 bin/wdrender
-bin/webdyne-mod_perl-1_99-compat.pl
+bin/webdyne.psgi
 cpanfile
 doc/webdyne.pdf
 examples/csv_table.csv
@@ -573,3 +572,8 @@ t/subsitution.psp
 t/table.psp
 t/table_plain.psp
 t/whitespace.psp
+bin/webdyne.psgi.md                      
+bin/wdapacheinit.md                      
+bin/wdcompile.md                         
+bin/wdrender.md                          
+bin/wddebug.md                           
