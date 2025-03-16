@@ -27,6 +27,7 @@ local $^W=0;
 use WebDyne::Util;
 use File::Spec;
 use Data::Dumper;
+$Data::Dumper::Indent=1;
 require Opcode;
 
 
@@ -510,6 +511,19 @@ sub hashref {
     my $class=shift();
     return \%{"${class}::Constant"};
 
+}
+
+
+sub import {
+    
+    if ($_[1] eq 'dump') {
+        CORE::print Dumper(shift()->hashref());
+        exit 0;
+    }
+    else {
+        goto &Exporter::import;
+    }
+    
 }
 
 

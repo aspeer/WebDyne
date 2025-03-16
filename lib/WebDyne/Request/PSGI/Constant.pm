@@ -68,10 +68,19 @@ my $local_fn=abs_path(__FILE__) . '.local';
 # >>>
 
 
+sub import {
+    
+    goto &WebDyne::Constant::import;
+    
+}
+
+
 #  Export constants to namespace, place in export tags
 #
 require Exporter;
-@ISA=qw(Exporter);
+require WebDyne::Constant;
+@ISA=qw(Exporter WebDyne::Constant);
++__PACKAGE__->local_constant_load(\%Constant);
 foreach (keys %Constant) {${$_}=$Constant{$_}}
 @EXPORT=map {'$' . $_} keys %Constant;
 @EXPORT_OK=@EXPORT;

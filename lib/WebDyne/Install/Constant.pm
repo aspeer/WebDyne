@@ -66,17 +66,19 @@ else {
 %Constant=(
 
 
-    #  Where perl5 library dirs are sourced from
-    #
-    FILE_PERL5LIB => 'perl5lib.pl',
-
-
     #  Default cache directory
     #
     DIR_CACHE_DEFAULT => $cache_default_dn
 
 
 );
+
+
+sub import {
+    
+    goto &WebDyne::Constant::import;
+    
+}
 
 
 #  Finalise and export vars

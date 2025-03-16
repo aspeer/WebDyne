@@ -74,6 +74,13 @@ sub class_dn {
 }
 
 
+sub import {
+    
+    goto &WebDyne::Constant::import;
+    
+}
+
+
 #  Export constants to namespace, place in export tags
 #
 require Exporter;

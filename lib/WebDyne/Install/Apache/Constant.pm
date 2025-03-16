@@ -567,6 +567,13 @@ sub mp2_installed {
 }
 
 
+sub import {
+    
+    goto &WebDyne::Constant::import;
+    
+}
+
+
 #  Finalise and export vars
 #
 debug('final constants: %s', Dumper(\%Constant));
