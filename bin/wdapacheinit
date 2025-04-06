@@ -54,7 +54,7 @@ GetOptions(
         'text|print',
         'version'
     )) || pod2usage(2);
-pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1)
+pod2usage(-verbose => 99, -sections => 'SYNOPSIS|OPTIONS', -exitval => 1)
     if $opt{'help'};
 pod2usage(-verbose => 2) if $opt{'man'};
 $opt{'version'} && do {print "$Script version: $VERSION\n"; exit 0};
@@ -119,7 +119,9 @@ wdapacheinit - Install or uninstall WebDyne Apache configuration files
 
 `wdapacheinit` will install or uninstall the WebDyne Apache configuration files. 
 It will create the necessary configuration files and directories for Apache to serve WebDyne pages. 
-The script will also attepmt to set the correct permissions on the cache directory.
+The script will also attempt to set the correct permissions on the cache directory.
+
+NOTE: Apache must be restarted after running this script !
 
 # OPTIONS
 
@@ -177,6 +179,13 @@ The script will attempt to automatically detect the correct settings for your sy
 
 `wdapacheinit --cache /var/www/cache`
 
+# NOTES
+
+Apache installation of WebDyne is split into two components. The first is the installation of the WebDyne Apache configuration files, which is done by this script. The second is the installation of the configuration files for the WebDyne framework to enable renderings
+of WebDyne pages. 
+
+The second component is of configuration variables that can be set to change behaviour of the WebdDyne system, 
+
 # AUTHOR
 
 Andrew Speer <andrew.speer@isolutions.com.au>
@@ -213,7 +222,9 @@ C<wdapacheinit --cache /var/www/cache>
 
 C<wdapacheinit> will install or uninstall the WebDyne Apache configuration files. 
 It will create the necessary configuration files and directories for Apache to serve WebDyne pages. 
-The script will also attepmt to set the correct permissions on the cache directory.
+The script will also attempt to set the correct permissions on the cache directory.
+
+NOTE: Apache must be restarted after running this script !
 
 
 =head1 OPTIONS
@@ -335,6 +346,14 @@ The script will attempt to automatically detect the correct settings for your sy
 C<wdapacheinit>
 
 C<wdapacheinit --cache /var/www/cache>
+
+
+=head1 NOTES
+
+Apache installation of WebDyne is split into two components. The first is the installation of the WebDyne Apache configuration files, which is done by this script. The second is the installation of the configuration files for the WebDyne framework to enable renderings
+of WebDyne pages. 
+
+The second component is of configuration variables that can be set to change behaviour of the WebdDyne system, 
 
 
 =head1 AUTHOR

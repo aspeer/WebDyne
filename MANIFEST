@@ -577,3 +577,5 @@ bin/wdapacheinit.md
 bin/wdcompile.md                         
 bin/wdrender.md                          
 bin/wddebug.md                           
+bin/wddump.md                            
+lib/WebDyne/Constant.pm.md               

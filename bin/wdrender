@@ -95,7 +95,7 @@ sub main {
         'man',
         'version'
     ) || pod2usage(2);
-    pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
+    pod2usage(-verbose => 99, -sections => 'SYNOPSIS|OPTIONS', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {
         print "$Script version: $VERSION\n";

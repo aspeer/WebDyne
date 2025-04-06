@@ -59,7 +59,7 @@ sub main {
     my %opt;
     GetOptions(\%opt, 'help|?', 'man', 'version') ||
         pod2usage(2);
-    pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
+    pod2usage(-verbose => 99, -sections => 'SYNOPSIS|OPTIONS', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {print "$Script version: $VERSION\n"; exit 0};
 
@@ -89,10 +89,192 @@ sub main {
 
 __END__
 
+# Documentation in Markdown. Convert to POD using markpod from 
+#
+# https://github.com/aspeer/pl-markpod.git 
+
 =begin markdown
 
+# NAME
+
+wddump - This script is used to dump the compiled version of WebDyne pages, as stored in the cache dir.
+
+# SYNOPSIS
+
+`wddump [filename]`
+
+`wddump /var/cache/webdyne/0dc461f7a383fda853fcc6c5190704e`
+
+# DESCRIPTION
+
+This script will dump out (in Data::Dumper format) the contents of a compiled WebDyne page. The compiled page is stored in the cache directory and is a binary file in Storable format. 
+This script will read the file and dump out the contents in a Data::Dumper format. It can we used to debug the compiled version of a page.
+
+# OPTIONS
+
+- `--help | -?`
+  Display a brief help message and exit.
+
+- `--man`
+  Display the full manual.
+
+- `--version`
+  Display the script version and exit.
+
+# EXAMPLES
+
+```sh
+# Dump the compiled version of a page from cache
+wddump /var/cache/webdyne/0dc461f7a383fda853fcc6c5190704e
+
+# Output
+#
+$VAR1 = [
+  {
+    'manifest' => [
+      '/var/www/html/time.psp'
+    ]
+  },
+  [
+    '<!DOCTYPE html><html lang="en"><head><title>Untitled Document</title><meta charset="UTF-8"></head>
+<body><p>',
+    [
+      'subst',
+      undef,
+      [
+        '!{! localtime !}'
+      ],
+      undef,
+      2,
+      2,
+      \$VAR1->[0]{'manifest'}[0]
+    ],
+    '</p></body></html>'
+  ]
+];
+````
+
+# AUTHOR
+
+Andrew Speer <andrew.speer@isolutions.com.au>
+
+# LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+<http://dev.perl.org/licenses/>
 
 =end markdown
 
+
+=head1 NAME
+
+wddump - This script is used to dump the compiled version of WebDyne pages, as stored in the cache dir.
+
+
+=head1 SYNOPSIS
+
+C<wddump [filename]>
+
+C<wddump /var/cache/webdyne/0dc461f7a383fda853fcc6c5190704e>
+
+
+=head1 DESCRIPTION
+
+This script will dump out (in Data::Dumper format) the contents of a compiled WebDyne page. The compiled page is stored in the cache directory and is a binary file in Storable format. 
+This script will read the file and dump out the contents in a Data::Dumper format. It can we used to debug the compiled version of a page.
+
+
+=head1 OPTIONS
+
+=over
+
+=item -
+
+C<--help | -?>
+  Display a brief help message and exit.
+
+
+
+=item -
+
+C<--man>
+  Display the full manual.
+
+
+
+=item -
+
+C<--version>
+  Display the script version and exit.
+
+
+
+=back
+
+
+=head1 EXAMPLES
+
+```sh
+
+
+=head1 Dump the compiled version of a page from cache
+
+wddump /var/cache/webdyne/0dc461f7a383fda853fcc6c5190704e
+
+
+=head1 Output
+
+#
+$VAR1 = [
+  {
+    'manifest' => [
+      '/var/www/html/time.psp'
+    ]
+  },
+  [
+    'Untitled Document<meta charset="UTF-8" />
+',
+    [
+      'subst',
+      undef,
+      [
+        '!{! localtime !}'
+      ],
+      undef,
+      2,
+      2,
+      \$VAR1->[0]{'manifest'}[0]
+    ],
+    ''
+  ]
+];
+````
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2025 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>
 
 =cut

@@ -76,7 +76,7 @@ sub main {
             directory:s
             yes
         ));
-    pod2usage(-verbose => 99, -sections => 'Synopsis|Options', -exitval => 1) if $opt{'help'};
+    pod2usage(-verbose => 99, -sections => 'SYNOPSIS|OPTIONS', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {print "$Script version: $VERSION\n"; exit 0};
 
@@ -292,7 +292,7 @@ sub status {
 
 __END__
 
- Documentation in Markdown. Convert to POD using markpod from 
+# Documentation in Markdown. Convert to POD using markpod from 
 #
 # https://github.com/aspeer/pl-markpod.git 
 
