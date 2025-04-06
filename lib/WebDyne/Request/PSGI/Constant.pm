@@ -61,8 +61,8 @@ my $local_fn=abs_path(__FILE__) . '.local';
 
     #  Local constants override anything above
     #
-    %{do($local_fn) || {}},
-    %{do(glob(sprintf('~/.%s.local', __PACKAGE__))) || {}}    # || {} avoids warning
+    #%{do($local_fn) || {}},
+    #$%{do([glob(sprintf('~/.%s.local', __PACKAGE__))]->[0]) || {}}    # || {} avoids warning
 
 );
 # >>>
@@ -81,7 +81,12 @@ require Exporter;
 require WebDyne::Constant;
 @ISA=qw(Exporter WebDyne::Constant);
 +__PACKAGE__->local_constant_load(\%Constant);
-foreach (keys %Constant) {${$_}=$Constant{$_}}
+%Constant=(
+    %Constant,
+    %{do($local_fn) || {}},
+    %{do([glob(sprintf('~/.%s.local', __PACKAGE__))]->[0]) || {}} 
+);
+foreach (keys %Constant) {${$_}=($Constant{$_}=$ENV{$_} || $Constant{$_})}
 @EXPORT=map {'$' . $_} keys %Constant;
 @EXPORT_OK=@EXPORT;
 %EXPORT_TAGS=(all => [@EXPORT_OK]);
