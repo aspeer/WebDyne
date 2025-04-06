@@ -293,7 +293,7 @@ sub compile {
 
         }) || return err();
     foreach my $tag_ar (@{$meta_ar}) {
-        my $attr_hr=$tag_ar->[$WEBDYNE_NODE_ATTR_IX] || next;
+        my $attr_hr=$tag_ar->[WEBDYNE_NODE_ATTR_IX] || next;
         if ($attr_hr->{'name'}=~/^webdyne$/i) {
             my @meta=split(/;/, $attr_hr->{'content'});
             debug('meta %s', Dumper(\@meta));
@@ -540,17 +540,17 @@ sub optimise_one {
         #  it will spring into existance as empty array ref, which we then have to
         #  wastefully store
         #
-        if ($data_ar->[$WEBDYNE_NODE_CHLD_IX]) {
+        if ($data_ar->[WEBDYNE_NODE_CHLD_IX]) {
 
 
             #  Process sub nodes to get child html data
             #
-            foreach my $data_chld_ix (0..$#{$data_ar->[$WEBDYNE_NODE_CHLD_IX]}) {
+            foreach my $data_chld_ix (0..$#{$data_ar->[WEBDYNE_NODE_CHLD_IX]}) {
 
 
                 #  Get data child
                 #
-                my $data_chld_ar=$data_ar->[$WEBDYNE_NODE_CHLD_IX][$data_chld_ix];
+                my $data_chld_ar=$data_ar->[WEBDYNE_NODE_CHLD_IX][$data_chld_ix];
                 debug("data_chld_ar $data_chld_ar");
 
 
@@ -570,7 +570,7 @@ sub optimise_one {
 
                     #  Replace in tree
                     #
-                    $data_ar->[$WEBDYNE_NODE_CHLD_IX][$data_chld_ix]=$data_chld_xv;
+                    $data_ar->[WEBDYNE_NODE_CHLD_IX][$data_chld_ix]=$data_chld_xv;
 
                 }
 
@@ -582,7 +582,7 @@ sub optimise_one {
         #  Get this node tag and attrs
         #
         my ($html_tag, $attr_hr)=
-            @{$data_ar}[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX];
+            @{$data_ar}[WEBDYNE_NODE_NAME_IX, WEBDYNE_NODE_ATTR_IX];
         debug("tag $html_tag, attr %s", Dumper($attr_hr));
 
 
@@ -594,7 +594,7 @@ sub optimise_one {
         #  Check to see if any of the attributes will require a subst to be carried out
         #
         my @subst_oper;
-        my $subst_fg=$data_ar->[$WEBDYNE_NODE_SBST_IX] || delete $attr_hr->{'subst'} ||
+        my $subst_fg=$data_ar->[WEBDYNE_NODE_SBST_IX] || delete $attr_hr->{'subst'} ||
             grep {$_=~/([\$@%!+*^])\{(\1?)(.*?)\2\}/ && push(@subst_oper, $1)} values %{$attr_hr};
 
 
@@ -605,7 +605,7 @@ sub optimise_one {
 
         #  If subst_fg present, means we must do a subst on attr vars. Flag
         #
-        $subst_fg && ($data_ar->[$WEBDYNE_NODE_SBST_IX]=1);
+        $subst_fg && ($data_ar->[WEBDYNE_NODE_SBST_IX]=1);
 
 
         #  A CGI tag can be marked static, means that we can pre-render it for efficieny
@@ -642,8 +642,8 @@ sub optimise_one {
             #  Check all child nodes to see if ref or scalar
             #
             debug("if 1");
-            my $ref_fv=$data_ar->[$WEBDYNE_NODE_CHLD_IX] &&
-                grep {ref($_)} @{$data_ar->[$WEBDYNE_NODE_CHLD_IX]};
+            my $ref_fv=$data_ar->[WEBDYNE_NODE_CHLD_IX] &&
+                grep {ref($_)} @{$data_ar->[WEBDYNE_NODE_CHLD_IX]};
 
 
             #  If all scalars (ie no refs found)t, we can simply pre render all child nodes
@@ -680,7 +680,7 @@ sub optimise_one {
                 #  Wrap up in our HTML tag. Do in eval so we can catch errors from invalid tags etc
                 #
                 #
-                my @data_child=$data_ar->[$WEBDYNE_NODE_CHLD_IX] ? @{$data_ar->[$WEBDYNE_NODE_CHLD_IX]} : undef;
+                my @data_child=$data_ar->[WEBDYNE_NODE_CHLD_IX] ? @{$data_ar->[WEBDYNE_NODE_CHLD_IX]} : undef;
                 debug("about to call $html_tag with attr_hr:%s, data_child: %s", Dumper($attr_hr, \@data_child));
                 my $html=eval {
                     $attr_hr=undef unless keys %{$attr_hr};
@@ -776,14 +776,14 @@ sub optimise_two {
         #  it will spring into existance as empty array ref, which we then have to
         #  wastefully store
         #
-        if ($data_ar->[$WEBDYNE_NODE_CHLD_IX]) {
+        if ($data_ar->[WEBDYNE_NODE_CHLD_IX]) {
 
 
             #  Process sub nodes to get child html data
             #
-            my @data_child_ar=$data_ar->[$WEBDYNE_NODE_CHLD_IX]
+            my @data_child_ar=$data_ar->[WEBDYNE_NODE_CHLD_IX]
                 ?
-                @{$data_ar->[$WEBDYNE_NODE_CHLD_IX]}
+                @{$data_ar->[WEBDYNE_NODE_CHLD_IX]}
                 : undef;
             foreach my $data_chld_ar (@data_child_ar) {
 
@@ -814,7 +814,7 @@ sub optimise_two {
         #  Get this tag and attrs
         #
         my ($html_tag, $attr_hr)=
-            @{$data_ar}[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX];
+            @{$data_ar}[WEBDYNE_NODE_NAME_IX, WEBDYNE_NODE_ATTR_IX];
         debug("tag $html_tag");
 
 
@@ -825,13 +825,13 @@ sub optimise_two {
 
         #  Check if this tag attributes will need substitution (eg ${foo});
         #
-        my $subst_fg=$data_ar->[$WEBDYNE_NODE_SBST_IX] || delete $attr_hr->{'subst'} ||
+        my $subst_fg=$data_ar->[WEBDYNE_NODE_SBST_IX] || delete $attr_hr->{'subst'} ||
             grep {$_=~/([\$@%!+*^])\{(\1?)(.*?)\2\}/so} values %{$attr_hr};
 
 
         #  If subst_fg present, means we must do a subst on attr vars. Flag, also get static flag
         #
-        $subst_fg && ($data_ar->[$WEBDYNE_NODE_SBST_IX]=1);
+        $subst_fg && ($data_ar->[WEBDYNE_NODE_SBST_IX]=1);
         my $static_fg=delete $attr_hr->{'static'};
 
 
@@ -844,9 +844,9 @@ sub optimise_two {
             #  Get nodes into array now, removes risk of iterating over shifting ground
             #
             debug("compile_cr: if 1");
-            my @data_child_ar=$data_uppr_ar->[$WEBDYNE_NODE_CHLD_IX]
+            my @data_child_ar=$data_uppr_ar->[WEBDYNE_NODE_CHLD_IX]
                 ?
-                @{$data_uppr_ar->[$WEBDYNE_NODE_CHLD_IX]}
+                @{$data_uppr_ar->[WEBDYNE_NODE_CHLD_IX]}
                 : undef;
 
 
@@ -895,9 +895,9 @@ sub optimise_two {
 
                 #  Splice start and end tags for this HTML into appropriate place
                 #
-                splice @{$data_uppr_ar->[$WEBDYNE_NODE_CHLD_IX]}, $data_chld_ix, 1,
+                splice @{$data_uppr_ar->[WEBDYNE_NODE_CHLD_IX]}, $data_chld_ix, 1,
                     $html_start,
-                    @{$data_ar->[$WEBDYNE_NODE_CHLD_IX]},
+                    @{$data_ar->[WEBDYNE_NODE_CHLD_IX]},
                     $html_end;
 
                 #  Done, no need to iterate any more
@@ -916,9 +916,9 @@ sub optimise_two {
             #  Repopulate data child array, as probably changed in above foreach
             #  block.
             #
-            @data_child_ar=$data_uppr_ar->[$WEBDYNE_NODE_CHLD_IX]
+            @data_child_ar=$data_uppr_ar->[WEBDYNE_NODE_CHLD_IX]
                 ?
-                @{$data_uppr_ar->[$WEBDYNE_NODE_CHLD_IX]}
+                @{$data_uppr_ar->[WEBDYNE_NODE_CHLD_IX]}
                 : undef;
 
             #@data_child_ar=@{$data_uppr_ar->[$WEBDYNE_NODE_CHLD_IX]};
@@ -956,7 +956,7 @@ sub optimise_two {
 
             #  Replace with new optimised array
             #
-            $data_uppr_ar->[$WEBDYNE_NODE_CHLD_IX]=\@data_uppr;
+            $data_uppr_ar->[WEBDYNE_NODE_CHLD_IX]=\@data_uppr;
 
 
         }
@@ -970,13 +970,13 @@ sub optimise_two {
                 {
                     data => [$data_ar],
                 }) || return err();
-            my @data_child_ar=$data_uppr_ar->[$WEBDYNE_NODE_CHLD_IX]
+            my @data_child_ar=$data_uppr_ar->[WEBDYNE_NODE_CHLD_IX]
                 ?
-                @{$data_uppr_ar->[$WEBDYNE_NODE_CHLD_IX]}
+                @{$data_uppr_ar->[WEBDYNE_NODE_CHLD_IX]}
                 : undef;
             foreach my $ix (0..$#data_child_ar) {
-                if ($data_uppr_ar->[$WEBDYNE_NODE_CHLD_IX][$ix] eq $data_ar) {
-                    $data_uppr_ar->[$WEBDYNE_NODE_CHLD_IX][$ix]=${$html_sr};
+                if ($data_uppr_ar->[WEBDYNE_NODE_CHLD_IX][$ix] eq $data_ar) {
+                    $data_uppr_ar->[WEBDYNE_NODE_CHLD_IX][$ix]=${$html_sr};
                     last;
                 }
             }
@@ -1008,9 +1008,9 @@ sub optimise_two {
 
                 #return err("$@" || "no html returned from tag $_")
             } ($html_tag_start, $html_tag_end);
-            my @data_child_ar=$data_ar->[$WEBDYNE_NODE_CHLD_IX]
+            my @data_child_ar=$data_ar->[WEBDYNE_NODE_CHLD_IX]
                 ?
-                @{$data_ar->[$WEBDYNE_NODE_CHLD_IX]}
+                @{$data_ar->[WEBDYNE_NODE_CHLD_IX]}
                 : undef;
 
             #  Place start and end tags for this HTML into appropriate place
@@ -1086,13 +1086,13 @@ sub parse {
     #
     my @data;
     @data[
-        $WEBDYNE_NODE_NAME_IX,            # Tag Name
-        $WEBDYNE_NODE_ATTR_IX,            # Attributes
-        $WEBDYNE_NODE_CHLD_IX,            # Child nodes
-        $WEBDYNE_NODE_SBST_IX,            # Substitution Required
-        $WEBDYNE_NODE_LINE_IX,            # Source Line Number
-        $WEBDYNE_NODE_LINE_TAG_END_IX,    # What line this tag ends on
-        $WEBDYNE_NODE_SRCE_IX             # Source file name
+        WEBDYNE_NODE_NAME_IX,            # Tag Name
+        WEBDYNE_NODE_ATTR_IX,            # Attributes
+        WEBDYNE_NODE_CHLD_IX,            # Child nodes
+        WEBDYNE_NODE_SBST_IX,            # Substitution Required
+        WEBDYNE_NODE_LINE_IX,            # Source Line Number
+        WEBDYNE_NODE_LINE_TAG_END_IX,    # What line this tag ends on
+        WEBDYNE_NODE_SRCE_IX             # Source file name
         ]=(
         #undef, undef, undef, undef, $line_no, $line_no_tag_end, $meta_hr->{'manifest'}[0]
         undef, undef, undef, undef, $line_no, $line_no_tag_end, $html_fn_sr
@@ -1121,7 +1121,7 @@ sub parse {
             push @{$meta_hr->{'perl_debug'}}, [$line_no, $html_fn_sr];
         }
         else {
-            @data[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_ATTR_IX]=($html_tag, \%attr);
+            @data[WEBDYNE_NODE_NAME_IX, WEBDYNE_NODE_ATTR_IX]=($html_tag, \%attr);
         }
 
     }
@@ -1130,7 +1130,7 @@ sub parse {
 
         #  No attr, just save tag
         #
-        $data[$WEBDYNE_NODE_NAME_IX]=$html_tag;
+        $data[WEBDYNE_NODE_NAME_IX]=$html_tag;
 
     }
 
@@ -1161,8 +1161,8 @@ sub parse {
 
             #  If no node name returned is not an error, just a no-op
             #
-            if ($data_ar->[$WEBDYNE_NODE_NAME_IX]) {
-                push @{$data[$WEBDYNE_NODE_CHLD_IX]}, $data_ar;
+            if ($data_ar->[WEBDYNE_NODE_NAME_IX]) {
+                push @{$data[WEBDYNE_NODE_CHLD_IX]}, $data_ar;
             }
 
         }
@@ -1172,7 +1172,7 @@ sub parse {
             #  stuffed up <pre> sections that use \n for spacing/formatting. Now we
             #  are more careful
             #
-            push(@{$data[$WEBDYNE_NODE_CHLD_IX]}, $html_child_or)
+            push(@{$data[WEBDYNE_NODE_CHLD_IX]}, $html_child_or)
                 unless (
                 $html_child_or=~/^\s*$/
                 &&

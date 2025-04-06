@@ -77,12 +77,13 @@ sub class_dn {
 
 #  Export constants to namespace, place in export tags
 #
-require Exporter;
-require WebDyne::Constant;
-@ISA=qw(Exporter WebDyne::Constant);
-+__PACKAGE__->local_constant_load(\%Constant);
-foreach (keys %Constant) {${$_}=$Constant{$_}}
-@EXPORT=map {'$' . $_} keys %Constant;
-@EXPORT_OK=@EXPORT;
-%EXPORT_TAGS=(all => [@EXPORT_OK]);
-$_=\%Constant;
+#require Exporter;
+#require WebDyne::Constant;
+#@ISA=qw(Exporter WebDyne::Constant);
+@ISA=qw(WebDyne::Constant);
+#+__PACKAGE__->local_constant_load(\%Constant);
+#foreach (keys %Constant) {${$_}=$Constant{$_}}
+#@EXPORT=map {'$' . $_} keys %Constant;
+#@EXPORT_OK=@EXPORT;
+#%EXPORT_TAGS=(all => [@EXPORT_OK]);
+#$_=\%Constant;

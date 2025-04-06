@@ -878,7 +878,7 @@ sub init_class {
         #  Debug
         #
         my $inode=$self->{'_inode'} || 'ANON';    # Anon used when no inode present, eg wdcompile
-        my $html_line_no=$data_ar->[$WEBDYNE_NODE_LINE_IX];
+        my $html_line_no=$data_ar->[WEBDYNE_NODE_LINE_IX];
 
 
         #  Get CGI vars
@@ -1353,7 +1353,7 @@ sub render {
 
     #  Get node array ref
     #
-    my $data_ar=$param_hr->{'data'} || $self->{'_perl'}[0][$WEBDYNE_NODE_CHLD_IX] ||
+    my $data_ar=$param_hr->{'data'} || $self->{'_perl'}[0][WEBDYNE_NODE_CHLD_IX] ||
         return err('unable to get HTML data array');
 
     #$self->{'_perl'}[0] ||= $data_ar;
@@ -1407,7 +1407,7 @@ sub render {
         #  Get tag
         #
         my ($html_tag, $html_line_no)=
-            @{$data_ar}[$WEBDYNE_NODE_NAME_IX, $WEBDYNE_NODE_LINE_IX];
+            @{$data_ar}[WEBDYNE_NODE_NAME_IX, WEBDYNE_NODE_LINE_IX];
         my $html_chld;
 
 
@@ -1424,12 +1424,12 @@ sub render {
 
         #  Get attr hash ref
         #
-        my $attr_hr=$data_ar->[$WEBDYNE_NODE_ATTR_IX];
+        my $attr_hr=$data_ar->[WEBDYNE_NODE_ATTR_IX];
 
 
         #  If subst flag present, means we need to process attr values
         #
-        if ($data_ar->[$WEBDYNE_NODE_SBST_IX]) {
+        if ($data_ar->[WEBDYNE_NODE_SBST_IX]) {
             $attr_hr=$self->subst_attr($data_ar, $attr_hr, $param_data_hr) ||
                 return err();
         }
@@ -1449,7 +1449,7 @@ sub render {
             #  Not a perl tag, recurse through children and render them, building
             #  up HTML from inside out
             #
-            my @data_child_ar=$data_ar->[$WEBDYNE_NODE_CHLD_IX] ? @{$data_ar->[$WEBDYNE_NODE_CHLD_IX]} : undef;
+            my @data_child_ar=$data_ar->[WEBDYNE_NODE_CHLD_IX] ? @{$data_ar->[WEBDYNE_NODE_CHLD_IX]} : undef;
             foreach my $data_chld_ar (@data_child_ar) {
 
 
@@ -2010,7 +2010,7 @@ sub render_block {
 
             #  Get block name
             #
-            my $name=$data_block_ar->[$WEBDYNE_NODE_ATTR_IX]->{'name'};
+            my $name=$data_block_ar->[WEBDYNE_NODE_ATTR_IX]->{'name'};
             debug("looking at block $data_block_ar, name $name");
 
 
@@ -2087,7 +2087,7 @@ sub render_block {
         my $html_sr=$self->render(
             {
 
-                data  => $data_block_ar->[$WEBDYNE_NODE_CHLD_IX],
+                data  => $data_block_ar->[WEBDYNE_NODE_CHLD_IX],
                 param => $param_hr->{'param'},
 
             }) || return err();
@@ -2217,7 +2217,7 @@ sub block {
             push @html_sr, $self->render(
                 {
 
-                    data  => $data_ar->[$WEBDYNE_NODE_CHLD_IX],
+                    data  => $data_ar->[WEBDYNE_NODE_CHLD_IX],
                     param => $param_data_block_hr
 
                 }) || return err();
@@ -2238,7 +2238,7 @@ sub block {
         return $self->render(
             {
 
-                data  => $data_ar->[$WEBDYNE_NODE_CHLD_IX],
+                data  => $data_ar->[WEBDYNE_NODE_CHLD_IX],
                 param => $param_data_hr
 
             }) || err();
@@ -2683,9 +2683,9 @@ sub perl_init {
             #
             my @data;
             @data[
-                $WEBDYNE_NODE_LINE_IX,
-                $WEBDYNE_NODE_LINE_TAG_END_IX,
-                $WEBDYNE_NODE_SRCE_IX,
+                WEBDYNE_NODE_LINE_IX,
+                WEBDYNE_NODE_LINE_TAG_END_IX,
+                WEBDYNE_NODE_SRCE_IX,
             ]=($perl_line_no, $perl_line_no, $perl_srce_fn);
 
 
@@ -3011,8 +3011,8 @@ sub include {
 
         #  Need to encapsulate into <block display=1> tag, so alter tag name, attr
         #
-        $block_ar->[$WEBDYNE_NODE_NAME_IX]='block';
-        $block_ar->[$WEBDYNE_NODE_ATTR_IX]={name => $node, display => 1};
+        $block_ar->[WEBDYNE_NODE_NAME_IX]='block';
+        $block_ar->[WEBDYNE_NODE_ATTR_IX]={name => $node, display => 1};
 
 
         #  Incorporate into top level data so we don't have to do this again if

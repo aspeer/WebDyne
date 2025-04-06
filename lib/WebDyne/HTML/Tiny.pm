@@ -126,8 +126,8 @@ sub _init {
 
         *{$tag}=sub {
             my ($s, $attr_hr)=(shift(), shift());
-            debug("s:$s, attr_hr:$attr_hr, param:%s", Dumper(\@_));
-            if ($attr_hr) {
+            #debug("s:$s, attr_hr:$attr_hr, param:%s", Dumper(\@_));
+            if (defined($attr_hr)) {
                 return $s->input({type => $type{$tag} || $tag, %{$attr_hr}}, @_);
             }
             else {

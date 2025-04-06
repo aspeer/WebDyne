@@ -18,6 +18,7 @@ package WebDyne::Constant;
 #
 use strict qw(vars);
 use vars   qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
+#use vars   qw($VERSION %Constant);
 use warnings;
 no warnings qw(uninitialized);
 local $^W=0;
@@ -514,13 +515,47 @@ sub hashref {
 }
 
 
+sub import {
+    
+    my $class=shift();
+    my $hr=\%{"${class}::Constant"};
+    if ($_[0] eq 'dump') {
+        local $Data::Dumper::Indent=1;
+        local $Data::Dumper::Terse=1;
+        CORE::print Dumper($hr);
+        exit 0;
+    }
+    else {
+
+        my $caller = caller(0);
+        while (my($k, $v)=each %{$hr}) {
+            #CORE::print "$k, $v\n";
+            *{"${caller}::${k}"}=\$v;
+            next if *{"${caller}::${k}"}{'CODE'};
+            next if ref($v);
+            if ($v=~/^\d+$/) {
+                *{"${caller}::${k}"}=eval("sub () { $v }");
+            }
+            else {
+                *{"${caller}::${k}"}=eval("sub () { q($v) }");
+            }
+                
+        }
+    }
+    
+}
+
+
+
 #  Export constants to namespace, place in export tags
 #
-require Exporter;
-@ISA=qw(Exporter);
+#require Exporter;
+#@ISA=qw(Exporter);
 &local_constant_load(__PACKAGE__, \%Constant);
-foreach (keys %Constant) {${$_}=$Constant{$_}}
-@EXPORT=map {'$' . $_} keys %Constant;
-@EXPORT_OK=@EXPORT;
-%EXPORT_TAGS=(all => [@EXPORT_OK]);
-$_=\%Constant;
+#foreach (keys %Constant) {${$_}=$Constant{$_}}
+#@EXPORT=map {'$' . $_} keys %Constant;
+#@EXPORT_OK=@EXPORT;
+#%EXPORT_TAGS=(all => [@EXPORT_OK]);
+#$_=\%Constant;
+#&import(__PACKAGE__);
+
