@@ -1,15 +1,14 @@
 #
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2025 by Andrew Speer <andrew@webdyne.org>.
+#  This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
 #
-#  This is free software, licensed under:
-#
-#    The GNU General Public License, Version 2, June 1991
+#  This is free software; you can redistribute it and/or modify it under
+#  the same terms as the Perl 5 programming language system itself.
 #
 #  Full license text is available at:
 #
-#  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+#  <http://dev.perl.org/licenses/>
 #
 
 package WebDyne::Request::Fake;
@@ -72,30 +71,41 @@ sub filename {
 }
 
 
-sub headers_out {
+sub headers {
 
-    my ($r, $k, $v)=@_;
-    if (@_ == 3) {
-        return $r->{'headers_out'}{$k}=$v
+    #  Set/get header. r=request, d=direction(in/out), k=key, v=value
+    #
+    my ($r, $d, $k, $v)=@_;
+    
+    if (@_ == 4) {
+        return $r->{$d}{$k}=$v
+    }
+    elsif (@_ == 3) {
+        return $r->{$d}{$k}
     }
     elsif (@_ == 2) {
-        return $r->{'headers_out'}{$k}
-    }
-    elsif (@_ == 1) {
-        return ($r->{'headers_out'} ||= {});
+        return ($r->{$d} ||= {});
     }
     else {
-        return err('incorrect usage of %s headers_out object, r->headers_out(%s)', +__PACKAGE__, join(',', @_[1..$#_]));
+        return err("incorrect usage of %s $d object, r->$d(%s)", ref($r), join(',', @_[1..$#_]));
     }
 
+}
+
+
+sub headers_out {
+
+    my $r=shift();
+    return $r->headers('headers_out', @_);
+    
 }
 
 
 sub headers_in {
 
     my $r=shift();
-    $r->{'headers_in'} ||= {};
-
+    return $r->headers('headers_in', @_);
+    
 }
 
 

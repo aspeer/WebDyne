@@ -133,7 +133,7 @@ sub main {
                 next FILE;
             };
             my $data_thaw_ar=lock_retrieve($data_cn) ||
-                return err;
+                return err();
 
 
 

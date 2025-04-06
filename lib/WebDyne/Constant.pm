@@ -1,15 +1,14 @@
 #
 #  This file is part of WebDyne.
 #
-#  This software is Copyright (c) 2025 by Andrew Speer <andrew@webdyne.org>.
+#  This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
 #
-#  This is free software, licensed under:
-#
-#    The GNU General Public License, Version 2, June 1991
+#  This is free software; you can redistribute it and/or modify it under
+#  the same terms as the Perl 5 programming language system itself.
 #
 #  Full license text is available at:
 #
-#  <http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>
+#  <http://dev.perl.org/licenses/>
 #
 package WebDyne::Constant;
 
@@ -29,6 +28,7 @@ local $^W=0;
 use WebDyne::Util;
 use File::Spec;
 use Data::Dumper;
+$Data::Dumper::Indent=1;
 require Opcode;
 
 
@@ -529,7 +529,6 @@ sub import {
 
         my $caller = caller(0);
         while (my($k, $v)=each %{$hr}) {
-            #CORE::print "$k, $v\n";
             *{"${caller}::${k}"}=\$v;
             next if *{"${caller}::${k}"}{'CODE'};
             next if ref($v);
@@ -542,20 +541,8 @@ sub import {
                 
         }
     }
-    
 }
 
 
-
-#  Export constants to namespace, place in export tags
-#
-#require Exporter;
-#@ISA=qw(Exporter);
 &local_constant_load(__PACKAGE__, \%Constant);
-#foreach (keys %Constant) {${$_}=$Constant{$_}}
-#@EXPORT=map {'$' . $_} keys %Constant;
-#@EXPORT_OK=@EXPORT;
-#%EXPORT_TAGS=(all => [@EXPORT_OK]);
-#$_=\%Constant;
-#&import(__PACKAGE__);
-
+1;
