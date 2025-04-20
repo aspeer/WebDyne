@@ -745,7 +745,6 @@ constant is provided after the constant name.
 - `MOD_PERL` (mod_perl version)
   - Mod_perl version. Auto-detected, do not change unless you know what you are doing.
 
-
 =end markdown
 
 
@@ -757,7 +756,9 @@ WebDyne::Constant - WebDyne Configuration Constants
 =head1 SYNOPSIS
 
 
- use Webdyne::Constants;
+ #  Perl code
+ #
+ use WebDyne::Constant;
  print $WEBDYNE_CACHE_DN;
 
 =head1 DESCRIPTION
@@ -1035,7 +1036,7 @@ C<WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG> (1)
 
 =item -
 
-Implicitly add  and  tags in compile.
+Implicitly add <body> and <p> tags in compile.
 
 
 

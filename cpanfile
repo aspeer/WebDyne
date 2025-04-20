@@ -7,12 +7,17 @@ requires 'HTML::Tagset';
 requires 'HTML::Tiny';
 requires 'HTML::TreeBuilder';
 requires 'HTTP::Status';
+requires 'IO::String';
 requires 'JSON';
 requires 'Storable';
 requires 'Text::Template';
 requires 'Tie::IxHash';
-recommends 'URI';
+requires 'URI';
+recommends 'CGI';
+recommends 'Plack::Runner';
+recommends 'WebDyne::Request::PSGI::Static';
 recommends 'Win32::TieRegistry';
+suggests 'APR::Pool';
 suggests 'APR::Table';
 suggests 'Apache2';
 suggests 'Apache2::Const';
@@ -31,6 +36,7 @@ suggests 'Apache::ServerUtil';
 suggests 'Apache::SubRequest';
 suggests 'Apache::Table';
 suggests 'Apache::compat';
+suggests 'Devel::Confess';
 suggests 'ExtUtils::MM';
 suggests 'Module::Reload';
 suggests 'Time::HiRes';
@@ -38,6 +44,7 @@ suggests 'mod_perl';
 suggests 'mod_perl2';
 
 on configure => sub {
+    requires 'Tie::File';
     requires 'perl', '5.006';
 };
 
