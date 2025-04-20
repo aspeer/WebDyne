@@ -100,7 +100,7 @@ sub main {
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {
         print "$Script version: $VERSION\n";
-        print "WebDyne version: $WebDyne::VERSION\n";
+        print "WebDyne version: $WebDyne::VERSION ($WebDyne::VERSION_GIT_REF)\n";
         exit 0
     };
 

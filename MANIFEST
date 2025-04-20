@@ -22,6 +22,7 @@ examples/filename.psp
 examples/form.psp
 examples/server_time.psp
 lib/WebDyne.pm
+lib/WebDyne.pm.tmp
 lib/WebDyne/Util.pm
 lib/WebDyne/Cache.pm
 lib/WebDyne/Compile.pm

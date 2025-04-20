@@ -90,8 +90,8 @@ WriteMakefile(%WriteMakefile);
 package MY;
 use File::Copy qw(copy);
 use File::Spec;
-use Tie::File;
 use Cwd qw(abs_path);
+use Tie::File;
 
 sub post_initialize {
 
@@ -100,18 +100,19 @@ sub post_initialize {
     my $mm_or=shift();
     $mm_or->{'PM'}{'LICENSE'}='$(INST_LIBDIR)/$(BASEEXT)/LICENSE' if -e 'LICENSE';
     
-    
+
     #  Update Git Ref in file if needed/available
     #
     my $devnull=File::Spec->devnull();
     if (my $git_version=qx(git rev-parse --short HEAD 2>$devnull)) {
         chomp $git_version;
-        tie my @lines, 'Tie::File', $mm_or->{'VERSION_FROM'} || die "error on Tie::File, $!";
-        for (@lines) { s/\$VERSION_GIT_REF\s*=\s*(['"])([^'"]*)(['"])/\$VERSION_GIT_REF=${1}${git_version}${3}/ }
+        tie my @lines, 'Tie::File', $mm_or->{'VERSION_FROM'}.'.tmp' || die "error on Tie::File, $!";
+        $lines[0]=$git_version;
     }
     $mm_or->SUPER::post_initialize;
 
 }
+
 
 sub selfdocument {
 
@@ -142,5 +143,3 @@ sub MM::init_main {
     $mm_or->SUPER::init_main();
 
 }
-
-

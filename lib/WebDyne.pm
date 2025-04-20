@@ -16,7 +16,7 @@ package WebDyne;
 #  Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION %CGI_TAG_WEBDYNE @ISA $AUTOLOAD);
+use vars   qw($VERSION $VERSION_GIT_REF %CGI_TAG_WEBDYNE @ISA $AUTOLOAD);
 use warnings;
 no warnings qw(uninitialized redefine once);
 use overload;
@@ -52,6 +52,7 @@ use JSON;
 #  Version information
 #
 $VERSION='2.003_222';
+chomp($VERSION_GIT_REF=do { local (@ARGV, $/) = ($_=__FILE__.'.tmp'); <> if -f $_ });
 
 
 #  Debug load
