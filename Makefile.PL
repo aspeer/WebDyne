@@ -104,8 +104,9 @@ sub post_initialize {
     #  Update Git Ref in file if needed/available
     #
     my $devnull=File::Spec->devnull();
-    if (my $git_version=qx(git rev-parse --short HEAD 2>$devnull)) {
+    if (my $git_version=qx(git rev-parse HEAD 2>$devnull)) {
         chomp $git_version;
+        $git_version=substr($git_version,0,10);
         tie my @lines, 'Tie::File', $mm_or->{'VERSION_FROM'}.'.tmp' || die "error on Tie::File, $!";
         $lines[0]=$git_version;
     }
