@@ -42,7 +42,7 @@ require Exporter;
 
 #  Version information
 #
-$VERSION='2.002_58801625';
+$VERSION='2.003_222';
 
 
 #  Var to hold package wide hash, for data shared across package, and error stack
