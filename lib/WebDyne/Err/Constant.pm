@@ -84,7 +84,7 @@ sub import {
 #  Export constants to namespace, place in export tags
 #
 #require Exporter;
-#require WebDyne::Constant;
+require WebDyne::Constant;
 #@ISA=qw(Exporter WebDyne::Constant);
 @ISA=qw(WebDyne::Constant);
 #+__PACKAGE__->local_constant_load(\%Constant);

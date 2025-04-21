@@ -78,19 +78,19 @@ sub import {
 
 #  Export constants to namespace, place in export tags
 #
-require Exporter;
+#require Exporter;
 require WebDyne::Constant;
-@ISA=qw(Exporter WebDyne::Constant);
-+__PACKAGE__->local_constant_load(\%Constant);
-%Constant=(
-    %Constant,
-    %{do($local_fn) || {}},
-    %{do([glob(sprintf('~/.%s.local', __PACKAGE__))]->[0]) || {}} 
-);
-foreach (keys %Constant) {${$_}=($Constant{$_}=$ENV{$_} || $Constant{$_})}
-@EXPORT=map {'$' . $_} keys %Constant;
-@EXPORT_OK=@EXPORT;
-%EXPORT_TAGS=(all => [@EXPORT_OK]);
+@ISA=qw(WebDyne::Constant);
+#+__PACKAGE__->local_constant_load(\%Constant);
+#%Constant=(
+#    %Constant,
+#    %{do($local_fn) || {}},
+#    %{do([glob(sprintf('~/.%s.local', __PACKAGE__))]->[0]) || {}} 
+#);
+#foreach (keys %Constant) {${$_}=($Constant{$_}=$ENV{$_} || $Constant{$_})}
+#@EXPORT=map {'$' . $_} keys %Constant;
+#@EXPORT_OK=@EXPORT;
+#%EXPORT_TAGS=(all => [@EXPORT_OK]);
 
 
 #  All done, init finished

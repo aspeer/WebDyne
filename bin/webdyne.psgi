@@ -51,7 +51,7 @@ $DOCUMENT_ROOT=pop(@ARGV) || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT;
 #  All done. Start endless loop if called from command line or return
 #  handler code ref.
 #
-unless (caller) {
+if (!caller || exists $ENV{PAR_TEMP}) {
     require Plack::Runner;
     my $runner=Plack::Runner->new;
     $runner->parse_options(@ARGV);
