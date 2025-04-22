@@ -44,7 +44,7 @@ WORKDIR /app
 #  Copy from builder
 #
 COPY --from=builder /app/packer/webdyne.psgi.pp /app
-COPY --chmod=644 ./server_time.psp /app/server_time.psp
+COPY --chmod=644 examples/server_time.psp /app/server_time.psp
 
 # Expose port 5000
 #
