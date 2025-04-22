@@ -46,9 +46,9 @@ WORKDIR /app
 COPY --from=builder /app/packer/webdyne.psgi.pp /app
 COPY --chmod=644 examples/server_time.psp /app/server_time.psp
 
-# Expose port 5000
+# Expose port 8080
 #
-EXPOSE 5000
+EXPOSE 8080
 
 # Set an environment variable (can be overridden at runtime)
 #
