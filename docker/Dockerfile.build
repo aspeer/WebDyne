@@ -56,5 +56,5 @@ ENV DOCUMENT_ROOT=~
 
 # Run the binary with the environment variable
 #
-CMD ["/app/webdyne.psgi.pp", "/app/server_time.psp"]
+CMD ["/app/webdyne.psgi.pp", "--port 8080", "/app/server_time.psp"]
 

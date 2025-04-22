@@ -35,6 +35,7 @@ use WebDyne::Request::PSGI::Constant;
 use WebDyne::Util;
 
 
+
 #  Inheritance
 #
 use WebDyne::Request::Fake;
@@ -360,18 +361,22 @@ sub send_error_response {
 
 sub err_html {
 
+    #  Very basic HTML error messages for file not found and similar
+    #
     my ($r, $status, $message)=@_;
-    require CGI;
+    require WebDyne::HTML::Tiny;
+    my $html_or=WebDyne::HTML::Tiny->new() ||
+        return err();
     my $error;
     my @message=(
-        CGI->start_html($error=sprintf("%s Error $status", __PACKAGE__)),
-        CGI->h1($error),
-        CGI->hr(),
-        CGI->em(status_message($status) || 'Unknown Error'), CGI->br(), CGI->br(),
-        CGI->pre(
+        $html_or->start_html($error=sprintf("%s Error $status", __PACKAGE__)),
+        $html_or->h1($error),
+        $html_or->hr(),
+        $html_or->em(status_message($status) || 'Unknown Error'), $html_or->br(), $html_or->br(),
+        $html_or->pre(
             sprintf("The requested URI '%s' generated error:\n\n$message", $r->uri)
         ),
-        CGI->end_html()
+        $html_or->end_html()
     );
     return join(undef, @message);
 
