@@ -4,3 +4,4 @@ requires 'Plack::Middleware::StackTrace';
 requires 'Plack::Middleware::AccessLog';
 requires 'Plack::Loader';
 requires 'Plack::Handler::Standalone';
+requires 'Devel::Confess';
