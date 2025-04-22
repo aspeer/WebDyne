@@ -1,0 +1,60 @@
+#  ** BUILD STAGE **
+#
+FROM alpine:latest AS builder
+
+
+#  Install build packages
+#
+RUN apk add --no-cache perl perl-dev perl-app-cpanminus build-base unzip tzdata git joe
+
+
+#  Work directory
+#
+WORKDIR /app
+
+
+#  Build
+#
+RUN git clone https://github.com/aspeer/WebDyne.git .
+RUN git checkout development
+
+
+#  Install dependencies
+#
+RUN cpanm --installdeps .
+
+
+#  Change to packer dir
+#
+WORKDIR packer
+RUN cpanm --installdeps .
+RUN sh packer.sh
+
+
+#  ** RUN STAGE **
+#
+FROM alpine:latest
+
+
+#  Work directory
+#
+WORKDIR /app
+
+
+#  Copy from builder
+#
+COPY --from=builder /app/packer/webdyne.psgi.pp /app
+COPY --chmod=644 ./server_time.psp /app/server_time.psp
+
+# Expose port 5000
+#
+EXPOSE 5000
+
+# Set an environment variable (can be overridden at runtime)
+#
+ENV DOCUMENT_ROOT=~
+
+# Run the binary with the environment variable
+#
+CMD ["/app/webdyne.psgi.pp", "/app/server_time.psp"]
+
