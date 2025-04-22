@@ -22,7 +22,7 @@ cmds = [
 cmds = [
   "cd packer",
   "cpanm --installdeps .",
-  "sh packer.sh"
+  "sh packer.sh",
   "cp packer/webdyne.psgi.pp /app/",
   "cp examples/server_time.psp /app/",
 ]
