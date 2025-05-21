@@ -192,6 +192,7 @@ RUN dnf install -y \
     perl \
     perl-core \
     perl-App-cpanminus \
+    && dnf clean all
 [% ELSIF family == 'perl' %]
 #  No extra packages needed
 [% END %]

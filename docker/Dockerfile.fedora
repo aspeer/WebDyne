@@ -160,6 +160,7 @@ RUN dnf install -y \
     perl \
     perl-core \
     perl-App-cpanminus \
+    && dnf clean all
 
 
 
