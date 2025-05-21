@@ -1,0 +1,14 @@
+#!/bin/sh -x
+set -e
+
+# default to port 8080 if not specified
+#
+PORT="${PORT:-8080}"
+
+# hands off to the real command overridden
+#
+if [ $# -gt 0 ]; then
+  exec "$@"
+else
+  exec starman --port "$PORT" $PERL_CARTON_PATH/bin/webdyne.psgi
+fi

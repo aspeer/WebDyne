@@ -599,3 +599,16 @@ lib/WebDyne/Request/PSGI/Constant.pm
 lib/WebDyne/Request/PSGI.pm
 packer/packer.sh
 lib/WebDyne/Install/Apache/webdyne_conf.pl.inc
+cpanfile.snapshot                        
+docker/Dockerfile.alpine                 
+docker/Dockerfile.alpine-packer          
+docker/Dockerfile.debian                 
+docker/Dockerfile.fedora                 
+docker/Dockerfile.perl                   
+docker/Dockerfile.tt                     
+docker/build.pl                          
+docker/cpanfile                          
+docker/cpanfile.snapshot                 
+docker/entrypoint.sh                     
+nixpacks.toml                            
+packer/cpanfile                          

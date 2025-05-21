@@ -44,17 +44,19 @@ WORKDIR /app
 #  Copy from builder
 #
 COPY --from=builder /app/packer/webdyne.psgi.pp /app
-COPY --chmod=644 examples/server_time.psp /app/server_time.psp
+COPY --from=builder /app/examples/server_time.psp /app/server_time.psp
+
 
 # Expose port 8080
 #
 EXPOSE 8080
 
+
 # Set an environment variable (can be overridden at runtime)
 #
 ENV DOCUMENT_ROOT=~
 
+
 # Run the binary with the environment variable
 #
-CMD ["/app/webdyne.psgi.pp", "--port 8080", "/app/server_time.psp"]
-
+CMD ["/app/webdyne.psgi.pp", "--port",  "8080", "/app/server_time.psp"]
