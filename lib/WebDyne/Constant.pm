@@ -461,12 +461,13 @@ sub local_constant_cn {
     my $local_constant_cn;
     if ($^O=~/MSWin[32|64]/) {
         my $dn=$ENV{'WEBDYNE_HOME'} || $ENV{'WEBDYNE'} || $ENV{'WINDIR'};
-        $local_constant_cn=
+        $local_constant_cn=$ENV{'WEBDYNE_CONF'} || 
             File::Spec->catfile($dn, $local_constant_fn)
     }
     else {
-        $local_constant_cn=File::Spec->catfile(
-            File::Spec->rootdir(), 'etc', $local_constant_fn
+        $local_constant_cn=$ENV{'WEBDYNE_CONF'} || 
+            File::Spec->catfile(
+                File::Spec->rootdir(), 'etc', $local_constant_fn
         )
     }
     return $local_constant_cn;
