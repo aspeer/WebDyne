@@ -457,7 +457,7 @@ sub local_constant_cn {
 
     #  Where local constants reside
     #
-    my $local_constant_fn='webdyne.pm';
+    my $local_constant_fn='webdyne.conf.pl';
     my $local_constant_cn;
     if ($^O=~/MSWin[32|64]/) {
         my $dn=$ENV{'WEBDYNE_HOME'} || $ENV{'WEBDYNE'} || $ENV{'WINDIR'};

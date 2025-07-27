@@ -95,13 +95,14 @@ COPY cpanfile cpanfile.snapshot ./
 RUN carton install --deployment
 
 
-# Now install main WebDybe module
+# Now install main WebDyne module
 #
 WORKDIR ..
 #RUN carton exec -- cpanm --local-lib-contained=${PERL_CARTON_PATH} .
 RUN carton exec -- cpanm .
+# Clean carton cache and create empty webdyne cache dir
 RUN rm -rf ${PERL_CARTON_PATH}/cache
-
+RUN mkdir ${PERL_CARTON_PATH}/cache
 
 # ====================================================================================================
 #
@@ -193,6 +194,11 @@ EXPOSE ${PORT}
 # Set document root environment var to the server_time example
 #
 ENV DOCUMENT_ROOT=${DOCUMENT_ROOT}
+
+
+# WebDyne environment vars
+#
+ENV WEBDYNE_CACHE_DN=${PERL_CARTON_PATH}/cache
 
 
 # Entrypoint script for starting process. Kicks off starman on ${PORT}
