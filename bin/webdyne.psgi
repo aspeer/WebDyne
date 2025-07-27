@@ -49,10 +49,10 @@ $DOCUMENT_ROOT=(grep {!/^--/} @ARGV)[0] || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_RO
 
 
 #  We don't want to do full ARG parsing as it's supposed to be passed
-#  to Plack - but if user specifies --test as first ARG load up the 
-#  internal server time page.
+#  to Plack - but if user specifies --test as first ARG or there is no
+#  DOCUMENT_ROOT given then load up the internal server time page.
 #
-if ($DOCUMENT_ROOT eq '--test') {
+if (!$DOCUMENT_ROOT || ($DOCUMENT_ROOT eq '--test')) {
     (my $test_dn=$INC{'WebDyne.pm'})=~s/\.pm$//;
     $DOCUMENT_ROOT=File::Spec->catfile($test_dn, 'time.psp');
 }
