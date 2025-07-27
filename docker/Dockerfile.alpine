@@ -28,7 +28,8 @@ ARG LABEL_REVISION="079c3e1"
 # Default paths
 #
 ARG PERL_CARTON_PATH="/opt/webdyne"
-ARG DOCUMENT_ROOT=/app/examples/server_time.psp
+#ARG DOCUMENT_ROOT=/app/examples/server_time.psp
+ARG DOCUMENT_ROOT="--test"
 
 
 # ====
@@ -39,7 +40,7 @@ ARG DOCUMENT_ROOT=/app/examples/server_time.psp
 
 # Using Fedora as base
 #
-FROM ${BASE} as builder
+FROM ${BASE} AS builder
 
 
 # Redeclare ARGS
@@ -181,7 +182,7 @@ WORKDIR /app
 # Copy CPAN modules from builder + example file
 #
 COPY --from=builder ${PERL_CARTON_PATH} ${PERL_CARTON_PATH}
-COPY --from=builder /app/pm-WebDyne/examples/server_time.psp /app/examples/server_time.psp
+#COPY --from=builder /app/pm-WebDyne/examples/server_time.psp /app/examples/server_time.psp
 
 
 # Expose port (default 8080)

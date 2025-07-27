@@ -5,6 +5,13 @@ set -e
 #
 PORT="${PORT:-8080}"
 
+
+# cpanfile exist ? If installdeps
+#
+if [ -f ./cpanfile ]; then
+    cpanm --installdeps .
+fi
+
 # hands off to the real command overridden
 #
 if [ $# -gt 0 ]; then
