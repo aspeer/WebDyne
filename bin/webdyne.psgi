@@ -45,7 +45,7 @@ $VERSION='2.005_225';
 
 #  Let DOCUMENT ROOT be overridden if needed
 #
-$DOCUMENT_ROOT=(grep {!/^--/} @ARGV)(0) || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT;
+$DOCUMENT_ROOT=(grep {!/^--/} @ARGV)[0] || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT;
 
 
 #  We don't want to do full ARG parsing as it's supposed to be passed
