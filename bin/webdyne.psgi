@@ -48,6 +48,16 @@ $VERSION='2.005_225';
 $DOCUMENT_ROOT=pop(@ARGV) || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT;
 
 
+#  We don't want to do full ARG parsing as it's supposed to be passed
+#  to Plack - but if user specifies --test as first ARG load up the 
+#  internal server time page.
+#
+if ($DOCUMENT_ROOT eq '--test') {
+    (my $test_dn=$INC{'WebDyne.pm'})=~s/\.pm$//;
+    $DOCUMENT_ROOT=File::Spec->catfile($test_dn, 'time.psp');
+}
+
+
 #  All done. Start endless loop if called from command line or return
 #  handler code ref.
 #

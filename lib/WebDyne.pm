@@ -477,12 +477,14 @@ sub handler : method {    # no subsort
         my $cache_inode;
         my $eval_cr=$Package{'_eval_cr'}{'!'};
         if (ref($cache) eq 'CODE') {
+            debug('CODE cache ref type');
             my %param=(
                 cache_cr   => $cache,
                 srce_inode => $srce_inode
             );
             $cache_inode=${
                 $eval_cr->($self, undef, \%param, q[$_[1]->{'cache_cr'}->($_[0], $_[1]->{'srce_inode'})], 0) ||
+                #$eval_cr->($self, undef, \%param, q$_[1]->{'cache_cr'}->($_[0], $_[1]->{'srce_inode'})], 0) ||
                     return $self->err_html(
                     errsubst(
                         'error in cache code: %s', errstr() || $@ || 'no inode returned'
@@ -490,6 +492,7 @@ sub handler : method {    # no subsort
             }
         }
         else {
+            debug('non-CODE cache type');
             $cache_inode=${
                 $eval_cr->($self, undef, $srce_inode, $cache, 0) ||
                     return $self->err_html(
@@ -538,12 +541,15 @@ sub handler : method {    # no subsort
                 #  Do this way for mod_perl2, FCGI. Note to self need r->output_filter or
                 #  Apache 2 seems to add junk characters at end of output
                 #
+                debug('using MP2 or FCGI_ROLE path');
                 my $r_child=$r->lookup_file($fn, $r->output_filters);
+                debug("r_child: $r_child");
                 $r_child->handler('default-handler');
                 $r_child->content_type($WEBDYNE_CONTENT_TYPE_HTML);
 
                 #  Apache bug ? Need to set content type on r also
                 $r->content_type($WEBDYNE_CONTENT_TYPE_HTML);
+                debug("set content type to: $WEBDYNE_CONTENT_TYPE_HTML, running");
                 return $r_child->run();
 
             }
@@ -551,6 +557,7 @@ sub handler : method {    # no subsort
 
                 #  This way for older versions of Apache, other request handlers
                 #
+                debug('using legacy path');
                 $r->filename($fn);
                 $r->handler('default-handler');
                 $r->content_type($WEBDYNE_CONTENT_TYPE_HTML);
