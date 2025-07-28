@@ -611,3 +611,6 @@ docker/cpanfile.snapshot
 docker/entrypoint.sh                     
 nixpacks.toml                            
 packer/cpanfile                          
+lib/WebDyne/Request/PSGI/Static.pm
+lib/WebDyne/time.psp
+docker/Dockerfile
