@@ -40,14 +40,41 @@ my $local_fn=abs_path(__FILE__) . '.local';
 %Constant=(
 
     
-    #  Document Root
+    #  Document Root, usually supplied as env var or command line option but
+    #  can be set here.
     #
     DOCUMENT_ROOT	=> undef,
     
     
-    #  Document default
+    #  Document default - will be served if exists in DOCUMENT_ROOT and no other
+    #  file specified.
     #
-    DOCUMENT_DEFAULT	=> 'index.psp',
+    DOCUMENT_DEFAULT	=> 'app.psp',
+    
+    
+    #  Middeware config, static module. Loaded by default for convenience if
+    #  started via webdyne.psgi script directly (i.e. not invoked by plakup
+    #  or starman). Activate in middleware section below if wanted with plackup
+    #  or starman
+    #
+    WEBDYNE_PLACK_MIDDLEWARE_STATIC => qr{^(?!.*\.psp$).*\.\w+$},
+    
+    
+    #  All other middleware. Uncomment/modify as required
+    #
+    WEBDYNE_PLACK_MIDDLEWARE_AR => [
+        
+        #{ 'Debug' => 
+        #    { panels => [ qw(Environment) ] } 
+        #},
+        
+        #  If given as a sub code ref the $DOCUMENT_ROOT is first param 
+        #
+        #{ 'Static' => sub { 
+        #    { path=>qr{^(?!.*\.psp$).*\.\w+$}, root=>shift() }
+        #}}
+        
+    ],
     
     
     #  Dir Config
@@ -59,11 +86,6 @@ my $local_fn=abs_path(__FILE__) . '.local';
     #
     WEBDYNE_PSGI_WARN_ON_ERROR => undef,
 
-
-    #  Local constants override anything above
-    #
-    #%{do($local_fn) || {}},
-    #$%{do([glob(sprintf('~/.%s.local', __PACKAGE__))]->[0]) || {}}    # || {} avoids warning
 
 );
 # >>>
@@ -78,22 +100,11 @@ sub import {
 
 #  Export constants to namespace, place in export tags
 #
-#require Exporter;
 require WebDyne::Constant;
 @ISA=qw(WebDyne::Constant);
-#+__PACKAGE__->local_constant_load(\%Constant);
-#%Constant=(
-#    %Constant,
-#    %{do($local_fn) || {}},
-#    %{do([glob(sprintf('~/.%s.local', __PACKAGE__))]->[0]) || {}} 
-#);
-#foreach (keys %Constant) {${$_}=($Constant{$_}=$ENV{$_} || $Constant{$_})}
-#@EXPORT=map {'$' . $_} keys %Constant;
-#@EXPORT_OK=@EXPORT;
-#%EXPORT_TAGS=(all => [@EXPORT_OK]);
 
 
-#  All done, init finished
+#  All done
 #
 1;
 #===================================================================================================

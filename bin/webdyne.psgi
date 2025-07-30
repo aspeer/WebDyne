@@ -43,9 +43,11 @@ use WebDyne::Request::PSGI::Constant;
 $VERSION='2.006_249';
 
 
-#  Let DOCUMENT ROOT be overridden if needed
+#  Let DOCUMENT ROOT be overridden if needed by the last ARGV if called from command line. Only
+#  works when start webdyne.psgi directly, not from Plackup, e.g:
+#  /bin/webdyne.psgi --port 5001 /opt/app/app.psgi
 #
-$DOCUMENT_ROOT=(grep {!/^--/} @ARGV)[0] || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT;
+$DOCUMENT_ROOT=(grep {!/^-+/} reverse @ARGV)[0] || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT;
 
 
 #  We don't want to do full ARG parsing as it's supposed to be passed
@@ -65,20 +67,68 @@ if (!caller || exists $ENV{PAR_TEMP}) {
     require Plack::Runner;
     my $runner=Plack::Runner->new;
     $runner->parse_options(@ARGV);
-    $runner->run(\&handler);
+    $runner->run(&handler_build(&handler_static(\&handler)));
     exit 0;
 }
 
 
 #  Return handler code ref
 #
-\&handler;
+&handler_build(\&handler);
 
 
 #==================================================================================================
 
 
-#  Start endless loop
+#  Build a Plack::Build ref if there is middleware requested
+#
+sub handler_static {
+
+
+    #  Used when starting webdyne.psgi from command line without plackup or via starman - presumably for dev
+    #  purposes so include the Plack static middleware to allow serving non-psp files such as css
+    #
+    my $handler_cr=shift();
+    if (my $qr=$WEBDYNE_PLACK_MIDDLEWARE_STATIC) {
+        require Plack::Middleware::Static;
+        #$handler_cr=Plack::Middleware::Static->wrap($handler_cr, path=>qr{^(?!.*\.psp$).*\.\w+$}, root=>$DOCUMENT_ROOT );
+        $handler_cr=Plack::Middleware::Static->wrap($handler_cr, path=>$qr, root=>$DOCUMENT_ROOT );
+    }
+    return $handler_cr;
+
+}
+
+
+sub handler_build {
+    
+    
+    #  Check for any additional Plack middleware handlers requested in config and wrap them if needed
+    #
+    my $handler_cr=shift();
+    if (my $middleware_ar=$WEBDYNE_PLACK_MIDDLEWARE_AR) {
+        #  Yes, middleware requested
+        #
+        foreach my $middleware_hr (@{$middleware_ar}) {
+            while (my ($middleware, $opt_hr)=each %{$middleware_hr}) {
+                if ($middleware !~ /^Plack::Middleware/) {
+                    $middleware = "Plack::Middleware::${middleware}";
+                }
+                (my $middleware_fn = $middleware) =~ s|::|/|g;
+                require "${middleware_fn}.pm";
+                if (ref($opt_hr) eq 'CODE') {
+                    #  If opt_hr is code ref means we want DOCUMENT_ROOT built in
+                    $opt_hr=$opt_hr->($DOCUMENT_ROOT);
+                }
+                $handler_cr=$middleware->wrap($handler_cr, %{$opt_hr});
+            }
+        }
+    }
+    return $handler_cr;
+    
+}
+    
+
+#  Actual Plack handler
 #
 sub handler {
 

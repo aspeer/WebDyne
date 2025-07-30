@@ -17,5 +17,5 @@ fi
 if [ $# -gt 0 ]; then
   exec "$@"
 else
-  exec starman --port "$PORT" $PERL_CARTON_PATH/bin/webdyne.psgi
+  exec starman -MWebDyne --port "$PORT" $PERL_CARTON_PATH/bin/webdyne.psgi
 fi
