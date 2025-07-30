@@ -96,6 +96,7 @@ recommends 'Module::Build::ConfigData';
 recommends 'Module::Build::PPMMaker';
 recommends 'Module::Build::Platform::Windows';
 recommends 'Module::Build::PodParser';
+recommends 'Plack::Middleware::Static';
 recommends 'Plack::Runner';
 recommends 'TAP::Harness::Env';
 recommends 'URI::URL';
