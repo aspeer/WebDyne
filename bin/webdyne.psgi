@@ -40,7 +40,7 @@ use WebDyne::Request::PSGI::Constant;
 
 #  Version information
 #
-$VERSION='2.008_256';
+$VERSION='2.009_261';
 
 
 #  Let DOCUMENT ROOT be overridden if needed by the last ARGV if called from command line. Only
