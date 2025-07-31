@@ -51,7 +51,7 @@ use JSON;
 
 #  Version information
 #
-$VERSION='2.010_262';
+$VERSION='2.011_264';
 chomp($VERSION_GIT_REF=do { local (@ARGV, $/) = ($_=__FILE__.'.tmp'); <> if -f $_ });
 
 
