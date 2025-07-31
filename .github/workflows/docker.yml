@@ -5,6 +5,7 @@ on:
     branches: [ development ]
     paths:
       - '/docker/**'
+      - '/.github/workflows/docker.yml'
   workflow_dispatch:
 
 jobs:
