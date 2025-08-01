@@ -43,32 +43,65 @@ use WebDyne::Request::PSGI::Constant;
 $VERSION='2.012_265';
 
 
-#  Let DOCUMENT ROOT be overridden if needed by the last ARGV if called from command line. Only
-#  works when start webdyne.psgi directly, not from Plackup, e.g:
-#  /bin/webdyne.psgi --port 5001 /opt/app/app.psgi
+#  Test file to use if no DOCUMENT_ROOT found
 #
-$DOCUMENT_ROOT=(grep {!/^-+/} reverse @ARGV)[0] || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT;
-
-
-#  We don't want to do full ARG parsing as it's supposed to be passed
-#  to Plack - but if user specifies --test as first ARG or there is no
-#  DOCUMENT_ROOT given then load up the internal server time page.
-#
-if (!$DOCUMENT_ROOT || ($DOCUMENT_ROOT eq '--test')) {
-    (my $test_dn=$INC{'WebDyne.pm'})=~s/\.pm$//;
-    $DOCUMENT_ROOT=File::Spec->catfile($test_dn, 'time.psp');
-}
+(my $test_dn=$INC{'WebDyne.pm'})=~s/\.pm$//;
+my $test_fn=File::Spec->catfile($test_dn, 'time.psp');
 
 
 #  All done. Start endless loop if called from command line or return
 #  handler code ref.
 #
 if (!caller || exists $ENV{PAR_TEMP}) {
+
+    #  Running from command line without being stared by plackup or starman
+    #
     require Plack::Runner;
-    my $runner=Plack::Runner->new;
-    $runner->parse_options(@ARGV);
-    $runner->run(&handler_build(&handler_static(\&handler)));
+    my $plack_or=Plack::Runner->new();
+    
+
+    #  User specified --test on command line ? Note and consume before 
+    #  passing to parse_options ?
+    #
+    my $test_fg;
+    if ($test_fg=grep {/^--test$/} @ARGV) {
+        @ARGV=grep {!/^--test$/} @ARGV;
+    }
+
+
+    #  Mac conflicts with Plack default port of 5000 - choose 5001
+    if ($^O eq 'darwin') {
+        $plack_or->parse_options('--port', '5001', @ARGV);
+    }
+    else {
+        $plack_or->parse_options(@ARGV);
+    }
+    
+    
+    #  Finalise DOCUMENT_ROOT. First try and get as last command line option or env or variable but --test
+    #  flag wins over everything else
+    #
+    $DOCUMENT_ROOT=shift(@{$plack_or->{'argv'}}) ||
+        $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT;
+    if ($test_fg || !$DOCUMENT_ROOT) {
+        $DOCUMENT_ROOT=$test_fn;
+    }
+    
+
+    #  Done - run it
+    #
+    $plack_or->run(&handler_build(&handler_static(\&handler)));
     exit 0;
+
+}
+else {
+
+    #  Not running from comamnd line. Get DOCUMENT_ROOT from environment or
+    #  vars file
+    #
+    $DOCUMENT_ROOT=$ENV{'DOCUMENT_ROOT'} 
+        || $DOCUMENT_ROOT || $test_fn;
+
 }
 
 
