@@ -12,24 +12,22 @@ ARG WORKERS=8
 
 # Metadata - maintainer
 #
-ARG LABEL_MAINTAINER="Andrew Speer <andrew.speer@isolutions.com.au>"
-ARG LABEL_TITLE="WebDyne"
-ARG LABEL_DESCRIPTION="PSGI web service for generating dynamic HTML pages with embedded Perl"
-ARG LABEL_URL="https://github.com/aspeer/WebDyne"
-ARG LABEL_SOURCE="https://github.com/aspeer/WebDyne.git"
-ARG LABEL_DOCUMENTATION="https://github.com/aspeer/WebDyne#readme"
-ARG LABEL_AUTHORS="Andrew Speer <andrew.speer@isolutions.com.au>"
-ARG LABEL_LICENSES="Perl"
-ARG LABEL_CREATED="2025-05-21T10:00:00Z"
-ARG LABEL_VERSION="2.005_225"
-ARG LABEL_REVISION="079c3e1"
+#ARG LABEL_MAINTAINER="Andrew Speer <andrew.speer@isolutions.com.au>"
+#ARG LABEL_TITLE="WebDyne"
+#ARG LABEL_DESCRIPTION="PSGI web service for generating dynamic HTML pages with embedded Perl"
+#ARG LABEL_URL="https://github.com/aspeer/WebDyne"
+#ARG LABEL_SOURCE="https://github.com/aspeer/WebDyne.git"
+#ARG LABEL_DOCUMENTATION="https://github.com/aspeer/WebDyne#readme"
+#ARG LABEL_AUTHORS="Andrew Speer <andrew.speer@isolutions.com.au>"
+#ARG LABEL_LICENSES="Perl"
+#ARG LABEL_CREATED="2025-05-21T10:00:00Z"
+#ARG LABEL_VERSION="2.005_225"
+#ARG LABEL_REVISION="079c3e1"
 
 
 # Default paths
 #
 ARG PERL_CARTON_PATH="/opt/webdyne"
-#ARG DOCUMENT_ROOT=/app/examples/server_time.psp
-#ARG DOCUMENT_ROOT="--test"
 ARG DOCUMENT_ROOT="/app"
 
 
@@ -86,11 +84,15 @@ ENV PATH=${PERL_CARTON_PATH}/bin:$PATH
 WORKDIR /app
 
 
-# Checkout Webdyne
+# Checkout Webdyne. Used if cloning
 #
 #RUN git clone -b development --single-branch https://github.com/aspeer/WebDyne.git pm-WebDyne
-COPY . .
 #WORKDIR pm-WebDyne
+
+
+#  Otherwise copy working repo content
+#
+COPY . .
 
 
 # And now install CPAN modules using Carton
@@ -125,48 +127,19 @@ ARG DOCUMENT_ROOT
 
 #  Republish labels
 #
-#ARG LABEL_MAINTAINER
-#ARG LABEL_TITLE
-#ARG LABEL_DESCRIPTION
-#ARG LABEL_URL
-#ARG LABEL_SOURCE
-#ARG LABEL_DOCUMENTATION
-#ARG LABEL_AUTHORS
-#ARG LABEL_LICENSES
-#ARG LABEL_CREATED
-#ARG LABEL_VERSION
-#ARG LABEL_REVISION
-#ARG BASE
+ARG LABEL_MAINTAINER
+ARG LABEL_TITLE
+ARG LABEL_DESCRIPTION
+ARG LABEL_URL
+ARG LABEL_SOURCE
+ARG LABEL_DOCUMENTATION
+ARG LABEL_AUTHORS
+ARG LABEL_LICENSES
+ARG LABEL_CREATED
+ARG LABEL_VERSION
+ARG LABEL_REVISION
+ARG BASE
 
-#ARG LABEL_MAINTAINER="Andrew Speer <andrew.speer@isolutions.com.au>"
-#ARG LABEL_TITLE="WebDyne"
-#ARG LABEL_DESCRIPTION="PSGI web service for generating dynamic HTML pages with embedded Perl"
-#ARG LABEL_URL="https://github.com/aspeer/WebDyne"
-#ARG LABEL_SOURCE="https://github.com/aspeer/WebDyne.git"
-#ARG LABEL_DOCUMENTATION="https://github.com/aspeer/WebDyne#readme"
-#ARG LABEL_AUTHORS="Andrew Speer <andrew.speer@isolutions.com.au>"
-#ARG LABEL_LICENSES="Perl"
-#ARG LABEL_CREATED="2025-05-21T10:00:00Z"
-#ARG LABEL_VERSION="2.005_225"
-#ARG LABEL_REVISION="079c3e1"
-
-# Add Labels into meta for image
-#
-LABEL maintainer="Andrew Speer <andrew.speer@isolutions.com.au>"
-LABEL org.opencontainers.image.title="WebDyne"
-LABEL org.opencontainers.image.description="PSGI web service for generating dynamic HTML pages with embedded Perl"
-LABEL org.opencontainers.image.url="https://github.com/aspeer/WebDyne"
-LABEL org.opencontainers.image.source="https://github.com/aspeer/WebDyne.git"
-LABEL org.opencontainers.image.documentation="https://github.com/aspeer/WebDyne#readme"
-LABEL org.opencontainers.image.authors="Andrew Speer <andrew.speer@isolutions.com.au>"
-LABEL org.opencontainers.image.licenses="Perl"
-#LABEL org.opencontainers.image.created="2025-05-21T10:00:00Z"
-LABEL org.opencontainers.image.created="2025-08-02T15:55:59Z"
-#LABEL org.opencontainers.image.version="2.005_225"
-LABEL org.opencontainers.image.version="2.012_265"
-#LABEL org.opencontainers.image.revision="079c3e1"
-LABEL org.opencontainers.image.revision="d1dabb2"
-LABEL org.opencontainers.image.base=${BASE}
 
 # Add Labels into meta for image
 #
@@ -182,6 +155,22 @@ LABEL org.opencontainers.image.base=${BASE}
 #LABEL org.opencontainers.image.version=${LABEL_VERSION}
 #LABEL org.opencontainers.image.revision=${LABEL_REVISION}
 #LABEL org.opencontainers.image.base=${BASE}
+
+
+# Add Labels into meta for image
+#
+LABEL maintainer="Andrew Speer <andrew.speer@isolutions.com.au>"
+LABEL org.opencontainers.image.title="WebDyne"
+LABEL org.opencontainers.image.description="PSGI web service for generating dynamic HTML pages with embedded Perl"
+LABEL org.opencontainers.image.url="https://github.com/aspeer/WebDyne"
+LABEL org.opencontainers.image.source="https://github.com/aspeer/WebDyne.git"
+LABEL org.opencontainers.image.documentation="https://github.com/aspeer/WebDyne#readme"
+LABEL org.opencontainers.image.authors="Andrew Speer <andrew.speer@isolutions.com.au>"
+LABEL org.opencontainers.image.licenses="Perl"
+LABEL org.opencontainers.image.created="2025-08-02T16:06:44Z"
+LABEL org.opencontainers.image.version="2.012_265"
+LABEL org.opencontainers.image.revision="d29fe46"
+LABEL org.opencontainers.image.base=${BASE}
 
 
 # Base perl
@@ -218,7 +207,6 @@ WORKDIR /app
 # Copy CPAN modules from builder + example file
 #
 COPY --from=builder ${PERL_CARTON_PATH} ${PERL_CARTON_PATH}
-#COPY --from=builder /app/pm-WebDyne/examples/server_time.psp /app/examples/server_time.psp
 
 
 # Expose port (default 8080)
