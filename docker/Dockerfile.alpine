@@ -85,14 +85,15 @@ WORKDIR /app
 
 # Checkout Webdyne
 #
-RUN git clone -b development --single-branch https://github.com/aspeer/WebDyne.git pm-WebDyne
-WORKDIR pm-WebDyne
+#RUN git clone -b development --single-branch https://github.com/aspeer/WebDyne.git pm-WebDyne
+COPY . .
+#WORKDIR pm-WebDyne
 
 
 # And now install CPAN modules using Carton
 #
 WORKDIR docker.template
-COPY cpanfile cpanfile.snapshot ./
+COPY docker/cpanfile docker/cpanfile.snapshot ./
 RUN carton install --deployment
 
 
@@ -157,11 +158,11 @@ LABEL org.opencontainers.image.documentation="https://github.com/aspeer/WebDyne#
 LABEL org.opencontainers.image.authors="Andrew Speer <andrew.speer@isolutions.com.au>"
 LABEL org.opencontainers.image.licenses="Perl"
 #LABEL org.opencontainers.image.created="2025-05-21T10:00:00Z"
-LABEL org.opencontainers.image.created="2025-08-02T02:29:50Z"
+LABEL org.opencontainers.image.created="2025-08-02T15:55:59Z"
 #LABEL org.opencontainers.image.version="2.005_225"
 LABEL org.opencontainers.image.version="2.012_265"
 #LABEL org.opencontainers.image.revision="079c3e1"
-LABEL org.opencontainers.image.revision="1f6c367"
+LABEL org.opencontainers.image.revision="d1dabb2"
 LABEL org.opencontainers.image.base=${BASE}
 
 # Add Labels into meta for image
@@ -233,7 +234,7 @@ ENV WEBDYNE_CACHE_DN=${PERL_CARTON_PATH}/cache
 
 # Entrypoint script for starting process. Kicks off starman on ${PORT}
 #
-COPY entrypoint.sh /usr/local/bin
+COPY docker/entrypoint.sh /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 

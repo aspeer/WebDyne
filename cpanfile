@@ -1,4 +1,3 @@
-requires 'Business::ISBN';
 requires 'CGI::Simple';
 requires 'CGI::Simple::Util';
 requires 'Clone';

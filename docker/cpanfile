@@ -1,5 +1,6 @@
 requires 'Plack';
-requires 'Starman';requires 'CGI::Simple';
+requires 'Starman';
+requires 'CGI::Simple';
 requires 'Digest::MD5';
 requires 'Env::Path';
 requires 'File::Temp';
