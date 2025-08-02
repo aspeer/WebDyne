@@ -29,7 +29,8 @@ ARG LABEL_REVISION="079c3e1"
 #
 ARG PERL_CARTON_PATH="/opt/webdyne"
 #ARG DOCUMENT_ROOT=/app/examples/server_time.psp
-ARG DOCUMENT_ROOT="--test"
+#ARG DOCUMENT_ROOT="--test"
+ARG DOCUMENT_ROOT="/app"
 
 
 # ====
@@ -114,34 +115,63 @@ ARG DOCUMENT_ROOT
 
 #  Republish labels
 #
-ARG LABEL_MAINTAINER
-ARG LABEL_TITLE
-ARG LABEL_DESCRIPTION
-ARG LABEL_URL
-ARG LABEL_SOURCE
-ARG LABEL_DOCUMENTATION
-ARG LABEL_AUTHORS
-ARG LABEL_LICENSES
-ARG LABEL_CREATED
-ARG LABEL_VERSION
-ARG LABEL_REVISION
-ARG BASE
+#ARG LABEL_MAINTAINER
+#ARG LABEL_TITLE
+#ARG LABEL_DESCRIPTION
+#ARG LABEL_URL
+#ARG LABEL_SOURCE
+#ARG LABEL_DOCUMENTATION
+#ARG LABEL_AUTHORS
+#ARG LABEL_LICENSES
+#ARG LABEL_CREATED
+#ARG LABEL_VERSION
+#ARG LABEL_REVISION
+#ARG BASE
 
+#ARG LABEL_MAINTAINER="Andrew Speer <andrew.speer@isolutions.com.au>"
+#ARG LABEL_TITLE="WebDyne"
+#ARG LABEL_DESCRIPTION="PSGI web service for generating dynamic HTML pages with embedded Perl"
+#ARG LABEL_URL="https://github.com/aspeer/WebDyne"
+#ARG LABEL_SOURCE="https://github.com/aspeer/WebDyne.git"
+#ARG LABEL_DOCUMENTATION="https://github.com/aspeer/WebDyne#readme"
+#ARG LABEL_AUTHORS="Andrew Speer <andrew.speer@isolutions.com.au>"
+#ARG LABEL_LICENSES="Perl"
+#ARG LABEL_CREATED="2025-05-21T10:00:00Z"
+#ARG LABEL_VERSION="2.005_225"
+#ARG LABEL_REVISION="079c3e1"
 
 # Add Labels into meta for image
 #
-LABEL maintainer=${LABEL_MAINTAINER}
-LABEL org.opencontainers.image.title=${LABEL_TITLE}
-LABEL org.opencontainers.image.description=${LABEL_DESCRIPTION}
-LABEL org.opencontainers.image.url=${LABEL_URL}
-LABEL org.opencontainers.image.source=${LABEL_SOURCE}
-LABEL org.opencontainers.image.documentation=${LABEL_DOCUMENTATION}
-LABEL org.opencontainers.image.authors=${LABEL_AUTHORS}
-LABEL org.opencontainers.image.licenses=${LABEL_LICENSES}
-LABEL org.opencontainers.image.created=${LABEL_CREATED}
-LABEL org.opencontainers.image.version=${LABEL_VERSION}
-LABEL org.opencontainers.image.revision=${LABEL_REVISION}
+LABEL maintainer="Andrew Speer <andrew.speer@isolutions.com.au>"
+LABEL org.opencontainers.image.title="WebDyne"
+LABEL org.opencontainers.image.description="PSGI web service for generating dynamic HTML pages with embedded Perl"
+LABEL org.opencontainers.image.url="https://github.com/aspeer/WebDyne"
+LABEL org.opencontainers.image.source="https://github.com/aspeer/WebDyne.git"
+LABEL org.opencontainers.image.documentation="https://github.com/aspeer/WebDyne#readme"
+LABEL org.opencontainers.image.authors="Andrew Speer <andrew.speer@isolutions.com.au>"
+LABEL org.opencontainers.image.licenses="Perl"
+#LABEL org.opencontainers.image.created="2025-05-21T10:00:00Z"
+LABEL org.opencontainers.image.created="2025-08-02T02:29:50Z"
+#LABEL org.opencontainers.image.version="2.005_225"
+LABEL org.opencontainers.image.version="2.012_265"
+#LABEL org.opencontainers.image.revision="079c3e1"
+LABEL org.opencontainers.image.revision="1f6c367"
 LABEL org.opencontainers.image.base=${BASE}
+
+# Add Labels into meta for image
+#
+#LABEL maintainer=${LABEL_MAINTAINER}
+#LABEL org.opencontainers.image.title=${LABEL_TITLE}
+#LABEL org.opencontainers.image.description=${LABEL_DESCRIPTION}
+#LABEL org.opencontainers.image.url=${LABEL_URL}
+#LABEL org.opencontainers.image.source=${LABEL_SOURCE}
+#LABEL org.opencontainers.image.documentation=${LABEL_DOCUMENTATION}
+#LABEL org.opencontainers.image.authors=${LABEL_AUTHORS}
+#LABEL org.opencontainers.image.licenses=${LABEL_LICENSES}
+#LABEL org.opencontainers.image.created=${LABEL_CREATED}
+#LABEL org.opencontainers.image.version=${LABEL_VERSION}
+#LABEL org.opencontainers.image.revision=${LABEL_REVISION}
+#LABEL org.opencontainers.image.base=${BASE}
 
 
 # Base perl

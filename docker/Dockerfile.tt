@@ -29,7 +29,8 @@ ARG LABEL_REVISION="079c3e1"
 #
 ARG PERL_CARTON_PATH="/opt/webdyne"
 #ARG DOCUMENT_ROOT=/app/examples/server_time.psp
-ARG DOCUMENT_ROOT="--test"
+#ARG DOCUMENT_ROOT="--test"
+ARG DOCUMENT_ROOT="/app"
 
 
 # ====
@@ -179,9 +180,12 @@ LABEL org.opencontainers.image.source="https://github.com/aspeer/WebDyne.git"
 LABEL org.opencontainers.image.documentation="https://github.com/aspeer/WebDyne#readme"
 LABEL org.opencontainers.image.authors="Andrew Speer <andrew.speer@isolutions.com.au>"
 LABEL org.opencontainers.image.licenses="Perl"
-LABEL org.opencontainers.image.created="2025-05-21T10:00:00Z"
-LABEL org.opencontainers.image.version="2.005_225"
-LABEL org.opencontainers.image.revision="079c3e1"
+#LABEL org.opencontainers.image.created="2025-05-21T10:00:00Z"
+LABEL org.opencontainers.image.created="[% label_created %]"
+#LABEL org.opencontainers.image.version="2.005_225"
+LABEL org.opencontainers.image.version="[% label_version %]"
+#LABEL org.opencontainers.image.revision="079c3e1"
+LABEL org.opencontainers.image.revision="[% label_revision %]"
 LABEL org.opencontainers.image.base=${BASE}
 
 # Add Labels into meta for image
