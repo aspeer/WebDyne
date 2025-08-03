@@ -38,17 +38,17 @@ jobs:
             MAJOR=$(echo "$VERSION" | cut -d. -f1)
             REVISION=$(git rev-parse --short HEAD)
             BRANCH=$(git rev-parse --abbrev-ref HEAD)
-            DESCRIBE=$(git describe --tags --dirty --always)
-            GITREF="${GITHUB_REF##*/}"
-            GITTAG=$(git describe --tags --dirty --always --abbrev=1)
+            #DESCRIBE=$(git describe --tags --dirty --always)
+            #GITREF="${GITHUB_REF##*/}"
+            #GITTAG=$(git describe --tags --dirty --always --abbrev=1)
 
             echo "VERSION: $VERSION"
             echo "MAJOR: $MAJOR"
             echo "REVISION: $REVISION"
             echo "BRANCH: $BRANCH"
-            echo "DESCRIBE: $DESCRIBE"
-            echo "GITREF: $GITREF"
-            echo "GITTAG: $GITTAG"
+            #echo "DESCRIBE: $DESCRIBE"
+            #echo "GITREF: $GITREF"
+            #echo "GITTAG: $GITTAG"
 
             echo "version=$VERSION" >> $GITHUB_OUTPUT
             echo "major=$MAJOR" >> $GITHUB_OUTPUT
@@ -71,15 +71,15 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.major }}          
             ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.revision }}          
             ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.branch }}
-            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.describe }}          
-            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.gitref }}          
-            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.gittag }}          
-          #outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
-          labels: |
-            org.opencontainers.image.title=WebDyne
-            org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.licenses=Artistic-1.0-Perl OR GPL-1.0-or-later
+            #ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.describe }}          
+            #ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.gitref }}          
+            #ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.gittag }}          
+          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
+          #labels: |
+          #  org.opencontainers.image.title=WebDyne
+          #  org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
+          #  org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          #  org.opencontainers.image.licenses=Artistic-1.0-Perl OR GPL-1.0-or-later
             
       - name: Cleanup GHCR Images (keep latest 2 only)
         uses: dataaxiom/ghcr-cleanup-action@v1
