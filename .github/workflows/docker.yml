@@ -40,6 +40,7 @@ jobs:
             BRANCH=$(git rev-parse --abbrev-ref HEAD)
             DESCRIBE=$(git describe --tags --dirty --always)
             GITREF="${GITHUB_REF##*/}"
+            GITTAG=$(git describe --tags --dirty --abbrev=0)
 
             echo "VERSION: $VERSION"
             echo "MAJOR: $MAJOR"
@@ -47,6 +48,7 @@ jobs:
             echo "BRANCH: $BRANCH"
             echo "DESCRIBE: $DESCRIBE"
             echo "GITREF: $GITREF"
+            echo "GITTAG: $GITTAG"
 
             echo "version=$VERSION" >> $GITHUB_OUTPUT
             echo "major=$MAJOR" >> $GITHUB_OUTPUT
@@ -54,6 +56,7 @@ jobs:
             echo "branch=$BRANCH" >> $GITHUB_OUTPUT
             echo "describe=$DESCRIBE" >> $GITHUB_OUTPUT
             echo "gitref=$GITREF" >> $GITHUB_OUTPUT
+            echo "gittag=$GITTAG" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -70,6 +73,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.branch }}
             ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.describe }}          
             ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.gitref }}          
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.gittag }}          
           #outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
           labels: |
             org.opencontainers.image.title=WebDyne
