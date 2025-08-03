@@ -33,4 +33,10 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: ghcr.io/${{ github.repository_owner }}/webdyne:latest
+          labels: |
+            org.opencontainers.image.title=WebDyne
+            org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.licenses=Artistic-1.0-Perl OR GPL-1.0-or-later

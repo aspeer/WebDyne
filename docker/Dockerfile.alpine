@@ -163,10 +163,10 @@ LABEL org.opencontainers.image.url="https://github.com/aspeer/WebDyne"
 LABEL org.opencontainers.image.source="https://github.com/aspeer/WebDyne.git"
 LABEL org.opencontainers.image.documentation="https://github.com/aspeer/WebDyne#readme"
 LABEL org.opencontainers.image.authors="Andrew Speer <andrew.speer@isolutions.com.au>"
-LABEL org.opencontainers.image.licenses="Perl"
-LABEL org.opencontainers.image.created="2025-08-02T16:06:44Z"
+LABEL org.opencontainers.image.licenses="Artistic-1.0-Perl OR GPL-1.0-or-later"
+LABEL org.opencontainers.image.created="2025-08-03T01:33:21Z"
 LABEL org.opencontainers.image.version="2.012_265"
-LABEL org.opencontainers.image.revision="d29fe46"
+LABEL org.opencontainers.image.revision="31eaca0"
 LABEL org.opencontainers.image.base=${BASE}
 
 
