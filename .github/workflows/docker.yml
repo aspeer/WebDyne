@@ -13,6 +13,11 @@ jobs:
     permissions:
       contents: read
       packages: write  # Required to push to GHCR
+
+    strategy:
+      matrix:
+        variant: [fedora, debian]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,39 +43,31 @@ jobs:
             MAJOR=$(echo "$VERSION" | cut -d. -f1)
             REVISION=$(git rev-parse --short HEAD)
             BRANCH=$(git rev-parse --abbrev-ref HEAD)
-            #DESCRIBE=$(git describe --tags --dirty --always)
-            #GITREF="${GITHUB_REF##*/}"
-            #GITTAG=$(git describe --tags --dirty --always --abbrev=1)
 
             echo "VERSION: $VERSION"
             echo "MAJOR: $MAJOR"
             echo "REVISION: $REVISION"
             echo "BRANCH: $BRANCH"
-            #echo "DESCRIBE: $DESCRIBE"
-            #echo "GITREF: $GITREF"
-            #echo "GITTAG: $GITTAG"
 
             echo "version=$VERSION" >> $GITHUB_OUTPUT
             echo "major=$MAJOR" >> $GITHUB_OUTPUT
             echo "revision=$REVISION" >> $GITHUB_OUTPUT
             echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-            #echo "describe=$DESCRIBE" >> $GITHUB_OUTPUT
-            #echo "gitref=$GITREF" >> $GITHUB_OUTPUT
-            #echo "gittag=$GITTAG" >> $GITHUB_OUTPUT
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (${{ matrix.variant }})
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker/Dockerfile.test
+          file: docker/Dockerfile.${{ matrix.variant }}
           push: true
           platforms: linux/arm64,linux/amd64
           tags: |
             ghcr.io/${{ github.repository_owner }}/webdyne:latest
-            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.version }}
-            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.major }}          
-            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.revision }}          
-            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.branch }}
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.major }}          
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.revision }}          
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.branch }}
           outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
           labels: |
             org.opencontainers.image.title=WebDyne
