@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: debian-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       packages: write  # Required to push to GHCR
