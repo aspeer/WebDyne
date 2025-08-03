@@ -34,11 +34,12 @@ jobs:
         id: version
         run: |
             PERL_MODULE=$(find lib -name 'WebDyne.pm' | head -n 1)
-            VERSION=$(perl -ne 'print $1 if /^\s*\$VERSION\s*=\s*[\'"]([^\'"]+)[\'"]\s*;/' "$PERL_MODULE")
+            VERSION=$(perl -ne "print \$1 if (m{\\\$VERSION\\s*=\\s*['\"]([^'\"]+)['\"]})" "$PERL_MODULE")
             MAJOR=$(echo "$VERSION" | cut -d. -f1)
             GITREF="${GITHUB_REF##*/}"
 
-            echo "Perl VERSION: $VERSION"
+            echo "Full  VERSION: $VERSION"
+            echo "Major VERSION: $MAJOR"
             echo "Git ref: $GITREF"
 
             echo "version=$VERSION" >> $GITHUB_OUTPUT
