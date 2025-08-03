@@ -52,7 +52,7 @@ jobs:
             echo "major=$MAJOR" >> $GITHUB_OUTPUT
             echo "revision=$REVISION" >> $GITHUB_OUTPUT
             echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-            echo "branch=$DESCRIBE" >> $GITHUB_OUTPUT
+            echo "describe=$DESCRIBE" >> $GITHUB_OUTPUT
             echo "gitref=$GITREF" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
