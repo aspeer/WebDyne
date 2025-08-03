@@ -36,14 +36,23 @@ jobs:
             PERL_MODULE=$(find lib -name 'WebDyne.pm' | head -n 1)
             VERSION=$(perl -ne "print \$1 if (m{\\\$VERSION\\s*=\\s*['\"]([^'\"]+)['\"]})" "$PERL_MODULE")
             MAJOR=$(echo "$VERSION" | cut -d. -f1)
+            REVISION=$(git rev-parse --short HEAD)
+            BRANCH=$(git rev-parse --abbrev-ref HEAD)
+            DESCRIBE=$(git describe --tags --dirty --always)
             GITREF="${GITHUB_REF##*/}"
 
-            echo "Full  VERSION: $VERSION"
-            echo "Major VERSION: $MAJOR"
-            echo "Git ref: $GITREF"
+            echo "VERSION: $VERSION"
+            echo "MAJOR: $MAJOR"
+            echo "REVISION: $REVISION"
+            echo "BRANCH: $BRANCH"
+            echo "DESCRIBE: $DESCRIBE"
+            echo "GITREF: $GITREF"
 
             echo "version=$VERSION" >> $GITHUB_OUTPUT
             echo "major=$MAJOR" >> $GITHUB_OUTPUT
+            echo "revision=$REVISION" >> $GITHUB_OUTPUT
+            echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+            echo "branch=$DESCRIBE" >> $GITHUB_OUTPUT
             echo "gitref=$GITREF" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
@@ -57,7 +66,11 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/webdyne:latest
             ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.version }}
             ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.major }}          
-          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.revision }}          
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.branch }}
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.describe }}          
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.gitref }}          
+          #outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
           labels: |
             org.opencontainers.image.title=WebDyne
             org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
