@@ -65,7 +65,8 @@ RUN apt-get update && \
 
 #  Install Carton
 #
-RUN cpanm --notest Carton
+#RUN cpanm --notest Carton
+RUN cpanm --notest Carton || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
 
 
 # Set up environment for local::lib
@@ -188,8 +189,8 @@ RUN apt-get update && \
 
 # Install Carton
 #
-RUN cpanm --notest Carton
-
+#RUN cpanm --notest Carton
+RUN cpanm --notest Carton || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
 
 # Set up environment for local::lib
 #
