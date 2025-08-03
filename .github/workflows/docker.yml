@@ -9,13 +9,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: debian-latest
+    
+    strategy:
+      matrix:
+        arch: [arm64]
+
     permissions:
       contents: read
       packages: write  # Required to push to GHCR
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -33,7 +41,7 @@ jobs:
           context: .
           file: docker/Dockerfile.test
           push: true
-          platforms: linux/arm64
+          platforms: linux/${{ matrix.arch }}
           tags: ghcr.io/${{ github.repository_owner }}/webdyne:latest
           labels: |
             org.opencontainers.image.title=WebDyne
