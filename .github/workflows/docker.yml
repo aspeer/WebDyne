@@ -34,7 +34,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker/Dockerfile.test
+          file: docker/Dockerfile
           push: true
           platforms: linux/arm64
           tags: ghcr.io/${{ github.repository_owner }}/webdyne:latest
