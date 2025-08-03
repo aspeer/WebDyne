@@ -85,6 +85,7 @@ jobs:
         uses: dataaxiom/ghcr-cleanup-action@v1
         with:
           token: ${{ secrets.GHCR_PAT }}
+          package: webdyne
           exclude-tags: latest
           keep-n-tagged: 2
           delete-untagged: true
