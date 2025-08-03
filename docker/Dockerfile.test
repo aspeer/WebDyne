@@ -58,14 +58,49 @@ RUN which curl
 RUN ls -l
 #RUN cpanm --notest Carton
 #RUN cpanm LWP::UserAgent
-RUN /usr/bin/curl -L -o carton.tgz https://github.com/perl-carton/carton/archive/refs/tags/v1.0.35.tar.gz 
+RUN /usr/bin/curl -L -o carton-1.0.35.tgz https://github.com/perl-carton/carton/archive/refs/tags/v1.0.35.tar.gz 
 RUN ls -l
-RUN tar -xvzf carton.tgz
+RUN tar -xvzf carton-1.0.35.tgz
 RUN ls -l carton-1.0.35
 RUN cd carton-1.0.35 && perl Makefile.PL && make install
+RUN cd carton-1.0.35 && cpanm .
 #RUN cpanm ./carton.tgz || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
 #RUN cpanm --notest Carton || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
 #RUN cpanm --notest https://github.com/perl-carton/carton/archive/refs/tags/v1.0.35.tar.gz || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
+
+
+# Set up environment for local::lib
+#
+RUN echo "PATH ${PATH} $PATH"
+ENV PERL_CARTON_PATH=${PERL_CARTON_PATH}
+ENV PERL_LOCAL_LIB_ROOT=${PERL_CARTON_PATH}
+ENV PERL_MB_OPT="--install_base ${PERL_CARTON_PATH}"
+ENV PERL_MM_OPT="INSTALL_BASE=${PERL_CARTON_PATH}"
+ENV PERL5LIB=${PERL_CARTON_PATH}/lib/perl5
+ENV PATH=${PERL_CARTON_PATH}/bin:$PATH
+
+
+# Set up app
+#
+WORKDIR /app
+
+
+# Checkout Webdyne. Used if cloning
+#
+#RUN git clone -b development --single-branch https://github.com/aspeer/WebDyne.git pm-WebDyne
+#WORKDIR pm-WebDyne
+
+
+#  Otherwise copy working repo content
+#
+COPY . .
+
+
+# And now install CPAN modules using Carton
+#
+WORKDIR docker.template
+COPY docker/cpanfile docker/cpanfile.snapshot ./
+RUN carton install --deployment
 
 
 CMD []
