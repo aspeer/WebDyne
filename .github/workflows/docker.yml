@@ -4,8 +4,8 @@ on:
   push:
     branches: [ development ]
     paths:
-      - '/docker/**'
-      - '/.github/workflows/docker.yml'
+      - 'docker/**'
+      - '.github/workflows/docker.yml'
 
 jobs:
   build:
@@ -30,7 +30,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./docker
-          file: ./docker/Dockerfile
+          context: .
+          file: docker/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/webdyne:latest
