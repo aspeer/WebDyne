@@ -67,6 +67,7 @@ RUN apt-get update && \
 #
 #RUN cpanm --notest Carton
 #RUN cpanm --notest Carton || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
+RUN cpanm LWP::UserAgent
 RUN cpanm --notest https://github.com/perl-carton/carton/archive/refs/tags/v1.0.35.tar.gz || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
 
 
@@ -192,6 +193,7 @@ RUN apt-get update && \
 #
 #RUN cpanm --notest Carton
 #RUN cpanm --notest Carton || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
+RUN cpanm LWP::UserAgent
 RUN cpanm --notest https://github.com/perl-carton/carton/archive/refs/tags/v1.0.35.tar.gz || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
 
 # Set up environment for local::lib
