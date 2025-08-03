@@ -60,7 +60,10 @@ RUN ls -l
 #RUN cpanm LWP::UserAgent
 RUN /usr/bin/curl -L -o carton.tgz https://github.com/perl-carton/carton/archive/refs/tags/v1.0.35.tar.gz 
 RUN ls -l
-RUN cpanm ./carton.tgz || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
+RUN tar -xvzf carton.tgz
+RUN ls -l carton-1.0.35
+RUN cd carton-1.0.35 && perl Makefile.PL && make install
+#RUN cpanm ./carton.tgz || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
 #RUN cpanm --notest Carton || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
 #RUN cpanm --notest https://github.com/perl-carton/carton/archive/refs/tags/v1.0.35.tar.gz || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
 
