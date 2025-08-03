@@ -62,13 +62,17 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 
+# Set up app
+#
+WORKDIR /app
 
 #  Install Carton
 #
 #RUN cpanm --notest Carton
 #RUN cpanm LWP::UserAgent
-RUN curl https://github.com/perl-carton/carton/archive/refs/tags/v1.0.35.tar.gz
+RUN curl -L -o carton.tgz https://github.com/perl-carton/carton/archive/refs/tags/v1.0.35.tar.gz 
 RUN ls
+RUN cpanm ./carton.tgz
 RUN cpanm --notest Carton || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
 #RUN cpanm --notest https://github.com/perl-carton/carton/archive/refs/tags/v1.0.35.tar.gz || (echo "Carton install failed. Dumping build.log:" && cat /root/.cpanm/work/*/build.log && exit 1)
 
