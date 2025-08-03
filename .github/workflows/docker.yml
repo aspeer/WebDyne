@@ -29,15 +29,35 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
+          
+      - name: Extract Perl VERSION and Git tag
+        id: version
+        run: |
+          PERL_MODULE=$(find lib -name 'WebDyne.pm' | head -n 1)
+          VERSION=$(perl -ne 'print $1 if /^\s*\$VERSION\s*=\s*[\'"]([^\'"]+)[\'"]/' "$PERL_MODULE")
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          GITREF="${GITHUB_REF##*/}"
+
+          echo "Perl VERSION: $VERSION"
+          echo "Git ref: $GITREF"
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "gitref=$GITREF" >> $GITHUB_OUTPUT
+
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker/Dockerfile
+          file: docker/Dockerfile.test
           push: true
           platforms: linux/arm64,linux/amd64
-          tags: ghcr.io/${{ github.repository_owner }}/webdyne:latest
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/webdyne:latest
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/webdyne:${{ steps.version.outputs.major }}          
+          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description="PSGI web service for generating dynamic HTML pages with embedded Perl"
           labels: |
             org.opencontainers.image.title=WebDyne
             org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
