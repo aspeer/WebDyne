@@ -40,7 +40,7 @@ jobs:
             BRANCH=$(git rev-parse --abbrev-ref HEAD)
             DESCRIBE=$(git describe --tags --dirty --always)
             GITREF="${GITHUB_REF##*/}"
-            GITTAG=$(git describe --tags --dirty --always --abbrev=0)
+            GITTAG=$(git describe --tags --dirty --always --abbrev=1)
 
             echo "VERSION: $VERSION"
             echo "MAJOR: $MAJOR"
@@ -80,3 +80,14 @@ jobs:
             org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.licenses=Artistic-1.0-Perl OR GPL-1.0-or-later
+            
+      - name: Cleanup GHCR Images (keep latest 2 only)
+        uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          token: ${{ secrets.GHCR_PAT }}
+          image: webdyne  # replace with your image name
+          keep: 2
+          owner: ${{ github.repository_owner }}
+          container: true
+          untagged: true
+          dry-run: false
