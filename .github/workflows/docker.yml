@@ -85,9 +85,8 @@ jobs:
         uses: dataaxiom/ghcr-cleanup-action@v1
         with:
           token: ${{ secrets.GHCR_PAT }}
-          image: webdyne  # replace with your image name
-          keep: 2
-          owner: ${{ github.repository_owner }}
-          container: true
-          untagged: true
+          exclude-tags: latest
+          keep-n-tagged: 2
+          delete-untagged: true
           dry-run: false
+          delete-ghost-images: true
