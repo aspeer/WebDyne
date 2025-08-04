@@ -923,7 +923,7 @@ sub init_class {
             elsif (!defined($sub_cr)) {
                 return err("eval of code did not return a true value");
             }
-            elsif (!ref($sub_cr) eq 'CODE') {
+            elsif (!(ref($sub_cr) eq 'CODE')) {
                 return err("eval of code did not return a code ref");
             }
 
