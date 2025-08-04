@@ -682,7 +682,6 @@ sub handler : method {    # no subsort
     my %header_out=(
 
         'Content-Length' => length ${$html_sr},
-
         #($meta_hr->{'no_cache'} || $WEBDYNE_NO_CACHE) && (
         #    'Cache-Control' => 'no-cache',
         #    'Pragma'        => 'no-cache',
