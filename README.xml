@@ -56,7 +56,7 @@ HTTP::Server::PSGI: Accepting connections at http://0:5000/</programlisting>
     Don't be put off by the shortcut &lt;start_html&gt; tag, you can still use
     traditional tags if you like.</para>
 
-    <programlisting language="bash"># Create file called app.psp with this content.
+    <programlisting language="html"># Create file called app.psp with this content.
 #
 &lt;start_html&gt;
 The local server time is: &lt;perl&gt;localtime()&lt;/perl&gt;</programlisting>
