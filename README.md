@@ -19,11 +19,17 @@ enjoyable experience.
 
 # Getting Started
 
-Install the WebDyne module from CPAN, and install Plack for the PSGI
-version.
+Install the WebDyne module from CPAN using cpanminus or cpan, and
+install Plack for the PSGI version.
 
-    cpan WebDyne
-    cpan Plack
+``` bash
+#  Use cpan if you don't have cpanm
+$ cpanm WebDyne
+Building and testing Webdyne-2.04 ... OK
+
+$ cpanm Plack
+Building and testing Webdyne-1.0051 ... OK
+```
 
 Run the PSGI variant in test mode and connect to the server to check
 that it is working

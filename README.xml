@@ -20,10 +20,11 @@
     <para>An installer is included in the base WebDyne module for Apache, or a
     PSGI variant is included for use with Plack. Once WebDyne is installed any
     file with a <filename>.psp</filename> extension is treated as a WebDyne
-    source file. It is parsed for WebDyne tags (such as &lt;perl&gt; and
-    &lt;block&gt;) which are interpreted and executed on the server as
-    appropriate to generate a compliant HTML document. The resulting output is
-    then sent to the browser. </para>
+    source file. It is parsed for WebDyne tags (such as
+    <tag>&lt;perl&gt;</tag> and <tag>&lt;block&gt;</tag>) which are
+    interpreted and executed on the server as appropriate to generate a
+    compliant HTML document. The resulting output is then sent to the browser.
+    </para>
 
     <para>Once parsed paged are are optionally stored in a partially compiled
     format, speeding up subsequent processing. The aim of WebDyne is to make
@@ -34,11 +35,15 @@
   <section>
     <title>Getting Started</title>
 
-    <para>Install the WebDyne module from CPAN, and install Plack for the PSGI
-    version.</para>
+    <para>Install the WebDyne module from CPAN using cpanminus or cpan, and
+    install Plack for the PSGI version.</para>
 
-    <screen>cpan WebDyne
-cpan Plack</screen>
+    <programlisting language="bash">#  Use cpan if you don't have cpanm
+$ cpanm WebDyne
+Building and testing Webdyne-2.04 ... OK
+
+$ cpanm Plack
+Building and testing Webdyne-1.0051 ... OK</programlisting>
 
     <para>Run the PSGI variant in test mode and connect to the server to check
     that it is working</para>
