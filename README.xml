@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article version="5.2" xmlns="http://docbook.org/ns/docbook">
+  <info>
+    <title>README</title>
+
+    <author>
+      <personname><firstname>Andrew</firstname><surname>Speer</surname></personname>
+    </author>
+
+    <pubdate>2025-08-05</pubdate>
+  </info>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>WebDyne is a dynamic content generation engine for Apache/mod_perl
+    and PSGI web servers such as Plack and Starman. HTML documents with
+    embedded Perl code are processed to produce dynamic HTML output. </para>
+
+    <para>An installer is included in the base WebDyne module for Apache, or a
+    PSGI variant is included for use with Plack. Once WebDyne is installed any
+    file with a <filename>.psp</filename> extension is treated as a WebDyne
+    source file. It is parsed for WebDyne tags (such as &lt;perl&gt; and
+    &lt;block&gt;) which are interpreted and executed on the server as
+    appropriate to generate a compliant HTML document. The resulting output is
+    then sent to the browser. </para>
+
+    <para>Once parsed paged are are optionally stored in a partially compiled
+    format, speeding up subsequent processing. The aim of WebDyne is to make
+    coding web pages with Perl components a faster, easier and more enjoyable
+    experience.</para>
+  </section>
+
+  <section>
+    <title>Getting Started</title>
+
+    <para>Install the WebDyne module from CPAN, and install Plack for the PSGI
+    version.</para>
+
+    <screen>cpan WebDyne
+cpan Plack</screen>
+
+    <para>Run the PSGI variant in test mode and connect to the server to check
+    that it is working</para>
+
+    <screen>webdyne.psgi --test</screen>
+
+    <para>Create an app.psp file in the appropriate web server home directory.
+    Don't be put off by the shortcut &lt;start_html&gt; tag, you can still use
+    traditional tags if you like.</para>
+
+    <screen># Create file called app.psp with this content.
+#
+&lt;start_html&gt;
+The local server time is: &lt;perl&gt;localtime()&lt;/perl&gt;</screen>
+
+    <para>Run the PSGI variant against that directory</para>
+
+    <screen># 
+webdyne.psgi /location/of/app.psp</screen>
+
+    <para/>
+  </section>
+</article>
