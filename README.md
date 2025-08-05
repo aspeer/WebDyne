@@ -24,6 +24,7 @@ install Plack for the PSGI version.
 
 ``` bash
 #  Use cpan if you don't have cpanm
+#
 $ cpanm WebDyne
 Building and testing Webdyne-2.04 ... OK
 
@@ -34,18 +35,26 @@ Building and testing Webdyne-1.0051 ... OK
 Run the PSGI variant in test mode and connect to the server to check
 that it is working
 
-    webdyne.psgi --test
+``` bash
+$ webdyne.psgi --test
+HTTP::Server::PSGI: Accepting connections at http://0:5000/
+```
 
 Create an app.psp file in the appropriate web server home directory.
 Don't be put off by the shortcut \<start_html\> tag, you can still use
 traditional tags if you like.
 
-    # Create file called app.psp with this content.
-    #
-    <start_html>
-    The local server time is: <perl>localtime()</perl>
+``` bash
+# Create file called app.psp with this content.
+#
+<start_html>
+The local server time is: <perl>localtime()</perl>
+```
 
 Run the PSGI variant against that directory
 
-    # 
-    webdyne.psgi /location/of/app.psp
+``` bash
+# 
+$ webdyne.psgi /location/of/app.psp
+HTTP::Server::PSGI: Accepting connections at http://0:5000/
+```
