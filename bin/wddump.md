@@ -1,76 +1,46 @@
+# wddump 1 #
 
-# NAME
+# NAME #
 
-wddump - This script is used to dump the compiled version of WebDyne pages, as stored in the cache dir.
+wddump - dump the data structure of a WebDyne page in the cache
+    directory
 
-# SYNOPSIS
+# SYNOPSIS #
 
-`wddump [filename]`
+`wddump [OPTIONS] FILE`
 
-`wddump /var/cache/webdyne/0dc461f7a383fda853fcc6c5190704e`
+# Options #
 
-# DESCRIPTION
+* **-h, --help**
 
-This script will dump out (in Data::Dumper format) the contents of a compiled WebDyne page. The compiled page is stored in the cache directory and is a binary file in Storable format. 
-This script will read the file and dump out the contents in a Data::Dumper format. It can we used to debug the compiled version of a page.
+    Show brief help message.
 
-# OPTIONS
+# Description #
 
-- `--help | -?`
-  Display a brief help message and exit.
+The  `wddump`  command displays internal the data structure of a compiled WebDyne psp file from the WebDyne cache directory. `wddump`  is of limited diagnostic use \- the `wdcompile`  tool is more suitable for troubleshooting HTML tree errors.
 
-- `--man`
-  Display the full manual.
+`wddump`  can be useful to see a picture of the final data structure looks like on complex pages built via many filters,
+ combining static and dynamic blocks etc.
 
-- `--version`
-  Display the script version and exit.
+# Examples #
 
-# EXAMPLES
+`wdrender
+    /var/webdyne/cache/26f2c4edc8bfd52fbde915290db96779`
 
-```sh
-# Dump the compiled version of a page from cache
-wddump /var/cache/webdyne/0dc461f7a383fda853fcc6c5190704e
+Display the data structure from a compiled, cached webdyne file.
 
-# Output
-#
-$VAR1 = [
-  {
-    'manifest' => [
-      '/var/www/html/time.psp'
-    ]
-  },
-  [
-    '<!DOCTYPE html><html lang="en"><head><title>Untitled Document</title><meta charset="UTF-8"></head>
-<body><p>',
-    [
-      'subst',
-      undef,
-      [
-        '!{! localtime !}'
-      ],
-      undef,
-      2,
-      2,
-      \$VAR1->[0]{'manifest'}[0]
-    ],
-    '</p></body></html>'
-  ]
-];
-````
+# Author #
 
-# AUTHOR
+Written by Andrew Speer,  <andrew@webdyne.org>
 
-Andrew Speer <andrew.speer@isolutions.com.au>
-
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
+This software is copyright \(c) 2025 by Andrew Speer &lt;andrew.speer@isolutions.com.au&gt;.
 
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it underthe same terms as the Perl 5 programming language system itself.
 
 Full license text is available at:
 
-<http://dev.perl.org/licenses/>
+&lt;http://dev.perl.org/licenses/&gt;

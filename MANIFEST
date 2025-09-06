@@ -7,6 +7,7 @@ bin/wdapacheinit
 bin/wdcompile
 bin/wddebug
 bin/wddump
+bin/wddump.xml
 bin/wdrender
 bin/webdyne.psgi
 cpanfile

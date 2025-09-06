@@ -10,35 +10,37 @@ my %WriteMakefile=(
     NAME          => 'WebDyne',
     VERSION_FROM  => 'lib/WebDyne.pm',
     ABSTRACT_FROM => 'lib/WebDyne.pm',
-    EXE_FILES     => do {[
-        'bin/wdcompile',
-        'bin/wdrender',
-        'bin/wddump',
-        'bin/wdapacheinit',
-        'bin/wddebug',
-        'bin/webdyne.psgi',
-    ]},
+    EXE_FILES     => do {
+        [
+            'bin/wdcompile',
+            'bin/wdrender',
+            'bin/wddump',
+            'bin/wdapacheinit',
+            'bin/wddebug',
+            'bin/webdyne.psgi',
+        ]
+    },
     LICENSE          => 'perl',
     AUTHOR           => 'Andrew Speer <andrew.speer@isolutions.com.au>',
     MIN_PERL_VERSION => '5.006',
     PREREQ_PM        => {
         'Test::Simple'      => 0.44,
-        'CGI::Simple'		=> 0,
+        'CGI::Simple'       => 0,
         'HTML::Tiny'        => 0,
         'JSON'              => 0,
         'IO::String'        => 0,
-        'Digest::MD5'		=> 0,
-        'HTTP::Status'		=> 0,
-        'HTML::Tagset'		=> 0,
+        'Digest::MD5'       => 0,
+        'HTTP::Status'      => 0,
+        'HTML::Tagset'      => 0,
         'HTML::TreeBuilder' => 0,
-        'Storable'			=> 0,
+        'Storable'          => 0,
         'Test::More'        => 0,
-        'Tie::IxHash'		=> 0,
-	'Devel::Confess'	=> 0,
+        'Tie::IxHash'       => 0,
+        'Devel::Confess'    => 0,
 
         #  Needed for installer - can be ignored if not using installer
-        'Text::Template'    => 0,
-        'Env::Path'         => 0,
+        'Text::Template' => 0,
+        'Env::Path'      => 0,
 
     },
     META_MERGE => {
@@ -93,21 +95,22 @@ use File::Spec;
 use Cwd qw(abs_path);
 use Tie::File;
 
+
 sub post_initialize {
 
     #  Add license file, other support files here
     #
     my $mm_or=shift();
     $mm_or->{'PM'}{'LICENSE'}='$(INST_LIBDIR)/$(BASEEXT)/LICENSE' if -e 'LICENSE';
-    
+
 
     #  Update Git Ref in file if needed/available
     #
     my $devnull=File::Spec->devnull();
     if (my $git_version=qx(git rev-parse HEAD 2>$devnull)) {
         chomp $git_version;
-        $git_version=substr($git_version,0,10);
-        tie my @lines, 'Tie::File', $mm_or->{'VERSION_FROM'}.'.tmp' || die "error on Tie::File, $!";
+        $git_version=substr($git_version, 0, 10);
+        tie my @lines, 'Tie::File', $mm_or->{'VERSION_FROM'} . '.tmp' || die "error on Tie::File, $!";
         $lines[0]=$git_version;
     }
     $mm_or->SUPER::post_initialize;
@@ -115,16 +118,28 @@ sub post_initialize {
 }
 
 
-sub selfdocument {
+sub postamble {
+    my $mm_or=shift();
+    my $postamble;
+    eval {ExtUtils::Git->import(); $postamble=&MY::postamble($mm_or)};
+    $postamble.=<<'END';
+doc_xml:
+	@echo Generating doc
+	$(PERL) -I./lib bin/docbook-convert --markdown -o .md *.xml
+	$(PERL) -I./lib bin/docbook-convert --markdown --recursedir=./bin -o .md
+	$(PERL) -I./lib bin/docbook-convert --markdown --recursedir=./lib -o .md
+	$(PERL) -I./lib bin/docbook-convert --pod --recursedir=./bin --merge
+	$(PERL) -I./lib bin/docbook-convert --pod --recursedir=./lib --merge
+	pandoc  --defaults=plain -f docbook -t plain README.xml > README
 
+XML_TIDY = sh -c 'xmlstarlet fo "$$1" | sponge "$$1"'
+doc_xml_tidy:
+	find bin -type f -name '*.xml' -exec $(XML_TIDY) _ {} \;
+	find lib -type f -name '*.xml' -exec $(XML_TIDY) _ {} \;
 
-    #  Copy pre built man files
-    #
-    my $postamble=shift()->SUPER::postamble;
-    $postamble.="subdirs ::\n\t\t".
-        '$(CP) man/*.3pm $(INST_MAN3DIR)';
-
-};
+END
+    return $postamble;
+}
 
 
 sub MM::init_main {
@@ -136,7 +151,9 @@ sub MM::init_main {
     foreach my $fn (@{$mm_or->{'EXE_FILES'}}) {
         (my $fn_new=$fn)=~s/\.(?:pl|sh)$//;
         if ($fn_new ne $fn) {
-            -f $fn_new || do { eval{symlink(abs_path($fn), $fn_new)} || copy(abs_path($fn), $fn_new) }
+            -f $fn_new || do {
+                eval {symlink(abs_path($fn), $fn_new)} || copy(abs_path($fn), $fn_new)
+            }
         }
         push @fn, $fn_new;
     }
