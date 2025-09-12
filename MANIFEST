@@ -615,3 +615,8 @@ packer/cpanfile
 lib/WebDyne/Request/PSGI/Static.pm
 lib/WebDyne/time.psp
 docker/Dockerfile
+README.md                                
+README.xml                               
+bin/wdcompile.xml                        
+bin/wdrender.xml                         
+docker/Dockerfile.test                   

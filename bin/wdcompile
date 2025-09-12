@@ -160,10 +160,10 @@ sub main {
 
 }
 
-__END__
-# Documentation in Markdown. Convert to POD using markpod from 
+__END__# Documentation in Markdown. Convert to POD using markpod from 
 #
 # https://github.com/aspeer/pl-markpod.git 
+
 
 
 =pod
@@ -221,7 +221,7 @@ Compile to stage 3. First optimisation is performed.
 
 Compile to stage 4. Second optimisation is run
 
-=item * B<<< --stage5 | --final | -5  >>>
+=item * B<<< --stage5 | --final | -5 >>>
 
 Compile to stage 5. Final data structure
 
@@ -286,8 +286,16 @@ The wdcompile will not run any code in the  C<<<< __PERL__ >>>>  section of a ps
 
 Written by Andrew Speer,  <andrew@webdyne.org>
 
-=head1 Copying
+=head1 LICENSE and COPYRIGHT
 
-Copyright 2008-2010 Andrew Speer. Free use of this software is granted under the terms of the GNU General Public License (GPL)
+This file is part of WebDyne.
+
+This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it underthe same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+<http://dev.perl.org/licenses/>
 
 =cut
