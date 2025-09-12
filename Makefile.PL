@@ -125,11 +125,11 @@ sub postamble {
     $postamble.=<<'END';
 doc_xml:
 	@echo Generating doc
-	$(PERL) -I./lib bin/docbook-convert --markdown -o .md *.xml
-	$(PERL) -I./lib bin/docbook-convert --markdown --recursedir=./bin -o .md
-	$(PERL) -I./lib bin/docbook-convert --markdown --recursedir=./lib -o .md
-	$(PERL) -I./lib bin/docbook-convert --pod --recursedir=./bin --merge
-	$(PERL) -I./lib bin/docbook-convert --pod --recursedir=./lib --merge
+	docbook-convert --markdown -o .md *.xml
+	docbook-convert --markdown --recursedir=./bin -o .md
+	docbook-convert --markdown --recursedir=./lib -o .md
+	docbook-convert --pod --recursedir=./bin --merge
+	docbook-convert --pod --recursedir=./lib --merge
 	pandoc  --defaults=plain -f docbook -t plain README.xml > README
 
 XML_TIDY = sh -c 'xmlstarlet fo "$$1" | sponge "$$1"'

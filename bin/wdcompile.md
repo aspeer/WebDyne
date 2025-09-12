@@ -1,93 +1,121 @@
+# wdcompile(1) #
 
-# NAME
+# NAME #
 
-wdcompile - This script is used to compile and/or show the compiled version of WebDyne HTML scripts at various stages of processing.
+`wdcompile` - parse and compile WebDyne pages
 
-# SYNOPSIS
+# SYNOPSIS #
 
-`wdcompile [--option] <filename>`
+`wdcompile [OPTIONS] FILE`
 
 `wdcompile --stage0 time.psp`
 
-# DESCRIPTION
+# Description #
 
-`wdcompile` will compile and/or show the compiled version of WebDyne HTML scripts at various stages of processing. 
-It supports various command-line options to customize the compilation process. Output is printed to STDOUT in the form of a Perl data structure representing
-the compiled .psp page.
+The  `wdcompile`  command displays the internal data structure used by WebDyne when compiling psp pages.
 
-# OPTIONS
+WebDyne uses the same parsing and compilation routines as `wdcompile` . After compilation WebDyne optionally stores the resulting data structure to a cache directory using the Perl `Storable`  module to speed up subsequent rendering operations.
 
-- `--stage0 | --0`
-  Compile to stage 0.
+If the tree structure does not appear correct when debugging with `wdcompile`  then it will probably not display as expected when rendered with WebDyne. Missing end quotes, closing tags and general
+ HTML syntax problems can all make the parse tree misplace \(or omit
+ completely) blocks of HTML/WebDyne code.
 
-- `--stage1 | --1`
-  Compile to stage 1.
+By default  `wdcompile`  will show the data structure after all parsing and optimisation stages have been completed. You can
+ display various intermediate stages using the options below.
 
-- `--stage2 | --2`
-  Compile to stage 2.
+# Options #
 
-- `--stage3 | --3`
-  Compile to stage 3.
+* **-h, --help**
 
-- `--stage4 | --4`
-  Compile to stage 4.
+    Show brief help message.
 
-- `--stage5 | --5 | --final`
-  Compile to stage 5 (final stage - default option).
+* **--stage0 | -0**
 
-- `--meta`
-  Print metadata.
+    Compile to stage 0. This the first parse of the source file and has no optimisations.
 
-- `--data`
-  Print data.
+* **--stage1 | -1**
 
-- `--nomanifest`
-  Do not generate a manifest.
+    Compile to stage 1. Metadata is added to the data structure.
 
-- `--dest | --dest_fn`
-  Specify the destination file.
+* **--stage2 | -2**
 
-- `--all`
-  Print all data.
+    Compile to stage 2. Any WebDyne Filters are applied.
 
-- `--timestamp`
-  Include a timestamp.
+* **--stage3 | -3**
 
-- `--version`
-  Display the script version and exit.
+    Compile to stage 3. First optimisation is performed.
 
-- `--help | -?`
-  Display a brief help message and exit.
+* **--stage4 | -4**
 
-- `--man`
-  Display the full manual.
+    Compile to stage 4. Second optimisation is run
 
+* **--stage5 | --final | -5 **
 
-# EXAMPLES
+    Compile to stage 5. Final data structure
+
+* **--meta | -m**
+
+    Only show the metadata of the compiled page. This is the manifest or attributes held in  `<meta>`  sections with the name &quot;WebDyne&quot; \(used to alter WebDyne behaviour). If found such meta data is removed from the resulting
+ HTML parse tree and stored in a separate data structure. This
+ option will show that data structure if it exists.
+
+* **--data**
+
+    Only show the data structure of the compiled page.
+
+* **--nomanifest**
+
+    Do not generate or store a manifest in the compiled page. The manifest contains the path to the source file(s), and is
+ stored in the metadata area.
+
+* **--dest | --dest_fn**
+
+    Specify a destination file for the compiled page, with data stored in Perl Storable format. Once saved it can be reviewed
+ later with the  `wddump`  command
+
+* **--all**
+
+    Show all data in the compiled page
+
+* **--timestamp**
+
+    Include a timestamp
+
+* **--version**
+
+    Display the script version and exit
+
+* **--man**
+
+    Display this man page
+
+# Examples #
 
 ```sh
-# Show the compiled version of time.psp with all optimizations
+# Show the compiled version of the time.psp page with all optimisations.
 wdcompile time.psp
 ```
 
+Compile and display the completed internal WebDyne data structure of the file called time.psp. The resulting output shows the data structure
+ after the file is parsed, then rebuilt around any dynamic WebDyne
+ tags.
+
 ```sh
-# Show the compiled version of time.psp with the full HTML tree before optimization
-wdcompile --stage0 time.psp
+#  Show the compiled version of time.psp as the early HTML tree
+wdcompile --stage0 widget.psp
 ```
 
-# AUTHOR
+Parse and display the very data structure of the time.psp file at the lowest level \- as interpreted by the HTML::Treebuilder module, with no
+ optimisation at all.
 
-Andrew Speer <andrew.speer@isolutions.com.au>
+# Notes #
 
-# LICENSE and COPYRIGHT
+The wdcompile will not run any code in the  `__PERL__`  section of a psp file. It will also not execute any WebDyne filters that may be called by the source file.
 
-This file is part of WebDyne.
+# Author #
 
-This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
+Written by Andrew Speer,  <andrew@webdyne.org>
 
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+# Copying #
 
-Full license text is available at:
-
-<http://dev.perl.org/licenses/>
+Copyright &copy; 2008-2010 Andrew Speer. Free use of this software is granted under the terms of the GNU General Public License \(GPL)

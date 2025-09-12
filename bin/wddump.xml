@@ -22,20 +22,6 @@
   </refsynopsisdiv>
 
   <refsection>
-    <title>Options</title>
-
-    <para><variablelist>
-        <varlistentry>
-          <term>-h, --help</term>
-
-          <listitem>
-            <para>Show brief help message.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist></para>
-  </refsection>
-
-  <refsection>
     <title>Description</title>
 
     <para>The <command>wddump</command> command displays internal the data
@@ -47,6 +33,20 @@
     <para><command>wddump</command> can be useful to see a picture of the
     final data structure looks like on complex pages built via many filters,
     combining static and dynamic blocks etc.</para>
+  </refsection>
+
+  <refsection>
+    <title>Options</title>
+
+    <para><variablelist>
+        <varlistentry>
+          <term>-h, --help</term>
+
+          <listitem>
+            <para>Show brief help message.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist></para>
   </refsection>
 
   <refsection>

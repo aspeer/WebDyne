@@ -1,6 +1,6 @@
 README
 
-# 1 Introduction #
+# Introduction #
 
 WebDyne is a dynamic content generation engine for Apache/mod_perl and PSGI web servers \(such as Plack and Starman). HTML documents with
  embedded Perl code are processed to produce dynamic HTML output. 
@@ -13,7 +13,7 @@ Once parsed paged are are optionally stored in a partially compiled format, spee
  coding web pages with Perl components a faster, easier and more enjoyable
  experience.
 
-# 2 Getting Started #
+# Getting Started #
 
 Install the WebDyne module from CPAN using cpanminus or cpan, and install Plack for the PSGI version.
 

@@ -1,60 +1,71 @@
+# wdrender(1) #
 
-# NAME
+# NAME #
 
-wdrender - Compile and/or show compiled version of WebDyne pages
+wdrender - parse and render WebDyne pages
 
-# SYNOPSIS
+# SYNOPSIS #
 
-`wdrender [--option] <filename>`
+`wdrender [OPTIONS] FILE`
 
-`wdrender time.psp`
+# Description #
 
-# DESCRIPTION
+The  `wdrender`  command displays the HTML that would be generated from a psp page using the WebDyne perl module.
 
-`wdrender` will compile and/or show the compiled version of WebDyne HTML page.
-It supports various command-line options to customize the compilation process. Output is printed to STDOUT in the form of a Perl data structure representing
-the compiled .psp page.
+By default  `wdrender`  will use the internal WebDyne handler when building the output, but can optionally use other WebDyne
+ modules \(such as  `WebDyne::Chain` ) by using the `--handler`  option..
 
-# OPTIONS
+# Options #
 
-- `--help | -?`
-  Display a brief help message and exit.
+* **-h, --help**
 
-- `--handler`
-  Specify the handler to use (default: WebDyne).
+    Show brief help message.
 
-- `--status`
-  Specify the status.
+* **--handler**
 
-- `--header`
-  Include headers in the output.
+    Use a different WebDyne handler module. Currently the only other handler module available is `WebDyne::Chain` .
 
-- `--error`
-  Specify the error format (default: text).
+* **--status**
 
-- `--headers_out | --header_out`
-  Specify headers to include in the output.
+    Specify the status.
 
-- `--headers_in | --header_in`
-  Specify headers to include in the input.
+* **--header**
 
-- `--outfile`
-  Specify the output file.
+    Include headers in the output.
 
-- `--repeat | --r | --num | --n`
-  Specify the number of times to repeat the rendering.
+* **--error**
 
-- `--loop`
-  Enable looping. Used for leak testing.
+    Specify the error format \(default: text).
 
-- `--man`
-  Display the full manual.
+* **--headers_out | --header_out**
 
-- `--version`
-  Display the script version and exit.
+    Specify headers to include in the output.
 
+* **--headers_in | --header_in**
 
-# EXAMPLES
+    Specify headers to include in the input.
+
+* **--outfile**
+
+    Specify the output file.
+
+* **--repeat | --r | --num | --n**
+
+    Specify the number of times to repeat the rendering.
+
+* **--loop**
+
+    Enable looping. Used for leak testing.
+
+* **--man**
+
+    Display the full manual.
+
+* **--version**
+
+    Display the script version and exit.
+
+# Examples #
 
 ```sh
 # Show the HTML rendered version of time.psp
@@ -66,19 +77,22 @@ wdrender time.psp
 wdrender --header time.psp
 ```
 
-# AUTHOR
+```sh
+# Show the HTML rendered version of time.psp chaining with the WebDyne::Session module
+WebDyneChain=WebDyne::Session wdrender --header --handler WebDyne::Chain time.psp
+```
 
-Andrew Speer <andrew.speer@isolutions.com.au>
+# Notes #
 
-# LICENSE and COPYRIGHT
+The  `wdrender`  command will attempt to build the HTML as faithfully as possible from the command line environment, but may
+ not be able to exactly duplicate the HTML generated under a real Web
+ Server. As an example if a psp page takes advantge of the Apache request
+ handler when generating HTML, the  `wdrender`  commend will not be able to duplicate that environment.
 
-This file is part of WebDyne.
+# Author #
 
-This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
+Written by Andrew Speer,  <andrew@webdyne.org>
 
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+# Copying #
 
-Full license text is available at:
-
-<http://dev.perl.org/licenses/>
+Copyright &copy; 2008-2010 Andrew Speer. Free use of this software is granted under the terms of the GNU General Public License \(GPL)

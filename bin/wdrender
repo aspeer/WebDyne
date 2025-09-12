@@ -211,235 +211,108 @@ sub main {
 
 
 __END__
-
 # Documentation in Markdown. Convert to POD using markpod from 
 #
 # https://github.com/aspeer/pl-markpod.git 
 
-=begin markdown
 
-# NAME
+=pod
 
-wdrender - Compile and/or show compiled version of WebDyne pages
-
-# SYNOPSIS
-
-`wdrender [--option] <filename>`
-
-`wdrender time.psp`
-
-# DESCRIPTION
-
-`wdrender` will compile and/or show the compiled version of WebDyne HTML page.
-It supports various command-line options to customize the compilation process. Output is printed to STDOUT in the form of a Perl data structure representing
-the compiled .psp page.
-
-# OPTIONS
-
-- `--help | -?`
-  Display a brief help message and exit.
-
-- `--handler`
-  Specify the handler to use (default: WebDyne).
-
-- `--status`
-  Specify the status.
-
-- `--header`
-  Include headers in the output.
-
-- `--error`
-  Specify the error format (default: text).
-
-- `--headers_out | --header_out`
-  Specify headers to include in the output.
-
-- `--headers_in | --header_in`
-  Specify headers to include in the input.
-
-- `--outfile`
-  Specify the output file.
-
-- `--repeat | --r | --num | --n`
-  Specify the number of times to repeat the rendering.
-
-- `--loop`
-  Enable looping. Used for leak testing.
-
-- `--man`
-  Display the full manual.
-
-- `--version`
-  Display the script version and exit.
-
-
-# EXAMPLES
-
-```sh
-# Show the HTML rendered version of time.psp
-wdrender time.psp
-```
-
-```sh
-# Show the HTML rendered version of time.psp with headers
-wdrender --header time.psp
-```
-
-# AUTHOR
-
-Andrew Speer <andrew.speer@isolutions.com.au>
-
-# LICENSE and COPYRIGHT
-
-This file is part of WebDyne.
-
-This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
-Full license text is available at:
-
-<http://dev.perl.org/licenses/>
-
-=end markdown
-
+=head1 wdrender(1)
 
 =head1 NAME
 
-wdrender - Compile and/or show compiled version of WebDyne pages
-
+wdrender - parse and render WebDyne pages
 
 =head1 SYNOPSIS
 
-C<<< wdrender [--option] <filename> >>>
+C<<<< wdrender [OPTIONS] FILE >>>>
 
-C<wdrender time.psp>
+=head1 Description
 
+The  C<<<< wdrender >>>>  command displays the HTML that would be generated from a psp page using the WebDyne perl module.
 
-=head1 DESCRIPTION
+By default  C<<<< wdrender >>>>  will use the internal WebDyne handler when building the output, but can optionally use other WebDyne
+ modules (such as  C<<<< WebDyne::Chain >>>> ) by using the C<<<< --handler >>>>  option..
 
-C<wdrender> will compile and/or show the compiled version of WebDyne HTML page.
-It supports various command-line options to customize the compilation process. Output is printed to STDOUT in the form of a Perl data structure representing
-the compiled .psp page.
-
-
-=head1 OPTIONS
+=head1 Options
 
 =over
 
-=item -
+=item * B<<< -h, --help >>>
 
-C<--help | -?>
-  Display a brief help message and exit.
+Show brief help message.
 
+=item * B<<< --handler >>>
 
+Use a different WebDyne handler module. Currently the only other handler module available is C<<<< WebDyne::Chain >>>> .
 
-=item -
+=item * B<<< --status >>>
 
-C<--handler>
-  Specify the handler to use (default: WebDyne).
+Specify the status.
 
+=item * B<<< --header >>>
 
+Include headers in the output.
 
-=item -
+=item * B<<< --error >>>
 
-C<--status>
-  Specify the status.
+Specify the error format (default: text).
 
+=item * B<<< --headers_out | --header_out >>>
 
+Specify headers to include in the output.
 
-=item -
+=item * B<<< --headers_in | --header_in >>>
 
-C<--header>
-  Include headers in the output.
+Specify headers to include in the input.
 
+=item * B<<< --outfile >>>
 
+Specify the output file.
 
-=item -
+=item * B<<< --repeat | --r | --num | --n >>>
 
-C<--error>
-  Specify the error format (default: text).
+Specify the number of times to repeat the rendering.
 
+=item * B<<< --loop >>>
 
+Enable looping. Used for leak testing.
 
-=item -
+=item * B<<< --man >>>
 
-C<--headers_out | --header_out>
-  Specify headers to include in the output.
+Display the full manual.
 
+=item * B<<< --version >>>
 
-
-=item -
-
-C<--headers_in | --header_in>
-  Specify headers to include in the input.
-
-
-
-=item -
-
-C<--outfile>
-  Specify the output file.
-
-
-
-=item -
-
-C<--repeat | --r | --num | --n>
-  Specify the number of times to repeat the rendering.
-
-
-
-=item -
-
-C<--loop>
-  Enable looping. Used for leak testing.
-
-
-
-=item -
-
-C<--man>
-  Display the full manual.
-
-
-
-=item -
-
-C<--version>
-  Display the script version and exit.
-
-
+Display the script version and exit.
 
 =back
 
+=head1 Examples
 
-=head1 EXAMPLES
+    # Show the HTML rendered version of time.psp
+    wdrender time.psp
 
+    # Show the HTML rendered version of time.psp with headers
+    wdrender --header time.psp
 
- # Show the HTML rendered version of time.psp
- wdrender time.psp
+    # Show the HTML rendered version of time.psp chaining with the WebDyne::Session module
+    WebDyneChain=WebDyne::Session wdrender --header --handler WebDyne::Chain time.psp
 
- # Show the HTML rendered version of time.psp with headers
- wdrender --header time.psp
+=head1 Notes
 
-=head1 AUTHOR
+The  C<<<< wdrender >>>>  command will attempt to build the HTML as faithfully as possible from the command line environment, but may
+ not be able to exactly duplicate the HTML generated under a real Web
+ Server. As an example if a psp page takes advantge of the Apache request
+ handler when generating HTML, the  C<<<< wdrender >>>>  commend will not be able to duplicate that environment.
 
-Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+=head1 Author
 
+Written by Andrew Speer,  <andrew@webdyne.org>
 
-=head1 LICENSE and COPYRIGHT
+=head1 Copying
 
-This file is part of WebDyne.
-
-This software is copyright (c) 2025 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
-Full license text is available at:
-
-L<http://dev.perl.org/licenses/>
+Copyright © 2008-2010 Andrew Speer. Free use of this software is granted under the terms of the GNU General Public License (GPL)
 
 =cut

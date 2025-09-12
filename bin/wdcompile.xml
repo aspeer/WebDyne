@@ -18,67 +18,11 @@
     <cmdsynopsis>
       <command>wdcompile [OPTIONS] FILE</command>
     </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>wdcompile --stage0 time.psp</command>
+    </cmdsynopsis>
   </refsynopsisdiv>
-
-  <refsection>
-    <title>Options</title>
-
-    <para><variablelist>
-        <varlistentry>
-          <term>-h, --help</term>
-
-          <listitem>
-            <para>Show brief help message.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>-0</term>
-
-          <listitem>
-            <para>Stop and display internal data structure after parsing
-            with<classname> HTML::TreeBuilder</classname>. This stage shows
-            the HTML syntax tree generated from the source file.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>-1</term>
-
-          <listitem>
-            <para>Stop and display internal data structure after first stage
-            of optimisation. In this stage any parts of the HTML tree that do
-            not contain child tags that generate dynamic output are
-            pre-rendered back into HTML</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>-2</term>
-
-          <listitem>
-            <para>Stop and display internal data structure after second stage
-            of optimisation. In this stage blocks that do generate dynamic
-            code are analysed for child tags that can be pre-rendered back
-            into HTML without affecting the dymamic components of the
-            tree.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>-m, --meta</term>
-
-          <listitem>
-            <para>Show any WebDyne meta data found in the source file. WebDyne
-            meta data are hints or instructions contained in the
-            <markup>&lt;meta&gt;</markup> sections with the name "WebDyne". If
-            found such meta data is removed from the resulting HTML parse tree
-            and stored in a separate data structure. This option will show
-            that data structire if it exists.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist></para>
-  </refsection>
 
   <refsection>
     <title>Description</title>
@@ -104,28 +48,167 @@
   </refsection>
 
   <refsection>
-    <title>Notes</title>
+    <title>Options</title>
 
-    <para>The wdcompile will not run any code in the <code>__PERL__</code>
-    section of a psp file. It will also not execute any WebDyne filters that
-    may be called by the source file.</para>
+    <para><variablelist>
+        <varlistentry>
+          <term>-h, --help</term>
+
+          <listitem>
+            <para>Show brief help message.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--stage0 | -0</term>
+
+          <listitem>
+            <para>Compile to stage 0. This the first parse of the source file
+            and has no optimisations.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--stage1 | -1</term>
+
+          <listitem>
+            <para>Compile to stage 1. Metadata is added to the data
+            structure.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--stage2 | -2</term>
+
+          <listitem>
+            <para>Compile to stage 2. Any WebDyne Filters are applied.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--stage3 | -3</term>
+
+          <listitem>
+            <para>Compile to stage 3. First optimisation is performed.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--stage4 | -4</term>
+
+          <listitem>
+            <para>Compile to stage 4. Second optimisation is run</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--stage5 | --final | -5</term>
+
+          <listitem>
+            <para>Compile to stage 5. Final data structure</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--meta | -m</term>
+
+          <listitem>
+            <para>Only show the metadata of the compiled page. This is the
+            manifest or attributes held in <markup>&lt;meta&gt;</markup>
+            sections with the name "WebDyne" (used to alter WebDyne
+            behaviour). If found such meta data is removed from the resulting
+            HTML parse tree and stored in a separate data structure. This
+            option will show that data structure if it exists.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--data</term>
+
+          <listitem>
+            <para>Only show the data structure of the compiled page.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--nomanifest</term>
+
+          <listitem>
+            <para>Do not generate or store a manifest in the compiled page.
+            The manifest contains the path to the source file(s), and is
+            stored in the metadata area.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--dest | --dest_fn</term>
+
+          <listitem>
+            <para>Specify a destination file for the compiled page, with data
+            stored in Perl Storable format. Once saved it can be reviewed
+            later with the <command>wddump</command> command</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--all</term>
+
+          <listitem>
+            <para>Show all data in the compiled page</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--timestamp</term>
+
+          <listitem>
+            <para>Include a timestamp</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--version</term>
+
+          <listitem>
+            <para>Display the script version and exit</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>--man</term>
+
+          <listitem>
+            <para>Display this man page</para>
+          </listitem>
+        </varlistentry>
+      </variablelist></para>
   </refsection>
 
   <refsection>
     <title>Examples</title>
 
-    <para><command>wdcompile widget.psp</command></para>
+    <para><programlisting language="sh"># Show the compiled version of the time.psp page with all optimisations.
+wdcompile time.psp</programlisting></para>
 
     <para>Compile and display the completed internal WebDyne data structure of
-    the file called widget.psp. The resulting output shows the data structure
-    after the file is parsed, the rebuilt around any dynamic WebDyne
+    the file called time.psp. The resulting output shows the data structure
+    after the file is parsed, then rebuilt around any dynamic WebDyne
     tags.</para>
 
-    <para><command>wdcompile -0 widget.psp</command></para>
+    <para><programlisting language="sh">#  Show the compiled version of time.psp as the early HTML tree
+wdcompile --stage0 widget.psp</programlisting></para>
 
-    <para>Parse and display the very data structure of the widget.psp file at
+    <para>Parse and display the very data structure of the time.psp file at
     the lowest level - as interpreted by the HTML::Treebuilder module, with no
     optimisation at all.</para>
+  </refsection>
+
+  <refsection>
+    <title>Notes</title>
+
+    <para>The wdcompile will not run any code in the <code>__PERL__</code>
+    section of a psp file. It will also not execute any WebDyne filters that
+    may be called by the source file.</para>
   </refsection>
 
   <refsection>
@@ -137,7 +220,7 @@
   <refsection>
     <title>Copying</title>
 
-    <para>Copyright © 2008-2010 Andrew Speer. Free use of this software is
+    <para>Copyright 2008-2010 Andrew Speer. Free use of this software is
     granted under the terms of the GNU General Public License (GPL)</para>
   </refsection>
 </refentry>
