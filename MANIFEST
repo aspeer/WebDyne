@@ -11,7 +11,7 @@ bin/wddump.xml
 bin/wdrender
 bin/webdyne.psgi
 cpanfile
-doc/webdyne.pdf
+doc/webdyne.md
 examples/csv_table.csv
 examples/csv_table.pm
 examples/csv_table.psp
