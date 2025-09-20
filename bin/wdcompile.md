@@ -49,7 +49,7 @@ By default  `wdcompile`  will show the data structure after all parsing and opti
 
     Compile to stage 4. Second optimisation is run
 
-* **--stage5 | --final | -5 **
+* **--stage5 | --final | -5**
 
     Compile to stage 5. Final data structure
 
@@ -116,6 +116,14 @@ The wdcompile will not run any code in the  `__PERL__`  section of a psp file. I
 
 Written by Andrew Speer,  <andrew@webdyne.org>
 
-# Copying #
+# LICENSE and COPYRIGHT #
 
-Copyright &copy; 2008-2010 Andrew Speer. Free use of this software is granted under the terms of the GNU General Public License \(GPL)
+This file is part of WebDyne.
+
+This software is copyright \(c) 2025 by Andrew Speer &lt;andrew.speer@isolutions.com.au&gt;.
+
+This is free software; you can redistribute it and/or modify it underthe same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+&lt;http://dev.perl.org/licenses/&gt;

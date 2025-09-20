@@ -93,6 +93,14 @@ The  `wdrender`  command will attempt to build the HTML as faithfully as possibl
 
 Written by Andrew Speer,  <andrew@webdyne.org>
 
-# Copying #
+# LICENSE and COPYRIGHT #
 
-Copyright &copy; 2008-2010 Andrew Speer. Free use of this software is granted under the terms of the GNU General Public License \(GPL)
+This file is part of WebDyne.
+
+This software is copyright \(c) 2025 by Andrew Speer &lt;andrew.speer@isolutions.com.au&gt;.
+
+This is free software; you can redistribute it and/or modify it underthe same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+&lt;http://dev.perl.org/licenses/&gt;

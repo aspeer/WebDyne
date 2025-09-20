@@ -111,6 +111,7 @@ sub main {
     if (my $dest_fn=$opt{'outfile'}) {
         $dest_fh=IO::File->new($dest_fn, O_CREAT | O_TRUNC | O_WRONLY) ||
             return err("unable to open file $dest_fn for output, $!");
+        $opt{'select'}=$dest_fh;
     }
 
 
@@ -210,9 +211,9 @@ sub main {
 }
 
 
-__END__# Documentation in Markdown. Convert to POD using markpod from 
-#
-# https://github.com/aspeer/pl-markpod.git 
+__END__# https://github.com/aspeer/pl-markpod.git 
+
+
 
 
 
