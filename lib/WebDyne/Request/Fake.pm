@@ -46,12 +46,42 @@ $VERSION='2.012_265';
 debug("Loading %s version $VERSION", __PACKAGE__);
 
 
+#  Run init code for utility accessors unless already done
+#
+&_init unless defined(&method);
+
+
 #  All done. Positive return
 #
 1;
 
 
 #==================================================================================================
+
+sub _init {
+
+    #  Load quick and dirty mod_perl equivalent handler accessors that get info from
+    #  environment vars if they exist
+    #
+    my %handler=(
+        method          => 'REQUEST_METHOD',
+        protocol        => 'SERVER_PROTOCOL',
+        args            => 'QUERY_STRING',
+        path_info       => 'PATH_INFO',
+        content_length  => 'CONTENT_LENGTH',
+        hostname        => 'SERVER_NAME',
+        get_server_name => 'SERVER_NAME',
+        get_server_port => 'SERVER_PORT',
+        get_remote_host => 'REMOTE_ADDR',
+        user            => 'REMOTE_USER',
+        ap_auth_type    => 'AUTH_TYPE',
+        unparsed_uri    => 'REQUEST_URI',
+    );
+    while (my ($k, $v)=each %handler) {
+        *{$k}=sub { return $ENV{$v} } unless defined &{$k}
+    }
+
+}
 
 
 sub dir_config {
@@ -308,8 +338,7 @@ sub send_http_header {
 sub content_type {
 
     my ($r, $content_type)=@_;
-    $r->{'headers_out'}{'Content-Type'}=$content_type;
-
+    return ($content_type ? $r->{'headers_out'}{'Content-Type'}=$content_type : $ENV{'CONTENT_TYPE'});
     #CORE::print("Content-Type: $content_type\n");
 
 }
@@ -330,6 +359,7 @@ sub args {
     return $ENV{'QUERY_STRING'};
     
 }
+
 
 
 sub AUTOLOAD {
