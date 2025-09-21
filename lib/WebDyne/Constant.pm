@@ -197,6 +197,17 @@ my %constant_temp;
     #  Default <html> tag paramaters, eg { lang	=>'en-US' }
     #
     WEBDYNE_HTML_PARAM => {lang => 'en'},
+    
+    
+    #  Anything that should be added in <head> section. Will be inserted verbatim before
+    #  </head>. No interpolation or variables, simple text string only. Useful for setting
+    #  global stylesheet, e.g. 
+    #
+    #  WEBDYNE_HEAD_INSERT =>  '<link href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" rel="stylesheet">'
+    #
+    #  Will be added to all <head> sections universally.
+    #
+    WEBDYNE_HEAD_INSERT => '',
 
 
     #  Ignore ignorable whitespace in compile. Play around with these settings if

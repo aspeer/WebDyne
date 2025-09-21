@@ -303,7 +303,7 @@ sub _start_html {
 
     #  Build head, adding a title section, empty if none specified
     #
-    my $head=$self->head(
+    my $head=$self->SUPER::head(
         join(
             $/,
             grep {$_}
@@ -347,6 +347,16 @@ sub html {
     unshift (@_, $WEBDYNE_HTML_PARAM) unless (ref $_[0] eq 'HASH');
     return $WEBDYNE_DTD . $self->SUPER::html(@_);
 
+}
+
+
+sub head {
+
+    my ($self, $html)=(shift(), shift());
+    #debug("$self head, html:$html, attr:%s", Dumper(\@_));
+    $html.=$WEBDYNE_HEAD_INSERT;
+    return $self->SUPER::head(grep {$_} ($html, @_));
+    
 }
 
 
