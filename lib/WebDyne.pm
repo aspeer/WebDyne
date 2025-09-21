@@ -382,7 +382,7 @@ sub handler : method {    # no subsort
             require Symbol;
             &Symbol::delete_package("WebDyne::${srce_inode}");
         } || do {
-            eval {undef} if $@;    #clear $@ after error above
+            eval {} if $@;    #clear $@ after error above
             my $stash_hr=*{"WebDyne::${srce_inode}::"}{HASH};
             foreach (keys %{$stash_hr}) {
                 undef *{"WebDyne::${srce_inode}::${_}"};
@@ -915,7 +915,7 @@ sub init_class {
         } || do {
             *Apache::OK=sub {0}
         };
-        eval {undef} if $@;
+        eval {} if $@;
     }
     else {
 
@@ -991,7 +991,7 @@ sub init_class {
             #
             my $sub_cr=&eval_cr($inode, \$eval_text, $html_line_no);
             if ($@) {
-                my $err=$@; eval {undef};
+                my $err=$@; eval {};
 
                 #return err("eval of code returned error: $err");
                 return $self->err_eval("eval of code returned error: $err", \$eval_text, $inode);
@@ -2586,10 +2586,10 @@ sub eval_require {
     my $eval_cr=sub {
 
         local $SIG{__DIE__};
-        eval {undef} if $@;    #Clear $@;
+        eval {} if $@;    #Clear $@;
         my $ret=eval(shift());
         if ($@) {
-            my $err=$@; eval {undef};
+            my $err=$@; eval {};
             return err("attempt to load $require_fn returned error $err");
         }
         elsif (!$ret) {
@@ -2826,7 +2826,7 @@ sub perl_init {
         #
         if (my $err=($@ || errstr())) {
             $error_cr->();
-            eval {undef};    #Clear $@
+            eval {};    #Clear $@
             return $self->err_eval("error in __PERL__block: $err", $perl_sr, $inode);
         }
         elsif (!$ret) {
@@ -3406,10 +3406,12 @@ sub CGI {
         $CGI::Simple::POST_MAX=$WEBDYNE_CGI_POST_MAX;
 
 
-        #  And create it
+        #  And create it. CGI::Simple looks for mod_perl in an eval
+        #  block and we don't want to trigger an error so be careful
         #
+        local $SIG{'__DIE__'}=sub {};
         my $cgi_or=CGI::Simple->new($MOD_PERL && $self->{'_r'});
-
+        eval {} if $@; # May leave $@ set on init;
         #my $cgi_or=CGI::Simple->new(); # Needs PerlOpt +GlobalRequest
         #$cgi_or->delete(ref($self->{'_r'})) # Pretty crappy way of doing it
 
