@@ -21,6 +21,7 @@ use FindBin qw($RealBin $Script);
 use Cwd qw(abs_path);
 use Carp qw(confess);
 $Storable::canonical=1;
+use Data::Dumper;
 
 
 #  WebDyne Modules
