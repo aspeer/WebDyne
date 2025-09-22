@@ -613,7 +613,7 @@ sub handler : method {    # no subsort
             #  to serve it up directly.
             #
             debug("returning pre-rendered file ${cache_pn}.html");
-            if ($MP2 || $ENV{'FCGI_ROLE'} || ENV{'psgi.version'}) {
+            if ($MP2 || $ENV{'FCGI_ROLE'} || $ENV{'psgi.version'}) {
 
                 #  Do this way for mod_perl2, FCGI. Note to self need r->output_filter or
                 #  Apache 2 seems to add junk characters at end of output
