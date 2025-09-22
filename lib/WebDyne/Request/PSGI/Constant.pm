@@ -20,7 +20,8 @@ package WebDyne::Request::PSGI::Constant;
 #  Pragma
 #
 use strict qw(vars);
-use vars qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
+#use vars qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
+use vars qw($VERSION @ISA %Constant);
 use warnings;
 
 

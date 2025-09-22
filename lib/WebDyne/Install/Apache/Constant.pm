@@ -22,7 +22,8 @@ no warnings qw(uninitialized);
 
 #  Vars to use
 #
-use vars qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
+#use vars qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
+use vars qw($VERSION @ISA %Constant);
 
 
 #  External modules
@@ -577,14 +578,15 @@ sub import {
 #  Finalise and export vars
 #
 debug('final constants: %s', Dumper(\%Constant));
-require Exporter;
+#require Exporter;
 require WebDyne::Constant;
-@ISA=qw(Exporter WebDyne::Constant);
+#@ISA=qw(Exporter WebDyne::Constant);
+@ISA=qw(WebDyne::Constant);
 
 #  Local constants override globals
-+__PACKAGE__->local_constant_load(\%Constant);
-foreach (keys %Constant) {${$_}=$Constant{$_}}
-@EXPORT=map {'$' . $_} keys %Constant;
-@EXPORT_OK=@EXPORT;
-%EXPORT_TAGS=(all => [@EXPORT_OK]);
-$_=\%Constant;
+#+__PACKAGE__->local_constant_load(\%Constant);
+#foreach (keys %Constant) {${$_}=$Constant{$_}}
+#@EXPORT=map {'$' . $_} keys %Constant;
+#@EXPORT_OK=@EXPORT;
+#%EXPORT_TAGS=(all => [@EXPORT_OK]);
+#$_=\%Constant;

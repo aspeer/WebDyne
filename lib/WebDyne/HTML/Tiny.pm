@@ -256,6 +256,7 @@ sub _start_html {
         base
         target
         author
+        script
     );
     debug('start_html %s', Dumper(\%attr_page));
 
@@ -299,6 +300,14 @@ sub _start_html {
         $author=$self->url_encode($author);
         push @link, $self->link({rel => 'author', href => sprintf('mailto:%s', $author)});
     }
+    
+
+    #  Script
+    #
+    my @script;
+    if ($attr_page{'script'}) {
+        push @script, $self->script({ src => $attr_page{'script'} });
+    }
 
 
     #  Build head, adding a title section, empty if none specified
@@ -309,7 +318,8 @@ sub _start_html {
             grep {$_}
                 $self->title($attr_page{'title'} ? $attr_page{'title'} : $WEBDYNE_HTML_DEFAULT_TITLE),
             @meta,
-            @link
+            @link,
+            @script
         ));
 
 
@@ -460,6 +470,25 @@ sub link {
     }
     else {
         push @html, $self->SUPER::link($attr_hr)
+    }
+    return join($/, @html);
+
+}
+
+
+#  Script tag - same deal
+#
+sub script {
+
+    my ($self, $attr_hr)=(shift(), shift());
+    debug('in script, attr %s', Dumper($attr_hr));
+    my @html;
+    if (ref($attr_hr->{'src'}) eq 'ARRAY') {
+        my $src_ar=delete($attr_hr->{'src'});
+        map {push @html, $self->SUPER::script({%{$attr_hr}, src => $_}, @_)} @{$src_ar}
+    }
+    else {
+        push @html, $self->SUPER::script($attr_hr, @_)
     }
     return join($/, @html);
 
