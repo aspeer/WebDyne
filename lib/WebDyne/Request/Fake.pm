@@ -344,6 +344,16 @@ sub content_type {
 }
 
 
+sub handler {
+
+    # Replicate mod_perl handler function
+    #
+    my ($r, $handler)=@_;
+    return ($handler ? $r->{'handler'}=$handler : $r->{'handler'} ||= 'default-handler');
+
+}
+
+
 sub custom_response {
 
     my ($r, $status)=(shift, shift);
