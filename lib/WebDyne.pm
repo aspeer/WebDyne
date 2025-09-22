@@ -497,6 +497,7 @@ sub handler : method {    # no subsort
         #
         #delete $self->{'_CGI'} if $WEBDYNE_CGI_PARAM_EXPAND;
         if ((my $cgi_or=$self->{'_CGI'}) && $WEBDYNE_CGI_PARAM_EXPAND) {
+            $cgi_or->delete_all();  # Added this after cache code issues so don't get two instanced of param. Keep and eye for problems with WebDyne::State
             $cgi_or->_initialize();
         }
 
@@ -560,8 +561,23 @@ sub handler : method {    # no subsort
                 srce_inode => $srce_inode
             );
             $cache_inode=${
-                $eval_cr->($self, undef, \%param, q[$_[1]->{'cache_cr'}->($_[0], $_[1]->{'srce_inode'})], 0) ||
-                #$eval_cr->($self, undef, \%param, q$_[1]->{'cache_cr'}->($_[0], $_[1]->{'srce_inode'})], 0) ||
+            
+                #  OK - what does this do ? It calls the cache code ref in the document via the eval_cr code execution
+                #  routine which is supplied as follows
+                #
+                #  $_[0] = self (instance) ref
+                #  $_[1] = r (request ref)
+                #  $_[2] = CGI (CGI ref)
+                #  $_[3] = \%param above
+                #
+                #  And we are executing code '$_[3]->{'cache_cr'}->($_[0], $_[3]->{'srce_inode'}', so
+                #  $cache->($self, $srce_inode)
+                #
+                $eval_cr->($self, undef, \%param, q[$_[3]->{'cache_cr'}->($_[0], $_[3]->{'srce_inode'})], 0) ||
+                #  
+                #  Before we added r,CGI as params for eval_cr it looked like this
+                #
+                #$eval_cr->($self, undef, \%param, q[$_[1]->{'cache_cr'}->($_[0], $_[1]->{'srce_inode'})], 0) ||
                     return $self->err_html(
                     errsubst(
                         'error in cache code: %s', errstr() || $@ || 'no inode returned'
@@ -1033,8 +1049,10 @@ sub init_class {
             #  The following line puts all CGI params in %_ during the eval so they are easy to
             #  get to ..
             local *_=$param_hr;
-            debug('eval call starting');
+            debug("eval call starting, tag_fg: $tag_fg");
 
+            #  Note change here. Now supplying request handler, CGI instanced as standard params to all code calls
+            #
             #@eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $eval_param_hr);
             @eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $self->{'_r'}, $cgi_or, $eval_param_hr);
             debug("eval call complete, $@, %s", Dumper(\@eval));
