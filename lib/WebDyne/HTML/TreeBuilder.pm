@@ -130,7 +130,7 @@ push @HTML::TreeBuilder::p_closure_barriers, keys %CGI_TAG_WEBDYNE;
 
 #  Local vars neeeded for cross sub comms
 #
-our ($Text_fg, $Line_no, $Line_no_next, $Line_no_start, $HTML_Perl_or);
+our ($Line_no, $Line_no_next, $Line_no_start, $HTML_Perl_or);
 
 
 #  All done. Positive return
@@ -168,7 +168,7 @@ sub parse_fh {
     #  delete() also
     #
     $HTML_Perl_or && ($HTML_Perl_or=$HTML_Perl_or->delete());
-    undef $Text_fg;
+    #undef $Text_fg;
     undef $Line_no;
     undef $Line_no_start;
     undef $Line_no_next;
@@ -245,7 +245,7 @@ sub delete {
 
     #  Reset script and line number vars
     #
-    undef $Text_fg;
+    #undef $Text_fg;
     undef $Line_no;
     undef $Line_no_next;
     undef $Line_no_start;
@@ -441,7 +441,7 @@ sub block {
     #  No special handling needed, just log for debugging purposes
     #
     my ($self, $method)=(shift, shift);
-    debug("block self $self, method $method, *%s* text_fg $Text_fg", join('*', @_));
+    debug("block self $self, method $method, *%s* text_block_tag %s", join('*', @_), $self->_text_block_tag());
     $self->$method(@_);
 
 }
@@ -482,7 +482,7 @@ sub json {
     #$Text_fg ||= 'json';
     #$self->{'_text_block_tag'} ||= 'json';
     $self->_text_block_tag('json') unless $self->_text_block_tag();
-    debug("json self $self, method $method, @_ text_fg $Text_fg");
+    debug("json self $self, method $method, @_ text_block_tag %s", $self->_text_block_tag());
     $self->$method(@_);
 
 }
@@ -636,7 +636,7 @@ sub end {
             #$Text_fg &&= $webdyne_tag_or->tag();
             #$self->{'_text_block_tag'} &&= $webdyne_tag_or->tag();
             $self->_text_block_tag($webdyne_tag_or->tag()) if $self->_text_block_tag();
-            debug("Text_fg now $Text_fg, ending $webdyne_tag");
+            debug("text_block_tag now %s, ending $webdyne_tag", $self->_text_block_tag());
             $self->SUPER::end($webdyne_tag, @_);
 
             #  Now end the original div tag
@@ -713,7 +713,7 @@ sub end {
             #$Text_fg &&= $perl_tag_or->tag();
             #$self->{'_text_block_tag'} &&= $perl_tag_or->tag();            
             $self->_text_block_tag($perl_tag_or->tag()) if $self->_text_block_tag();
-            debug("Text_fg now $Text_fg, ending $perl_tag");
+            debug("text_block_tag now %s, ending $perl_tag", $self->_text_block_tag());
             $self->SUPER::end($perl_tag, @_);
 
 
@@ -750,7 +750,7 @@ sub end {
     #if ($Text_fg && ($tag eq $Text_fg)) {
     #if (defined($self->{'_text_block_tag'}) && ($tag eq $self->{'_text_block_tag'})) {
     if ($self->_text_block_tag() && ($tag eq $self->_text_block_tag())) {
-        debug("match on tag $tag to Text_fg $Text_fg, clearing Text_fg");
+        debug("match on tag $tag to text_block_tag %s, clearing text_block_tag", $self->_text_block_tag());
         #$Text_fg=undef;
         #$self->{'_text_block_tag'}=undef;
         $self->_text_block_tag(undef);
@@ -759,7 +759,7 @@ sub end {
     #elsif ($Text_fg) {
     #elsif ($self->{'_text_block_tag'}) {
     elsif ($self->_text_block_tag()) {
-        debug("text segment via Text_fg $Text_fg, passing to text handler");
+        debug('text segment via text_block_tag %s, passing to text handler', $self->_text_block_tag());
         $ret=$self->text($_[0])
     }
     elsif (!$_[0] && delete($self->{'_end_ignore'})) {
@@ -794,7 +794,7 @@ sub text {
     #
     my ($self, $text)=@_;
     my $text_block_tag=$self->_text_block_tag();
-    debug("text *$text*, text_fg $Text_fg, pos: " . $self->{'_pos'});
+    debug("text *$text*, text_block_tag %s, pos: " . $self->{'_pos'}, $self->_text_block_tag());
 
 
     #  Ignore empty text. UPDATE - don't ignore or you will mangle CR in <pre> sections, especially if they contain tags
@@ -945,7 +945,7 @@ sub include {
     #  No special handling needed, just log for debugging purposes
     #
     my ($self, $method)=(shift, shift);
-    debug("block self $self, method $method, @_ text_fg $Text_fg");
+    debug("block self $self, method $method, @_ text_block_tag %s", $self->_text_block_tag());
     $self->$method(@_);
 
 
