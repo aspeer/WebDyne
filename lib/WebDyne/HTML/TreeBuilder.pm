@@ -463,7 +463,6 @@ sub script {
 
         push @{$self->{'_script_stack'}}, undef;
         #$Text_fg ||= 'script';
-        #$self->{'_text_block_tag'} ||= 'script';
         $self->_text_block_tag('script') unless $self->_text_block_tag();
     }
 
@@ -480,7 +479,6 @@ sub json {
     #
     my ($self, $method)=(shift, shift);
     #$Text_fg ||= 'json';
-    #$self->{'_text_block_tag'} ||= 'json';
     $self->_text_block_tag('json') unless $self->_text_block_tag();
     debug("json self $self, method $method, @_ text_block_tag %s", $self->_text_block_tag());
     $self->$method(@_);
@@ -493,7 +491,6 @@ sub style {
     my ($self, $method)=(shift, shift);
     debug('style');
     #$Text_fg ||= 'style';
-    #$self->{'_text_block_tag'} ||= 'style';
     $self->_text_block_tag('style') unless $self->_text_block_tag();
     $self->$method(@_);
 
@@ -525,7 +522,6 @@ sub perl {
         #
         $HTML_Perl_or=$html_perl_or;
         #$Text_fg ||= 'perl';
-        #$self->{'_text_block_tag'} ||= 'perl';
         $self->_text_block_tag('perl') unless $self->_text_block_tag();
 
 
@@ -575,7 +571,6 @@ sub start {
 
     my $html_or;
     #if ($Text_fg) {
-    #if ($self->{'_text_block_tag'}) {
     if ($self->_text_block_tag()) {
         $html_or=$self->text($text)
     }
@@ -634,7 +629,6 @@ sub end {
             #  turn off text mode. NOTE: Not sure this works ?
             #
             #$Text_fg &&= $webdyne_tag_or->tag();
-            #$self->{'_text_block_tag'} &&= $webdyne_tag_or->tag();
             $self->_text_block_tag($webdyne_tag_or->tag()) if $self->_text_block_tag();
             debug("text_block_tag now %s, ending $webdyne_tag", $self->_text_block_tag());
             $self->SUPER::end($webdyne_tag, @_);
@@ -648,7 +642,6 @@ sub end {
             #  Can now unset text flag. See NOTE above, need to check this
             #
             #$Text_fg=undef;
-            #$self->{'_text_block_tag'}=undef;
             $self->_text_block_tag(undef);
 
 
@@ -711,7 +704,6 @@ sub end {
             #
             debug("end $perl_tag now");
             #$Text_fg &&= $perl_tag_or->tag();
-            #$self->{'_text_block_tag'} &&= $perl_tag_or->tag();            
             $self->_text_block_tag($perl_tag_or->tag()) if $self->_text_block_tag();
             debug("text_block_tag now %s, ending $perl_tag", $self->_text_block_tag());
             $self->SUPER::end($perl_tag, @_);
@@ -722,7 +714,6 @@ sub end {
             debug("end $tag now");
             $self->SUPER::end($tag, @_);
             #$Text_fg=undef;
-            #$self->{'_text_block_tag'}=undef;
             $self->_text_block_tag(undef);
 
 
@@ -740,7 +731,6 @@ sub end {
 
             debug('null script stack pop, ignoring');
             #$Text_fg=undef;
-            #$self->{'_text_block_tag'}=undef;
             $self->_text_block_tag(undef);
             return $ret=$self->SUPER::end($tag, @_);
         }
@@ -748,16 +738,13 @@ sub end {
 
 
     #if ($Text_fg && ($tag eq $Text_fg)) {
-    #if (defined($self->{'_text_block_tag'}) && ($tag eq $self->{'_text_block_tag'})) {
     if ($self->_text_block_tag() && ($tag eq $self->_text_block_tag())) {
         debug("match on tag $tag to text_block_tag %s, clearing text_block_tag", $self->_text_block_tag());
         #$Text_fg=undef;
-        #$self->{'_text_block_tag'}=undef;
         $self->_text_block_tag(undef);
         $ret=$self->SUPER::end($tag, @_)
     }
     #elsif ($Text_fg) {
-    #elsif ($self->{'_text_block_tag'}) {
     elsif ($self->_text_block_tag()) {
         debug('text segment via text_block_tag %s, passing to text handler', $self->_text_block_tag());
         $ret=$self->text($_[0])
@@ -793,7 +780,6 @@ sub text {
     #  get self ref, text we will process
     #
     my ($self, $text)=@_;
-    my $text_block_tag=$self->_text_block_tag();
     debug("text *$text*, text_block_tag %s, pos: " . $self->{'_pos'}, $self->_text_block_tag());
 
 
@@ -809,7 +795,6 @@ sub text {
     #  Are we in an inline perl block ?
     #
     #if ($Text_fg eq 'perl') {
-    #if ($text_block_tag eq 'perl') {
     if ($self->_text_block_tag() eq 'perl') {
 
 
