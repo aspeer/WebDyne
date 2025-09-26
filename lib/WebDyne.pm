@@ -2387,7 +2387,7 @@ sub json {
     my $json_or=JSON->new() ||
         return err('unable to create new JSON object');
     debug("json_or: $json_or");
-    $json_or->canonical($WEBDYNE_JSON_CANONICAL);
+    $json_or->canonical(defined($attr_hr->{'canonical'}) ? $attr_hr->{'canonical'} : $WEBDYNE_JSON_CANONICAL);
     my $json=eval {$json_or->encode($json_xr)} ||
         return err('error %s on json_encode of %s', $@, Dumper($json_xr));
     debug("json %s", Dumper($json));

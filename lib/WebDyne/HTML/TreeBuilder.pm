@@ -275,7 +275,7 @@ sub tag_parse {
 
     #  Debug
     #
-    debug("tag_parse $method, *$tag*, line $Line_no, line_no_start $Line_no_start");
+    debug("tag_parse $method, *$tag*, line $Line_no, attr_hr:%s line_no_start $Line_no_start", Dumper($attr_hr));
 
 
     #  Get the parent tag
@@ -589,7 +589,7 @@ sub end {
     #
     my ($self, $tag)=(shift, shift);
     ref($tag) || ($tag=lc($tag));
-    debug("$self end $tag, text_fg $Text_fg, line $Line_no");
+    debug("$self end tag: %s,%s text_fg $Text_fg, line $Line_no", Dumper($tag, \@_));
 
 
     #  Var to hold HTML::Element ref if returned, but most methods don't seem to return a HTML ref, just an integer ?
@@ -733,6 +733,13 @@ sub end {
     elsif ($Text_fg) {
         debug("text segment via Text_fg $Text_fg, passing to text handler");
         $ret=$self->text($_[0])
+    }
+    elsif (!$_[0] && delete($self->{'_end_ignore'})) {
+        #  In this case $_[0] is the actual text of the end tag from the document. If the parser is signalling and end of a tag
+        #  but $_[0] is empty it means it is an implicit close. We might want to ignore it, especially if it is triggered by a
+        #  <div data-webdyne-perl> type tag.
+        debug("attempt to close tag: $tag with active _div_stack, ignoring");
+        $ret=undef;
     }
     else {
         debug("normal tag end");
@@ -922,16 +929,25 @@ sub div {
     debug("$self in $tag, method:$method attr:%s", Dumper($attr_hr));
 
 
-    #  Get the div tag HTML::Element ref
+    #  Get the div tag HTML::Element ref. Note now do this later in (if) blocks because it triggeres
+    #  auto-close if implicit tags like <p>, which we want to flag and stop happening if it's a webdyne
+    #  flag
     #
-    my $div_or=$self->$method($tag, $attr_hr, @param) ||
-        return err('unable to get HTML::Element ref for div tag: $tag, attr:%s', Dumper($attr_hr));
+    #my $div_or=$self->$method($tag, $attr_hr, @param) ||
+    #    return err('unable to get HTML::Element ref for div tag: $tag, attr:%s', Dumper($attr_hr));
 
 
     #  Do we have a pseudo webdyne command aliased in a div tag with a "data-webdyne" attributre  (usually to keep a HTML editor happy
     #  because it doesn't know anything about native webdyne tags
     #
     if (my @tag=grep {/^data-webdyne-/} keys %{$attr_hr}) {
+    
+    
+        #  Set end_ignore flag to ignore parser trying to auto-close <p> etc. when we run this tag
+        #
+        $self->{'_end_ignore'}++;
+        my $div_or=$self->$method($tag, $attr_hr, @param) ||
+            return err('unable to get HTML::Element ref for div tag: $tag, attr:%s', Dumper($attr_hr));
 
 
         #  Yes, we have one, get it
@@ -952,6 +968,7 @@ sub div {
 
         #  Var to hold HTML::Element version of tag
         #
+        debug("generating $html_tiny_tag");
         my $webdyne_tag_or=$self->tag_parse('SUPER::start', $webdyne_tag, $attr_hr, @param) ||
             return err("unable to create HTML::Element ref for tag:$webdyne_tag, attr_hr:%s", Dumper($attr_hr));
 
@@ -966,8 +983,10 @@ sub div {
 
         #  Normal div tag, push undef onto stack to denote vanilla
         #
-        push @{$self->{'_div_stack'}}, undef;
         debug('hit on vanilla div tag');
+        my $div_or=$self->$method($tag, $attr_hr, @param) ||
+            return err('unable to get HTML::Element ref for div tag: $tag, attr:%s', Dumper($attr_hr));
+        push @{$self->{'_div_stack'}}, undef;
         return $div_or;
 
     }
