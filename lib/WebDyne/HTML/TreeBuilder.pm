@@ -462,7 +462,9 @@ sub script {
     else {
 
         push @{$self->{'_script_stack'}}, undef;
-        $Text_fg ||= 'script';
+        #$Text_fg ||= 'script';
+        #$self->{'_text_block_tag'} ||= 'script';
+        $self->_text_block_tag('script') unless $self->_text_block_tag();
     }
 
     #$self->$method($tag, $attr_hr, @param);
@@ -477,7 +479,9 @@ sub json {
     #  No special handling needed, just log for debugging purposes
     #
     my ($self, $method)=(shift, shift);
-    $Text_fg ||= 'json';
+    #$Text_fg ||= 'json';
+    #$self->{'_text_block_tag'} ||= 'json';
+    $self->_text_block_tag('json') unless $self->_text_block_tag();
     debug("json self $self, method $method, @_ text_fg $Text_fg");
     $self->$method(@_);
 
@@ -488,7 +492,9 @@ sub style {
 
     my ($self, $method)=(shift, shift);
     debug('style');
-    $Text_fg ||= 'style';
+    #$Text_fg ||= 'style';
+    #$self->{'_text_block_tag'} ||= 'style';
+    $self->_text_block_tag('style') unless $self->_text_block_tag();
     $self->$method(@_);
 
 }
@@ -518,7 +524,9 @@ sub perl {
         #  added here
         #
         $HTML_Perl_or=$html_perl_or;
-        $Text_fg ||= 'perl';
+        #$Text_fg ||= 'perl';
+        #$self->{'_text_block_tag'} ||= 'perl';
+        $self->_text_block_tag('perl') unless $self->_text_block_tag();
 
 
         #  And return it
@@ -566,7 +574,9 @@ sub start {
     debug("$self start tag '$tag' Line_no $Line_no, @_");
 
     my $html_or;
-    if ($Text_fg) {
+    #if ($Text_fg) {
+    #if ($self->{'_text_block_tag'}) {
+    if ($self->_text_block_tag()) {
         $html_or=$self->text($text)
     }
     else {
@@ -589,7 +599,9 @@ sub end {
     #
     my ($self, $tag)=(shift, shift);
     ref($tag) || ($tag=lc($tag));
-    debug("$self end tag: %s,%s text_fg $Text_fg, line $Line_no", Dumper($tag, \@_));
+    #my $text_block_tag=$self->{'_text_block_tag'};
+    #debug("$self end tag: %s,%s text_fg $Text_fg, line $Line_no", Dumper($tag, \@_));
+    debug("$self end tag: %s,%s text_block_tag: %s, line $Line_no", Dumper($tag, \@_), $self->_text_block_tag());
 
 
     #  Var to hold HTML::Element ref if returned, but most methods don't seem to return a HTML ref, just an integer ?
@@ -621,7 +633,9 @@ sub end {
             #  Set the Text_fg to whatever the webdyne tag was (e.g. perl, etc), that way they will see a match and
             #  turn off text mode. NOTE: Not sure this works ?
             #
-            $Text_fg &&= $webdyne_tag_or->tag();
+            #$Text_fg &&= $webdyne_tag_or->tag();
+            #$self->{'_text_block_tag'} &&= $webdyne_tag_or->tag();
+            $self->_text_block_tag($webdyne_tag_or->tag()) if $self->_text_block_tag();
             debug("Text_fg now $Text_fg, ending $webdyne_tag");
             $self->SUPER::end($webdyne_tag, @_);
 
@@ -633,7 +647,9 @@ sub end {
 
             #  Can now unset text flag. See NOTE above, need to check this
             #
-            $Text_fg=undef;
+            #$Text_fg=undef;
+            #$self->{'_text_block_tag'}=undef;
+            $self->_text_block_tag(undef);
 
 
             #  Now replace div tag with webdyne output unless a wrap attribute exists or class etc. given - in which
@@ -694,7 +710,9 @@ sub end {
             #  End perl tag
             #
             debug("end $perl_tag now");
-            $Text_fg &&= $perl_tag_or->tag();
+            #$Text_fg &&= $perl_tag_or->tag();
+            #$self->{'_text_block_tag'} &&= $perl_tag_or->tag();            
+            $self->_text_block_tag($perl_tag_or->tag()) if $self->_text_block_tag();
             debug("Text_fg now $Text_fg, ending $perl_tag");
             $self->SUPER::end($perl_tag, @_);
 
@@ -703,7 +721,9 @@ sub end {
             #
             debug("end $tag now");
             $self->SUPER::end($tag, @_);
-            $Text_fg=undef;
+            #$Text_fg=undef;
+            #$self->{'_text_block_tag'}=undef;
+            $self->_text_block_tag(undef);
 
 
             #  Re-arrange tree
@@ -719,18 +739,26 @@ sub end {
         elsif (0) {
 
             debug('null script stack pop, ignoring');
-            $Text_fg=undef;
+            #$Text_fg=undef;
+            #$self->{'_text_block_tag'}=undef;
+            $self->_text_block_tag(undef);
             return $ret=$self->SUPER::end($tag, @_);
         }
     }
 
 
-    if ($Text_fg && ($tag eq $Text_fg)) {
+    #if ($Text_fg && ($tag eq $Text_fg)) {
+    #if (defined($self->{'_text_block_tag'}) && ($tag eq $self->{'_text_block_tag'})) {
+    if ($self->_text_block_tag() && ($tag eq $self->_text_block_tag())) {
         debug("match on tag $tag to Text_fg $Text_fg, clearing Text_fg");
-        $Text_fg=undef;
+        #$Text_fg=undef;
+        #$self->{'_text_block_tag'}=undef;
+        $self->_text_block_tag(undef);
         $ret=$self->SUPER::end($tag, @_)
     }
-    elsif ($Text_fg) {
+    #elsif ($Text_fg) {
+    #elsif ($self->{'_text_block_tag'}) {
+    elsif ($self->_text_block_tag()) {
         debug("text segment via Text_fg $Text_fg, passing to text handler");
         $ret=$self->text($_[0])
     }
@@ -765,6 +793,7 @@ sub text {
     #  get self ref, text we will process
     #
     my ($self, $text)=@_;
+    my $text_block_tag=$self->_text_block_tag();
     debug("text *$text*, text_fg $Text_fg, pos: " . $self->{'_pos'});
 
 
@@ -779,7 +808,9 @@ sub text {
 
     #  Are we in an inline perl block ?
     #
-    if ($Text_fg eq 'perl') {
+    #if ($Text_fg eq 'perl') {
+    #if ($text_block_tag eq 'perl') {
+    if ($self->_text_block_tag() eq 'perl') {
 
 
         #  Yes. We have inline perl code, not text. Just add to perl attribute, which
@@ -809,7 +840,8 @@ sub text {
         #  bottom of the file.
         #
         debug('found __PERL__ tag');
-        $Text_fg='perl';
+        #$Text_fg='perl';
+        $self->_text_block_tag('perl');
         $self->implicit(0);
         $self->push_content($HTML_Perl_or=HTML::Element->new('perl', inline => 1));
         debug("insert line_no $Line_no into object ref $HTML_Perl_or");
@@ -993,4 +1025,19 @@ sub div {
 
 }
 
+
+#  Getter setter. Not used for line numbers yet, prep for future cleanup
+#
+sub _get_set {
+
+    my ($key, $self, $value)=@_;
+    return (@_==3) ? $self->{$key}=$value : $self->{$key}
+    
+}
+
+map { eval("sub $_ { &_get_set($_, \@_) }") }  qw(_text_block_tag _line_no _line_no_next _line_no_start);
+
+
+#  Done
+#
 1;
