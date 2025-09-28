@@ -1198,13 +1198,6 @@ sub init_class {
         #
         if (my $print_ar=delete $self->{'_print_ar'}) {
             debug("print_ar: $print_ar %s", Dumper($print_ar));
-            if (0) {
-            foreach my $item_ar (reverse @{$print_ar}) {
-                debug("prepending printed data %s for data_ar: $data_ar, %s", Dumper($item_ar, $data_ar));
-                my $print_html=join(undef, grep {$_} map {(ref($_) eq 'SCALAR') ? ${$_} : $_} @{$item_ar});
-                $html_sr=ref($html_sr) ? \($print_html . ${$html_sr}) : ($print_html . $html_sr);
-            }
-            }
             foreach my $item (reverse @{$print_ar}) {
                 debug("prepending printed data %s for data_ar: $data_ar, %s", Dumper($item, $data_ar));
                 my $print_html=(ref($_) eq 'SCALAR') ? ${$_} : $_;
@@ -1285,13 +1278,6 @@ sub init_class {
         #
         if (my $print_ar=delete $self->{'_print_ar'}) {
             debug("print_ar: $print_ar %s", Dumper($print_ar));
-            if (0) {
-            foreach my $item_ar (reverse @{$print_ar}) {
-                debug("prepending printed data %s for data_ar: $data_ar, %s", Dumper($item_ar, $data_ar));
-                my $print_html=join(undef, grep {$_} map {(ref($_) eq 'SCALAR') ? ${$_} : $_} @{$item_ar});
-                $html_sr=ref($html_sr) ? \($print_html . ${$html_sr}) : ($print_html . $html_sr);
-            }
-            }
             foreach my $item (reverse @{$print_ar}) {
                 debug("prepending printed data %s for data_ar: $data_ar, %s", Dumper($item, $data_ar));
                 my $print_html=(ref($item) eq 'SCALAR') ? ${$item} : $item;
