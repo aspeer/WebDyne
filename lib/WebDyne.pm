@@ -1198,11 +1198,19 @@ sub init_class {
         #
         if (my $print_ar=delete $self->{'_print_ar'}) {
             debug("print_ar: $print_ar %s", Dumper($print_ar));
+            if (0) {
             foreach my $item_ar (reverse @{$print_ar}) {
                 debug("prepending printed data %s for data_ar: $data_ar, %s", Dumper($item_ar, $data_ar));
                 my $print_html=join(undef, grep {$_} map {(ref($_) eq 'SCALAR') ? ${$_} : $_} @{$item_ar});
                 $html_sr=ref($html_sr) ? \($print_html . ${$html_sr}) : ($print_html . $html_sr);
             }
+            }
+            foreach my $item (reverse @{$print_ar}) {
+                debug("prepending printed data %s for data_ar: $data_ar, %s", Dumper($item, $data_ar));
+                my $print_html=(ref($_) eq 'SCALAR') ? ${$_} : $_;
+                $html_sr=ref($html_sr) ? \($print_html . ${$html_sr}) : ($print_html . $html_sr);
+            }
+
         }
         else {
             debug('no printed data detected');
@@ -1277,9 +1285,16 @@ sub init_class {
         #
         if (my $print_ar=delete $self->{'_print_ar'}) {
             debug("print_ar: $print_ar %s", Dumper($print_ar));
+            if (0) {
             foreach my $item_ar (reverse @{$print_ar}) {
                 debug("prepending printed data %s for data_ar: $data_ar, %s", Dumper($item_ar, $data_ar));
                 my $print_html=join(undef, grep {$_} map {(ref($_) eq 'SCALAR') ? ${$_} : $_} @{$item_ar});
+                $html_sr=ref($html_sr) ? \($print_html . ${$html_sr}) : ($print_html . $html_sr);
+            }
+            }
+            foreach my $item (reverse @{$print_ar}) {
+                debug("prepending printed data %s for data_ar: $data_ar, %s", Dumper($item, $data_ar));
+                my $print_html=(ref($item) eq 'SCALAR') ? ${$item} : $item;
                 $html_sr=ref($html_sr) ? \($print_html . ${$html_sr}) : ($print_html . $html_sr);
             }
         }
@@ -3770,7 +3785,9 @@ sub print {
 
     my $self=shift();
     debug("$self in print, %s", Dumper(\@_));
-    push @{$self->{'_print_ar'} ||= []}, [@_];
+    return $self->say(@_) if $self->{'_autonewline'};
+    #push @{$self->{'_print_ar'} ||= []}, [map {(ref($_) eq 'ARRAY') ? @{$_} : $_ } @_];
+    push @{$self->{'_print_ar'} ||= []}, map {(ref($_) eq 'ARRAY') ? @{$_} : $_ } @_;
     return \undef;
 
 }
@@ -3780,7 +3797,36 @@ sub printf {
 
     my $self=shift();
     debug("$self in printf, %s", Dumper(\@_));
-    push @{$self->{'_print_ar'} ||= []}, [sprintf(shift(), @_)];
+    #push @{$self->{'_print_ar'} ||= []}, [sprintf(shift(), @_)];
+    push @{$self->{'_print_ar'} ||= []}, sprintf(shift(), @_);
+    return \undef;
+
+}
+
+
+sub autonewline {
+    my $self=shift();
+    return @_ ? $self->{'_autonewline'}=($_[0] ? "\n" : 0) : $self->{'_autonewline'};
+    
+}
+
+
+sub say {
+
+    my $self=shift();
+    debug("$self in say, %s", Dumper(\@_));
+    my $print_ar=($self->{'_print_ar'} ||= []);
+    foreach my $item (@_) {
+        if (ref($item) eq 'ARRAY') {
+            push @{$print_ar}, join("\n", @{$item})
+        }
+        elsif (ref($item) eq 'SCALAR') {
+            push @{$print_ar}, ${$item}."\n";
+        }
+        else {
+            push @{$print_ar}, $item."\n";
+        }
+    }
     return \undef;
 
 }
