@@ -285,6 +285,18 @@ sub tag_parse {
         $pos=$self->{'_pos'} || $self
     )->{'_tag'};
     debug("tag $tag, tag_parent $tag_parent");
+    
+    
+    #  Is chomp detected ?
+    #
+    if (delete $attr_hr->{'chomp'}) {
+    
+        #  Yes, flag for later processing
+        #
+        debug('chomp attribute detected, setting flag');
+        $self->{'_chomp'}++;
+        
+    }
 
 
     #  Var to hold returned html element object ref
@@ -568,7 +580,7 @@ sub start {
     my $text=$_[2];
     ref($tag) || ($tag=lc($tag));
     debug("$self start tag '$tag' Line_no $Line_no, @_");
-
+    
     my $html_or;
     #if ($Text_fg) {
     if ($self->_text_block_tag()) {
@@ -597,8 +609,8 @@ sub end {
     #my $text_block_tag=$self->{'_text_block_tag'};
     #debug("$self end tag: %s,%s text_fg $Text_fg, line $Line_no", Dumper($tag, \@_));
     debug("$self end tag: %s,%s text_block_tag: %s, line $Line_no", Dumper($tag, \@_), $self->_text_block_tag());
-
-
+    
+    
     #  Var to hold HTML::Element ref if returned, but most methods don't seem to return a HTML ref, just an integer ?
     #
     my $ret;
@@ -684,7 +696,7 @@ sub end {
     elsif ($tag eq 'script') {
 
 
-        #  Script tag, presumablt of type application/perl
+        #  Script tag, presumably of type application/perl
         #
         debug('hit on script tag');
 
@@ -781,6 +793,18 @@ sub text {
     #
     my ($self, $text)=@_;
     debug("text *$text*, text_block_tag %s, pos: " . $self->{'_pos'}, $self->_text_block_tag());
+    
+    
+    #  Are we chomping text ?
+    #
+    if (delete $self->{'_chomp'}) {
+    
+        #  Yes. It's actually includes a "pre-chomp" as newline will be at start of the string
+        #
+        debug('chomp flag detected, chomping text');
+        $text=~s/^\n//;
+
+    }
 
 
     #  Ignore empty text. UPDATE - don't ignore or you will mangle CR in <pre> sections, especially if they contain tags
