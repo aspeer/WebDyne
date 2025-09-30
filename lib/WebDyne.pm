@@ -39,7 +39,7 @@ use Digest::MD5 qw(md5_hex);
 use File::Spec::Unix;
 use Data::Dumper;
 $Data::Dumper::Indent=1;
-use HTML::Entities qw(decode_entities);
+use HTML::Entities qw(decode_entities encode_entities);
 use CGI::Simple;
 use JSON;
 
@@ -3504,7 +3504,48 @@ sub dump {
     my ($self, $data_ar, $attr_hr)=@_;
     my $cgi_or=$self->CGI() ||
         return err();
-    return ($WEBDYNE_DUMP_FLAG || $attr_hr->{'force'} || $attr_hr->{'display'}) ? \$cgi_or->Dump(\%ENV, \@INC, \%INC, \%WebDyne::Constant::Constant) : \undef;
+    if ($WEBDYNE_DUMP_FLAG || $attr_hr->{'force'} || $attr_hr->{'display'}) {
+    
+
+        #  Yes, want to display dump of data. Start by getting any hash values and sorting them so easy to read
+        #
+        my $env_ix=tie(my %env, 'Tie::IxHash', %ENV);
+        $env_ix->SortByKey();
+        my $inc_ix=tie(my %inc, 'Tie::IxHash', %INC);
+        $inc_ix->SortByKey();
+        my $constant_ix=tie(my %constant, 'Tie::IxHash', 
+            map { $_=> encode_entities($WebDyne::Constant::Constant{$_}) } keys(%WebDyne::Constant::Constant)
+        );
+        $constant_ix->SortByKey();
+        
+        
+        #  Version
+        #
+        my $version_ix=tie(my %version, 'Tie::IxHash', (
+            VERSION         => $VERSION,
+            VERSION_GIT_REF => $VERSION_GIT_REF
+        ));
+        
+        
+        #  Get the actual dump string
+        #
+        my $dump=Data::Dumper->Dump(
+            [\%env, \@INC, \%inc, \%constant, \%version],
+            [qw(WebDyne::ENV WebDyne::LIB WebDyne::INC WebDyne::Constant WebDyne::VERSION)]
+        );
+        
+        
+        #  Wrap in a pre tag and return
+        #
+        my $html_or=$self->html_tiny();
+        return \($html_or->pre($dump));
+    }
+    else {
+    
+        #  Not wanted, return nothing
+        #
+        return \undef;
+    }
 
 }
 

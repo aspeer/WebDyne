@@ -648,7 +648,7 @@ sub popup_menu {
         }
         else {
             #  Single value
-            @values=($attr_select{$attr})
+            @values=(grep {$_} $attr_select{$attr})
         }
 
         unless ($attr eq 'disabled') {
@@ -679,8 +679,8 @@ sub popup_menu {
 
     #  Convert 'defaults' key to 'selected'
     #
-    do {$attr_option{'selected'} ||= delete $attr_option{'defaults'}}
-        if $attr_option{'defaults'};
+    do {$attr_option{'selected'} ||= (delete($attr_option{'default'}) || delete($attr_option{'defaults'}))}
+        if ($attr_option{'default'} || $attr_option{'defaults'});
 
 
     #  If disabled option is an array but is empty then it is meant for the parent tag
