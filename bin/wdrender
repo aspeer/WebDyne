@@ -39,6 +39,7 @@ use Pod::Usage;
 use IO::File;
 use File::Spec;
 use FindBin qw($RealBin $Script);
+use URI::Escape;
 
 
 #  Error handling
@@ -93,6 +94,7 @@ sub main {
         'outfile=s',
         'repeat|r|num|n=s',
         'loop',
+        'get=s@',
         'man',
         'version'
     ) || pod2usage(2);
@@ -129,6 +131,21 @@ sub main {
         headers_out
         headers_in
     );
+    
+    
+    #  Simulate a GET request with parameters if supplied
+    #
+    if (my $query_opt_ar=delete $opt{'get'}) {
+        my @query_string;
+        my @query_opt=map { split(/[;&]/) } @{$query_opt_ar};
+        foreach my $query_opt (@query_opt) {
+            my ($key, $value)=split(/=/, $query_opt);
+            push @query_string, join('=', map { uri_escape($_) } ($key, $value));
+        }
+        my $query_string=join('&', @query_string );
+        $ENV{'QUERY_STRING'}=$query_string;
+        $ENV{'REQUEST_METHOD'}='GET';
+    }
 
 
     #  Get new request object
@@ -188,13 +205,19 @@ sub main {
             defined($handler->handler($r)) || return err();
             print $/;
 
+            
+            #  If looking for leak
+            #
             #my $gladiator_ar=Devel::Gladiator::walk_arena();
 
 
             #  Manual cleanup
             #
             $r->DESTROY();
-
+            
+            
+            #  Leak detection
+            #
             #print("SV: ",  scalar @{$gladiator_ar}, "\n") if $opt{'leak'};
             #@{$gladiator_ar} = ();
 

@@ -3504,41 +3504,79 @@ sub dump {
     my ($self, $data_ar, $attr_hr)=@_;
     my $cgi_or=$self->CGI() ||
         return err();
+    my @html;
     if ($WEBDYNE_DUMP_FLAG || $attr_hr->{'force'} || $attr_hr->{'display'}) {
     
 
-        #  Yes, want to display dump of data. Start by getting any hash values and sorting them so easy to read
+        #  Always do CGI vars
         #
-        my $env_ix=tie(my %env, 'Tie::IxHash', %ENV);
-        $env_ix->SortByKey();
-        my $inc_ix=tie(my %inc, 'Tie::IxHash', %INC);
-        $inc_ix->SortByKey();
-        my $constant_ix=tie(my %constant, 'Tie::IxHash', 
-            map { $_=> encode_entities($WebDyne::Constant::Constant{$_}) } keys(%WebDyne::Constant::Constant)
-        );
-        $constant_ix->SortByKey();
+        my $cgi_ix=tie(my %cgi, 'Tie::IxHash', $cgi_or->Vars());
+        $cgi_ix->SortByKey();
+        push @html, Data::Dumper->Dump([\%cgi], ['WebDyne::CGI']);
         
         
-        #  Version
+        #  Others are optional. Environment
+        #
+        if ($attr_hr->{'env'} || $attr_hr->{'all'}) {
+    
+
+            #  Environment
+            #
+            my $env_ix=tie(my %env, 'Tie::IxHash', %ENV);
+            $env_ix->SortByKey();
+            push @html, Data::Dumper->Dump([\%env], ['WebDyne::ENV']);
+            
+        }
+        
+        
+        #  @INC Library path
+        #
+        if ($attr_hr->{'lib'} || $attr_hr->{'inc'} || $attr_hr->{'all'}) {
+        
+        
+            #  @INC wanted
+            #
+            push @html, Data::Dumper->Dump([\@INC], ['WebDyne::INC']);
+
+            #  %INC wanted
+            #
+            my $inc_ix=tie(my %inc, 'Tie::IxHash', %INC);
+            $inc_ix->SortByKey();
+            push @html, Data::Dumper->Dump([\%inc], ['WebDyne::INC']);
+            
+        }
+            
+
+        #  WebDyne constants
+        #
+        if ($attr_hr->{'constant'} || $attr_hr->{'all'}) {
+    
+
+            #  Constant
+            #
+            my $constant_ix=tie(my %constant, 'Tie::IxHash', 
+                map { $_=> encode_entities($WebDyne::Constant::Constant{$_}) } keys(%WebDyne::Constant::Constant)
+            );
+            $constant_ix->SortByKey();
+            push @html, Data::Dumper->Dump([\%constant], ['WebDyne::Constant']);
+            
+        }
+
+            
+        #  Version mandatory
         #
         my $version_ix=tie(my %version, 'Tie::IxHash', (
             VERSION         => $VERSION,
             VERSION_GIT_REF => $VERSION_GIT_REF
         ));
-        
-        
-        #  Get the actual dump string
-        #
-        my $dump=Data::Dumper->Dump(
-            [\%env, \@INC, \%inc, \%constant, \%version],
-            [qw(WebDyne::ENV WebDyne::LIB WebDyne::INC WebDyne::Constant WebDyne::VERSION)]
-        );
+        push @html, Data::Dumper->Dump([\%version], ['WebDyne::VERSION']);
         
         
         #  Wrap in a pre tag and return
         #
         my $html_or=$self->html_tiny();
-        return \($html_or->pre($dump));
+        return \($html_or->pre(join(undef, @html)));
+        
     }
     else {
     

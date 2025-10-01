@@ -675,8 +675,8 @@ sub popup_menu {
     #  Debug
     #
     debug('in popup_menu attr_option: %s', Dumper(\%attr_option));
-
-
+    
+    
     #  Convert 'defaults' key to 'selected'
     #
     do {$attr_option{'selected'} ||= (delete($attr_option{'default'}) || delete($attr_option{'defaults'}))}
