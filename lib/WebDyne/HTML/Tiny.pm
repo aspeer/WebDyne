@@ -30,6 +30,7 @@ our @ISA=qw(HTML::Tiny);
 #
 use HTML::Tiny;
 use CGI::Simple;
+use Data::Dumper;
 
 
 #  WebDyne Modules
@@ -89,15 +90,12 @@ sub new {
     else {
         %param=@param;
     }
+    debug("$class new, %s", Dumper(\%param));
     
     
     #  Were we supplied with a CGI::Simple object ?
     #
-    my $cgi_or;
-    unless ($cgi_or=delete $param{'CGI'}) {
-        $cgi_or=CGI::Simple->new() ||
-            return err('unable to get new CGI::Simple object');
-    }
+    my $cgi_or=delete $param{'CGI'};
     
     
     #  Shortcuts (start_html, start_form etc.) enabled by default.
@@ -113,7 +111,7 @@ sub new {
     
     #  Save away CGI object and return
     #
-    $self->{'_CGI'} ||= $cgi_or;
+    ($self->{'_CGI'} ||= $cgi_or) if $cgi_or;
     
     
     #  Done
