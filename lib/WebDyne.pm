@@ -1477,7 +1477,7 @@ sub render {
     #
     #my $cgi_or=$self->{'_CGI'} || $self->CGI() ||
     #    return err ("unable to get CGI object from self ref");
-    my $cgi_or=$self->{'_html_tiny_or'} || $self->html_tiny() ||
+    my $cgi_or=$self->{'_html_tiny_or'} || $self->html_tiny(CGI=>$self->CGI()) ||
         return err("unable to get HTML::Tiny object from self ref");
     debug("CGI $cgi_or");
 
@@ -1487,8 +1487,8 @@ sub render {
     local *HTML::Tiny::entity_encode=sub {$_[1]}
         unless
         $WEBDYNE_CGI_AUTOESCAPE;
-
-
+        
+        
     #  Any data params for this render
     #
     my $param_data_hr=$param_hr->{'param'};
@@ -3454,7 +3454,7 @@ sub html_tiny {
 
     my $self=shift();
     debug("$self get HTML::Tiny object");
-    return ($self->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new(mode => 'html')) ||
+    return ($self->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new(mode => 'html', @_)) ||
         err('unable to instantiate new WebDybe::HTTP::Tiny object');
 
 }

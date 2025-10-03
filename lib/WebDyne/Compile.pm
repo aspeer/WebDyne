@@ -16,7 +16,7 @@ package WebDyne::Compile;
 #  Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION %CGI_TAG_WEBDYNE %CGI_TAG_IMPLICIT);
+use vars   qw($VERSION %CGI_TAG_WEBDYNE %CGI_TAG_FORM %CGI_TAG_IMPLICIT);
 use warnings;
 no warnings qw(uninitialized redefine once);
 
@@ -50,6 +50,7 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #  Get WebDyne and CGI tags from TreeBuilder module
 #
 *CGI_TAG_WEBDYNE=\%WebDyne::CGI_TAG_WEBDYNE;
+*CGI_TAG_FORM=\%WebDyne::HTML::TreeBuilder::CGI_TAG_FORM;
 *CGI_TAG_IMPLICIT=\%WebDyne::HTML::TreeBuilder::CGI_TAG_IMPLICIT;
 
 
@@ -634,8 +635,8 @@ sub optimise_one {
 
         #  If not special WebDyne tag, see if we can render node
         #
-        #if ((!$CGI_TAG_WEBDYNE{$html_tag} && !$CGI_TAG_IMPLICIT{$html_tag} && !$subst_fg) || $static_fg) {
-        if ((!$CGI_TAG_WEBDYNE{$html_tag} && !$subst_fg) || $static_fg) {
+        if ((!$CGI_TAG_WEBDYNE{$html_tag} && !$CGI_TAG_FORM{$html_tag} && !$subst_fg) || $static_fg) {
+        #if ((!$CGI_TAG_WEBDYNE{$html_tag} && !$subst_fg) || $static_fg) {
 
 
             #  Check all child nodes to see if ref or scalar

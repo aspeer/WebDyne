@@ -29,6 +29,7 @@ our @ISA=qw(HTML::Tiny);
 #  External Modules
 #
 use HTML::Tiny;
+use CGI::Simple;
 
 
 #  WebDyne Modules
@@ -88,16 +89,60 @@ sub new {
     else {
         %param=@param;
     }
-
+    
+    
+    #  Were we supplied with a CGI::Simple object ?
+    #
+    my $cgi_or;
+    unless ($cgi_or=delete $param{'CGI'}) {
+        $cgi_or=CGI::Simple->new() ||
+            return err('unable to get new CGI::Simple object');
+    }
+    
+    
     #  Shortcuts (start_html, start_form etc.) enabled by default.
     #
     &shortcut_enable() unless
-        $param{'noshortcut'} || $Package{'_shortcut_enable'};
-
+        $param{'noshortcut'}; # no sense before ? was || $Package{'_shortcut_enable'};
+        
+        
+    #  Get HTML::Tiny ref
+    #
+    my $self=$class->SUPER::new(%param);
+    
+    
+    #  Save away CGI object and return
+    #
+    $self->{'_CGI'} ||= $cgi_or;
+    
+    
     #  Done
     #
-    return $class->SUPER::new(@param);
+    return $self;
 
+}
+
+
+sub Vars { 
+
+    #  Get CGI::Simple Vars to ensure we can find values needed to persist choices across form submissions
+    #
+    my $self=shift();
+    debug("$self Vars");
+    return ($self->{'_Vars'} ||= $self->CGI()->Vars());    
+
+}
+
+
+sub CGI {
+
+    
+    #  Get CGI::Simple object ref
+    #
+    my $self=shift();
+    debug("$self CGI");
+    return ($self->{'_CGI'} ||= CGI::Simple->new());
+    
 }
 
 
@@ -124,13 +169,19 @@ sub _init {
         );
 
         *{$tag}=sub {
-            my ($s, $attr_hr)=(shift(), shift());
-            #debug("s:$s, attr_hr:$attr_hr, param:%s", Dumper(\@_));
+            my ($self, $attr_hr, @param)=@_;
+            debug("$self $tag, attr_hr: %s", Dumper($attr_hr));
             if (defined($attr_hr)) {
-                return $s->input({type => $type{$tag} || $tag, %{$attr_hr}}, @_);
+                #  Copy attr so don't pollute ref
+                my %attr=%{$attr_hr};
+                my $param_hr=$self->Vars();
+                if ($attr{'name'} && (my $value=$param_hr->{$attr{'name'}}) && !$attr{'force'}) {
+                    $attr{'value'}=$value;
+                }
+                return $self->input({type => $type{$tag} || $tag, %attr}, @param);
             }
             else {
-                return $s->input({type => $type{$tag} || $tag}, @_)
+                return $self->input({type => $type{$tag} || $tag}, @param)
             }
 
             }
@@ -162,6 +213,7 @@ sub shortcut {
     #  Set or return passthough flag which flags us to ignore all start_* methods
     #
     my $self=shift();
+    debug("self: $self, shortcut: %s", Dumper(\@_));
     if (@_) {
         return shift() ? $self->shortcut_enable() : $self->shortcut_disable()
     }
@@ -175,6 +227,7 @@ sub shortcut {
 sub shortcut_disable {
 
     no warnings qw(redefine);
+    debug('shortcut_disable: %s', Dumper(\@_));
     foreach my $sub (grep {/^(?:_start|_end)/} keys %{__PACKAGE__ . '::'}) {
         (my $sub_start=$sub)=~s/^_//;
 
@@ -196,7 +249,7 @@ sub shortcut_disable {
 sub shortcut_enable {
 
     no warnings qw(redefine);
-    debug('in sub_start');
+    debug('shortcut_enable: %s', Dumper(\@_));
     foreach my $sub (grep {/^(?:_start|_end])/} keys %{__PACKAGE__ . '::'}) {
         (my $sub_start=$sub)=~s/^_//;
 
@@ -339,6 +392,7 @@ sub _end_html {
     #
     #shift()->SUPER::end_html(@_);
     my ($self, $attr_hr)=@_;
+    debug("$self _start_html, attr: %s, param: %s", Dumper($attr_hr, \@_));
 
     #return $self->SUPER::end_html($attr_hr) if $self->{'_passthrough'};
     my @html;
@@ -353,6 +407,7 @@ sub _end_html {
 sub html {
 
     my $self=shift();
+    debug("$self html() param: %s", Dumper(\@_));
     #  Move default attributes into <html> tag unless user has explicitely supplied
     unshift (@_, $WEBDYNE_HTML_PARAM) unless (ref $_[0] eq 'HASH');
     return $WEBDYNE_DTD . $self->SUPER::html(@_);
@@ -362,10 +417,11 @@ sub html {
 
 sub head {
 
-    my ($self, $html)=(shift(), shift());
+    my ($self, $html, @param)=@_;
     #debug("$self head, html:$html, attr:%s", Dumper(\@_));
+    debug("$self head, param:%s", Dumper($_[2]));
     $html.=$WEBDYNE_HEAD_INSERT;
-    return $self->SUPER::head(grep {$_} ($html, @_));
+    return $self->SUPER::head(grep {$_} ($html, @param));
     
 }
 
@@ -374,9 +430,9 @@ sub _start_html_bare {
 
     #  Special. Called by optimise_two in WebDybe compile instead of start_html above
     #
-    #die &Data::Dumper::Dumper(\@_);
-    return $WEBDYNE_DTD . shift()->SUPER::open('html', @_);
-
+    my $self=shift();
+    debug("$self _start_html_bare param:%s", Dumper(\@_));
+    return $WEBDYNE_DTD . $self->SUPER::open('html', @_);
     #return $WEBDYNE_DTD
 
 }
@@ -386,14 +442,15 @@ sub _start_html_bare {
 #
 sub _start_form {
 
-    my ($s, $attr_hr, @param)=@_;
+    my ($self, $attr_hr, @param)=@_;
+    debug("$self _start_form, attr_hr:%s param:%s", Dumper($attr_hr, \@param));
     my %default=(
         method  => 'post',
         enctype => +URL_ENCODED
     );
     map {$attr_hr->{$_} ||= $default{$_}}
         keys %default;
-    return $s->start('form', $attr_hr, @param);
+    return $self->start('form', $attr_hr, @param);
 
 }
 
@@ -401,11 +458,13 @@ sub _start_form {
 #  Start multi-part form shortcut
 #
 sub _start_multipart_form {
+    debug("$_[0] _start_multipart_form");
     return shift()->start_form({enctype => +MULTIPART, %{$_[0] ? shift() : {}}}, @_);
 }
 
 
 sub _end_multipart_form {
+    debug("$_[0] _end_multipart_form");
     return shift()->end_form(@_);
 }
 
@@ -462,11 +521,12 @@ sub meta {
 sub link {
 
     my ($self, $attr_hr)=@_;
-    debug('in link, attr %s', Dumper($attr_hr));
+    debug("$self link, attr %s", Dumper($attr_hr));
     my @html;
     if (ref($attr_hr->{'href'}) eq 'ARRAY') {
-        my $href_ar=delete($attr_hr->{'href'});
-        map {push @html, $self->SUPER::link({%{$attr_hr}, href => $_})} @{$href_ar}
+        my %attr=%{$attr_hr};
+        my $href_ar=delete $attr{'href'};
+        map {push @html, $self->SUPER::link({%attr, href => $_})} @{$href_ar}
     }
     else {
         push @html, $self->SUPER::link($attr_hr)
@@ -480,15 +540,16 @@ sub link {
 #
 sub script {
 
-    my ($self, $attr_hr)=(shift(), shift());
-    debug('in script, attr %s', Dumper($attr_hr));
+    my ($self, $attr_hr, @param)=@_;
+    debug("$self script, attr %s", Dumper($attr_hr));
     my @html;
     if (ref($attr_hr->{'src'}) eq 'ARRAY') {
-        my $src_ar=delete($attr_hr->{'src'});
-        map {push @html, $self->SUPER::script({%{$attr_hr}, src => $_}, @_)} @{$src_ar}
+        my %attr=%{$attr_hr};
+        my $src_ar=delete $attr{'src'};
+        map {push @html, $self->SUPER::script({%attr, src => $_}, @param)} @{$src_ar}
     }
     else {
-        push @html, $self->SUPER::script($attr_hr, @_)
+        push @html, $self->SUPER::script($attr_hr, @param)
     }
     return join($/, @html);
 
@@ -500,13 +561,14 @@ sub _radio_checkbox {
 
     #  Return a radio or checkboxinput field, adding label tags if needed
     #
-    my ($self, $tag, $attr_hr)=@_;
+    my ($self, $tag, $attr_hr, $html)=@_;
+    debug("$self _radio_checkbox, tag:$tag attr_hr:%s", Dumper($attr_hr));
     my %attr=%{$attr_hr};
     if (my $label=delete $attr{'label'}) {
-        return $self->label($self->input({type => $tag, %attr}) . $label);
+        return $self->label($self->input({type => $tag, %attr}) . join('', grep {$_} $html, $label));
     }
     else {
-        return $self->input({type => $tag, %attr});
+        return $self->input({type => $tag, %attr}) . $html;
     }
 
 }
@@ -520,8 +582,15 @@ sub _radio_checkbox_group {
     #  Build a checkbox or radio group
     #
     my ($self, $tag, $attr_hr)=@_;
-    debug("in _radio_checbox_group tag:$tag attr: %s", Dumper($attr_hr));
+    debug("$self _radio_checbox_group tag:$tag attr: %s", Dumper($attr_hr));
     my %attr=%{$attr_hr};
+
+
+    #  Get hash ref of any existing CGI param
+    #
+    my $param_hr=($self->{'_Vars'} ||= $self->Vars()) ||
+        return err('unable able to CGI::Simple Vars');
+
 
     #  Hold generated HTML in array until end
     #
@@ -531,7 +600,7 @@ sub _radio_checkbox_group {
     #  Convert arrays of default values (i.e checked/enabled) and any disabled entries into hash - easier to check
     #
     my %attr_group;
-    foreach my $attr (qw(defaults disabled)) {
+    foreach my $attr (qw(defaults checked disabled)) {
         map {$attr_group{$attr}{$_}=1} @{(ref($attr{$attr}) eq 'ARRAY') ? $attr{$attr} : [$attr{$attr}]}
             if $attr{$attr};
     }
@@ -550,11 +619,33 @@ sub _radio_checkbox_group {
     }
 
 
+    #  Make sure checked values persist by default unless "force" attribute used to override
+    #
+    if ($attr_hr->{'name'} && (my $checked=$param_hr->{$attr_hr->{'name'}}) && !$attr_hr->{'force'}) {
+
+        #  The tag has a name, and has some selected (checked) values from a form submision. Map the submitted values 
+        #  into the checked attribute, splitting on \0 as per spec
+        #
+        $attr_group{'checked'} = { map { $_=>1 } (split(/\0/, $checked)) }
+
+    }
+    else {
+
+        #  Convert 'defaults' key to 'selected'
+        #
+        do {$attr_group{'checked'} ||= (delete($attr_group{'default'}) || delete($attr_group{'defaults'}))}
+            if ($attr_group{'default'} || $attr_group{'defaults'});
+            
+    }
+
+
     #  Radio groups can only have one option checked. If multiple discard and only use first one in alphabetical order
     #
     if ($tag eq 'radio') {
-        %{$attr_group{'defaults'}}=map {$_ => $attr_group{'defaults'}{$_}} ([sort keys %{$attr_group{'defaults'}}]->[0])
-            if $attr_group{'defaults'};
+        #%{$attr_group{'defaults'}}=map {$_ => $attr_group{'defaults'}{$_}} ([sort keys %{$attr_group{'defaults'}}]->[0])
+        #    if $attr_group{'defaults'};
+        %{$attr_group{'checked'}}=map {$_ => $attr_group{'checked'}{$_}} ([sort keys %{$attr_group{'checked'}}]->[0])
+            if $attr_group{'checked'};
     }
 
 
@@ -570,7 +661,8 @@ sub _radio_checkbox_group {
         $attr_tag{'value'}=$value;
 
         #  Note use of empty array for checked and disabled values as per HTML::Tiny specs
-        $attr_tag{'checked'}=[]  if $attr_group{'defaults'}{$value};
+        #$attr_tag{'checked'}=[]  if $attr_group{'defaults'}{$value};
+        $attr_tag{'checked'}=[]  if $attr_group{'checked'}{$value};
         $attr_tag{'disabled'}=[] if $attr_group{'disabled'}{$value};
         $attr_tag{'label'}=$attr{'labels'}{$value} ? $attr{'labels'}{$value} : $value;
         push @html, $self->_radio_checkbox($tag, \%attr_tag);
@@ -585,17 +677,103 @@ sub _radio_checkbox_group {
 
 
 sub checkbox_group {
+    debug("$_[0] checkbox_group");
     return shift()->_radio_checkbox_group('checkbox', @_)
 }
 
 
 sub radio_group {
+    debug("$_[0] radio_group");
     return shift()->_radio_checkbox_group('radio', @_)
 }
 
 
 sub checkbox {
-    return shift()->_radio_checkbox('checkbox', @_)
+    
+
+    #  Bit more complex
+    #
+    my ($self, $attr_hr, @html)=@_;
+    debug("$self checkbox, attr_hr:%s", Dumper($attr_hr));
+    
+    
+    #  Mirror attributes so if we change we don't alter originals
+    #
+    my %attr=%{$attr_hr};
+
+
+    #  Get hash ref of any existing CGI param
+    #
+    my $param_hr=($self->{'_Vars'} ||= $self->Vars()) ||
+        return err('unable able to CGI::Simple Vars');
+
+    
+    #  Massage to set default value of "1" for checkboxes if no value
+    #  attr found. If one is found assume user knows what they are doing
+    #
+    unless (my $value=$attr_hr->{'value'}) {
+        if (my $name=$attr_hr->{'name'}) {
+        
+            #  Add hidden field with same name but 0 value
+            #
+            debug("using hidden field for checkbox: $name, setting checked value to 1 if selected");
+            push @html, $self->hidden({ name=>$name, value=>0, force=>1 });
+            
+            
+            #  Set value of this checkbox (if checked) to 1
+            #
+            $attr{'value'}=1;
+            
+            
+            #  Add up all values for this checkbox now.
+            #
+            my $checked;
+            if (my $value=$param_hr->{$name}) {
+                map { $checked+=int($_) } split(/\0/, $value);
+            }
+            
+            
+            #  Run checkbox logic
+            #
+            if(exists($param_hr->{$name}) && $checked) {
+            
+                debug("param name:$name exists and is checked, setting checked to true");
+                $attr{'checked'}=[];
+                
+            }
+            elsif(exists($param_hr->{$name}) && !$checked) {
+                
+                debug("param name:$name exists but is not defined, clearing checked attribute");
+                delete $attr{'checked'};
+                
+            }
+            else {
+                
+                debug("no $name param, using tag default: %s", $attr{'checked'} ? 'checked=1' : '<unchecked>');
+                
+            }
+        }
+        else {
+        
+            debug('no name attr');
+            
+        }
+    }
+    else {
+    
+        #  Custom value
+        #
+        debug("custom value: $value, checkbox logic bypassed");
+        
+    }
+    
+    
+    #  Done, return result
+    #
+    #return shift()->_radio_checkbox('checkbox', @_)
+    #return $self->_radio_checkbox('checkbox', grep {$_} $attr_hr, @_) . join(undef, grep {$_} @html);
+    debug('calling radio_checkbox');
+    return $self->_radio_checkbox('checkbox', \%attr, join('', @html))
 }
 
 
@@ -608,7 +786,13 @@ sub popup_menu {
     #
     my ($self, $attr_hr)=@_;
     my %attr_select=%{$attr_hr};
-    debug('in popup_menu: %s', Dumper($attr_hr));
+    debug("$self popup_menu, attr_hr:%s", Dumper($attr_hr));
+    
+    
+    #  Get hash ref of any existing CGI param
+    #
+    my $param_hr=($self->{'_Vars'} ||= $self->Vars()) ||
+        return err('unable able to CGI::Simple Vars');
 
 
     #  Hold generated HTML in array until end
@@ -677,11 +861,24 @@ sub popup_menu {
     debug('in popup_menu attr_option: %s', Dumper(\%attr_option));
     
     
-    #  Convert 'defaults' key to 'selected'
+    #  Make sure selected values persist by default unless "force" attribute used to override
     #
-    do {$attr_option{'selected'} ||= (delete($attr_option{'default'}) || delete($attr_option{'defaults'}))}
-        if ($attr_option{'default'} || $attr_option{'defaults'});
+    if ($attr_hr->{'name'} && (my $selected=$param_hr->{$attr_hr->{'name'}}) && !$attr_hr->{'force'}) {
 
+        #  The tag has a name, and has some selected (checked) values from a form submision. Map the submitted values 
+        #  into the selected field, splitting on \0 as per spec
+        #
+        $attr_option{'selected'} = { map { $_=>1 } (split(/\0/, $selected)) }
+
+    }
+    else {
+
+        #  Convert 'defaults' key to 'selected'
+        #
+        do {$attr_option{'selected'} ||= (delete($attr_option{'default'}) || delete($attr_option{'defaults'}))}
+            if ($attr_option{'default'} || $attr_option{'defaults'});
+            
+    }
 
     #  If disabled option is an array but is empty then it is meant for the parent tag
     #
@@ -752,8 +949,50 @@ sub scrolling_list {
     #  Only difference between popup_menu and scrolling list is size attrribute, which we calculate  -if
     #  supplied will overwrite calculated value
     #
-    return shift()->popup_menu({size => scalar @{$_[0]->{'values'}}, %{shift()}}, @_);
+    my ($self, $attr_hr, @param)=@_;
+    debug("self $self scrolling_list, attr_hr: %s", Dumper($attr_hr));
+    my $size=(ref($attr_hr->{'values'}) eq 'ARRAY') ? scalar @{$attr_hr->{'values'}} : scalar keys %{$attr_hr->{'values'}};
+    #return shift()->popup_menu({size => scalar @{$_[0]->{'values'}}, %{shift()}}, @_);
+    return $self->popup_menu({size => $size, %{$attr_hr}}, @param);
 
+}
+
+
+sub textarea {
+
+    #  Slightly different handling for textarea
+    #
+    my ($self, $attr_hr, @param)=@_;
+    debug("self $self textarea, attr_hr: %s", Dumper($attr_hr));
+
+
+    #  Get hash ref of any existing CGI param
+    #
+    my $param_hr=($self->{'_Vars'} ||= $self->Vars()) ||
+        return err('unable able to CGI::Simple Vars');
+        
+        
+    #  Copy attr_hr so don't mangle original
+    #
+    my %attr=%{$attr_hr};
+        
+
+    #  Make sure entered text persists unless force in effect
+    #
+    my $content=delete($attr{'default'});
+    if ($attr{'name'} && (my $entered=$param_hr->{$attr{'name'}}) && !$attr{'force'}) {
+
+        #  The tag has a name, and has some already entered text. That wins
+        #
+        $content=$entered
+
+    }
+    
+    
+    #  Have enough to build now
+    #
+    return $self->SUPER::textarea(grep {$_} \%attr, $content);
+    
 }
 
 

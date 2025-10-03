@@ -16,7 +16,7 @@ package WebDyne::HTML::TreeBuilder;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION @ISA %CGI_TAG_WEBDYNE %CGI_TAG_IMPLICIT %CGI_TAG_SPECIAL);
+use vars   qw($VERSION @ISA %CGI_TAG_WEBDYNE %CGI_TAG_FORM %CGI_TAG_IMPLICIT %CGI_TAG_SPECIAL);
 use warnings;
 no warnings qw(uninitialized redefine once);
 
@@ -52,6 +52,23 @@ $VERSION='2.012_265';
 #  Debug load
 #
 debug("Loading %s version $VERSION", __PACKAGE__);
+
+
+#  Form based tags we don't want to compile as their value may change if keeping state
+#
+%CGI_TAG_FORM=map {$_ => 1} (qw(
+
+        textfield
+        textarea
+        password_field
+        checkbox
+        checkbox_group
+        radio_group
+        popup_menu
+        scrolling_list
+
+));
+
 
 
 #  Make a hash of our implictly closed tags.
