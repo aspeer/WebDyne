@@ -96,7 +96,7 @@ sub new {
     #  Were we supplied with a CGI::Simple and/or webdyne object ?
     #
     my $cgi_or=delete $param{'CGI'};
-    #my $webdyne_or=delete $param{'webdyne'};
+    my $webdyne_or=delete $param{'webdyne'};
     
 
     #  Shortcuts (start_html, start_form etc.) enabled by default.
@@ -113,7 +113,7 @@ sub new {
     #  Save away CGI object and return
     #
     ($self->{'_CGI'} ||= $cgi_or) if $cgi_or;
-    #($self->{'_webdyne'} ||= $webdyne_or) if $webdyne_or;
+    ($self->{'_webdyne'} ||= $webdyne_or) if $webdyne_or;
     
     
     #  Done
@@ -345,21 +345,21 @@ sub _start_html {
         debug('no meta run');
     }
 
-    #  Logic error below
+    #  Logic error below, replaced by above
     #
     #my @meta=$self->meta({ content=>$attr_page{'meta'} })
     #    if $attr_page{'meta'};
-    debug('meta: %s', Dumper(\@meta));
-    while (my ($name, $content)=each %{$attr_page{'meta'}}) {
-        push @meta, $self->meta({name => $name, content => $content});
-    }
+    ##debug('meta: %s', Dumper(\@meta));
+    ##while (my ($name, $content)=each %{$attr_page{'meta'}}) {
+    ##    push @meta, $self->meta({name => $name, content => $content});
+    ##}
     #  Used to do this
     #while (my ($name, $content)=each %{$WEBDYNE_META}) {
         #push @meta, $self->meta({$name => $content});
 
     #}
     #  Now this
-    push @meta, $self->meta({ content => $WEBDYNE_META });
+    ##push @meta, $self->meta({ content => $WEBDYNE_META }) unless 
 
 
     #  Add any stylesheets
@@ -385,7 +385,7 @@ sub _start_html {
     #  Include. Not working - commented out at moment
     #
     my $include;
-    if (0 && (my $fn=$attr_page{'include'}) && (my $webdyne_or=$self->{'_webdyne'})) {
+    if ((my $fn=$attr_page{'include'}) && (my $webdyne_or=$self->{'_webdyne'})) {
         
 
         #  Experimental
@@ -393,19 +393,29 @@ sub _start_html {
         $include=${
             $webdyne_or->include({ file=>$fn, head=>1 }) ||
                 return err();
-        }
-
+        };
+        debug("include: $include");
 
     }
+    else {
+        
+        #  No included file (which should include default metadata) so add default
+        #
+        debug('no include file, adding default metadata');
+        push @meta, $self->meta({ content => $WEBDYNE_META });
+        
+    }
+
     
     
     #  Build title
     #
-    #my $title;
-    #unless ($title=$attr_page{'title'}) {
-    #    $title=$WEBDYNE_HTML_DEFAULT_TITLE unless $include=~/<title>.*?<\/title>/;
-    #}
-
+    my $title;
+    unless ($include && $include=~/<title>.*?<\/title>/i) {
+        $title=$attr_page{'title'} || $WEBDYNE_HTML_DEFAULT_TITLE;
+    }
+    debug('title: %s', $title || '*undef*');
+        
 
     #  Build head, adding a title section, empty if none specified
     #
@@ -413,10 +423,13 @@ sub _start_html {
         join(
             $/,
             grep {$_}
-                $self->title($attr_page{'title'} ? $attr_page{'title'} : $WEBDYNE_HTML_DEFAULT_TITLE),
+                #$self->title($attr_page{'title'} ? $attr_page{'title'} : $WEBDYNE_HTML_DEFAULT_TITLE),
+                $title && $self->title($title),
+            #$title,
             @meta,
             @link,
-            @script
+            @script,
+            $include
         ));
 
 

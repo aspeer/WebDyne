@@ -181,7 +181,7 @@ sub compile {
     my $tree_or=WebDyne::HTML::TreeBuilder->new(
 
         api_version => 3,
-        #webdyne	    => $self
+        webdyne	    => $self
 
     ) || return err('unable to create HTML::TreeBuilder object');
 
