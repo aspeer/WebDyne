@@ -28,6 +28,12 @@ require_ok('WebDyne::Compile');
 use WebDyne::Util;
 
 
+#  Setup environment for this test if not already present
+#
+$ENV{'WEBDYNE_TEST_FILE_PREFIX'} ||= '02';
+
+
+
 #  Run
 #
 exit(${&main(\@ARGV) || die err ()} || 0);    # || 0 stops warnings
@@ -96,6 +102,11 @@ sub main {
             #  Get data file
             #
             my ($data_dn, $data_fn)=(File::Spec->splitpath($test_cn))[1,2];
+
+
+            #  Enables variations on a single source file
+            #
+            $data_fn=join('-', grep {$_} $ENV{'WEBDYNE_TEST_FILE_PREFIX'},  $data_fn);
             my $data_cn=File::Spec->catfile($data_dn, $data_freeze_dn, $data_fn);
             $data_cn=~s/\.psp$/\.dat\.${stage}/;
 
@@ -130,7 +141,8 @@ sub main {
             #
             (-f $data_cn) || do {
                 diag("skipping $test_fn, no data file - run maketest.pl");
-                next FILE;
+                return err();
+                #next FILE;
             };
             my $data_thaw_ar=lock_retrieve($data_cn) ||
                 return err();
@@ -167,6 +179,8 @@ sub main {
         #
         #diag("processing: $test_fn stage: HTML render");
         my ($data_dn, $data_fn)=(File::Spec->splitpath($test_cn))[1,2];
+        $data_fn=join('-', grep {$_} $ENV{'WEBDYNE_TEST_FILE_PREFIX'},  $data_fn);
+
         my $data_cn=File::Spec->catfile($data_dn, $data_freeze_dn, $data_fn);
         $data_cn=~s/\.psp$/\.html/;
 

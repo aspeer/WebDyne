@@ -35,6 +35,7 @@ my %WriteMakefile=(
         'HTML::TreeBuilder' => 0,
         'Storable'          => 0,
         'Test::More'        => 0,
+        'Capture::Tiny'     => 0,
         'Tie::IxHash'       => 0,
         'Devel::Confess'    => 0,
 

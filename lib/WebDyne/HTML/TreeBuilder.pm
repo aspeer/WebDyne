@@ -70,24 +70,15 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 ));
 
 
-
 #  Make a hash of our implictly closed tags.
 #
-%CGI_TAG_IMPLICIT=map {$_ => 1} (qw(
+%CGI_TAG_IMPLICIT=map {$_ => 1} (keys(%CGI_TAG_FORM), qw(
 
-        textfield
-        textarea
         filefield
-        password_field
         hidden
-        checkbox
-        checkbox_group
         submit
         reset
         defaults
-        radio_group
-        popup_menu
-        scrolling_list
         image_button
         start_form
         end_form
@@ -165,7 +156,7 @@ sub new {
     my $self=$class->SUPER::new(@_) ||
         return err('unable to initialize from %s, using ISA: %s', ref($class) || $class, Dumper(\@ISA));
     $self->{'_html_tiny_or'}=
-        WebDyne::HTML::Tiny->new(mode => 'html');
+        WebDyne::HTML::Tiny->new(mode => 'html', @_);
     return $self;
 
 }

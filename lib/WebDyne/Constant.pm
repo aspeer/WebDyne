@@ -185,7 +185,9 @@ my %constant_temp;
     #
     WEBDYNE_DTD  => '<!DOCTYPE html>',
     WEBDYNE_META => {
-        charset => $constant_temp{'webdyne_html_charset'}
+    
+        # Set to 'chareset=UTF-8' => undef to get result we want
+        'charset='.$constant_temp{'webdyne_html_charset'} => undef
     },
 
 

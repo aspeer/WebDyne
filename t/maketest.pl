@@ -124,6 +124,11 @@ sub main {
             my ($dest_dn, $dest_fn)=(File::Spec->splitpath($test_cn))[1,2];
             
             
+            #  Enables variations on a single source file
+            #
+            $dest_fn=join('-', grep {$_} $ENV{'WEBDYNE_TEST_FILE_PREFIX'},  $dest_fn);
+            
+
             #  Create data dir if not exist
             #
             my $data_pn=File::Spec->catdir($dest_dn, $data_dn);
@@ -149,6 +154,13 @@ sub main {
         #
         diag("processing: $test_fn stage: HTML render");
         my ($dest_dn, $dest_fn)=(File::Spec->splitpath($test_cn))[1,2];
+
+
+        #  Enables variations on a single source file
+        #
+        $dest_fn=join('-', grep {$_} $ENV{'WEBDYNE_TEST_FILE_PREFIX'},  $dest_fn);
+            
+
         my $dest_cn=File::Spec->catfile($dest_dn, $data_dn, $dest_fn);
         $dest_cn=~s/\.psp$/\.html/;
         debug("render to $dest_cn");

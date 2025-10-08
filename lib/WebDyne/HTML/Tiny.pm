@@ -93,11 +93,12 @@ sub new {
     debug("$class new, %s", Dumper(\%param));
     
     
-    #  Were we supplied with a CGI::Simple object ?
+    #  Were we supplied with a CGI::Simple and/or webdyne object ?
     #
     my $cgi_or=delete $param{'CGI'};
+    #my $webdyne_or=delete $param{'webdyne'};
     
-    
+
     #  Shortcuts (start_html, start_form etc.) enabled by default.
     #
     &shortcut_enable() unless
@@ -112,6 +113,7 @@ sub new {
     #  Save away CGI object and return
     #
     ($self->{'_CGI'} ||= $cgi_or) if $cgi_or;
+    #($self->{'_webdyne'} ||= $webdyne_or) if $webdyne_or;
     
     
     #  Done
@@ -153,19 +155,31 @@ sub _init {
     *HTML::Tiny::end=\&HTML::Tiny::close  || *HTML::Tiny::end;      # || as above
 
 
+    #  Translate CGI.pm shortcut field to HTML::Tiny equiv
+    #
+    my %type=(
+        textfield      => 'text',
+        password_field => 'password',
+        filefield      => 'file',
+        defaults       => 'submit',
+        image_button   => 'image',
+        button         => 'button'
+    );
+    
+
+    #  Which tags do we need to persist value ?
+    #
+    my %persist=(
+        textfield	=> 1,
+        password_field	=> 1,
+        filefield	=> 1
+    );
+
+
     #  Re-impliment CGI input shortcut tags
     #
     foreach my $tag (qw(textfield password_field filefield button submit reset defaults image_button hidden button)) {
-
-        my %type=(
-            textfield      => 'text',
-            password_field => 'password',
-            filefield      => 'file',
-            defaults       => 'submit',
-            image_button   => 'image',
-            button         => 'button'
-        );
-
+            
         *{$tag}=sub {
             my ($self, $attr_hr, @param)=@_;
             debug("$self $tag, attr_hr: %s", Dumper($attr_hr));
@@ -173,8 +187,10 @@ sub _init {
                 #  Copy attr so don't pollute ref
                 my %attr=%{$attr_hr};
                 my $param_hr=$self->Vars();
-                if ($attr{'name'} && (my $value=$param_hr->{$attr{'name'}}) && !$attr{'force'}) {
-                    $attr{'value'}=$value;
+                if ($persist{$tag}) {
+                    if ($attr{'name'} && (my $value=$param_hr->{$attr{'name'}}) && !$attr{'force'}) {
+                        $attr{'value'}=$value;
+                    }
                 }
                 return $self->input({type => $type{$tag} || $tag, %attr}, @param);
             }
@@ -308,6 +324,7 @@ sub _start_html {
         target
         author
         script
+        include
     );
     debug('start_html %s', Dumper(\%attr_page));
 
@@ -336,9 +353,13 @@ sub _start_html {
     while (my ($name, $content)=each %{$attr_page{'meta'}}) {
         push @meta, $self->meta({name => $name, content => $content});
     }
-    while (my ($name, $content)=each %{$WEBDYNE_META}) {
-        push @meta, $self->meta({$name => $content});
-    }
+    #  Used to do this
+    #while (my ($name, $content)=each %{$WEBDYNE_META}) {
+        #push @meta, $self->meta({$name => $content});
+
+    #}
+    #  Now this
+    push @meta, $self->meta({ content => $WEBDYNE_META });
 
 
     #  Add any stylesheets
@@ -359,6 +380,31 @@ sub _start_html {
     if ($attr_page{'script'}) {
         push @script, $self->script({ src => $attr_page{'script'} });
     }
+    
+    
+    #  Include. Not working - commented out at moment
+    #
+    my $include;
+    if (0 && (my $fn=$attr_page{'include'}) && (my $webdyne_or=$self->{'_webdyne'})) {
+        
+
+        #  Experimental
+        #
+        $include=${
+            $webdyne_or->include({ file=>$fn, head=>1 }) ||
+                return err();
+        }
+
+
+    }
+    
+    
+    #  Build title
+    #
+    #my $title;
+    #unless ($title=$attr_page{'title'}) {
+    #    $title=$WEBDYNE_HTML_DEFAULT_TITLE unless $include=~/<title>.*?<\/title>/;
+    #}
 
 
     #  Build head, adding a title section, empty if none specified
@@ -485,9 +531,25 @@ sub meta {
     my ($self, $attr_hr)=@_;
     debug("$self in meta, attr %s", Dumper($attr_hr));
     my @html;
-    if (ref($attr_hr->{'content'}) eq 'HASH') {
+    if (ref(my $meta_hr=$attr_hr->{'content'}) eq 'HASH') {
         debug('meta is HASH');
-        while (my ($name, $content)=each %{$attr_hr->{'content'}}) {
+        
+        #  Want to be determenistic so sort keys unless tied
+        #
+        my @name=keys(%{$meta_hr});
+        unless(my $or=tied(%{$meta_hr})) {
+            #  Not tied hash to sort keys
+            #
+            debug('meta hash not tied, sorting');
+            @name=sort { $a cmp $b } @name;
+        }
+        else {
+            debug("meta_hr is tied to $or");
+        }
+        
+        #while (my ($name, $content)=each %{$attr_hr->{'content'}}) {
+        foreach my $name (@name) {
+            my $content=$meta_hr->{$name};
             if ((my ($key, $value)=split(/=/, $name)) == 2) {
 
                 #  Self contained
