@@ -37,6 +37,10 @@ use WebDyne::Util;
 #*err=\&WebDyne::Err::err;
 #*err=\&WebDyne::Err::errdump;
 
+#  Default prefix
+#
+$ENV{'WEBDYNE_TEST_FILE_PREFIX'} ||= '02';
+
 
 #  Run
 #

@@ -86,6 +86,7 @@ debug("Loading %s version $VERSION", __PACKAGE__);
         end_multipart_form
         isindex
         dump
+        include
         json
 
 ));

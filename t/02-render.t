@@ -25,13 +25,14 @@ $Storable::canonical=1;
 #  Load WebDyne
 #
 require_ok('WebDyne::Compile');
+require_ok('WebDyne::Request::Fake');
 use WebDyne::Util;
 
 
 #  Setup environment for this test if not already present
 #
 $ENV{'WEBDYNE_TEST_FILE_PREFIX'} ||= '02';
-
+#die Dumper(\%INC, \@INC);
 
 
 #  Run
@@ -187,7 +188,7 @@ sub main {
 
         my $html_live_sr=&render($test_cn) ||
             return err();
-        #diag(${$html_sr});
+        #diag("render: *${$html_live_sr}*");
 
         (-f $data_cn) || do {
             diag("skipping $test_fn, no data file - run maketest.pl");

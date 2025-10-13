@@ -3117,15 +3117,32 @@ sub include {
         $block_ar->[WEBDYNE_NODE_ATTR_IX]={name => $node, display => 1};
 
 
+        #  Strip any leading or trailing <p>. TODO Fix
+        #
+        #if (!ref($block_ar->[$WEBDYNE_NODE_CHLD_IX][0])) {
+        #    $block_ar->[$WEBDYNE_NODE_CHLD_IX][0]=~s/^<p>//;
+        #}
+        #if (!ref($block_ar->[$WEBDYNE_NODE_CHLD_IX][-1])) {
+        #    $block_ar->[$WEBDYNE_NODE_CHLD_IX][-1]=~s/<\/p>$//;
+        #}
+
+
         #  Incorporate into top level data so we don't have to do this again if
         #  called from tag
         #
-        @{$data_ar}=@{$block_ar} if $data_ar;
-
-
-        #  Render included block and return
+        #  TODO Fix - doesn't work if stripping leading/trailing <p></p>
         #
-        return $self->render({data => $block_ar->[$WEBDYNE_NODE_CHLD_IX], param => $param_hr->{'param'}}) || err();
+        #@{$data_ar}=@{$block_ar} if ($data_ar && !$param_hr->{'nocache'});
+
+
+        #  Render included block and return after stripping <p></p>
+        #
+        my $html_sr=$self->render({data => $block_ar->[$WEBDYNE_NODE_CHLD_IX], param => $param_hr->{'param'}}) || 
+            return err();
+        ${$html_sr}=~s/^<p>//;
+        ${$html_sr}=~s/<\/p>$//;
+        return $html_sr;
+        
 
     }
     elsif (my $block=$param_hr->{'block'}) {
@@ -3177,17 +3194,38 @@ sub include {
         $block_ar->[$WEBDYNE_NODE_ATTR_IX]{'display'}=1;
 
 
+        #  Strip any leading or trailing <p>. See below TODO: Fix this
+        #
+        ##if (!ref($block_ar->[$WEBDYNE_NODE_CHLD_IX][0])) {
+        ##    $block_ar->[$WEBDYNE_NODE_CHLD_IX][0]=~s/^<p>//;
+        ##}
+        ##if (!ref($block_ar->[$WEBDYNE_NODE_CHLD_IX][-1])) {
+        ##    $block_ar->[$WEBDYNE_NODE_CHLD_IX][-1]=~s/<\/p>$//;
+        ##}
+
+
         #  Incorporate into top level data so we don't have to do this again if
         #  called from tag
         #
-        @{$data_ar}=@{$block_ar} if $data_ar;
+        #  COMMENTED OUT FOR NOW: Doesn't work in terms of stripping <p></p> tags
+        #
+        #@{$data_ar}=@{$block_ar} if ($data_ar && !$param_hr->{'nocache'});
 
 
         #  We don't want to render <block> tags, so start at
         #  child of results [WEBDYNE_NODE_CHLD_IX].
         #
         debug('calling render');
-        return $self->render({data => $block_ar->[$WEBDYNE_NODE_CHLD_IX], param => ($param_hr->{'param'} || $param_data_hr)}) || err();
+        my $html_sr=$self->render({data => $block_ar->[$WEBDYNE_NODE_CHLD_IX], param => ($param_hr->{'param'} || $param_data_hr)}) || 
+            return err();
+
+
+        #  And return after stripping leading and trailing <p>,</p>
+        #
+        ${$html_sr}=~s/^<p>//;
+        ${$html_sr}=~s/<\/p>$//;
+        return $html_sr;
+
 
     }
     else {
