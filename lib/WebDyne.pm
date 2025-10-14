@@ -3215,6 +3215,21 @@ sub include {
         local $/;
         my $html = <$fh>;
         $fh->close();
+        
+        
+        #  Need to create fake <block> tag to hold this if want to cache
+        #
+        if ($data_ar && !$param_hr->{'nocache'}) {
+        
+            #  Yes, want to cache this file, create fake block tag and force display
+            #
+            my @block=('block', { name=>'file', display=>1 }, [$html], undef, 1, 1, \$pn);
+            @{$data_ar}=@block;
+            
+        }
+        
+        #  And return HTML
+        #
         return \$html;
 
     }
