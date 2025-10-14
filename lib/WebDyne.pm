@@ -3212,12 +3212,10 @@ sub include {
         #
         debug('vanilla file include');
         my $fh=IO::File->new($pn, O_RDONLY) || return err("unable to open file '$fn' for read, $!");
-        my @html;
-        while (<$fh>) {
-            push @html, $_;
-        }
+        local $/;
+        my $html = <$fh>;
         $fh->close();
-        \join(undef, @html);
+        return \$html;
 
     }
 
