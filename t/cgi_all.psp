@@ -77,29 +77,5 @@ Submit Button:
 <defaults name="submit_button" />
 <p>
 
-<dump force>
 __PERL__
 1;
-__DATA__
-
-        textfield
-        textarea
-        filefield
-        password_field
-        hidden
-        checkbox
-        checkbox_group
-        submit
-        reset
-        defaults
-        radio_group
-        popup_menu
-        scrolling_list
-        image_button
-        start_form
-        end_form
-        start_multipart_form
-        end_multipart_form
-        isindex
-        dump
-        json

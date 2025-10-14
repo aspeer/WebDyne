@@ -42,6 +42,7 @@ $Data::Dumper::Indent=1;
 use HTML::Entities qw(decode_entities encode_entities);
 use CGI::Simple;
 use JSON;
+use Cwd qw(getcwd);
 
 
 #  Inherit from the Compile module, not loaded until needed though.
@@ -3048,7 +3049,8 @@ sub include {
     #  Get CWD
     #
     my $r=$self->r() || return err();
-    my $dn=(File::Spec->splitpath($r->filename()))[1] ||
+    #my $dn=(File::Spec->splitpath($r->filename()))[1] ||
+    my $dn=$self->cwd() ||
         return err('unable to determine cwd for requested file %s', $r->filename());
 
 
@@ -3074,8 +3076,13 @@ sub include {
             noperl   => 1,
             stage0   => 1,
             srce     => $pn,
+            
+            #  Note this - don't want implicit <p> tags for included files at body start,
+            #  i.e. <body><p>Some Text in included file may end up as <body><p><p> in initiator file 
+            implicit_body_p_tag => 0,
 
         );
+        
 
         #  compile spec'd file
         #
@@ -3083,7 +3090,6 @@ sub include {
             return err();
         my $block_data_ar=$container_ar->[1];
         debug('compiled to data_ar %s', Dumper($block_data_ar));
-
 
         #  Find the head or body tag
         #
@@ -3117,30 +3123,16 @@ sub include {
         $block_ar->[WEBDYNE_NODE_ATTR_IX]={name => $node, display => 1};
 
 
-        #  Strip any leading or trailing <p>. TODO Fix
-        #
-        #if (!ref($block_ar->[$WEBDYNE_NODE_CHLD_IX][0])) {
-        #    $block_ar->[$WEBDYNE_NODE_CHLD_IX][0]=~s/^<p>//;
-        #}
-        #if (!ref($block_ar->[$WEBDYNE_NODE_CHLD_IX][-1])) {
-        #    $block_ar->[$WEBDYNE_NODE_CHLD_IX][-1]=~s/<\/p>$//;
-        #}
-
-
         #  Incorporate into top level data so we don't have to do this again if
         #  called from tag
         #
-        #  TODO Fix - doesn't work if stripping leading/trailing <p></p>
-        #
-        #@{$data_ar}=@{$block_ar} if ($data_ar && !$param_hr->{'nocache'});
+        @{$data_ar}=@{$block_ar} if ($data_ar && !$param_hr->{'nocache'});
 
 
         #  Render included block and return after stripping <p></p>
         #
         my $html_sr=$self->render({data => $block_ar->[$WEBDYNE_NODE_CHLD_IX], param => $param_hr->{'param'}}) || 
             return err();
-        ${$html_sr}=~s/^<p>//;
-        ${$html_sr}=~s/<\/p>$//;
         return $html_sr;
         
 
@@ -3152,11 +3144,11 @@ sub include {
         debug('block render');
         my %option=(
 
-            nofilter => 1,
-
-            #noperl         =>  1,
-            stage1 => 1,
-            srce   => $pn
+            nofilter 	=> 1,
+            #noperl     => 1,
+            stage1 	=> 1,
+            srce   	=> $pn,
+            implicit_body_p_tag => 0,
 
         );
 
@@ -3194,22 +3186,13 @@ sub include {
         $block_ar->[$WEBDYNE_NODE_ATTR_IX]{'display'}=1;
 
 
-        #  Strip any leading or trailing <p>. See below TODO: Fix this
-        #
-        ##if (!ref($block_ar->[$WEBDYNE_NODE_CHLD_IX][0])) {
-        ##    $block_ar->[$WEBDYNE_NODE_CHLD_IX][0]=~s/^<p>//;
-        ##}
-        ##if (!ref($block_ar->[$WEBDYNE_NODE_CHLD_IX][-1])) {
-        ##    $block_ar->[$WEBDYNE_NODE_CHLD_IX][-1]=~s/<\/p>$//;
-        ##}
-
-
         #  Incorporate into top level data so we don't have to do this again if
         #  called from tag
         #
         #  COMMENTED OUT FOR NOW: Doesn't work in terms of stripping <p></p> tags
         #
-        #@{$data_ar}=@{$block_ar} if ($data_ar && !$param_hr->{'nocache'});
+        @{$data_ar}=@{$block_ar} if ($data_ar && !$param_hr->{'nocache'});
+        #@{$data_ar}=@{$block_ar} if $data_ar;
 
 
         #  We don't want to render <block> tags, so start at
@@ -3218,12 +3201,6 @@ sub include {
         debug('calling render');
         my $html_sr=$self->render({data => $block_ar->[$WEBDYNE_NODE_CHLD_IX], param => ($param_hr->{'param'} || $param_data_hr)}) || 
             return err();
-
-
-        #  And return after stripping leading and trailing <p>,</p>
-        #
-        ${$html_sr}=~s/^<p>//;
-        ${$html_sr}=~s/<\/p>$//;
         return $html_sr;
 
 
@@ -3630,7 +3607,7 @@ sub cwd {
 
     #  Return cwd of current psp file
     #
-    (File::Spec->splitpath(shift()->{'_r'}->filename()))[1];
+    (File::Spec->splitpath(shift()->{'_r'}->filename()))[1] || getcwd();
 
 }
 

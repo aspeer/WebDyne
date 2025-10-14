@@ -5,8 +5,10 @@
 <body>
 <p>
 Include PSP Test Body
+</p>
 <p>
 <include file="include.txt"/>
+</p>
 <perl method="include"/>
 <p>
 <include file="include.html.inc" body=1/>

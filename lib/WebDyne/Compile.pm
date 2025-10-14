@@ -200,14 +200,23 @@ sub compile {
 
     #  Tell it if we also want to see comments, use XML mode
     #
-    $tree_or->store_comments($WEBDYNE_STORE_COMMENTS);
+    $tree_or->store_comments(exists($param_hr->{'store_comments'})
+        ? $param_hr->{'store_comments'}
+        : $WEBDYNE_STORE_COMMENTS
+    );
     $tree_or->xml_mode(1);    # Older versions on HTML::TreeBuilder
 
 
     #  No space compacting ?
     #
-    $tree_or->ignore_ignorable_whitespace($WEBDYNE_COMPILE_IGNORE_WHITESPACE);
-    $tree_or->no_space_compacting($WEBDYNE_COMPILE_NO_SPACE_COMPACTING);
+    $tree_or->ignore_ignorable_whitespace(exists($param_hr->{'ignore_ignorable_whitespace'})
+        ? $param_hr->{'ignore_ignorable_whitespace'}
+        : $WEBDYNE_COMPILE_IGNORE_WHITESPACE
+    );
+    $tree_or->no_space_compacting(exists($param_hr->{'no_space_compacting'})
+        ? $param_hr->{'no_space_compacting'}
+        : $WEBDYNE_COMPILE_NO_SPACE_COMPACTING
+    );
 
 
     #  Get code ref closure of file to be parsed
@@ -219,8 +228,16 @@ sub compile {
     #  Muck around with strictness of P tags
     #
     #$tree_or->implicit_tags(0);
-    $tree_or->p_strict($WEBDYNE_COMPILE_P_STRICT);
-    $tree_or->implicit_body_p_tag($WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG);
+    $tree_or->p_strict(
+        exists($param_hr->{'p_strict'}) 
+            ? $param_hr->{'p_strict'} 
+            : $WEBDYNE_COMPILE_P_STRICT
+    );
+    $tree_or->implicit_body_p_tag(
+        exists($param_hr->{'implicit_body_p_tag'})
+            ? $param_hr->{'implicit_body_p_tag'}
+            : $WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG
+    );
 
 
     #  Now parse through the file, running eof at end as per HTML::TreeBuilder
