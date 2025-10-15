@@ -3083,6 +3083,13 @@ sub include {
 
         );
         
+        
+        #  Bring in WebDyne::Compile - going to need it
+        #
+        eval {require WebDyne::Compile}
+            || return $self->err_html(
+            errsubst('unable to load WebDyne:Compile, %s', $@ || 'undefined error'));
+        
 
         #  compile spec'd file
         #
@@ -3151,6 +3158,14 @@ sub include {
             implicit_body_p_tag => 0,
 
         );
+
+
+        #  Bring in WebDyne::Compile - going to need it
+        #
+        eval {require WebDyne::Compile}
+            || return $self->err_html(
+            errsubst('unable to load WebDyne:Compile, %s', $@ || 'undefined error'));
+
 
         #  compile spec'd file
         #
