@@ -58,7 +58,13 @@ my $local_fn=abs_path(__FILE__) . '.local';
     #  or starman). Activate in middleware section below if wanted with plackup
     #  or starman
     #
-    WEBDYNE_PLACK_MIDDLEWARE_STATIC => qr{^(?!.*\.psp$).*\.\w+$},
+    #  Serve any static file except .psp
+    #
+    #WEBDYNE_PLACK_MIDDLEWARE_STATIC => qr{^(?!.*\.psp$).*\.\w+$},
+    #
+    #  Just common files
+    #
+    WEBDYNE_PLACK_MIDDLEWARE_STATIC => qr{\.(?:css|js|jpg|jpeg|png|gif|svg|ico|woff2?|ttf|eot|otf|webp|map|txt|inc|htm|html)$}i,
     
     
     #  All other middleware. Uncomment/modify as required

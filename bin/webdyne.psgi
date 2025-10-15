@@ -28,7 +28,6 @@ use IO::String;
 use Data::Dumper;
 
 
-
 #  WebDyne Modules
 #
 use WebDyne;
@@ -67,6 +66,14 @@ if (!caller || exists $ENV{PAR_TEMP}) {
     if ($test_fg=grep {/^--test$/} @ARGV) {
         @ARGV=grep {!/^--test$/} @ARGV;
     }
+    
+    
+    #  Same with static handler
+    #
+    my $static_fg;
+    if ($static_fg=grep {/^--static$/} @ARGV) {
+        @ARGV=grep {!/^--static$/} @ARGV;
+    }
 
 
     #  Mac conflicts with Plack default port of 5000 - choose 5001
@@ -90,7 +97,7 @@ if (!caller || exists $ENV{PAR_TEMP}) {
 
     #  Done - run it
     #
-    $plack_or->run(&handler_build(&handler_static(\&handler)));
+    $plack_or->run(&handler_build($static_fg ? &handler_static(\&handler) : \&handler));
     exit 0;
 
 }
@@ -123,9 +130,20 @@ sub handler_static {
     #
     my $handler_cr=shift();
     if (my $qr=$WEBDYNE_PLACK_MIDDLEWARE_STATIC) {
+        my $root_dn;
+        if (-f $DOCUMENT_ROOT) {
+            #  DOCUMENT_ROOT is actually a file. Get the directory name
+            #
+            require File::Basename;
+            $root_dn=&File::Basename::dirname($DOCUMENT_ROOT)
+        }
+        else {
+            #  DOCUMENT_ROOT is a dirname, keep but check
+            $root_dn=$DOCUMENT_ROOT;
+            (-d $root_dn) || return err("$root_dn is not a directory, aborting");
+        }
         require Plack::Middleware::Static;
-        #$handler_cr=Plack::Middleware::Static->wrap($handler_cr, path=>qr{^(?!.*\.psp$).*\.\w+$}, root=>$DOCUMENT_ROOT );
-        $handler_cr=Plack::Middleware::Static->wrap($handler_cr, path=>$qr, root=>$DOCUMENT_ROOT );
+        $handler_cr=Plack::Middleware::Static->wrap($handler_cr, path=>$qr, root=>$root_dn );
     }
     return $handler_cr;
 
