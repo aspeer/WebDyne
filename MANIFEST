@@ -1308,3 +1308,4 @@ t/data/02-include_body.html
 t/data/02-include_body.tree              
 t/include_body.inc                       
 t/include_body.psp                       
+lib/WebDyne/Template.pm                  

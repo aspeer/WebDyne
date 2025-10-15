@@ -38,6 +38,7 @@ my %WriteMakefile=(
         'Capture::Tiny'     => 0,
         'Tie::IxHash'       => 0,
         'Devel::Confess'    => 0,
+        'CGI::Cookie'       => 0,
 
         #  Needed for installer - can be ignored if not using installer
         'Text::Template' => 0,
