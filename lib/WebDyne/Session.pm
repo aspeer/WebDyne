@@ -25,7 +25,6 @@ package WebDyne::Session;
 
 #  Compiler Pragma
 #
-sub BEGIN {$^W=0}
 use strict qw(vars);
 use vars   qw($VERSION);
 use warnings;
@@ -34,7 +33,6 @@ no warnings qw(uninitialized);
 
 #  WebDyne Modules.
 #
-
 use WebDyne::Session::Constant;
 use WebDyne::Util;
 
@@ -99,17 +97,8 @@ sub handler : method {
     debug("in %s handler, self $self, r $r, param_hr $param_hr", __PACKAGE__);
 
 
-    #  Get cookie from header
+    #  Get CGI object ref
     #
-    #my $header_hr=$r->headers_in() ||
-    #    return err('unable to get header hash ref');
-    #my $cookie=$header_hr->{'cookie'};
-    #debug("cookie $cookie");
-
-
-    #  Get cookies hash
-    #
-    #my %cookies=$cookie ? &CGI::Simple->cookie($cookie) : ();
     my $cgi_or=$self->CGI() ||
         return err('no CGI object availble');
     
@@ -120,15 +109,13 @@ sub handler : method {
     my $cookie_name=$WEBDYNE_SESSION_ID_COOKIE_NAME;
     
     
-    #  Get value
+    #  Get current value
     #
     my $session_id=$cgi_or->cookie($cookie_name);
 
 
     #  Get or set the cookie id
     #
-    #my $session_id;
-    #unless ($session_id=($cookies{$cookie_name} && $cookies{$cookie_name}->value())) {
     unless($session_id) {
 
 
@@ -157,7 +144,6 @@ sub handler : method {
 
         #  Create a cookie with our session id
         #
-        #my $cookie=CGI::Simple->cookie(
         my $cookie=$cgi_or->cookie(
 
             -name  => $cookie_name,
