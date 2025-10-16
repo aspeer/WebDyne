@@ -42,7 +42,7 @@ use WebDyne::Util;
 #  External modules
 #
 use Digest::MD5 qw(md5_hex);
-use CGI::Cookie;
+use CGI::Simple;
 
 
 #  Version information
@@ -101,26 +101,35 @@ sub handler : method {
 
     #  Get cookie from header
     #
-    my $header_hr=$r->headers_in() ||
-        return err('unable to get header hash ref');
-    my $cookie=$header_hr->{'cookie'};
-    debug("cookie $cookie");
+    #my $header_hr=$r->headers_in() ||
+    #    return err('unable to get header hash ref');
+    #my $cookie=$header_hr->{'cookie'};
+    #debug("cookie $cookie");
 
 
     #  Get cookies hash
     #
-    my %cookies=$cookie ? CGI::Cookie->parse($cookie) : ();
+    #my %cookies=$cookie ? &CGI::Simple->cookie($cookie) : ();
+    my $cgi_or=$self->CGI() ||
+        return err('no CGI object availble');
+    
 
 
     #  Get cookie name we are looking for
     #
     my $cookie_name=$WEBDYNE_SESSION_ID_COOKIE_NAME;
+    
+    
+    #  Get value
+    #
+    my $session_id=$cgi_or->cookie($cookie_name);
 
 
     #  Get or set the cookie id
     #
-    my $session_id;
-    unless ($session_id=($cookies{$cookie_name} && $cookies{$cookie_name}->value())) {
+    #my $session_id;
+    #unless ($session_id=($cookies{$cookie_name} && $cookies{$cookie_name}->value())) {
+    unless($session_id) {
 
 
         #  Debug
@@ -146,9 +155,10 @@ sub handler : method {
         debug("session_id generation success, generated id $session_id");
 
 
-        #  Create a cookie with out session id
+        #  Create a cookie with our session id
         #
-        my $cookie=CGI::Cookie->new(
+        #my $cookie=CGI::Simple->cookie(
+        my $cookie=$cgi_or->cookie(
 
             -name  => $cookie_name,
             -value => $session_id,
