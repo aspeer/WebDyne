@@ -574,11 +574,14 @@ sub handler : method {    # no subsort
                 #  And we are executing code '$_[3]->{'cache_cr'}->($_[0], $_[3]->{'srce_inode'}', so
                 #  $cache->($self, $srce_inode)
                 #
-                $eval_cr->($self, undef, \%param, q[$_[3]->{'cache_cr'}->($_[0], $_[3]->{'srce_inode'})], 0) ||
+                #  Change mind - back to not supplying r, CGI as standard. User can request
+                #
+                ##$eval_cr->($self, undef, \%param, q[$_[3]->{'cache_cr'}->($_[0], $_[3]->{'srce_inode'})], 0) ||
                 #  
                 #  Before we added r,CGI as params for eval_cr it looked like this
                 #
                 #$eval_cr->($self, undef, \%param, q[$_[1]->{'cache_cr'}->($_[0], $_[1]->{'srce_inode'})], 0) ||
+                $eval_cr->($self, undef, \%param, q[$_[1]->{'cache_cr'}->($_[0], $_[1]->{'srce_inode'})], 0) ||
                     return $self->err_html(
                     errsubst(
                         'error in cache code: %s', errstr() || $@ || 'no inode returned'
@@ -1054,8 +1057,12 @@ sub init_class {
 
             #  Note change here. Now supplying request handler, CGI instanced as standard params to all code calls
             #
-            #@eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $eval_param_hr);
-            @eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $self->{'_r'}, $cgi_or, $eval_param_hr);
+            #@eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $eval_param_hr);[B
+            #
+            #  Change of mind again. Don't supply r, CGI as standard, let user call for if wanted. Back to original code
+            #
+            #@eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $self->{'_r'}, $cgi_or, $eval_param_hr);
+            @eval=$tag_fg ? $eval_cr->($self, $eval_param_hr) : scalar $eval_cr->($self, $eval_param_hr);
             debug("eval call complete, $@, %s", Dumper(\@eval));
 
         };
@@ -1156,9 +1163,13 @@ sub init_class {
         local *_=$param_hr;
         ${$safe_or->varglob('_self')}=$self;
         ${$safe_or->varglob('_eval_param_hr')}=$eval_param_hr;
-        ${$safe_or->varglob('_r')}=$self->{'_r'};
-        ${$safe_or->varglob('_CGI')}=$cgi_or;
-        my $html_sr=$safe_or->reval("sub{$eval_text}->(\$::_self, \$::_r, \$::_CGI, \$::_eval_param_hr)", $WebDyne::WEBDYNE_EVAL_USE_STRICT) ||
+        #${$safe_or->varglob('_r')}=$self->{'_r'};
+        #${$safe_or->varglob('_CGI')}=$cgi_or;
+        #my $html_sr=$safe_or->reval("sub{$eval_text}->(\$::_self, \$::_r, \$::_CGI, \$::_eval_param_hr)", $WebDyne::WEBDYNE_EVAL_USE_STRICT) ||
+        #
+        #  Change mind, remove r and CGI as supplied params, user can request if wanted.
+        #
+        my $html_sr=$safe_or->reval("sub{$eval_text}->(\$::_self, \$::_eval_param_hr)", $WebDyne::WEBDYNE_EVAL_USE_STRICT) ||
             return errstr() ? err() : err($@ || 'undefined return from Safe->reval()');
 
 
