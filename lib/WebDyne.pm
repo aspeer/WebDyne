@@ -203,7 +203,7 @@ sub handler : method {    # no subsort
 
     #  Start timer so we can optionally keep stats on how long handler takes to run
     #
-    my $time=time();
+    my $time=($self->{'_time'}=time());
 
 
     #  Work out class and correct self ref
@@ -3599,7 +3599,8 @@ sub dump {
             push @html, Data::Dumper->Dump([\%inc], ['WebDyne::INC']);
             
         }
-            
+        
+        
 
         #  WebDyne constants
         #
@@ -3616,7 +3617,7 @@ sub dump {
             
         }
 
-            
+
         #  Version mandatory
         #
         my $version_ix=tie(my %version, 'Tie::IxHash', (
@@ -3625,6 +3626,11 @@ sub dump {
         ));
         push @html, Data::Dumper->Dump([\%version], ['WebDyne::VERSION']);
         
+
+        #  Render time
+        #
+        push @html, sprintf('Render time: %.3f sec', $self->render_time());
+            
         
         #  Wrap in a pre tag and return
         #
@@ -3691,6 +3697,16 @@ sub cache_mtime {
         $self->cache_filename(@_) || return err()};
     \(stat($inode_pn))[9] if $inode_pn;
 
+}
+
+
+sub render_time {
+
+    #  Time so far in render
+    #
+    my $self=shift();
+    return time-$self->{'_time'}
+    
 }
 
 
