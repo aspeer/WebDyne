@@ -81,7 +81,7 @@ table {
 
 <h1>WebDyne Error ^{status} </h1>
 <hr>
-<h2><i>!{! status_message($_[1]->status) !}</i></h2>
+<h2><i>!{! status_message($_[0]->r->status) !}</i></h2>
 
 <!-- Perl section to populate blocks with error messages, backtraces etc. -->
 
@@ -278,7 +278,15 @@ sub err_display {
 
     #  Get self ref, extract supplied params
     #
-    my ($self, $r, $cgi_or, $param_hr)=@_;
+    #  Note adjustment after cgi_or and request (r) not supplied automatically anymore
+    #
+    #my ($self, $r, $cgi_or, $param_hr)=@_;
+    my ($self, $param_hr)=@_;
+    
+    
+    #  Get CGI ref
+    #
+    my $cgi_or=$self->CGI();
 
 
     #  Local vars used across all routines

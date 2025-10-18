@@ -275,9 +275,10 @@ sub handler {
     debug("final handler status is $status, html:$html");
 
 
-	#  If html defined set header
+	#  If html defined set header content type unless already set during handler run
 	#
-	$r->content_type($WEBDYNE_CONTENT_TYPE_HTML) if $html;
+	$r->content_type($WEBDYNE_CONTENT_TYPE_HTML) 
+	    if ($html && !$r->content_type());
 
 	
 	#  Return structure
