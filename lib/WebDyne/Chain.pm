@@ -1,7 +1,7 @@
 #
-#  This file is part of WebDyne::Chain.
+#  This file is part of WebDyne.
 #
-#  This software is copyright (c) 2016 by Andrew Speer <andrew.speer@isolutions.com.au>.
+#  This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
 #
 #  This is free software; you can redistribute it and/or modify it under
 #  the same terms as the Perl 5 programming language system itself.
@@ -37,7 +37,7 @@ use Data::Dumper;
 #  Version information in a formate suitable for CPAN etc. Must be
 #  all on one line
 #
-$VERSION='1.052';
+$VERSION='2.013_358';
 
 
 #  Debug using WebDyne debug handler
@@ -487,14 +487,15 @@ current documentation in PDF format available in the WebDyne source /doc directo
 
 =head1 LICENSE and COPYRIGHT
 
-This file is part of WebDyne::Chain.
+This file is part of WebDyne.
 
-This software is copyright (c) 2016 by Andrew Speer <andrew.speer@isolutions.com.au>.
+This software is copyright (c) 2025 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 Full license text is available at:
+
 L<http://dev.perl.org/licenses/>
 
 =head1 Author

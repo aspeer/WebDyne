@@ -1,24 +1,14 @@
 #
+#  This file is part of WebDyne.
 #
-#  Copyright (C) 2006-2010 Andrew Speer <andrew@webdyne.org>. All rights
-#  reserved.
+#  This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
 #
-#  This file is part of WebDyne::Template.
+#  This is free software; you can redistribute it and/or modify it under
+#  the same terms as the Perl 5 programming language system itself.
 #
-#  WebDyne::Template is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  Full license text is available at:
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-#
+#  <http://dev.perl.org/licenses/>
 #
 package WebDyne::Template;
 
@@ -44,7 +34,7 @@ use File::Spec;
 #  Version information in a formate suitable for CPAN etc. Must be
 #  all on one line
 #
-$VERSION='1.002';
+$VERSION='2.013_358';
 
 
 #  Debug
@@ -452,17 +442,18 @@ Information on configuration and usage is availeble from the WebDyne site,
 http://webdyne.org/ - or from a snapshot of current documentation in PDF
 format available in the WebDyne module source /doc directory.
 
-=head1 Copyright and License
+=head1 LICENSE and COPYRIGHT
 
-Webdyne::Template is Copyright (C) 2006-2010 Andrew Speer. WebDyne::Session is
-dual licensed.  It is released as free software released under the Gnu
-Public License (GPL), but is also available for commercial use under a
-proprietary license - please contact the author for further information.
+This file is part of WebDyne.
 
-WebDyne::Session is written in Perl and uses modules from CPAN (the
-Comprehensive Perl Archive Network).  CPAN modules are Copyright (C) the
-owner/author, and are available in source from CPAN directly.  All CPAN
-modules used are covered by the Perl Artistic License.
+This software is copyright (c) 2025 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>
 
 =head1 Author
 

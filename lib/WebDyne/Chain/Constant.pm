@@ -1,7 +1,7 @@
 #
-#  This file is part of WebDyne::Chain.
+#  This file is part of WebDyne.
 #
-#  This software is copyright (c) 2016 by Andrew Speer <andrew.speer@isolutions.com.au>.
+#  This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
 #
 #  This is free software; you can redistribute it and/or modify it under
 #  the same terms as the Perl 5 programming language system itself.
@@ -24,7 +24,7 @@ local $^W=0;
 
 #  Version information. Must be all on one line
 #
-$VERSION='1.052';
+$VERSION='2.013_358';
 
 
 #  Constants are empty, but havin this file allows for import of DEBUG and othe

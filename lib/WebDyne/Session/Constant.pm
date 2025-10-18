@@ -1,24 +1,14 @@
 #
+#  This file is part of WebDyne.
 #
-#  Copyright (C) 2006-2010 Andrew Speer <andrew@webdyne.org>.
-#  All rights reserved.
+#  This software is copyright (c) 2025 by Andrew Speer <andrew.speer@isolutions.com.au>.
 #
-#  This file is part of WebDyne::Session.
+#  This is free software; you can redistribute it and/or modify it under
+#  the same terms as the Perl 5 programming language system itself.
 #
-#  WebDyne::Session is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  Full license text is available at:
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-#
+#  <http://dev.perl.org/licenses/>
 #
 
 
@@ -34,7 +24,7 @@ local $^W=0;
 
 #  Version information. Must be all on one line
 #
-$VERSION='1.004';
+$VERSION='2.013_358';
 
 
 #  The guts
