@@ -236,6 +236,23 @@ ${webdyne_constant}
 </td></tr>
 </block>
 
+
+<!-- WebDyne Version -->
+<block name="webdyne_version">
+<tr><td>
+<br>
+<br>
+<b>WebDyne Version:</b>
+</td></tr>
+
+<tr><td class="td">
+<br>
+<pre>
+${webdyne_version}
+</pre>
+</td></tr>
+</block>
+
 <!-- End of error table -->
 
 </table>
@@ -263,6 +280,7 @@ ${webdyne_constant}
 </html>
 
 __PERL__
+#!perl
 
 #  Need WebDyne Constants and some other modules
 #
@@ -524,7 +542,7 @@ sub err_display {
         #
         my $cgi_param_ix=tie(my %cgi_param, 'Tie::IxHash', %_);
         $cgi_param_ix->SortByKey();
-        my $cgi_param_dump=Dumper(\%cgi_param);
+        my $cgi_param_dump=Data::Dumper->Dump([\%cgi_param], ['WebDyne::CGI']);
         $cgi_param_dump=$cgi_or->escapeHTML($cgi_param_dump);
         $cgi_param_dump=~s/[\x00]+/,/g;
         $self->render_block('cgi_param', cgi_param_dump=>$cgi_param_dump );
@@ -539,7 +557,7 @@ sub err_display {
         #
         my $env_ix=tie(my %env, 'Tie::IxHash', %ENV);
         $env_ix->SortByKey();
-        my $env_dumper=Dumper(\%env);
+        my $env_dumper=Data::Dumper->Dump([\%env], ['WebDyne::ENV']);
         $env_dumper=$cgi_or->escapeHTML($env_dumper);
         $self->render_block('env', env=>$env_dumper );
 
@@ -553,18 +571,24 @@ sub err_display {
         #
         my $webdyne_constant_ix=tie(my %webdyne_constant, 'Tie::IxHash', map { $_=>${"WebDyne::$_"} } keys %WebDyne::Constant::Constant);
         $webdyne_constant_ix->SortByKey();
-        my $webdyne_constant_dumper=Dumper(\%webdyne_constant);
+        my $webdyne_constant_dumper=Data::Dumper->Dump([\%webdyne_constant], ['WebDyne::Constant']);
         $webdyne_constant_dumper=$cgi_or->escapeHTML($webdyne_constant_dumper);
         $self->render_block('webdyne_constant', webdyne_constant=>$webdyne_constant_dumper );
 
     }
+    
+    my $version_ix=tie(my %version, 'Tie::IxHash', (
+        VERSION         => $WebDyne::VERSION,
+        VERSION_GIT_REF => $WebDyne::VERSION_GIT_REF
+    ));
+    my $webdyne_version_dumper=Data::Dumper->Dump([\%version], ['WebDyne::VERSION']);
+    $self->render_block('webdyne_version', webdyne_version=>$webdyne_version_dumper);
 
 
     #  Render version and URI blocks
     #
     $self->render_block('uri') if $WEBDYNE_ERROR_URI_SHOW;
-    $self->render_block('version') if $WEBDYNE_ERROR_VERSION_SHOW;
-
+    #$self->render_block('version') if $WEBDYNE_ERROR_VERSION_SHOW;
 
 
     #  All done
