@@ -84,7 +84,7 @@ sub main {
         system($^X, qw(-c -w -x), @{$argv_ar}, $temp_fn)
     };
     $stderr=~s/\Q$temp_fn\E/$srce_pn/gs;
-    print $stderr, $/;
+    print $stderr;
     unlink($temp_fn);
     
 
