@@ -50,6 +50,12 @@ $VERSION='2.014';
 my (%Package, @Err);
 
 
+#  Bring the WEBDYNE_DEBUG env var into package var so available via Plack handler,
+#  which normally replaces env with its own
+#
+$Package{'WEBDYNE_DEBUG'}=$ENV{'WEBDYNE_DEBUG'};
+
+
 #  All done. Positive return
 #
 1;
@@ -236,12 +242,14 @@ sub debug {
 
     #  Filtering ?
     #
-    if ($ENV{'WEBDYNE_DEBUG'} && ($ENV{'WEBDYNE_DEBUG'} ne '1')) {
+    #if ($ENV{'WEBDYNE_DEBUG'} && ($ENV{'WEBDYNE_DEBUG'} ne '1')) {
+    if ($Package{'WEBDYNE_DEBUG'} && ($Package{'WEBDYNE_DEBUG'} ne '1')) {
 
 
         #  Yes - check we are getting from caller we are interested in
         #
-        my @debug_target=split(/[,;]/, $ENV{'WEBDYNE_DEBUG'});
+        #my @debug_target=split(/[,;]/, $ENV{'WEBDYNE_DEBUG'});
+        my @debug_target=split(/[,;]/, $Package{'WEBDYNE_DEBUG'});
         foreach my $debug_target (@debug_target) {
             if (($caller eq $debug_target) || ($method=~/\Q$debug_target\E$/)) {
 
