@@ -287,6 +287,14 @@ sub uri {
 }
 
 
+sub document_root {
+
+    my $r=shift();
+    @_ ? $r->{'document_root'}=shift() : $r->{'document_root'} || $ENV{'DOCUMENT_ROOT'}
+    
+}
+
+
 sub output_filters {
 
     #  Stub
@@ -369,7 +377,6 @@ sub args {
     return $ENV{'QUERY_STRING'};
     
 }
-
 
 
 sub AUTOLOAD {

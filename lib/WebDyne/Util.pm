@@ -225,6 +225,7 @@ sub debug {
         return undef;
     my $method=(caller(1))[3] || 'main';
     (my $subroutine=$method)=~s/^.*:://;
+    (my $class=$method)=~s/::\Q${subroutine}\E$//;
 
 
     #  Time in human readable format
@@ -254,7 +255,8 @@ sub debug {
             if (($caller eq $debug_target) || ($method=~/\Q$debug_target\E$/)) {
 
                 #CORE::print $debug_fh "[$timestamp $subroutine] ", $_[1] ? sprintf(shift(), @_) : $_[0], $/;
-                CORE::print $debug_fh "[$timestamp $subroutine] ", $debug, $/;
+                #CORE::print $debug_fh "[$timestamp $subroutine] ", $debug, $/;
+                CORE::print $debug_fh "[$timestamp $class ($subroutine)] ", $debug, $/;
             }
         }
     }
@@ -263,7 +265,8 @@ sub debug {
         #  No filtering. Open floodgates
         #
         #CORE::print $debug_fh "[$timestamp $subroutine] ", $_[1] ? sprintf(shift(), @_) : $_[0], $/;
-        CORE::print $debug_fh "[$timestamp $subroutine] ", $debug, $/;
+        #CORE::print $debug_fh "[$timestamp $subroutine] ", $debug, $/;
+        CORE::print $debug_fh "[$timestamp $class $subroutine] ", $debug, $/;
     }
 
 }
