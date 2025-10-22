@@ -3063,6 +3063,7 @@ sub include {
     #my $dn=(File::Spec->splitpath($r->filename()))[1] ||
     my $dn=$self->cwd() ||
         return err('unable to determine cwd for requested file %s', $r->filename());
+    debug("dn: $dn");
 
 
     #  Any param must supply a file name as an attribute
@@ -3653,10 +3654,22 @@ sub cwd {
     #  Return cwd of current psp file
     #
     my $self=shift();
-    debug($self);
-    my $dn=(File::Spec->splitpath($self->{'_r'}->filename()))[1];
-    return File::Spec->rel2abs($dn) || getcwd(); 
-    #return (File::Spec->splitpath(shift()->{'_r'}->filename()))[1] || getcwd();
+    return $self->{'_cwd'} ||= do {
+        debug("$self, fn: %s", $self->{'_r'}->filename());
+        my $fn=$self->{'_r'}->filename();
+        my $dn;
+        unless (-d ($dn=File::Spec->rel2abs($fn))) {
+            #  Not a directory, must be file
+            #
+            $dn=(File::Spec->splitpath($self->{'_r'}->filename()))[1] || getcwd();
+            debug("return calculated dn: $dn");
+            $dn;
+        }
+        else {
+            debug("return existing dn: $dn");
+            $dn;
+        }
+    }
 
 }
 
