@@ -84,6 +84,9 @@ if (!caller || exists $ENV{PAR_TEMP}) {
         #
         $DOCUMENT_DEFAULT=File::Spec->catfile($test_dn, 'index.psp');
     }
+    else {
+        $DOCUMENT_DEFAULT=$ENV{'DOCUMENT_DEFAULT'} || $DOCUMENT_DEFAULT;
+    }
 
 
     #  Mac conflicts with Plack default port of 5000 - choose 5001
