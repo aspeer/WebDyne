@@ -518,7 +518,7 @@ sub perl {
         #  Inline tag, set global var to this element so any extra text can be
         #  added here
         #
-        $self->{'_html_perl_or'}=$html_perl_or;
+        $self->_html_perl_or($html_perl_or);
         $self->_text_block_tag('perl') unless $self->_text_block_tag();
 
 
@@ -799,8 +799,9 @@ sub text {
         #  is treated specially when rendering
         #
         debug('in __PERL__ tag, appending text to __PERL__ block');
-        $self->{'_html_perl_or'}{'perl'}.=$text;
-        $self->{'_html_perl_or'}{'_line_no_tag_end'}=$self->{'_line_no'};
+        my $html_perl_or=$self->_html_perl_or();
+        $html_perl_or->{'perl'}.=$text;
+        $html_perl_or->{'_line_no_tag_end'}=$self->{'_line_no'};
 
 
     }
@@ -821,10 +822,12 @@ sub text {
         debug('found __PERL__ tag');
         $self->_text_block_tag('perl');
         $self->implicit(0);
-        $self->push_content($self->{'_html_perl_or'}=HTML::Element->new('perl', inline => 1));
+
+        my $html_perl_or;
+        $self->push_content($self->_html_perl_or($html_perl_or=HTML::Element->new('perl', inline => 1)));
         debug('insert line_no: %s into object ref: %s', @{$self}{qw(_line_no _html_perl_or)});
-        @{$self->{'_html_perl_or'}}{'_line_no', '_line_no_tag_end'}=@{$self}{qw(_line_no _line_no)};
-        $self->{'_html_perl_or'}{'_code'}++;
+        @{$html_perl_or}{qw(_line_no _line_no_tag_end)}=@{$self}{qw(_line_no _line_no)};
+        $html_perl_or->{'_code'}++;
         
 
     }
@@ -1013,7 +1016,7 @@ sub _get_set {
     
 }
 
-map { eval("sub $_ { &_get_set($_, \@_) }") }  qw(_text_block_tag _line_no _line_no_next _line_no_start);
+map { eval("sub $_ { &_get_set($_, \@_) }") }  qw(_text_block_tag _line_no _line_no_next _line_no_start _html_perl_or);
 
 
 #  Done

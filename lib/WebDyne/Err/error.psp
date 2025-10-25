@@ -251,6 +251,25 @@ ${webdyne_constant}
 ${webdyne_version}
 </pre>
 </td></tr>
+
+
+<!-- Error internals -->
+<block name="webdyne_err_internal" dump=1>
+<tr><td>
+<br>
+<br>
+<b>Error internals:</b>
+</td></tr>
+
+<tr><td class="td">
+<br>
+<pre>
+${webdyne_err_internal}
+</pre>
+</td></tr>
+
+
+
 </block>
 
 <!-- End of error table -->
@@ -276,6 +295,7 @@ ${webdyne_version}
 <b>Version Information:</b>&nbsp; WebDyne Version:!{! $WebDyne::VERSION !}
 </block>
 
+
 </body>
 </html>
 
@@ -300,6 +320,7 @@ sub err_display {
     #
     #my ($self, $r, $cgi_or, $param_hr)=@_;
     my ($self, $param_hr)=@_;
+    tie(my %err_internal, Tie::IxHash);
     
     
     #  Get CGI ref
@@ -312,24 +333,38 @@ sub err_display {
     my $errstr=$param_hr->{'errstr'};
     my @errstack=@{$param_hr->{'errstack_ar'}};
     my $errtrace_ar=pop @errstack;
+    @err_internal{qw(errstr errstack_ errtrace_ar)}=(
+        $errstr,
+        \@errstack,
+        $errtrace_ar
+    );
 
 
     #  Get data block from paramaters and load line numbers and other params
     #
-    my $data_ar=$param_hr->{'data_ar'};
+    my $data_ar=pop @{$param_hr->{'data_ar'}};
     my ($html_line_no_tag_start, $html_line_no_tag_end)=$self->data_ar_html_line_no($data_ar) if $data_ar;
     my $inline=$data_ar->[$WEBDYNE_NODE_ATTR_IX] && $data_ar->[$WEBDYNE_NODE_ATTR_IX]->{'inline'};
+    @err_internal{qw(html_line_no_tag_start html_line_no_tag_end data_ar)}=(
+        $html_line_no_tag_start,
+        $html_line_no_tag_end,
+        $data_ar
+    );
 
 
     #  Get any eval text if supplied
     #
     my $eval_text_sr=$param_hr->{'err_eval_perl_sr'};
+    $err_internal{'eval_text_sr'}=$eval_text_sr;
+    
 
 
     #  Source file name and tag start/finish line numbers for this error
     #
     my $srce_fn=$self->data_ar_html_srce_fn($data_ar) if $data_ar;
     my $srce_fn_display=$srce_fn if $WEBDYNE_ERROR_SOURCE_FILENAME_SHOW;
+    $err_internal{'srce_fn'}=$srce_fn;
+    
 
 
     #  Display error string
@@ -387,8 +422,8 @@ sub err_display {
     if ($WEBDYNE_ERROR_BACKTRACE_SHOW) {
 
 
-            #  Iterate through error backtrace
-            #
+        #  Iterate through error backtrace
+        #
         my $webdyne_module_seen;
         my $webdyne_backtrace_short=$WEBDYNE_ERROR_BACKTRACE_SHORT;
         for (my $i=1; defined($errtrace_ar->[$i]); $i++) {
@@ -583,6 +618,12 @@ sub err_display {
     ));
     my $webdyne_version_dumper=Data::Dumper->Dump([\%version], ['WebDyne::VERSION']);
     $self->render_block('webdyne_version', webdyne_version=>$webdyne_version_dumper);
+
+
+    #  Only for internal debugging when error handler goes wrong
+    #
+    #my $webdyne_err_internal_dumper=Data::Dumper->Dump([\%err_internal], ['WebDyne::ERROR']);
+    #$self->render_block('webdyne_err_internal', webdyne_err_internal=>$webdyne_err_internal_dumper);
 
 
     #  Render version and URI blocks
