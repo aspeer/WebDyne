@@ -93,6 +93,7 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 
 
 #  Update - get from CGI module, add special dump tag
+#
 #%CGI_TAG_IMPLICIT=map {$_ => 1} (
 #
 #    @{$CGI::EXPORT_TAGS{':form'}},
@@ -137,11 +138,6 @@ map {$HTML::Tagset::isTableElement{$_}++} keys %CGI_TAG_WEBDYNE;
 push @HTML::TreeBuilder::p_closure_barriers, keys %CGI_TAG_WEBDYNE;
 
 
-#  Local vars neeeded for cross sub comms
-#
-our $HTML_Perl_or;
-
-
 #  All done. Positive return
 #
 1;
@@ -172,13 +168,6 @@ sub parse_fh {
     debug("parse $html_fh");
 
 
-    #  Turn off HTML_Perl object global, in case left over from a __PERL__ segment
-    #  at the bottom of the last file parsed. Should never happen, as we check in
-    #  delete() also
-    #
-    $HTML_Perl_or && ($HTML_Perl_or=$HTML_Perl_or->delete());
-    
-    
     #  Delete any left over wedge segments
     #
     delete $tree_or->{'_html_wedge_ar'};
@@ -245,11 +234,6 @@ sub delete {
     #
     my $self=shift();
     debug('delete');
-
-
-    #  Get rid of inline HTML object, if still around
-    #
-    $HTML_Perl_or && ($HTML_Perl_or=$HTML_Perl_or->delete());
 
 
     #  Reset script and line number vars
@@ -534,7 +518,7 @@ sub perl {
         #  Inline tag, set global var to this element so any extra text can be
         #  added here
         #
-        $HTML_Perl_or=$html_perl_or;
+        $self->{'_html_perl_or'}=$html_perl_or;
         $self->_text_block_tag('perl') unless $self->_text_block_tag();
 
 
@@ -815,11 +799,8 @@ sub text {
         #  is treated specially when rendering
         #
         debug('in __PERL__ tag, appending text to __PERL__ block');
-
-        #  Strip leading CR from Perl code so line numbers in errors make sense
-        #unless ($HTML_Perl_or->{'perl'}) { $text=~s/^\n// }
-        $HTML_Perl_or->{'perl'}.=$text;
-        $HTML_Perl_or->{'_line_no_tag_end'}=$self->{'_line_no'};
+        $self->{'_html_perl_or'}{'perl'}.=$text;
+        $self->{'_html_perl_or'}{'_line_no_tag_end'}=$self->{'_line_no'};
 
 
     }
@@ -840,11 +821,11 @@ sub text {
         debug('found __PERL__ tag');
         $self->_text_block_tag('perl');
         $self->implicit(0);
-        $self->push_content($HTML_Perl_or=HTML::Element->new('perl', inline => 1));
-        debug("insert line_no: %s into object ref $HTML_Perl_or", $self->{'_line_no'});
-        @{$HTML_Perl_or}{'_line_no', '_line_no_tag_end'}=@{$self}{qw(_line_no _line_no)};
+        $self->push_content($self->{'_html_perl_or'}=HTML::Element->new('perl', inline => 1));
+        debug('insert line_no: %s into object ref: %s', @{$self}{qw(_line_no _html_perl_or)});
+        @{$self->{'_html_perl_or'}}{'_line_no', '_line_no_tag_end'}=@{$self}{qw(_line_no _line_no)};
+        $self->{'_html_perl_or'}{'_code'}++;
         
-        $HTML_Perl_or->{'_code'}++;
 
     }
     elsif ($text=~/^\W*__END__/) {
