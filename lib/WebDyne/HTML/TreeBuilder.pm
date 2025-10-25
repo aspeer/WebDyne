@@ -139,7 +139,7 @@ push @HTML::TreeBuilder::p_closure_barriers, keys %CGI_TAG_WEBDYNE;
 
 #  Local vars neeeded for cross sub comms
 #
-our ($Line_no, $Line_no_next, $Line_no_start, $HTML_Perl_or);
+our $HTML_Perl_or;
 
 
 #  All done. Positive return
@@ -168,7 +168,7 @@ sub parse_fh {
 
     #  Get self ref, file handle
     #
-    my ($self, $html_fh)=@_;
+    my ($tree_or, $html_fh)=@_;
     debug("parse $html_fh");
 
 
@@ -177,11 +177,11 @@ sub parse_fh {
     #  delete() also
     #
     $HTML_Perl_or && ($HTML_Perl_or=$HTML_Perl_or->delete());
-    #undef $Text_fg;
-    undef $Line_no;
-    undef $Line_no_start;
-    undef $Line_no_next;
-    delete $self->{'_html_wedge_ar'};
+    
+    
+    #  Delete any left over wedge segments
+    #
+    delete $tree_or->{'_html_wedge_ar'};
 
 
     #  Read over file handle until we get to the first non-comment line (ignores auto added copyright statements)
@@ -190,8 +190,8 @@ sub parse_fh {
         my $pos=tell($html_fh);
         my $line=<$html_fh>;
         if ($line=~/^#/) {
-            ($Line_no ||= 0)++;
-            $Line_no_next=$Line_no+1;
+            ($tree_or->{'_line_no'} ||= 0)++;
+            $tree_or->{'_line_no_next'}=$tree_or->{'_line_no'}+1;
             next;
         }
         else {
@@ -210,13 +210,13 @@ sub parse_fh {
         #  Read in lines of HTML, allowing for "wedged" bits, e.g. from start_html
         #
         my $line;
-        my $html=@{$self->{'_html_wedge_ar'}} ? shift @{$self->{'_html_wedge_ar'}} : ($line=<$html_fh>);
+        my $html=@{$tree_or->{'_html_wedge_ar'}} ? shift @{$tree_or->{'_html_wedge_ar'}} : ($line=<$html_fh>);
         if ($line) {
             debug("line *$line*");
             my @cr=($line=~/\n/g);
-            $Line_no=$Line_no_next || 1;
-            $Line_no_next=$Line_no+@cr;
-            debug("Line $Line_no, Line_no_next $Line_no_next, Line_no_start $Line_no_start cr %s", scalar @cr);
+            $tree_or->{'_line_no'}=($tree_or->{'_line_no_next'} || 1);
+            $tree_or->{'_line_no_next'}=$tree_or->{'_line_no'}+@cr;
+            debug("Line %s, Line_no_next %s, Line_no_start %s cr %s", @{$tree_or}{qw(_line_no _line_no_next _line_no_start)}, scalar @cr);
         }
 
 
@@ -254,10 +254,6 @@ sub delete {
 
     #  Reset script and line number vars
     #
-    #undef $Text_fg;
-    undef $Line_no;
-    undef $Line_no_next;
-    undef $Line_no_start;
     delete $self->{'_html_wedge_ar'};
 
 
@@ -284,7 +280,7 @@ sub tag_parse {
 
     #  Debug
     #
-    debug("tag_parse $method, *%s*, line $Line_no, attr_hr:%s line_no_start $Line_no_start", $tag, Dumper($attr_hr));
+    debug("tag_parse $method, *%s*, line_no: %s, line_no_start: %s, attr_hr:%s ", $tag, @{$self}{qw(_line_no _line_no_start)}, Dumper($attr_hr));
 
 
     #  Get the parent tag
@@ -444,8 +440,8 @@ sub tag_parse {
 
     #  Insert line number if possible
     #
-    debug("insert line_no $Line_no, line_no_start $Line_no_start into object ref $html_or");
-    ref($html_or) && (@{$html_or}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no));
+    debug("insert line_no: %s, line_no_start: %s into object ref $html_or", @{$self}{qw(_line_no _line_no_start)});
+    ref($html_or) && (@{$html_or}{'_line_no', '_line_no_tag_end'}=(@{$self}{qw(_line_no_start _line_no)}));
 
 
     #  Returm object ref
@@ -483,7 +479,6 @@ sub script {
     else {
 
         push @{$self->{'_script_stack'}}, undef;
-        #$Text_fg ||= 'script';
         $self->_text_block_tag('script') unless $self->_text_block_tag();
     }
 
@@ -499,7 +494,6 @@ sub json {
     #  No special handling needed, just log for debugging purposes
     #
     my ($self, $method)=(shift, shift);
-    #$Text_fg ||= 'json';
     $self->_text_block_tag('json') unless $self->_text_block_tag();
     debug("json self $self, method $method, @_ text_block_tag %s", $self->_text_block_tag());
     $self->$method(@_);
@@ -511,7 +505,6 @@ sub style {
 
     my ($self, $method)=(shift, shift);
     debug('style');
-    #$Text_fg ||= 'style';
     $self->_text_block_tag('style') unless $self->_text_block_tag();
     $self->$method(@_);
 
@@ -542,7 +535,6 @@ sub perl {
         #  added here
         #
         $HTML_Perl_or=$html_perl_or;
-        #$Text_fg ||= 'perl';
         $self->_text_block_tag('perl') unless $self->_text_block_tag();
 
 
@@ -571,10 +563,10 @@ sub process {
     #
     my ($self, $text)=@_;
     debug("process $text");
-    my $or=HTML::Element->new('perl', inline => 1, perl => $text);
-    debug("insert line_no $Line_no into object ref $or");
-    @{$or}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no);
-    $self->tag_parse('SUPER::text', $or)
+    my $html_or=HTML::Element->new('perl', inline => 1, perl => $text);
+    debug("insert line_no: %s into object ref $html_or", $self->{'_line_no'});
+    @{$html_or}{'_line_no', '_line_no_tag_end'}=@{$self}{qw(_line_no_start _line_no)};
+    $self->tag_parse('SUPER::text', $html_or)
 
 }
 
@@ -588,17 +580,16 @@ sub start {
     my ($self, $tag)=(shift, shift);
     my $text=$_[2];
     ref($tag) || ($tag=lc($tag));
-    debug("$self start tag '$tag' Line_no $Line_no, @_");
+    debug("$self start tag '$tag' line_no: %s, @_", $self->{'_line_no'});
     
     my $html_or;
-    #if ($Text_fg) {
     if ($self->_text_block_tag()) {
         $html_or=$self->text($text)
     }
     else {
         my @cr=($text=~/\n/g);
-        $Line_no_start=$Line_no-@cr;
-        debug("tag $tag line_no $Line_no, line_no_start $Line_no_start");
+        $self->{'_line_no_start'}=$self->{'_line_no'}-@cr;
+        debug("tag $tag line_no: %s, line_no_start: %s", @{$self}{qw(_line_no _line_no_start)});
         $html_or=$self->tag_parse('SUPER::start', $tag, @_);
 
     }
@@ -615,9 +606,7 @@ sub end {
     #
     my ($self, $tag)=(shift, shift);
     ref($tag) || ($tag=lc($tag));
-    #my $text_block_tag=$self->{'_text_block_tag'};
-    #debug("$self end tag: %s,%s text_fg $Text_fg, line $Line_no", Dumper($tag, \@_));
-    debug("$self end tag: %s,%s text_block_tag: %s, line $Line_no", Dumper($tag, \@_), $self->_text_block_tag());
+    debug("$self end tag: %s,%s text_block_tag: %s, line_no: %s", Dumper($tag, \@_), $self->_text_block_tag(), $self->{'_line_no'});
     
     
     #  Var to hold HTML::Element ref if returned, but most methods don't seem to return a HTML ref, just an integer ?
@@ -649,7 +638,6 @@ sub end {
             #  Set the Text_fg to whatever the webdyne tag was (e.g. perl, etc), that way they will see a match and
             #  turn off text mode. NOTE: Not sure this works ?
             #
-            #$Text_fg &&= $webdyne_tag_or->tag();
             $self->_text_block_tag($webdyne_tag_or->tag()) if $self->_text_block_tag();
             debug("text_block_tag now %s, ending $webdyne_tag", $self->_text_block_tag());
             $self->SUPER::end($webdyne_tag, @_);
@@ -662,7 +650,6 @@ sub end {
 
             #  Can now unset text flag. See NOTE above, need to check this
             #
-            #$Text_fg=undef;
             $self->_text_block_tag(undef);
 
 
@@ -724,7 +711,6 @@ sub end {
             #  End perl tag
             #
             debug("end $perl_tag now");
-            #$Text_fg &&= $perl_tag_or->tag();
             $self->_text_block_tag($perl_tag_or->tag()) if $self->_text_block_tag();
             debug("text_block_tag now %s, ending $perl_tag", $self->_text_block_tag());
             $self->SUPER::end($perl_tag, @_);
@@ -734,7 +720,6 @@ sub end {
             #
             debug("end $tag now");
             $self->SUPER::end($tag, @_);
-            #$Text_fg=undef;
             $self->_text_block_tag(undef);
 
 
@@ -751,21 +736,17 @@ sub end {
         elsif (0) {
 
             debug('null script stack pop, ignoring');
-            #$Text_fg=undef;
             $self->_text_block_tag(undef);
             return $ret=$self->SUPER::end($tag, @_);
         }
     }
 
 
-    #if ($Text_fg && ($tag eq $Text_fg)) {
     if ($self->_text_block_tag() && ($tag eq $self->_text_block_tag())) {
         debug("match on tag $tag to text_block_tag %s, clearing text_block_tag", $self->_text_block_tag());
-        #$Text_fg=undef;
         $self->_text_block_tag(undef);
         $ret=$self->SUPER::end($tag, @_)
     }
-    #elsif ($Text_fg) {
     elsif ($self->_text_block_tag()) {
         debug('text segment via text_block_tag %s, passing to text handler', $self->_text_block_tag());
         $ret=$self->text($_[0])
@@ -827,7 +808,6 @@ sub text {
 
     #  Are we in an inline perl block ?
     #
-    #if ($Text_fg eq 'perl') {
     if ($self->_text_block_tag() eq 'perl') {
 
 
@@ -839,7 +819,7 @@ sub text {
         #  Strip leading CR from Perl code so line numbers in errors make sense
         #unless ($HTML_Perl_or->{'perl'}) { $text=~s/^\n// }
         $HTML_Perl_or->{'perl'}.=$text;
-        $HTML_Perl_or->{'_line_no_tag_end'}=$Line_no;
+        $HTML_Perl_or->{'_line_no_tag_end'}=$self->{'_line_no'};
 
 
     }
@@ -858,12 +838,12 @@ sub text {
         #  bottom of the file.
         #
         debug('found __PERL__ tag');
-        #$Text_fg='perl';
         $self->_text_block_tag('perl');
         $self->implicit(0);
         $self->push_content($HTML_Perl_or=HTML::Element->new('perl', inline => 1));
-        debug("insert line_no $Line_no into object ref $HTML_Perl_or");
-        @{$HTML_Perl_or}{'_line_no', '_line_no_tag_end'}=($Line_no, $Line_no);
+        debug("insert line_no: %s into object ref $HTML_Perl_or", $self->{'_line_no'});
+        @{$HTML_Perl_or}{'_line_no', '_line_no_tag_end'}=@{$self}{qw(_line_no _line_no)};
+        
         $HTML_Perl_or->{'_code'}++;
 
     }
@@ -884,7 +864,7 @@ sub text {
 
             #  Meeds subst. Get rid of cr's at start and end of text after a <perl> tag, stuffs up formatting in <pre> sections
             #
-            debug("found subst tag line_no_start $Line_no_start, line_no $Line_no, text '$text'");
+            debug("found subst tag line_no_start: %s, line_no: %s, text '$text'", @{$self}{qw(_line_no_start _line_no)});
             my @cr=($text=~/\n/g);
             if (my $html_or=$self->{'_pos'}) {
                 debug("parent %s", $html_or->tag());
@@ -898,12 +878,11 @@ sub text {
                 }
             }
 
-            my $or=HTML::Element->new('subst');
-            my $line_no_start=$Line_no;
-            debug("insert line_no $Line_no_start, line_no_tag_end $Line_no into object ref $or for text $text, cr %s", scalar @cr);
-            @{$or}{'_line_no', '_line_no_tag_end'}=($line_no_start, $Line_no);
-            $or->push_content($text);
-            $self->tag_parse('SUPER::text', $or)
+            my $html_or=HTML::Element->new('subst');
+            debug("insert line_no: %s, line_no_tag_end: %s into object ref $html_or for text $text, cr %s", @{$self}{qw(_line_no_start _line_no)}, scalar @cr);
+            @{$html_or}{'_line_no', '_line_no_tag_end'}=@{$self}{qw(_line_no _line_no)};
+            $html_or->push_content($text);
+            $self->tag_parse('SUPER::text', $html_or)
         }
         else {
 
@@ -926,19 +905,19 @@ sub text {
 
 sub comment {
 
-
     #  Handle comments in HTML. Get HTML::Element ref
     #
-    my $self=shift()->SUPER::comment(@_);
-    debug("$self comment: %s", Dumper(\@_));
+    my $self=shift();
+    my $html_or=$self->SUPER::comment(@_);
+    debug("$self html_or: $html_or comment: %s", Dumper(\@_));
 
 
     #  Change tag to 'comment' from '~comment' so we can call comment render sub in WebDyne::HTML::Tidy (can't call sub starting with ~ in perl)
     #
     #$self->tag('comment'); # No longer needed, make ~comment sub work in WebDyne::HTML::Tiny
-    debug("insert line_no $Line_no into object ref $self");
-    @{$self}{'_line_no', '_line_no_tag_end'}=($Line_no_start, $Line_no);
-    $self;
+    debug("insert line_no: %s into object ref $self", $self->{'_line_no'});
+    @{$html_or}{qw(_line_no _line_no_tag_end)}=@{$self}{qw(_line_no_start _line_no)};
+    return $html_or
 
 }
 
