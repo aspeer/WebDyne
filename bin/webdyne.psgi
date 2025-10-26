@@ -39,7 +39,7 @@ use WebDyne::Request::PSGI::Constant;
 
 #  Version information
 #
-$VERSION='2.015';
+$VERSION='2.016';
 
 
 #  Test file to use if no DOCUMENT_ROOT found
