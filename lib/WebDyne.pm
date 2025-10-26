@@ -1469,7 +1469,6 @@ sub render {
     #
     my $data_ar=$param_hr->{'data'} || $self->{'_perl'}[0][WEBDYNE_NODE_CHLD_IX] ||
         return err('unable to get HTML data array');
-
     #$self->{'_perl'}[0] ||= $data_ar;
 
 
@@ -1529,6 +1528,7 @@ sub render {
         #  wrong
         #
         push @{$self->{'_data_ar'}},$data_ar;
+        unshift @{$self->{'_perl_data'}}, $param_data_hr;
 
 
         #  Debug
@@ -1666,6 +1666,7 @@ sub render {
         #  No errors, pop error handler stack
         #
         pop @{$self->{'_data_ar'}};
+        shift @{$self->{'_perl_data'}};
         
 
         #  Return
@@ -2454,7 +2455,7 @@ sub perl {
 
         #  May be inline code params to supply to this block
         #
-        my $perl_param_hr=$attr_hr->{'param'};
+        my $perl_param_hr=$attr_hr->{'param'} || $self->{'_perl_data'}[0];
         debug("found inline perl code %s, param %s", Dumper(\$perl_code, $perl_param_hr));
 
 
