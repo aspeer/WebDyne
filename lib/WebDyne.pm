@@ -58,7 +58,7 @@ use Exporter qw(import);
 
 #  Version information
 #
-$VERSION='2.017';
+$VERSION='2.018';
 chomp($VERSION_GIT_REF=do { local (@ARGV, $/) = ($_=__FILE__.'.tmp'); <> if -f $_ });
 
 
