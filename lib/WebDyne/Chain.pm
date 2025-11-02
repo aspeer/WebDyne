@@ -73,7 +73,7 @@ errnofatal(1);
 #
 BEGIN {
     eval {require Time::HiRes;    Time::HiRes->import('time')};
-    eval {require Devel::Confess; Devel::Confess->import()};
+    eval {require Devel::Confess; Devel::Confess->import(qw(no_warnings))};
 }
 
 
