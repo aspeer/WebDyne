@@ -6,6 +6,11 @@ use strict qw(vars);
 use warnings;
 use vars   qw($VERSION);
 
+#  Don't let local WEBDYNE_CONF be loaded
+#
+BEGIN {
+    $ENV{'WEBDYNE_CONF'}='.' unless ($ENV{'WEBDYNE_TEST_FILE_PREFIX'} eq '03');
+}
 
 #  Load
 #
@@ -41,10 +46,6 @@ exit(${&main(\@ARGV) || die err ()} || 0);    # || 0 stops warnings
 
 #==================================================================================================
 
-
-BEGIN {
-    $ENV{'WEBDYNE_CONF'}='.' unless ($ENV{'WEBDYNE_TEST_FILE_PREFIX'} eq '03');
-}
 
 
 sub err_carp {
@@ -170,8 +171,8 @@ sub main {
                     next;
                 };
                 my $diff=Text::Diff::diff(
-                    \Dumper($data_live_ar),
-                    \Dumper($data_thaw_ar),
+                    \Data::Dumper->Dump([$data_live_ar],['$ACTUAL']),
+                    \Data::Dumper->Dump([$data_thaw_ar],['$EXPECT']),
                     { STYLE => 'Unified' }
                 );
                 diag("diff: $diff");
@@ -215,12 +216,12 @@ sub main {
                 next;
             };
             my $diff=Text::Diff::diff(
-                \Dumper(${$html_live_sr}),
-                \Dumper($html_thaw),
+                \Data::Dumper->Dump([$html_live_sr], ['$ACTUAL']),
+                \Data::Dumper->Dump([\$html_thaw], ['$EXPECT']),
                 { STYLE => 'Unified' }
             );
             diag("diff: $diff");
-            diag(sprintf('%s:%s', Dumper($html_live_sr, \$html_thaw)));
+            #diag(sprintf('%s:%s', Dumper($html_live_sr, \$html_thaw)));
         }
         }
 

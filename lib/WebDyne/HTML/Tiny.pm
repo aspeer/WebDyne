@@ -67,6 +67,7 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #  Trick to allow use of illegal subroutine name to suppport treebuilder comment format
 #
 *{'WebDyne::HTML::Tiny::~comment'}=\&_comment;
+*{'WebDyne::HTML::Tiny::entity_encode'}=sub { return $_[1] };
 
 
 #  All done. Positive return
@@ -619,11 +620,32 @@ sub script {
     if (ref($attr_hr->{'src'}) eq 'ARRAY') {
         my %attr=%{$attr_hr};
         my $src_ar=delete $attr{'src'};
-        map {push @html, $self->SUPER::script({%attr, src => $_}, @param)} @{$src_ar}
+        foreach my $src (@{$src_ar}) {
+            my %src_attr=%attr;
+            my @src=split(/#/, $src);
+            $src=$src[0];
+            if ($src[1]) {
+                debug('split src: %s', Dumper(\@src));
+                foreach my $kv (split /&/, $src[1]) {
+                    next unless length($kv);
+                    if ( $kv =~ /^([^=]+)=(.*)$/ ) {
+                        $src_attr{$1}=$2;
+                    }
+                    else {
+                        # no “=” means flag parameter
+                        $src_attr{$kv} = [];
+                    }
+                }
+                debug("fragment attr: $src[1] decoded as %s from query_param: %s", Dumper(\%attr, \@src));
+            }
+            push @html, $self->SUPER::script({%src_attr, src => $src}, @param)
+        }
+        #map {push @html, $self->SUPER::script({%attr, src => $_}, @param)} @{$src_ar}
     }
     else {
         push @html, $self->SUPER::script($attr_hr, @param)
     }
+    debug('html: %s', Dumper(\@html));
     return join($/, @html);
 
 }

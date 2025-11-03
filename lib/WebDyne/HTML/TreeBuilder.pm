@@ -290,6 +290,20 @@ sub tag_parse {
     #  Get the tag, tag attr
     #
     my ($tag, $attr_hr)=@_;
+    
+    
+    #  Get rid of attribute multi-line value if the start with subst cars
+    #
+    foreach my $attr (keys %{$attr_hr}) {
+        my $attr_value=$attr_hr->{$attr};
+        if ($attr_value=~/([\$@%!+*^])\{(\1?)/) {
+            #  Get rid of cr/lf
+            if ($attr_value=~s/\s*[\r\n]+\s*/ /g) {
+                $attr_hr->{$attr}=$attr_value;
+            }
+        }
+    }
+    #map { $attr_hr->{$_}=($attr_hr->{$_}=~s/\s*[\r\n]+\s*/ /gr) } keys %{$attr_hr};
 
 
     #  Debug
@@ -450,13 +464,33 @@ sub tag_parse {
 
 
     }
-
-
-    #  Insert line number if possible
+    
+    
+    #  Do we have a HTML::Element object ?
     #
-    debug("insert line_no: %s, line_no_start: %s into object ref $html_or", @{$self}{qw(_line_no _line_no_start)});
-    debug('tag %s', $html_or->tag()) if (ref($html_or));
-    ref($html_or) && (@{$html_or}{'_line_no', '_line_no_tag_end'}=(@{$self}{qw(_line_no_start _line_no)}));
+    if ((my $ref=ref($html_or)) eq 'HTML::Element') {
+        
+        #  Yes
+        #
+        debug("parse returned $ref object, tag: %s, inserting line no", $html_or->tag());
+        @{$html_or}{'_line_no', '_line_no_tag_end'}=@{$self}{qw(_line_no_start _line_no)};
+        
+        
+    }
+    elsif ($ref && ($ref ne 'WebDyne::HTML::TreeBuilder')) {
+    
+        #  That's weird ..
+        #
+        return err("parse returned $ref object, expected 'WebDyne::HTML::Element'");
+        
+    }
+    else {    
+        
+        #  Text
+        #
+        debug('parse returned text (scalar) object');
+        
+    }
 
 
     #  Returm object ref
@@ -482,6 +516,7 @@ sub block {
 sub script {
 
     my ($self, $method, $tag, $attr_hr, @param)=@_;
+    no warnings 'qw';
     debug("$self script, attr: %s", Dumper($attr_hr));
     my $script_or=$self->$method($tag, $attr_hr, @param);
     if ($attr_hr->{'type'} eq 'application/perl') {
@@ -936,25 +971,50 @@ sub text {
 
             #  Meeds subst. Get rid of cr's at start and end of text after a <perl> tag, stuffs up formatting in <pre> sections
             #
-            debug("found subst tag line_no_start: %s, line_no: %s, text '$text'", @{$self}{qw(_line_no_start _line_no)});
-            my @cr=($text=~/\n/g);
-            if (my $html_or=$self->{'_pos'}) {
-                debug("parent %s", $html_or->tag());
-                if (($html_or->tag() eq 'perl') && !$html_or->attr('inline')) {
-                    debug('hit !');
+            debug("found subst tag line_no_start: %s, line_no: %s, text '$text', script_stack: %s, %s", @{$self}{qw(_line_no_start _line_no _script_stack)}, Dumper($self->{'_script_stack'}));
 
-                    #  Why did I comment this out ?
-                    #
-                    #$text=~s/^\n//;
-                    #$text=~s/\n$//;
-                }
+            #my @cr=($text=~/\n/g);
+            #if (my $html_or=$self->{'_pos'}) {
+            #    debug("parent %s", $html_or->tag());
+            #    if (($html_or->tag() eq 'perl') && !$html_or->attr('inline')) {
+            #        debug('hit !');
+            #
+            #        #  Why did I comment this out ?
+            #        #
+            #        #$text=~s/^\n//;
+            #        #$text=~s/\n$//;
+            #    }
+            #}
+            
+            #  If in <script> block we probably don't want to be running subst over strings we find because ${varname} is valid Javascript 
+            #  syntax and we shouldn't reallt ever need to subs in a script block (user can pass params to script). Nevertheless we'll give
+            #  them a subst option if they want
+            #
+            my $html_or=$self->{'_pos'};
+            my %attr=$html_or->all_external_attr();
+            
+            
+            #  Gets a bit ugly for <script> tags. If <script> is Javascript *dont* run subst over it unless the user insists.
+            #
+            #  First - are we inside a script tag. Easiest way is to see if in script_stack
+            #
+            if (@{$self->{'_script_stack'}} && (!$attr{'type'} || $WEBDYNE_SCRIPT_TYPE_EXECUTABLE_HR->{$attr{'type'}}) && !$attr{'subst'}) {
+            #if (@{$self->{'_script_stack'}} && !$attr{'subst'}) {
+                debug("script_stack present, bypass susbt: parent %s, attr: %s", $html_or->tag(), Dumper(\%attr));
+                $self->tag_parse('SUPER::text', $text)
+            
             }
-
-            my $html_or=HTML::Element->new('subst');
-            debug("insert line_no: %s, line_no_tag_end: %s into object ref $html_or for text $text, cr %s", @{$self}{qw(_line_no_start _line_no)}, scalar @cr);
-            @{$html_or}{'_line_no', '_line_no_tag_end'}=@{$self}{qw(_line_no _line_no)};
-            $html_or->push_content($text);
-            $self->tag_parse('SUPER::text', $html_or)
+            elsif ($attr{'nosubst'}) {
+                debug('nosubst attr found in attr: %s', Dumper(\%attr));
+                $self->tag_parse('SUPER::text', $text)
+            }
+            else {
+                my $html_subst_or=HTML::Element->new('subst');
+                debug("insert line_no: %s, line_no_tag_end: %s into object ref $html_subst_or for text $text", @{$self}{qw(_line_no_start _line_no)});
+                @{$html_subst_or}{'_line_no', '_line_no_tag_end'}=@{$self}{qw(_line_no _line_no)};
+                $html_subst_or->push_content($text);
+                $self->tag_parse('SUPER::text', $html_subst_or)
+            }
         }
         else {
 
@@ -997,6 +1057,7 @@ sub comment {
 sub start_html {
 
     my ($self, $method, $tag, $attr_hr)=@_;
+    debug("self: $self, method: $method, tag: $tag, attr_hr: %s", Dumper($attr_hr));
     push @{$self->{'_html_wedge_ar'}}, (my $html=$self->{'_html_tiny_or'}->$tag($attr_hr));
     return $self;
 

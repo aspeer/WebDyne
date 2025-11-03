@@ -173,7 +173,15 @@ my %constant_temp;
     #
     WEBDYNE_CONTENT_TYPE_TEXT => 'text/plain',
     WEBDYNE_CONTENT_TYPE_JSON => 'application/json',
-
+    
+    
+    #  Script types which are executable so we won't subst strings in them
+    #
+    WEBDYNE_SCRIPT_TYPE_EXECUTABLE_HR => { map { $_=>1 } qw(
+        text/javascript
+        application/javascript
+        module
+    )},
 
     #  Encoding
     #
