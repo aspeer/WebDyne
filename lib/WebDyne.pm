@@ -3244,199 +3244,241 @@ sub include {
 
     #  Any param must supply a file name as an attribute
     #
-    my $fn=$param_hr->{'file'} ||
+    my $fn_ar=$param_hr->{'file'} ||
         return err('no file name supplied with include tag');
-    my $pn=File::Spec->rel2abs($fn, $dn);
-
-
-    #  Check what user wants to do
+    unless (ref($fn_ar) eq 'ARRAY') {
+        $fn_ar=[$fn_ar]
+    }
+    debug('fn_ar: %s', Dumper($fn_ar));
+    
+    
+    #  Array for HTML results
     #
-    if (my $node=(grep {exists $param_hr->{$_}} qw(head body))[0]) {
-
-
-        #  They want to include the head or body section of an existing pure HTML
-        #  file.
+    my @html;
+    my $count=0;
+    
+    
+    #  Iterate
+    #
+    foreach my $fn (@{$fn_ar}) {
+    
+    
+        #  Get full path name
         #
-        debug('head or body render');
-        my %option=(
+        my $pn=File::Spec->rel2abs($fn, $dn);
+        $count++;
+        debug("processing fn: $fn, pn: $pn");
 
-            nofilter => 1,
-            noperl   => 1,
-            stage0   => 1,
-            srce     => $pn,
-            
-            #  Note this - don't want implicit <p> tags for included files at body start,
-            #  i.e. <body><p>Some Text in included file may end up as <body><p><p> in initiator file 
-            implicit_body_p_tag => 0,
 
-        );
-        
-        
-        #  Bring in WebDyne::Compile - going to need it
+        #  Check what user wants to do
         #
-        eval {require WebDyne::Compile}
-            || return $self->err_html(
-            errsubst('unable to load WebDyne:Compile, %s', $@ || 'undefined error'));
-        
-
-        #  compile spec'd file
-        #
-        my $container_ar=$self->compile(\%option) ||
-            return err();
-        #$self->data_ar_err_pop();
-        my $block_data_ar=$container_ar->[1];
-        debug('compiled to data_ar %s', Dumper($block_data_ar));
-
-        #  Find the head or body tag
-        #
-        my $block_ar=$self->find_node(
-            {
-
-                data_ar => $block_data_ar,
-                tag     => $node,
-
-            }) || return err();
-        @{$block_ar} ||
-            return err("unable to find block '$node' in include file '$fn'");
-        debug('found block_ar %s', Dumper($block_ar));
+        if (my $node=(grep {exists $param_hr->{$_}} qw(head body))[0]) {
 
 
-        #  Find_node returns array of blocks that match - we only want first
-        #
-        $block_ar=$block_ar->[0];
-
-
-        #  Need to finish compiling now found
-        #
-        $self->optimise_one($block_ar) || return err();
-        $self->optimise_two($block_ar) || return err();
-        debug('optimised data now %s', Dumper($block_ar));
-
-
-        #  Need to encapsulate into <block display=1> tag, so alter tag name, attr
-        #
-        $block_ar->[WEBDYNE_NODE_NAME_IX]='block';
-        $block_ar->[WEBDYNE_NODE_ATTR_IX]={name => $node, display => 1};
-
-
-        #  Incorporate into top level data so we don't have to do this again if
-        #  called from tag
-        #
-        @{$data_ar}=@{$block_ar} if ($data_ar && !$param_hr->{'nocache'});
-
-
-        #  Render included block and return after stripping <p></p>
-        #
-        my $html_sr=$self->render({data => $block_ar->[$WEBDYNE_NODE_CHLD_IX], param => $param_hr->{'param'}}) || 
-            return err();
-        return $html_sr;
-        
-
-    }
-    elsif (my $block=$param_hr->{'block'}) {
-
-        #  Wants to include a paticular block from a psp library file
-        #
-        debug('block render');
-        my %option=(
-
-            nofilter 	=> 1,
-            #noperl     => 1,
-            stage1 	=> 1,
-            srce   	=> $pn,
-            implicit_body_p_tag => 0,
-
-        );
-
-
-        #  Bring in WebDyne::Compile - going to need it
-        #
-        eval {require WebDyne::Compile}
-            || return $self->err_html(
-            errsubst('unable to load WebDyne:Compile, %s', $@ || 'undefined error'));
-
-
-        #  compile spec'd file
-        #
-        my $container_ar=$self->compile(\%option) ||
-            return err();
-        my $block_data_ar=$container_ar->[1];
-        debug('block data %s', Dumper($block_data_ar));
-
-
-        #  Find the block node with name we want
-        #
-        debug("looking for block name $block");
-        my $block_ar=$self->find_node(
-            {
-
-                data_ar => $block_data_ar,
-                tag     => 'block',
-                attr_hr => {name => $block},
-
-            }) || return err();
-        @{$block_ar} ||
-            return err("unable to find block '$block' in include file '$fn'");
-        debug('found block_ar %s', Dumper($block_ar));
-
-
-        #  Find_node returns array of blocks that match - we only want first
-        #
-        $block_ar=$block_ar->[0];
-
-
-        #  Set to attr always display
-        #
-        $block_ar->[$WEBDYNE_NODE_ATTR_IX]{'display'}=1;
-
-
-        #  Incorporate into top level data so we don't have to do this again if
-        #  called from tag
-        #
-        #  COMMENTED OUT FOR NOW: Doesn't work in terms of stripping <p></p> tags
-        #
-        @{$data_ar}=@{$block_ar} if ($data_ar && !$param_hr->{'nocache'});
-        #@{$data_ar}=@{$block_ar} if $data_ar;
-
-
-        #  We don't want to render <block> tags, so start at
-        #  child of results [WEBDYNE_NODE_CHLD_IX].
-        #
-        debug('calling render');
-        my $html_sr=$self->render({data => $block_ar->[$WEBDYNE_NODE_CHLD_IX], param => ($param_hr->{'param'} || $param_data_hr)}) || 
-            return err();
-        return $html_sr;
-
-
-    }
-    else {
-
-
-        #  Plain vanilla file include, no mods
-        #
-        debug('vanilla file include');
-        my $fh=IO::File->new($pn, O_RDONLY) || return err("unable to open file '$fn' for read, $!");
-        local $/;
-        my $html = <$fh>;
-        $fh->close();
-        
-        
-        #  Need to create fake <block> tag to hold this if want to cache
-        #
-        if ($data_ar && !$param_hr->{'nocache'}) {
-        
-            #  Yes, want to cache this file, create fake block tag and force display
+            #  They want to include the head or body section of an existing pure HTML
+            #  file.
             #
-            my @block=('block', { name=>'file', display=>1 }, [$html], undef, 1, 1, \$pn);
-            @{$data_ar}=@block;
-            
-        }
-        
-        #  And return HTML
-        #
-        return \$html;
+            debug('head or body render');
+            my %option=(
 
+                nofilter => 1,
+                noperl   => 1,
+                stage0   => 1,
+                srce     => $pn,
+                
+                #  Note this - don't want implicit <p> tags for included files at body start,
+                #  i.e. <body><p>Some Text in included file may end up as <body><p><p> in initiator file 
+                implicit_body_p_tag => 0,
+
+            );
+            
+            
+            #  Bring in WebDyne::Compile - going to need it
+            #
+            eval {require WebDyne::Compile}
+                || return $self->err_html(
+                errsubst('unable to load WebDyne:Compile, %s', $@ || 'undefined error'));
+            
+
+            #  compile spec'd file
+            #
+            my $container_ar=$self->compile(\%option) ||
+                return err();
+            #$self->data_ar_err_pop();
+            my $block_data_ar=$container_ar->[1];
+            debug('compiled to data_ar %s', Dumper($block_data_ar));
+
+            #  Find the head or body tag
+            #
+            my $block_ar=$self->find_node(
+                {
+
+                    data_ar => $block_data_ar,
+                    tag     => $node,
+
+                }) || return err();
+            @{$block_ar} ||
+                return err("unable to find block '$node' in include file '$fn'");
+            debug('found block_ar %s', Dumper($block_ar));
+
+
+            #  Find_node returns array of blocks that match - we only want first
+            #
+            $block_ar=$block_ar->[0];
+
+
+            #  Need to finish compiling now found
+            #
+            $self->optimise_one($block_ar) || return err();
+            $self->optimise_two($block_ar) || return err();
+            debug('optimised data now %s', Dumper($block_ar));
+
+
+            #  Need to encapsulate into <block display=1> tag, so alter tag name, attr
+            #
+            $block_ar->[WEBDYNE_NODE_NAME_IX]='block';
+            $block_ar->[WEBDYNE_NODE_ATTR_IX]={name => $node, display => 1};
+
+
+            #  Incorporate into top level data so we don't have to do this again if
+            #  called from tag
+            #
+            @{$data_ar}=@{$block_ar} if ($data_ar && !$param_hr->{'nocache'});
+
+
+            #  Render included block and return after stripping <p></p>
+            #
+            my $html_sr=$self->render({data => $block_ar->[$WEBDYNE_NODE_CHLD_IX], param => $param_hr->{'param'}}) || 
+                return err();
+            #return $html_sr;
+            push @html, ${$html_sr}
+            
+
+        }
+        elsif (my $block=$param_hr->{'block'}) {
+
+            #  Wants to include a paticular block from a psp library file
+            #
+            debug('block render');
+            my %option=(
+
+                nofilter 	=> 1,
+                #noperl     => 1,
+                stage1 	=> 1,
+                srce   	=> $pn,
+                implicit_body_p_tag => 0,
+
+            );
+
+
+            #  Bring in WebDyne::Compile - going to need it
+            #
+            eval {require WebDyne::Compile}
+                || return $self->err_html(
+                errsubst('unable to load WebDyne:Compile, %s', $@ || 'undefined error'));
+
+
+            #  compile spec'd file
+            #
+            my $container_ar=$self->compile(\%option) ||
+                return err();
+            my $block_data_ar=$container_ar->[1];
+            debug('block data %s', Dumper($block_data_ar));
+
+
+            #  Find the block node with name we want
+            #
+            debug("looking for block name $block");
+            my $block_ar=$self->find_node(
+                {
+
+                    data_ar => $block_data_ar,
+                    tag     => 'block',
+                    attr_hr => {name => $block},
+
+                }) || return err();
+            @{$block_ar} ||
+                return err("unable to find block '$block' in include file '$fn'");
+            debug('found block_ar %s', Dumper($block_ar));
+
+
+            #  Find_node returns array of blocks that match - we only want first
+            #
+            $block_ar=$block_ar->[0];
+
+
+            #  Set to attr always display
+            #
+            $block_ar->[$WEBDYNE_NODE_ATTR_IX]{'display'}=1;
+
+
+            #  Incorporate into top level data so we don't have to do this again if
+            #  called from tag
+            #
+            #  COMMENTED OUT FOR NOW: Doesn't work in terms of stripping <p></p> tags
+            #
+            @{$data_ar}=@{$block_ar} if ($data_ar && !$param_hr->{'nocache'});
+            #@{$data_ar}=@{$block_ar} if $data_ar;
+
+
+            #  We don't want to render <block> tags, so start at
+            #  child of results [WEBDYNE_NODE_CHLD_IX].
+            #
+            debug('calling render');
+            my $html_sr=$self->render({data => $block_ar->[$WEBDYNE_NODE_CHLD_IX], param => ($param_hr->{'param'} || $param_data_hr)}) || 
+                return err();
+            #return $html_sr;
+            push @html, ${$html_sr};
+
+
+        }
+        else {
+
+
+            #  Plain vanilla file include, no mods
+            #
+            debug('vanilla file include');
+            my $fh=IO::File->new($pn, O_RDONLY) || return err("unable to open file '$fn' for read, $!");
+            local $/;
+            my $html = <$fh>;
+            $fh->close();
+            
+
+            #  Wrap ?
+            #
+            if (my $tag=$param_hr->{'wrap'}) {
+                debug("wrapping in tag: $tag");
+                my $html_or=HTML::Element->new($tag);
+                $html_or->push_content($html);
+                $html=$html_or->as_HTML();
+            }
+            
+            
+            #  Need to create fake <block> tag to hold this if want to cache
+            #
+            if ($data_ar && !$param_hr->{'nocache'}) {
+            
+                #  Yes, want to cache this file, create fake block tag and force display
+                #
+                my @block=('block', { name=>"file_${count}", display=>1 }, [$html], undef, 1, 1, \$pn);
+                push @{$data_ar}, \@block;
+                
+            }
+            
+            
+            #  And return HTML
+            #
+            #return \$html;
+            push @html, $html;
+
+        }
     }
+
+    #  Done
+    #
+    my $html=join(undef, grep {$_} @html);
+    debug("returning html: $html");
+    return \$html;
 
 }
 

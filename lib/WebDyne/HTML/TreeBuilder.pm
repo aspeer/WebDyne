@@ -245,7 +245,25 @@ sub parse_fh {
             debug("add CR at EOF");
             $html.=$/ unless $html=~/(?:\r?\n|\r)$/;
         }
-
+        
+        
+        #  Ugly hack to fix @ type attribute names in Alpine and Vue. Need to be done in the Parser properly at
+        #  some stage
+        #
+        if ($html =~ s{
+            (<\s*[\w:-]+             # match the start of an HTML tag
+            (?:\s+[^>]*?)?)          # non-greedy match of attributes
+            \s@([\w\.-]+)            # match attribute like @click or @keydown.enter
+            (\s*=\s*["'][^"']*["'])  # match = "value" or = 'value'
+        }{
+            "$1 x-on:$2$3"
+        }egx) {
+            debug("match on AlpineJS attribute syntax hack, line now: $line");
+        }
+        else {
+            debug('no match on AlpineJS attribute syntax hack')
+        }
+        
 
         #  Done, return HTML
         #

@@ -326,6 +326,8 @@ sub _start_html {
         author
         script
         include
+        include_script
+        include_style
     );
     debug('start_html %s', Dumper(\%attr_page));
 
@@ -367,19 +369,34 @@ sub _start_html {
     #
     my @link;
     if ($attr_page{'style'}) {
-        push @link, $self->link({rel => 'stylesheet', href => $attr_page{'style'}})
+        my $html_or=HTML::Element->new('link', rel=> 'stylesheet', href => $attr_page{'style'});
+        push @link, $html_or->as_HTML();
+        #push @link, $self->link({rel => 'stylesheet', href => $attr_page{'style'}})
     }
+    if ($attr_page{'include_style'}) {
+        my $html_or=HTML::Element->new('include', wrap=>'style', file => $attr_page{'include_style'});
+        push @link, $html_or->as_HTML();
+    }
+
     if (my $author=$attr_page{'author'}) {
         $author=$self->url_encode($author);
-        push @link, $self->link({rel => 'author', href => sprintf('mailto:%s', $author)});
+        my $html_or=HTML::Element->new('link', rel=> 'author', href => sprintf('mailto:%s', $author));
+        push @link, $html_or->as_HTML();
+        #push @link, $self->link({rel => 'author', href => sprintf('mailto:%s', $author)});
     }
     
 
-    #  Script
+    #  Scripts
     #
     my @script;
     if ($attr_page{'script'}) {
-        push @script, $self->script({ src => $attr_page{'script'} });
+        my $html_or=HTML::Element->new('script', src => $attr_page{'script'});
+        push @script, $html_or->as_HTML();
+        #push @script, $self->script({ src => $attr_page{'script'} });
+    }
+    if ($attr_page{'include_script'}) {
+        my $html_or=HTML::Element->new('include', wrap=>'script', file => $attr_page{'include_script'});
+        push @script, $html_or->as_HTML();
     }
     
     
@@ -615,32 +632,55 @@ sub link {
 sub script {
 
     my ($self, $attr_hr, @param)=@_;
+    #die;
     debug("$self script, attr %s", Dumper($attr_hr));
+    #my $script_ar=(ref($attr_hr->{'src'}) eq 'ARRAY')
+    #    ? $attr_hr->{'src'} 
+    #    : [$attr_hr->{'src'}];
+    
+    
+    #  Take copy of attribute hash ref so we don't alter original
+    #
     my @html;
-    if (ref($attr_hr->{'src'}) eq 'ARRAY') {
-        my %attr=%{$attr_hr};
-        my $src_ar=delete $attr{'src'};
-        foreach my $src (@{$src_ar}) {
-            my %src_attr=%attr;
-            my @src=split(/#/, $src);
-            $src=$src[0];
-            if ($src[1]) {
-                debug('split src: %s', Dumper(\@src));
-                foreach my $kv (split /&/, $src[1]) {
-                    next unless length($kv);
-                    if ( $kv =~ /^([^=]+)=(.*)$/ ) {
-                        $src_attr{$1}=$2;
-                    }
-                    else {
-                        # no “=” means flag parameter
-                        $src_attr{$kv} = [];
-                    }
-                }
-                debug("fragment attr: $src[1] decoded as %s from query_param: %s", Dumper(\%attr, \@src));
-            }
-            push @html, $self->SUPER::script({%src_attr, src => $src}, @param)
+    my %attr=%{$attr_hr};
+    if ($attr{'src'}) {
+        my $script_ar;
+        unless (ref($script_ar=delete $attr{'src'}) eq 'ARRAY') {
+            $script_ar=[$script_ar]
         }
-        #map {push @html, $self->SUPER::script({%attr, src => $_}, @param)} @{$src_ar}
+        debug('attr_hr: %s, script_ar: %s', Dumper($attr_hr, $script_ar));
+        
+        #my @html;
+        #if (ref($attr_hr->{'src'}) eq 'ARRAY') {
+        #if (ref($attr_hr->{'src'}) eq 'ARRAY') {
+        foreach my $src (@{$script_ar}) {
+            debug("src: $src");
+            #my %attr=%{$attr_hr};
+            #my $src_ar=delete $attr{'src'};
+            #foreach my $src (@{$src_ar}) {
+                my %src_attr=%attr;
+                my @src=split(/#/, $src);
+                #my @src=($src);
+                $src=$src[0];
+                debug("src post split: $src");
+                if ($src[1]) {
+                    debug('split src: %s', Dumper(\@src));
+                    foreach my $kv (split /&/, $src[1]) {
+                        next unless length($kv);
+                        if ( $kv =~ /^([^=]+)=(.*)$/ ) {
+                            $src_attr{$1}=$2;
+                        }
+                        else {
+                            # no “=” means flag parameter
+                            $src_attr{$kv} = [];
+                        }
+                    }
+                    debug("fragment attr: $src[1] decoded as %s from query_param: %s", Dumper(\%attr, \@src));
+                }
+                push @html, $self->SUPER::script({%src_attr, src => $src}, @param)
+            #}
+            #map {push @html, $self->SUPER::script({%attr, src => $_}, @param)} @{$src_ar}
+        }
     }
     else {
         push @html, $self->SUPER::script($attr_hr, @param)

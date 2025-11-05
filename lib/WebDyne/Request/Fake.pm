@@ -290,7 +290,7 @@ sub uri {
 sub document_root {
 
     my $r=shift();
-    @_ ? $r->{'document_root'}=shift() : $r->{'document_root'} || $ENV{'DOCUMENT_ROOT'}
+    @_ ? $r->{'document_root'}=shift() : $r->{'document_root'} || ($ENV{'DOCUMENT_ROOT'} || cwd());
     
 }
 
