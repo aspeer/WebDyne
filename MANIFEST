@@ -937,3 +937,5 @@ t/include_script_array.psp
 t/include_style_array.psp                
 t/start_html_include_style.psp           
 t/subst_multiline.psp                    
+t/bold.css                               
+t/italic.css                             
