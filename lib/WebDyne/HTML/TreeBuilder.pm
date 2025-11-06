@@ -250,18 +250,20 @@ sub parse_fh {
         #  Ugly hack to fix @ type attribute names in Alpine and Vue. Need to be done in the Parser properly at
         #  some stage
         #
-        if ($html =~ s{
-            (<\s*[\w:-]+             # match the start of an HTML tag
-            (?:\s+[^>]*?)?)          # non-greedy match of attributes
-            \s@([\w\.-]+)            # match attribute like @click or @keydown.enter
-            (\s*=\s*["'][^"']*["'])  # match = "value" or = 'value'
-        }{
-            "$1 x-on:$2$3"
-        }egx) {
-            debug("match on AlpineJS attribute syntax hack, line now: $line");
-        }
-        else {
-            debug('no match on AlpineJS attribute syntax hack')
+        if (my $attr_convert=$WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE) {
+            if ($html =~ s{
+                (<\s*[\w:-]+             # match the start of an HTML tag
+                (?:\s+[^>]*?)?)          # non-greedy match of attributes
+                \s@([\w\.-]+)            # match attribute like @click or @keydown.enter
+                (\s*=\s*["'][^"']*["'])  # match = "value" or = 'value'
+            }{
+                "$1 ${attr_convert}:$2$3"
+            }egx) {
+                debug("match on AlpineJS attribute syntax hack, line now: $line");
+            }
+            else {
+                debug('no match on AlpineJS attribute syntax hack')
+            }
         }
         
 

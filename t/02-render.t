@@ -102,7 +102,15 @@ sub main {
             return err("unable to find file: $test_fn");
         diag("processing: $test_fn");
         
-        for (0..1) {
+        
+        #  Hack for testing
+        #
+        $compile_or->{'_r'}{'filename'}=$test_fn;
+        
+        
+        #  Iterate twice to make sure no change over multiple iterations
+        #
+        foreach my $count (1..2) {
         foreach my $stage ((0..5), 'final') {
 
 
@@ -121,6 +129,7 @@ sub main {
             #  Compile to desired stage
             #
             my $stage_name=($stage eq 'final') ? $stage : "stage${stage}";
+            #diag("count: $count, stage_name: $stage_name");
 
 
             #  Options. Use test_fn rather than test_fp so manifest only has file name
@@ -136,7 +145,7 @@ sub main {
                 
             );
             
-            
+
             #  Get it
             #
             my $data_live_ar=$compile_or->compile(\%opt) ||
@@ -153,7 +162,6 @@ sub main {
             };
             my $data_thaw_ar=lock_retrieve($data_cn) ||
                 return err();
-
 
 
             #  Now compare

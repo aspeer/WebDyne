@@ -85,6 +85,7 @@ sub new {
     #  to make it work
     #
     my ($class, $opt_hr)=@_;
+    debug("$class, opt_hr: %s", Dumper($opt_hr));
 
 
     #  Get appropriate cgi_or
@@ -97,7 +98,7 @@ sub new {
     #
     WebDyne->init_class();
     require WebDyne::Request::Fake;
-    my $r=WebDyne::Request::Fake->new();
+    my $r=WebDyne::Request::Fake->new( filename=> $opt_hr->{'srce'} );
 
 
     #  New self ref

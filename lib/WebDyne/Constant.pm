@@ -199,7 +199,7 @@ my %constant_temp;
         'charset='.$constant_temp{'webdyne_html_charset'} => undef,
         
         # Set viewport by default
-        # viewport => 'width=device-width, initial-scale=1.0'
+        viewport => 'width=device-width, initial-scale=1.0'
     },
 
 
@@ -210,7 +210,21 @@ my %constant_temp;
 
     #  Default <html> tag paramaters, eg { lang	=>'en-US' }
     #
-    WEBDYNE_HTML_PARAM => {lang => 'en'},
+    WEBDYNE_HTML_PARAM => {lang => 'en' },
+    
+
+    #  Default params for <start_html> tag
+    #
+    #  E.g. WEBDYNE_START_HTML_PARAM => {  include_style=>['foo.css', 'bar.css'] },
+
+    #
+    WEBDYNE_START_HTML_PARAM => {},
+    
+    
+    #  Make include/other sections in start_html tag static, i.e. load them at compile
+    #  time and they never change. Make undef to force re-include every page load
+    #
+    WEBDYNE_START_HTML_PARAM_STATIC => 1,
     
     
     #  Anything that should be added in <head> section. Will be inserted verbatim before
@@ -222,8 +236,8 @@ my %constant_temp;
     #  Will be added to all <head> sections universally.
     #
     WEBDYNE_HEAD_INSERT => '',
-
-
+    
+    
     #  Ignore ignorable whitespace in compile. Play around with these settings if
     #  you don't like the formatting of the compiled HTML. See HTML::TreeBuilder
     #  man page for details here
@@ -355,6 +369,11 @@ my %constant_temp;
     #  Enable the API mode ?
     #
     WEBDYNE_API_ENABLE => 1,
+    
+    
+    #  Enable Alpine/Vue hack
+    #
+    WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE => 'x:on',
 
 
     #  Headers
