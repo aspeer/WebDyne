@@ -373,7 +373,7 @@ my %constant_temp;
     
     #  Enable Alpine/Vue hack
     #
-    WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE => 'x:on',
+    WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE => 'x-on',
 
 
     #  Headers
