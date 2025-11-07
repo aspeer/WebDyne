@@ -27,7 +27,7 @@ use warnings;
 
 #  Version information
 #
-$VERSION='2.022';
+$VERSION='2.023';
 
 
 #  Get module file name and path, derive name of file to store local constants
