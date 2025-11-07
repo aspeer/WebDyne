@@ -694,7 +694,7 @@ sub script {
 	#  Convert to array
 	#
         my $script_ar;
-        unless (ref($script_ar=delete $attr{'src'}) eq 'ARRAY') {
+        unless (ref($script_ar=$attr{'src'}) eq 'ARRAY') {
             $script_ar=[$script_ar]
         }
         debug('attr_hr: %s, script_ar: %s', Dumper($attr_hr, $script_ar));

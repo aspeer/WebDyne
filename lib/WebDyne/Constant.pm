@@ -374,6 +374,15 @@ my %constant_temp;
     #  Enable Alpine/Vue hack
     #
     WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE => 'x-on',
+    
+    
+    #  Request headers for HTMX and Alpine Ajax
+    #
+    WEBDYNE_HTTP_HEADER_AJAX_HR => { map { $_=> 1} @{$_=[qw(
+        hx-request
+        x-alpine-request
+    )]}},
+    WEBDYNE_HTTP_HEADER_AJAX_AR => $_,
 
 
     #  Headers

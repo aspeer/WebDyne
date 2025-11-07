@@ -2464,7 +2464,10 @@ sub htmx {
     #
     my $r=$self->r() ||
         return err('unable to get request handler !');
-    my $hx_request=$r->headers_in->{'hx-request'};
+    my $hx_request;
+    foreach my $header (@{$WEBDYNE_HTTP_HEADER_AJAX_AR}) {
+        last if ($hx_request=$r->headers_in->{$header});
+    }
     debug("hx_request header: $hx_request");
     
     
