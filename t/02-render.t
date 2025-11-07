@@ -9,7 +9,7 @@ use vars   qw($VERSION);
 #  Don't let local WEBDYNE_CONF be loaded
 #
 BEGIN {
-    $ENV{'WEBDYNE_CONF'}='.' unless ($ENV{'WEBDYNE_TEST_FILE_PREFIX'} eq '03');
+    $ENV{'WEBDYNE_CONF'}='.' unless (($ENV{'WEBDYNE_TEST_FILE_PREFIX'} ||= '') eq '03');
 }
 
 #  Load
@@ -23,6 +23,7 @@ use IO::File;
 use IO::String;
 use Cwd qw(abs_path);
 $Data::Dumper::Indent=1;
+$Data::Dumper::Sortkeys=1;
 use Storable qw(lock_retrieve freeze);
 $Storable::canonical=1;
 
@@ -81,7 +82,7 @@ sub main {
     my $compile_or=WebDyne::Compile->new() ||
         return err();
         
-        
+
     #  Data dir
     #
     my $data_freeze_dn='data';
@@ -102,140 +103,151 @@ sub main {
             return err("unable to find file: $test_fn");
         diag("processing: $test_fn");
         
-        
+        #my $compile_or=WebDyne::Compile->new() ||
+        #    return err();
         #  Hack for testing
         #
         $compile_or->{'_r'}{'filename'}=$test_fn;
         
-        
+
         #  Iterate twice to make sure no change over multiple iterations
         #
         foreach my $count (1..2) {
-        foreach my $stage ((0..5), 'final') {
 
 
-            #  Get data file
-            #
-            my ($data_dn, $data_fn)=(File::Spec->splitpath($test_cn))[1,2];
+
+            foreach my $stage ((0..5), 'final') {
 
 
-            #  Enables variations on a single source file
-            #
-            $data_fn=join('-', grep {$_} $ENV{'WEBDYNE_TEST_FILE_PREFIX'},  $data_fn);
-            my $data_cn=File::Spec->catfile($data_dn, $data_freeze_dn, $data_fn);
-            $data_cn=~s/\.psp$/\.dat\.${stage}/;
+                #  Get data file
+                #
+                my ($data_dn, $data_fn)=(File::Spec->splitpath($test_cn))[1,2];
 
 
-            #  Compile to desired stage
-            #
-            my $stage_name=($stage eq 'final') ? $stage : "stage${stage}";
-            #diag("count: $count, stage_name: $stage_name");
+                #  Enables variations on a single source file
+                #
+                $data_fn=join('-', grep {$_} $ENV{'WEBDYNE_TEST_FILE_PREFIX'},  $data_fn);
+                my $data_cn=File::Spec->catfile($data_dn, $data_freeze_dn, $data_fn);
+                $data_cn=~s/\.psp$/\.dat\.${stage}/;
 
 
-            #  Options. Use test_fn rather than test_fp so manifest only has file name
-            #
-            my %opt=(
+                #  Compile to desired stage
+                #
+                my $stage_name=($stage eq 'final') ? $stage : "stage${stage}";
+                #diag("count: $count, stage_name: $stage_name");
 
-                srce        	=> $test_cn,
-                nofilter	=> 1,
-                noperl		=> 1,
-                notimestamp	=> 1,
-                nomanifest	=> 1,
-                $stage_name     => 1
+
+                #  Options. Use test_fn rather than test_fp so manifest only has file name
+                #
+                my %opt=(
+
+                    srce        	=> $test_cn,
+                    nofilter	=> 1,
+                    noperl		=> 1,
+                    notimestamp	=> 1,
+                    nomanifest	=> 1,
+                    $stage_name     => 1
+                    
+                );
                 
-            );
-            
 
-            #  Get it
-            #
-            my $data_live_ar=$compile_or->compile(\%opt) ||
-                return err ();
-            debug("data_live_ar %s", Dumper($data_live_ar));
+                #  Get it
+                #
+                my $data_live_ar=$compile_or->compile(\%opt) ||
+                    return err ();
+                debug("data_live_ar %s", Dumper($data_live_ar));
+                
+                
+                #  Get previous version
+                #
+                (-f $data_cn) || do {
+                    diag("skipping $test_fn, no data file - run maketest.pl");
+                    return err();
+                    #next FILE;
+                };
+                my $data_thaw_ar=lock_retrieve($data_cn) ||
+                    return err();
+
+
+                #  Now compare
+                #
+                #my $string_live=freeze($data_live_ar);
+                #my $string_thaw=freeze($data_thaw_ar);
+                
+                #  New comparison - Storable format not reliable across different perl versions
+                #
+                my $string_actual=Data::Dumper->Dump([$data_live_ar],['$VAR1']);
+                my $string_expect=Data::Dumper->Dump([$data_thaw_ar],['$VAR1']);
+                
+                if ($string_actual eq $string_expect) {
+                    pass("$test_fn pass on stage: $stage");
+                }
+                else {
+                    fail(diag("$test_fn fail on stage: $stage"));
+                    diag("ACTUAL: $string_actual");
+                    diag("EXPECT: $string_expect");
+                    eval { require Text::Diff } || do {
+                        diag('unable to load Text::Diff module to show comparison');
+                        next;
+                    };
+                    my $diff=Text::Diff::diff(
+                        \(my $actual=Data::Dumper->Dump([$data_live_ar],['$ACTUAL'])),
+                        \(my $expect=Data::Dumper->Dump([$data_thaw_ar],['$EXPECT'])),
+                        { STYLE => 'Unified' }
+                    );
+                    diag("diff: $diff");
+                    #diag(sprintf('%s:%s', Dumper($data_live_ar, $data_thaw_ar)));
+                }
+
+            } #foreach stage
             
             
-            #  Get previous version
+            #  Now HTML
             #
+            #diag("processing: $test_fn stage: HTML render");
+            my ($data_dn, $data_fn)=(File::Spec->splitpath($test_cn))[1,2];
+            $data_fn=join('-', grep {$_} $ENV{'WEBDYNE_TEST_FILE_PREFIX'},  $data_fn);
+
+            my $data_cn=File::Spec->catfile($data_dn, $data_freeze_dn, $data_fn);
+            $data_cn=~s/\.psp$/\.html/;
+
+
+            my $html_live_sr=&render($test_cn) ||
+                return err();
+            #diag("render: *${$html_live_sr}*");
+
             (-f $data_cn) || do {
                 diag("skipping $test_fn, no data file - run maketest.pl");
-                return err();
-                #next FILE;
+                next;
             };
-            my $data_thaw_ar=lock_retrieve($data_cn) ||
-                return err();
+            my $html_thaw_fh=IO::File->new($data_cn, O_RDONLY) ||
+                return err("unable to open $data_cn, $!");
+            local $/;
+            my $html_thaw=<$html_thaw_fh>;
+            $html_thaw_fh->close();
 
-
-            #  Now compare
-            #
-            my $string_live=freeze($data_live_ar);
-            my $string_thaw=freeze($data_thaw_ar);
-            
-            if ($string_live eq $string_thaw) {
-                pass("$test_fn pass on stage: $stage");
+            if (${$html_live_sr} eq $html_thaw) {
+                pass("$test_fn pass on stage: HTML render");
             }
             else {
-                fail(diag("$test_fn fail on stage: $stage"));
+                fail(diag("$test_fn fail on stage: HTML render"));
                 eval { require Text::Diff } || do {
                     diag('unable to load Text::Diff module to show comparison');
                     next;
                 };
                 my $diff=Text::Diff::diff(
-                    \Data::Dumper->Dump([$data_live_ar],['$ACTUAL']),
-                    \Data::Dumper->Dump([$data_thaw_ar],['$EXPECT']),
+                    \Data::Dumper->Dump([$html_live_sr], ['$ACTUAL']),
+                    \Data::Dumper->Dump([\$html_thaw], ['$EXPECT']),
                     { STYLE => 'Unified' }
                 );
                 diag("diff: $diff");
-                #diag(sprintf('%s:%s', Dumper($data_live_ar, $data_thaw_ar)));
+                #diag(sprintf('%s:%s', Dumper($html_live_sr, \$html_thaw)));
             }
 
-        } #foreach stage
-        
-        
-        #  Now HTML
-        #
-        #diag("processing: $test_fn stage: HTML render");
-        my ($data_dn, $data_fn)=(File::Spec->splitpath($test_cn))[1,2];
-        $data_fn=join('-', grep {$_} $ENV{'WEBDYNE_TEST_FILE_PREFIX'},  $data_fn);
-
-        my $data_cn=File::Spec->catfile($data_dn, $data_freeze_dn, $data_fn);
-        $data_cn=~s/\.psp$/\.html/;
-
-
-        my $html_live_sr=&render($test_cn) ||
-            return err();
-        #diag("render: *${$html_live_sr}*");
-
-        (-f $data_cn) || do {
-            diag("skipping $test_fn, no data file - run maketest.pl");
-            next;
-        };
-        my $html_thaw_fh=IO::File->new($data_cn, O_RDONLY) ||
-            return err("unable to open $data_cn, $!");
-        local $/;
-        my $html_thaw=<$html_thaw_fh>;
-        $html_thaw_fh->close();
-
-        if (${$html_live_sr} eq $html_thaw) {
-            pass("$test_fn pass on stage: HTML render");
-        }
-        else {
-            fail(diag("$test_fn fail on stage: HTML render"));
-            eval { require Text::Diff } || do {
-                diag('unable to load Text::Diff module to show comparison');
-                next;
-            };
-            my $diff=Text::Diff::diff(
-                \Data::Dumper->Dump([$html_live_sr], ['$ACTUAL']),
-                \Data::Dumper->Dump([\$html_thaw], ['$EXPECT']),
-                { STYLE => 'Unified' }
-            );
-            diag("diff: $diff");
-            #diag(sprintf('%s:%s', Dumper($html_live_sr, \$html_thaw)));
-        }
         }
 
         #ok(${$html_sr} eq $html, "$test_fn pass on stage: render");
         ##die ${$html_sr};
-
 
     }
     
