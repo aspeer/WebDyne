@@ -24,7 +24,7 @@ local $^W=0;
 
 #  Version information. Must be all on one line
 #
-$VERSION='2.024';
+$VERSION='2.025';
 
 
 #  Constants are empty, but havin this file allows for import of DEBUG and othe
