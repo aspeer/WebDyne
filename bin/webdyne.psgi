@@ -285,7 +285,7 @@ sub handler {
         }
     }
     debug("calling handler: $handler");
-    
+
 
     #  Call handler and evaluate results
     #

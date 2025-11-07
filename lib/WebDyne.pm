@@ -2408,7 +2408,7 @@ sub json {
 
     #  Check we have a handler
     #
-    $attr_hr->{'handler'} ||
+    $attr_hr->{'handler'} || $attr_hr->{'perl'} ||
         return err('no json tag perl handler supplied');
 
 
@@ -2439,7 +2439,7 @@ sub json {
         type => 'application/json',
         %{$attr_hr}
     );
-    delete @attr{qw(package method handler)};
+    delete @attr{qw(perl package method handler)};
 
 
     #  Render and return
@@ -2456,7 +2456,7 @@ sub htmx {
 
     #  Called when we encounter a <htmx> tag
     #
-    my ($self, $data_ar, $attr_hr)=@_;
+    my ($self, $data_ar, $attr_hr, @param)=@_;
     debug("$self rendering htmx tag, data_ar: $data_ar, attr_hr: %s", Dumper($attr_hr));
     
     
@@ -2482,11 +2482,12 @@ sub htmx {
     #  Check we have a handler
     #
     my $html_sr;
-    if (my $handler=$attr_hr->{'handler'}) {
+    if ((my $handler=$attr_hr->{'handler'}) || $attr_hr->{'perl'}) {
     
     
         #  Return whatever HTML we get back
         #
+        $handler ||= '*perl*';
         debug("htmx rendering with handler $handler");
         $html_sr=$self->perl($data_ar, $attr_hr) ||
             return err();
@@ -2533,19 +2534,28 @@ sub api {
     #  Called when we encounter a <api> tag
     #
     my ($self, $data_ar, $attr_hr)=@_;
-    debug("$self rendering api tag in block $data_ar, attr %s", $attr_hr);
+    debug("$self rendering api tag in block $data_ar, attr %s", Dumper($attr_hr));
     
+    
+    #  Perl ?
+    #
+    my %attr=%{$attr_hr};
+    if (my $perl=$attr{'perl'}) {
+        $attr{'name'}='perl'
+    }
     
     #  Need Router::Simple. Build params needed allowing for synonyms
     #
     require Router::Simple;
     my $rest_or=$self->{'_rest_or'} ||= Router::Simple->new();
     my @route=(grep {$_}
-        @{$attr_hr}{qw(name method handler pattern match data dest destination)}
+        #@{$attr_hr}{qw(name method handler pattern match data dest destination)}
+        @attr{qw(name method handler pattern match data dest destination)}
     );
     $route[2] ||= undef;
     my @option=(grep ${_},
-        @{$attr_hr}{qw(option options constraint constraints)}
+        #@{$attr_hr}{qw(option options constraint constraints)}
+        @attr{qw(option options constraint constraints)}
     );
     debug('route param: %s, %s', Dumper(\@route, \@option));
     $rest_or->connect(@route, $option[0]);
@@ -2569,7 +2579,8 @@ sub api {
         #  Run the code in perl routine specifying it is JSON, get return ref of
         #  some kind
         #
-        my $json_xr=$self->perl(undef, {json => 1, %{$attr_hr}, param=>$match_hr }) ||
+        #my $json_xr=$self->perl(undef, {json => 1, %{$attr_hr}, param=>$match_hr }) ||
+        my $json_xr=$self->perl(undef, {json => 1, %attr, param=>$match_hr }) ||
             return err();
         debug("json_xr %s", Dumper($json_xr));
 
@@ -3889,15 +3900,6 @@ sub cwd {
             $dn;
         }
     }
-
-}
-
-
-sub cwd0 {
-
-    #  Return cwd of current psp file
-    #
-    return (File::Spec->splitpath(shift()->{'_r'}->filename()))[1] || getcwd();
 
 }
 

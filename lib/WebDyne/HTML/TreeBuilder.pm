@@ -88,7 +88,6 @@ debug("Loading %s version $VERSION", __PACKAGE__);
         dump
         include
         json
-        api
 
 ));
 
@@ -258,7 +257,7 @@ sub parse_fh {
                 (\s*=\s*["'][^"']*["'])  # match = "value" or = 'value'
             }{
                 "$1 ${attr_convert}:$2$3"
-            }egx) {
+            }egx) { #" # Fake quote to re-enable syntax highlighting
                 debug("match on AlpineJS attribute syntax hack, line now: $line");
             }
             else {
@@ -571,19 +570,6 @@ sub json {
 }
 
 
-sub api {
-
-
-    #  Handle normally but set flag showing we are an <api> page, will optimise differently
-    #
-    my ($self, $method, $tag, @param)=@_;
-    debug("self $self, tag: api, method: $method");
-    $self->{'_webdyne_compact'}=$tag;
-    return $self->$method($tag, @param);
-
-}
-
-
 sub table {
 
 
@@ -610,8 +596,57 @@ sub htmx {
     #
     my ($self, $method, $tag, $attr_hr, @param)=@_;
     debug("self $self, tag: htmx, method: $method, param: %s", Dumper($attr_hr));
-    $self->{'_webdyne_compact'}=$tag if ($attr_hr->{'compact'});
-    return $self->$method($tag, $attr_hr, @param);
+    $self->{'_webdyne_compact'}=$tag if ($attr_hr->{'compact'} || $attr_hr->{'bare'});
+    if (delete $attr_hr->{'perl'}) {
+        my $html_perl_or=$self->$method($tag, $attr_hr);
+        $self->_html_perl_or($html_perl_or);
+        $self->_text_block_tag($tag) unless $self->_text_block_tag();
+        return $html_perl_or;
+    }
+    else {
+        return $self->$method($tag, $attr_hr, @param);
+    }
+
+}
+
+
+sub api {
+
+
+    #  Handle normally but set flag showing we are an <api> page, will optimise differently
+    #
+    my ($self, $method, $tag, $attr_hr, @param)=@_;
+    debug("self $self, tag: api, method: $method");
+    $self->{'_webdyne_compact'}=$tag;
+    if (delete $attr_hr->{'perl'}) {
+        my $html_perl_or=$self->$method($tag, $attr_hr);
+        $self->_html_perl_or($html_perl_or);
+        $self->_text_block_tag($tag) unless $self->_text_block_tag();
+        return $html_perl_or;
+    }
+    else {
+        return $self->$method($tag, $attr_hr, @param);
+    }
+
+}
+
+
+sub json {
+
+
+    #  No special handling needed, just log for debugging purposes
+    #
+    my ($self, $method, $tag, $attr_hr, @param)=@_;
+    debug("self $self, tag: api, method: $method");
+    if (delete $attr_hr->{'perl'}) {
+        my $html_perl_or=$self->$method($tag, $attr_hr);
+        $self->_html_perl_or($html_perl_or);
+        $self->_text_block_tag($tag) unless $self->_text_block_tag();
+        return $html_perl_or;
+    }
+    else {
+        return $self->$method($tag, $attr_hr, @param);
+    }
 
 }
 
@@ -632,7 +667,7 @@ sub perl {
     #  Special handling of perl tag
     #
     my ($self, $method, $tag, $attr_hr)=@_;
-    debug("$tag $method");
+    debug("tag: *$tag* method: $method");
 
 
     #  Call SUPER method, check if inline
@@ -642,6 +677,7 @@ sub perl {
     if ($tag eq 'perl') {
         unless (grep {exists $attr_hr->{$_}} qw(package method handler)) {
             $html_perl_or->attr(inline => ++$inline);
+            debug("inline: $inline");
         }
     }
     if ($inline) {
@@ -650,7 +686,7 @@ sub perl {
         #  added here
         #
         $self->_html_perl_or($html_perl_or);
-        $self->_text_block_tag('perl') unless $self->_text_block_tag();
+        $self->_text_block_tag($tag) unless $self->_text_block_tag();
 
 
         #  And return it
@@ -935,13 +971,14 @@ sub text {
 
     #  Are we in an inline perl block ?
     #
-    if ($self->_text_block_tag() eq 'perl') {
+    #if ($self->_text_block_tag() eq 'perl') {
+    if (grep { $self->_text_block_tag() eq $_ } qw(perl htmx api json)) {
 
 
         #  Yes. We have inline perl code, not text. Just add to perl attribute, which
         #  is treated specially when rendering
         #
-        debug('in <per> tag, appending text to <perl> block');
+        debug('in <perl> tag, appending text to <perl> block');
         my $html_perl_or=$self->_html_perl_or();
         $html_perl_or->{'perl'}.=$text;
         $html_perl_or->{'_line_no_tag_end'}=$self->{'_line_no'};
@@ -1181,6 +1218,7 @@ sub div {
 sub _get_set {
 
     my ($key, $self, $value)=@_;
+    debug("$self, key: $key, value: $value, store: %s", ($self->{$key} || '<none>'));
     return (@_==3) ? $self->{$key}=$value : $self->{$key}
     
 }
