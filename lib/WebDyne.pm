@@ -1010,7 +1010,8 @@ sub init_class {
 
         #  Debug
         #
-        my $inode=$self->{'_inode'} || 'ANON';    # Anon used when no inode present, eg wdcompile
+        #my $inode=$self->{'_inode'} || 'ANON';    # Was ANON but caused nasty test errors because of memory collisions after many iterations Anon used when no inode present, eg wdcompile
+        my $inode=$self->{'_inode'} || $self->inode();
         my $html_line_no=$data_ar->[WEBDYNE_NODE_LINE_IX];
 
 
@@ -1156,8 +1157,8 @@ sub init_class {
 
         #  Inode
         #
-        my $inode=$self->{'_inode'} || 'ANON';    # Anon used when no inode present, eg wdcompile
-
+        #my $inode=$self->{'_inode'} || 'ANON' # Was ANON - see above Anon used when no inode present, eg wdcompile
+        my $inode=$self->{'_inode'} ||  $self->inode();
 
         #  Get CGI vars
         #
@@ -1378,7 +1379,7 @@ sub init_class {
     #  Store in class name space
     #
     $Package{'_eval_cr'}=\%eval_cr;
-
+    
 }
 
 
@@ -2638,7 +2639,8 @@ sub perl {
 
     #  Get current inode
     #
-    my $inode=$self->{'_inode'} || 'ANON';
+    #my $inode=$self->{'_inode'} || 'ANON';
+    my $inode=$self->{'_inode'} ||  $self->inode();
 
 
     #  Load any modules spec'd by require attribute
@@ -2799,7 +2801,8 @@ sub eval_require {
 
     #  Inode ?
     #
-    my $inode=$self->{'_inode'} || 'ANON';
+    #my $inode=$self->{'_inode'} || 'ANON';
+    my $inode=$self->{'_inode'} ||  $self->inode();
 
 
     #  Eval cr
@@ -2939,7 +2942,8 @@ sub perl_init {
     #  Init the perl package space for this inode
     #
     my ($self, $perl_ar, $perl_debug_ar)=@_;
-    my $inode=$self->{'_inode'} || 'ANON';    #ANON used when run from command line
+    #my $inode=$self->{'_inode'} || 'ANON';    #ANON used when run from command line
+    my $inode=$self->{'_inode'} ||  $self->inode();
 
 
     #  Prep package space
@@ -4124,7 +4128,9 @@ sub inode {
     #  Return inode name
     #
     my $self=shift();
-    @_ ? $self->{'_inode'}=shift() : $self->{'_inode'};
+    @_ ? $self->{'_inode'}=shift() : ($self->{'_inode'} ||= do {
+         md5_hex( $self->{'_r'} ? $self->{'_r'}->{'filename'} : $self.rand() ) 
+    });
 
 }
 

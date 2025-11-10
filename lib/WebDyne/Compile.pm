@@ -84,8 +84,9 @@ sub new {
     #  example. wdcompile is only used for debugging - we do some q&d stuff here
     #  to make it work
     #
-    my ($class, $opt_hr)=@_;
-    debug("$class, opt_hr: %s", Dumper($opt_hr));
+    my ($class, @opt)=@_;
+    my %opt=ref($opt[0] eq 'HASH') ? %{$opt[0]} : @opt;
+    debug("$class, opt: %s", Dumper(\%opt));
 
 
     #  Get appropriate cgi_or
@@ -96,26 +97,23 @@ sub new {
 
     #  Init WebDyne module
     #
-    WebDyne->init_class();
     require WebDyne::Request::Fake;
-    my $r=WebDyne::Request::Fake->new( filename=> $opt_hr->{'srce'} );
+    my $r=WebDyne::Request::Fake->new( filename=> ( $opt{'filename'} || $opt{'srce'} ) );
 
 
     #  New self ref
     #
     my %self=(
 
-        _r => $r,
-
-        #_CGI  => $html_tag_or,
+        _r 	=> $r,
+        _CGI  	=> $html_tag_or,
 
     );
 
 
     #  And return blessed ref
     #
-    return bless \%self, 'WebDyne';
-
+    return bless(\%self, 'WebDyne');
 
 }
 
