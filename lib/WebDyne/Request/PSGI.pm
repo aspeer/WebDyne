@@ -305,7 +305,7 @@ sub new {
                 #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
                 #  handle it
                 #
-                if  (-d $fn) {
+                if  ((-d $fn) || !$fn) {
                     
             
                     #  Append default doc to path, which appears at moment to be a directory ?
@@ -328,10 +328,12 @@ sub new {
                         $fn=File::Spec->catfile($fn, split m{/+}, $document_default); #/
                     }
                 }
-                
-                #  Not .psp file, do not want
-                #
-                $fn=undef;
+                else {
+                    
+                    #  Not .psp file, do not want
+                    #
+                    $fn=undef;
+                }
             }
         }
 
