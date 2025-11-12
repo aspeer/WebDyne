@@ -31,6 +31,7 @@ our @ISA=qw(HTML::Tiny);
 use HTML::Tiny;
 use CGI::Simple;
 use Data::Dumper;
+use HTML::Element;
 
 
 #  WebDyne Modules
@@ -691,8 +692,8 @@ sub script {
     if ($attr{'src'}) {
     
     
-	#  Convert to array
-	#
+	    #  Convert to array
+	    #
         my $script_ar;
         unless (ref($script_ar=$attr{'src'}) eq 'ARRAY') {
             $script_ar=[$script_ar]

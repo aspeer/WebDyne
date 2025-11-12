@@ -33,7 +33,7 @@ $Data::Dumper::Indent=1;
 #
 use WebDyne::Request::PSGI::Constant;
 use WebDyne::Util;
-
+use WebDyne::Constant;
 
 
 #  Inheritance
@@ -199,8 +199,10 @@ sub lookup_file {
 
     my ($r, $fn)=@_;
     my $r_child;
-    if ($fn!~/\.psp$/) {
+    ##if ($fn!~/\.psp$/) {
     #if ($fn=~/\.html$/) {
+    #  If not psp file serve as static
+    unless (substr($fn, -WEBDYNE_PSP_EXT_LEN) eq WEBDYNE_PSP_EXT) {
 
 
         #  Static file
@@ -297,7 +299,8 @@ sub new {
             #  Need to add default psp file ?
             #
             #if ($fn=~/\/$/) {
-            unless ($fn=~/\.psp$/) {
+            #unless ($fn=~/\.psp$/) {
+            unless (substr($fn, -WEBDYNE_PSP_EXT_LEN ) eq WEBDYNE_PSP_EXT ) {
 
                 #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
                 #  handle it
@@ -325,16 +328,20 @@ sub new {
                         $fn=File::Spec->catfile($fn, split m{/+}, $document_default); #/
                     }
                 }
+                
+                #  Not .psp file, do not want
+                #
+                $fn=undef;
             }
         }
 
         #  Final sanity check
         #
         debug("final fn: $fn");
-        $r{'filename'}=$fn || do {
+        $r{'filename'}=$fn; # || do {
             #my $env=join("\n", map {"$_=$ENV{$_}"} keys %ENV);
-            return err("unable to determine filename for request from environment:%s, Dir_config_env: %s", Dumper(\%ENV, \%Dir_config_env))
-        };
+            #return err("unable to determine filename for request from environment:%s, Dir_config_env: %s", Dumper(\%ENV, \%Dir_config_env))
+        #};
         
     }
     
@@ -385,6 +392,7 @@ sub send_error_response {
 
     my $r=shift();
     my $status=$r->status();
+    
     CORE::print "Status: $status\r\n";
     $r->send_http_header;
     debug("in send error response, status $status");
