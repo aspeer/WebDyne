@@ -44,7 +44,7 @@ use WebDyne::Request::Fake;
 
 #  Version information
 #
-$VERSION='2.027';
+$VERSION='2.028';
 
 
 #  Debug load
