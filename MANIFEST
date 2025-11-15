@@ -73,6 +73,7 @@ lib/WebDyne/Template.pm
 lib/WebDyne/time.psp
 lib/WebDyne/index.psp
 lib/WebDyne/index.css
+lib/WebDyne/index.js           
 lib/WebDyne/Util.pm
 LICENSE
 Makefile.PL
@@ -874,8 +875,6 @@ t/linebreak.psp
 t/linesingle.psp                         
 t/script_subst.psp                       
 t/start_html_script_fragment.psp         
-lib/WebDyne/index_highlight.css          
-lib/WebDyne/index_highlight.js           
 t/alpine.psp                             
 t/data/02-alpine.dat.0                   
 t/data/02-alpine.dat.1                   

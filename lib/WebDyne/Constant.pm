@@ -410,10 +410,11 @@ my %constant_temp;
     WEBDYNE_PSGI_STATIC => 1,
     
     
-    #  WebDyne default extension and length, used in susbtr as faster than regex
+    #  WebDyne default extension and length, used in susbtr as faster than regex. Update - too slow, retiring and going to fixed
+    #  string .psp extension
     #
-    WEBDYNE_PSP_EXT 	=> '.psp',
-    WEBDYNE_PSP_EXT_LEN	=> 4,
+    #WEBDYNE_PSP_EXT 	=> '.psp',
+    #WEBDYNE_PSP_EXT_LEN	=> 4,
     
     
     #  Very minimal MIME type hash used by lookup_file function

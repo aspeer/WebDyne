@@ -85,7 +85,7 @@ sub new {
     #  to make it work
     #
     my ($class, @opt)=@_;
-    my %opt=ref($opt[0] eq 'HASH') ? %{$opt[0]} : @opt;
+    my %opt=(ref($opt[0]) eq 'HASH') ? %{$opt[0]} : @opt;
     debug("$class, opt: %s", Dumper(\%opt));
 
 
@@ -734,8 +734,17 @@ sub optimise_one {
                     #
                     #$html_tiny_or->$html_tag(grep {$_} $attr_hr || {}, join(undef, @data_child))
                     #$html_tiny_or->$html_tag($attr_hr || {}, join(undef, grep {$_} @data_child))
-                } ||
-
+                } || do { eval {
+                
+                    #  Ok - that didn't work. Try HTML::Element, might be something like an SVG tag
+                    #
+                    no warnings 'redefine';
+                    local *HTML::Entities::encode_entities = sub { $_[0] };  # Bypass escaping
+                    my $html_or=HTML::Element->new($html_tag, %{$attr_hr});
+                    if ($html_or) { $html_or->push_content(join(undef, @data_child)) };
+                    $html_or->as_HTML;
+                }} || 
+                    
                     #  Use errsubst as CGI may have DIEd during eval and be caught by WebDyne SIG handler
                     return errsubst(
                     "CGI tag '<$html_tag>': %s",
