@@ -1021,10 +1021,6 @@ sub optimise_two {
             #  Now render to make HTML and modify the data arrat above us with the rendered code
             #
             debug("compile_cr: if 2");
-            #my $html_sr=$self->render(
-            #    {
-            #        data => [$data_ar],
-            #    }) || return err();
             my $html_sr=$self->render_data_ar(
                 data => [$data_ar],
             ) || return err();

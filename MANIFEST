@@ -647,15 +647,6 @@ t/data/02-start_html_text.dat.5
 t/data/02-start_html_text.dat.final      
 t/data/02-start_html_text.html           
 t/data/02-start_html_text.tree           
-t/data/02-subsitution.dat.0              
-t/data/02-subsitution.dat.1              
-t/data/02-subsitution.dat.2              
-t/data/02-subsitution.dat.3              
-t/data/02-subsitution.dat.4              
-t/data/02-subsitution.dat.5              
-t/data/02-subsitution.dat.final          
-t/data/02-subsitution.html               
-t/data/02-subsitution.tree               
 t/data/02-table.dat.0                    
 t/data/02-table.dat.1                    
 t/data/02-table.dat.2                    
@@ -778,7 +769,6 @@ t/start_html_perl.psp
 t/start_html_script_array.psp            
 t/start_html_script.psp                  
 t/start_html_text.psp
-t/subsitution.psp
 t/table_plain.psp
 t/table.psp
 t/webdyne_meta.conf.pl                   
