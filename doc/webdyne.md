@@ -42,7 +42,7 @@ The local server time is:
 </html>
 ```
 
-[Run](https://demo.webdyne.org/example/introduction1.psp)
+[Run](https://demo.webdyne.org/introduction1.psp)
 
 This can be abbreviated with some WebDyne shortcut tags such as
 `<start_html>`. This does exactly the same thing and still renders
@@ -53,7 +53,7 @@ compliant HTML to the browser:
 The local server time is: <? localtime() ?>
 ```
 
-[Run](https://demo.webdyne.org/example/introduction2.psp)
+[Run](https://demo.webdyne.org/introduction2.psp)
 
 Don't like the co-mingling code and HTML but still want things in one
 file ?
@@ -69,7 +69,7 @@ sub print_time {
     
 ```
 
-[Run](https://demo.webdyne.org/example/introduction3.psp)
+[Run](https://demo.webdyne.org/introduction3.psp)
 
 Want further code and HTML separation ? You can import methods from any
 external Perl module. Example from a core module below, but could be any
@@ -81,7 +81,7 @@ Server Time::HiRes time:
 <perl require="Time::HiRes" import="time">time()</perl>
 ```
 
-[Run](https://demo.webdyne.org/example/introduction4.psp)
+[Run](https://demo.webdyne.org/introduction4.psp)
 
 Same concepts implemented in slightly different ways:
 
@@ -94,7 +94,7 @@ use Time::HiRes qw(time);
 1;
 ```
 
-[Run](https://demo.webdyne.org/example/introduction5.psp)
+[Run](https://demo.webdyne.org/introduction5.psp)
 
 ``` html
 <start_html title="Server Time">
@@ -102,7 +102,7 @@ use Time::HiRes qw(time);
 The local server time (hires) is: <? time() ?>
 ```
 
-[Run](https://demo.webdyne.org/example/introduction6.psp)
+[Run](https://demo.webdyne.org/introduction6.psp)
 
 Using an editor that doesn't like custom tags ? Use of the <div\> tag
 with a `data-*` attribute is legal HTML syntax and can be used to embed
@@ -113,7 +113,7 @@ Perl:
 The local server time is: <div data-webdyne-perl> localtime() </div>
 ```
 
-[Run](https://demo.webdyne.org/example/introduction7.psp)
+[Run](https://demo.webdyne.org/introduction7.psp)
 
 Don't like <div\> style syntax ? Put the code in a <script\> block -
 it will be interpreted on the server, not the client:
@@ -126,7 +126,7 @@ Server local time is:
 </script>
 ```
 
-[Run](https://demo.webdyne.org/example/introduction7.psp)
+[Run](https://demo.webdyne.org/introduction7.psp)
 
 Template blocks and variable replacement is supported also:
 
@@ -173,7 +173,7 @@ sub server_time {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/introduction9.psp)
+[Run](https://demo.webdyne.org/introduction9.psp)
 
 # Installation and Quickstart
 
@@ -546,7 +546,7 @@ Hello World <perl> localtime() </perl>
 </html>
 ```
 
-[Run](https://demo.webdyne.org/example/hello1.psp)
+[Run](https://demo.webdyne.org/hello1.psp)
 
 So far not too exciting - after all we are mixing code and content. Lets
 try again:
@@ -569,7 +569,7 @@ __PERL__
 sub hello { return localtime }
 ```
 
-[Run](https://demo.webdyne.org/example/hello2.psp)
+[Run](https://demo.webdyne.org/hello2.psp)
 
 Better - at least code and content are distinctly separated. Note that
 whatever the Perl code returns at the end of the routine is what is
@@ -641,7 +641,7 @@ Hello World <perl handler="Digest::MD5::md5_hex"/>
 </html>
 ```
 
-[Run](https://demo.webdyne.org/example/hello3.psp)
+[Run](https://demo.webdyne.org/hello3.psp)
 
 If not already resident the module (in this case "Digest::MD5") will be
 loaded by WebDyne, so it must be available somewhere in the `@INC` path.
@@ -680,7 +680,7 @@ return \undef;
 </html>
 ```
 
-[Run](https://demo.webdyne.org/example/inline1.psp)
+[Run](https://demo.webdyne.org/inline1.psp)
 
 This is the most straight-forward use of Perl within a HTML document,
 but does not really make for easy reading - the Perl code and HTML are
@@ -705,7 +705,7 @@ Copyright (C) <perl>(localtime())[5]+1900</perl> Foobar Gherkin corp.
 </html>
 ```
 
-[Run](https://demo.webdyne.org/example/inline2.psp)
+[Run](https://demo.webdyne.org/inline2.psp)
 
 Which can be pretty handy, but looks a bit cumbersome - the tags
 interfere with the flow of the text, making it harder to read. For this
@@ -731,7 +731,7 @@ The time is:  <? localtime() ?>
 </html>
 ```
 
-[Run](https://demo.webdyne.org/example/inline3.psp)
+[Run](https://demo.webdyne.org/inline3.psp)
 
 The !{! .. !} denotation can also be used in tag attributes (processing
 instructions, and <perl\> tags cannot):
@@ -753,7 +753,7 @@ Hello World
 </html>
 ```
 
-[Run](https://demo.webdyne.org/example/inline4.psp)
+[Run](https://demo.webdyne.org/inline4.psp)
 
 ### Use of the <perl\> tag for non-inline code.
 
@@ -781,7 +781,7 @@ __PERL__
 sub hello { return localtime }
 ```
 
-[Run](https://demo.webdyne.org/example/hello2.psp)
+[Run](https://demo.webdyne.org/hello2.psp)
 
 Note that the <perl\> tag in the above example is explicitly closed and
 does not contain any content. However non-inline code can enclose HTML
@@ -807,7 +807,7 @@ __PERL__
 sub hello { return localtime() }
 ```
 
-[Run](https://demo.webdyne.org/example/noninline1.psp)
+[Run](https://demo.webdyne.org/noninline1.psp)
 
 But this is not very interesting so far - the "Hello World" text is not
 displayed when the example is run !
@@ -842,7 +842,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/noninline2.psp)
+[Run](https://demo.webdyne.org/noninline2.psp)
 
 And again, this time showing how to render the text block multiple
 times. Note that an array reference is returned by the Perl routine -
@@ -875,7 +875,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/noninline3.psp)
+[Run](https://demo.webdyne.org/noninline3.psp)
 
 Same output using the \$self-\>print() method:
 
@@ -906,7 +906,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/noninline3.psp)
+[Run](https://demo.webdyne.org/noninline3.psp)
 
 ### Alternate output methods from Perl handlers
 
@@ -1087,7 +1087,7 @@ sub handler8 {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/output1.psp)
+[Run](https://demo.webdyne.org/output1.psp)
 
 ### Passing parameters to subroutines
 
@@ -1131,7 +1131,7 @@ sub hello_again {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/noninline7.psp)
+[Run](https://demo.webdyne.org/noninline7.psp)
 
 ### Parameter inheritance
 
@@ -1159,7 +1159,7 @@ sub inherit {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/inherit1.psp)
+[Run](https://demo.webdyne.org/inherit1.psp)
 
 ### Notes about \_\_PERL\_\_ sections
 
@@ -1198,7 +1198,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/noninline4.psp)
+[Run](https://demo.webdyne.org/noninline4.psp)
 
 Lexical variables are not accessible outside of the \_\_PERL\_\_ section
 due to the way perl's eval() function works. The following example will
@@ -1219,7 +1219,7 @@ __PERL__
 my $i=5;
 ```
 
-[Run](https://demo.webdyne.org/example/noninline5.psp)
+[Run](https://demo.webdyne.org/noninline5.psp)
 
 Package defined vars declared in a \_\_PERL\_\_ section do work, with
 caveats:
@@ -1258,7 +1258,7 @@ sub get_i { \$i }
 sub render_i { shift()->render(i=>$i) }
 ```
 
-[Run](https://demo.webdyne.org/example/noninline6.psp)
+[Run](https://demo.webdyne.org/noninline6.psp)
 
 See the Variables/Substitution section for clean ways to insert variable
 contents into the page.
@@ -1292,7 +1292,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/var1.psp)
+[Run](https://demo.webdyne.org/var1.psp)
 
 Note the passing of the `time` value as a parameter to be substituted
 when the text is rendered.
@@ -1349,7 +1349,7 @@ sub hello1 {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/var2.psp)
+[Run](https://demo.webdyne.org/var2.psp)
 
 Variables can also be used to modify tag attributes:
 
@@ -1385,7 +1385,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/var3.psp)
+[Run](https://demo.webdyne.org/var3.psp)
 
 Other variable types are available also, including:
 
@@ -1474,7 +1474,7 @@ Favourite colour 2:
 </html>
 ```
 
-[Run](https://demo.webdyne.org/example/var4.psp)
+[Run](https://demo.webdyne.org/var4.psp)
 
 ## Shortcut Tags
 
@@ -1497,7 +1497,7 @@ The time is: !{! localtime() !}
 <end_html>
 ```
 
-[Run](https://demo.webdyne.org/example/cgi6.psp)
+[Run](https://demo.webdyne.org/cgi6.psp)
 
 The <start_html\> tag generates all the <html\>, <head\>, <title\>
 tags etc needed for a valid HTML page plus an opening body tag. Just
@@ -1534,7 +1534,7 @@ and stylesheets:
 </script>
 ```
 
-[Run](https://demo.webdyne.org/example/start_html1.psp)
+[Run](https://demo.webdyne.org/start_html1.psp)
 
 !!! caution
 
@@ -1677,7 +1677,7 @@ sub answers {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/cgi1.psp)
+[Run](https://demo.webdyne.org/cgi1.psp)
 
 !!! note
 
@@ -1737,7 +1737,7 @@ sub countries {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/cgi5.psp)
+[Run](https://demo.webdyne.org/cgi5.psp)
 
 All values for the menu item were pre-populated from one WebDyne
 variable - which saves a significant amount of time populating a
@@ -1792,7 +1792,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/cgi3.psp)
+[Run](https://demo.webdyne.org/cgi3.psp)
 
 From there you can all any method supported by the CGI::Simple module -
 see the CGI::Simple manual page (`man CGI::Simple`) or review on CPAN:
@@ -1869,7 +1869,7 @@ sub hello2 {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/cgi4.psp)
+[Run](https://demo.webdyne.org/cgi4.psp)
 
 # Advanced Usage
 
@@ -1947,7 +1947,7 @@ sub check {
         
 ```
 
-[Run](https://demo.webdyne.org/example/block1.psp)
+[Run](https://demo.webdyne.org/block1.psp)
 
 There can be more than one block with the same name - any block with the
 target name will be rendered:
@@ -2011,7 +2011,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/block2.psp)
+[Run](https://demo.webdyne.org/block2.psp)
 
 Like any other text or HTML between <perl\> tags, blocks can take
 parameters to substitute into the text:
@@ -2064,7 +2064,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/block3.psp)
+[Run](https://demo.webdyne.org/block3.psp)
 
 Blocks have a non-intuitive feature - they still display even if they
 are outside of the <perl\> tags that made the call to render them. e.g.
@@ -2107,7 +2107,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/block4.psp)
+[Run](https://demo.webdyne.org/block4.psp)
 
 You can mix the two styles:
 
@@ -2145,7 +2145,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/block5.psp)
+[Run](https://demo.webdyne.org/block5.psp)
 
 You can use the <block\> tag display attribute to hide or show a block,
 or use a CGI parameter to determine visibility (e.g for a status update
@@ -2177,7 +2177,7 @@ Goodbye world
 </block>
 ```
 
-[Run](https://demo.webdyne.org/example/block_toggle1.psp)
+[Run](https://demo.webdyne.org/block_toggle1.psp)
 
 ## File inclusion
 
@@ -2197,7 +2197,7 @@ The protocols file on this machine:
 </html>
 ```
 
-[Run](https://demo.webdyne.org/example/include1.psp)
+[Run](https://demo.webdyne.org/include1.psp)
 
 If the file name is not an absolute path name is will be loaded relative
 to the directory of the parent file. For example if file "bar.psp"
@@ -2231,7 +2231,7 @@ can be supplied :
 Include Body
 ```
 
-[Run](https://demo.webdyne.org/example/include2.psp)
+[Run](https://demo.webdyne.org/include2.psp)
 
 And here is the generating file (the file that includes sections from
 the reference file).
@@ -2245,7 +2245,7 @@ the reference file).
 <include body file="./include2.psp">
 ```
 
-[Run](https://demo.webdyne.org/example/include3.psp)
+[Run](https://demo.webdyne.org/include3.psp)
 
 You can also include block sections from `.psp` files. If this is the
 reference file (the file to be included) containing two blocks. This is
@@ -2266,7 +2266,7 @@ This is block 2
 </block>
 ```
 
-[Run](https://demo.webdyne.org/example/include4.psp)
+[Run](https://demo.webdyne.org/include4.psp)
 
 And here is the file that brings in the blocks from the reference file
 and incorporates them into the output:
@@ -2284,7 +2284,7 @@ And another different block from the same file with caching disabled:
 <include file="include4.psp" block="block2" nocache>
 ```
 
-[Run](https://demo.webdyne.org/example/include5.psp)
+[Run](https://demo.webdyne.org/include5.psp)
 
 ## Static Sections {#static_sections}
 
@@ -2330,7 +2330,7 @@ sub mtime {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/static1.psp)
+[Run](https://demo.webdyne.org/static1.psp)
 
 In fact the above page will render very quickly because it has no
 dynamic content at all once the <perl\> content is flagged as static.
@@ -2394,7 +2394,7 @@ sub mtime {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/static2.psp)
+[Run](https://demo.webdyne.org/static2.psp)
 
 If you want the whole pages to be static, then flagging everything with
 the "static" attribute can be cumbersome. There is a special meta tag
@@ -2458,7 +2458,7 @@ sub mtime {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/static3.psp)
+[Run](https://demo.webdyne.org/static3.psp)
 
 If you don't like the idea of setting the static flag in meta data, then
 "using" the special package "WebDyne::Static" will have exactly the same
@@ -2516,7 +2516,7 @@ sub mtime {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/static3a.psp)
+[Run](https://demo.webdyne.org/static3a.psp)
 
 If the static tag seems trivial consider the example that displayed
 country codes:
@@ -2553,7 +2553,7 @@ sub countries {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/cgi5.psp)
+[Run](https://demo.webdyne.org/cgi5.psp)
 
 Every time the above example is viewed the Country Name list is
 generated dynamically via the Locale::Country module. This is a waste of
@@ -2595,7 +2595,7 @@ sub countries {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/static4.psp)
+[Run](https://demo.webdyne.org/static4.psp)
 
 By simply adding the "static" attribute output on a sample machine
 resulted in a 4x speedup in page loads. Judicious use of the static tag
@@ -2690,7 +2690,7 @@ sub cache {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/cache1.psp)
+[Run](https://demo.webdyne.org/cache1.psp)
 
 WebDyne uses the return value of the nominated cache routine to
 determine what UID (unique ID) to assign to the page. In the above
@@ -2775,7 +2775,7 @@ sub results {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/cache2.psp)
+[Run](https://demo.webdyne.org/cache2.psp)
 
 !!! important
 
@@ -2833,7 +2833,7 @@ sub chart_data {
         
 ```
 
-[Run](https://demo.webdyne.org/example/chart1.psp)
+[Run](https://demo.webdyne.org/chart1.psp)
 
 If you run it and review the source HTML you will see the JSON data
 rendered into the page as <script\></script\> block of type
@@ -2898,10 +2898,10 @@ sub doublecase {
 ```
 
 [Run uppercase API
-example](https://demo.webdyne.org/example/api/uppercase/bob/42)
+example](https://demo.webdyne.org/api/uppercase/bob/42)
 
 [Run doublecase API
-example](https://demo.webdyne.org/example/api/doublecase/bob/42)
+example](https://demo.webdyne.org/api/doublecase/bob/42)
 
 !!! caution
 
@@ -2939,7 +2939,7 @@ Get Time
 </div>
 ```
 
-[Run](https://demo.webdyne.org/example/htmx_demo1.psp)
+[Run](https://demo.webdyne.org/htmx_demo1.psp)
 
 And the backend file which generates the HTMX data for the above page
 (`htmx_time1.psp`):
@@ -2949,7 +2949,7 @@ And the backend file which generates the HTMX data for the above page
 <htmx>Server local time: <? localtime() ?> </htmx>
 ```
 
-[Run](https://demo.webdyne.org/example/htmx_time1.psp)
+[Run](https://demo.webdyne.org/htmx_time1.psp)
 
 Note the <htmx\> tags. You can run the above htmx resource file and it
 will render correctly as a full HTML page - however if WebDyne detects a
@@ -2991,7 +2991,7 @@ Get Time
 </div>
 ```
 
-[Run](https://demo.webdyne.org/example/htmx_demo2.psp)
+[Run](https://demo.webdyne.org/htmx_demo2.psp)
 
 And the backend file which generates the HTMX data for the above page:
 
@@ -3014,7 +3014,7 @@ sub server_time {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/htmx_time2.psp)
+[Run](https://demo.webdyne.org/htmx_time2.psp)
 
 ### Using multiple <htmx\> tags in one .psp file
 
@@ -3064,14 +3064,14 @@ Get UTC Time
 </div>
 ```
 
-[Run](https://demo.webdyne.org/example/htmx_demo3.psp)
+[Run](https://demo.webdyne.org/htmx_demo3.psp)
 
 ``` html
 <htmx display="+{time_local}"> Time Local: <? localtime() ?></htmx>
 <htmx display="+{time_utc}"> Time UTC: <? gmtime() ?></htmx>
 ```
 
-[Run](https://demo.webdyne.org/example/htmx_time3.psp)
+[Run](https://demo.webdyne.org/htmx_time3.psp)
 
 Normally you would expect to have the hx-get attribute for each button
 go to a different .psp page. But in this instance they refer to the same
@@ -3112,7 +3112,7 @@ Your Name: <textfield name="name">
 <dump all force>
 ```
 
-[Run](https://demo.webdyne.org/example/dump1.psp)
+[Run](https://demo.webdyne.org/dump1.psp)
 
 Dump display/hide can be controlled by form parameters or run URI query
 strings. In the example below ticking the checkbox or simply appending
@@ -3131,7 +3131,7 @@ Show Dump: <checkbox name="dump_enable">
 <dump all force="!{! $_{'dump_enable'} !}">
 ```
 
-[Run](https://demo.webdyne.org/example/dump2.psp)
+[Run](https://demo.webdyne.org/dump2.psp)
 
 # Error Handling
 
@@ -3148,7 +3148,7 @@ Let's divide by zero: !{! my $z=0; return 5/$z !}
 <end_html>
 ```
 
-[Run](https://demo.webdyne.org/example/err1.psp)
+[Run](https://demo.webdyne.org/err1.psp)
 
 If you run the above example an error message will be displayed
 
@@ -3174,7 +3174,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/err2.psp)
+[Run](https://demo.webdyne.org/err2.psp)
 
 And the corresponding screen shot:
 
@@ -3245,7 +3245,7 @@ sub hello {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/err3.psp)
+[Run](https://demo.webdyne.org/err3.psp)
 
 You can use the err() function to check for errors in WebDyne Perl code
 associated with a page, e.g.:
@@ -3273,7 +3273,7 @@ sub bar {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/err4.psp)
+[Run](https://demo.webdyne.org/err4.psp)
 
 Note that the backtrace in this example shows clearly where the error
 was triggered from.
@@ -4132,7 +4132,7 @@ Example:
     use WebDyne::Session;
     1;
 
-[Run](https://demo.webdyne.org/example/session1.psp)
+[Run](https://demo.webdyne.org/session1.psp)
 
 WebDyne::Session can also be used in conjunction with the
 [WebDyne::Chain](#webdyne_chain) module to make session information
@@ -4249,7 +4249,7 @@ sub copyright {
 }
 ```
 
-[Run](https://demo.webdyne.org/example/template1.psp)
+[Run](https://demo.webdyne.org/template1.psp)
 
 The content, run to view resulting merge:
 
@@ -4266,7 +4266,7 @@ The content, run to view resulting merge:
 
     use WebDyne::Template qw(template1.psp);
 
-[Run](https://demo.webdyne.org/example/content1.psp)
+[Run](https://demo.webdyne.org/content1.psp)
 
 In real life it is not desirable to put the template name into every
 content file (as was done in the above example), nor would we want to
