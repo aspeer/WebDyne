@@ -199,7 +199,7 @@ my %constant_temp;
         'charset='.$constant_temp{'webdyne_html_charset'} => undef,
         
         # Set viewport by default
-        viewport => 'width=device-width, initial-scale=1.0'
+        'viewport' => 'width=device-width, initial-scale=1.0'
     },
 
 
@@ -413,8 +413,8 @@ my %constant_temp;
     #  WebDyne default extension and length, used in susbtr as faster than regex. Update - too slow, retiring and going to fixed
     #  string .psp extension
     #
-    #WEBDYNE_PSP_EXT 	=> '.psp',
-    #WEBDYNE_PSP_EXT_LEN	=> 4,
+    WEBDYNE_PSP_EXT 	=> ($constant_temp{'webdyne_psp_ext'}='.psp'),
+    WEBDYNE_PSP_EXT_RE  => qr/\Q$constant_temp{'webdyne_psp_ext'}\E/,
     
     
     #  Very minimal MIME type hash used by lookup_file function
@@ -655,11 +655,17 @@ sub import {
                 #*{"${caller}::Constant"}=$hr; # Pulled for moment, bit polluting without ability to ref constant scalars in hash values
             }
             else {
-                *{"${caller}::${k}"}=\${"${class_parent}::${k}"};
-                #*{"${caller}::${k}"}=\${"${class_parent}::${k}"}; # Stop "only used once" warning;
+                if (defined *{"${class_parent}::${k}"}) {
+                    *{"${caller}::${k}"} = *{"${class_parent}::${k}"};
+                }
+                else {
+                    *{"${caller}::${k}"} = \$v;
+                }
+                #  Used to be this                
+                #*{"${caller}::${k}"}=\${"${class_parent}::${k}"};
             }
             next if *{"${caller}::${k}"}{'CODE'};
-            next if ref($v);
+            #next if ref($v); # Not needed, stop Regexp conversion
             if ($v=~/^\d+$/) {
                 *{"${caller}::${k}"}=eval("sub () { $v }");
             }

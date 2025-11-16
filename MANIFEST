@@ -968,3 +968,13 @@ t/data/02-json_perl_inline.html
 t/data/02-json_perl_inline.tree          
 t/htmx_perl_inline.psp                   
 t/json_perl_inline.psp                   
+t/data/02-svg.dat.0                      
+t/data/02-svg.dat.1                      
+t/data/02-svg.dat.2                      
+t/data/02-svg.dat.3                      
+t/data/02-svg.dat.4                      
+t/data/02-svg.dat.5                      
+t/data/02-svg.dat.final                  
+t/data/02-svg.html                       
+t/data/02-svg.tree                       
+t/svg.psp                                

@@ -728,22 +728,18 @@ sub optimise_one {
                 debug("about to call $html_tag with attr_hr:%s, data_child: %s", Dumper($attr_hr, \@data_child));
                 my $html=eval {
                     $attr_hr=undef unless keys %{$attr_hr};
-                    $html_tiny_or->$html_tag(grep {$_} $attr_hr, join(undef, @data_child))
+                    if ($html_tiny_or->can($html_tag)) {
+                        $html_tiny_or->$html_tag(grep {$_} $attr_hr, join(undef, @data_child))
+                    }
+                    else {
+                        $html_tiny_or->tag($html_tag, grep {$_} $attr_hr, join(undef, @data_child))
+                    }
 
                     #  Older attempts
                     #
                     #$html_tiny_or->$html_tag(grep {$_} $attr_hr || {}, join(undef, @data_child))
                     #$html_tiny_or->$html_tag($attr_hr || {}, join(undef, grep {$_} @data_child))
-                } || do { eval {
-                
-                    #  Ok - that didn't work. Try HTML::Element, might be something like an SVG tag
-                    #
-                    no warnings 'redefine';
-                    local *HTML::Entities::encode_entities = sub { $_[0] };  # Bypass escaping
-                    my $html_or=HTML::Element->new($html_tag, %{$attr_hr});
-                    if ($html_or) { $html_or->push_content(join(undef, @data_child)) };
-                    $html_or->as_HTML;
-                }} || 
+                } || 
                     
                     #  Use errsubst as CGI may have DIEd during eval and be caught by WebDyne SIG handler
                     return errsubst(

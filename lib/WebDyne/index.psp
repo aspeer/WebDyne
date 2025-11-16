@@ -16,6 +16,7 @@
     )}"
     include_script="@{qw(index.js)}" 
 >
+
 <perl handler="index">
 <header>
   <h1>Index of <span id="current-path">${path_dn}</span></h1>
@@ -38,31 +39,21 @@
         <td><a href="${href}">${filename}</a></td>
         <td>${date}</td>
         <td>${size}</td>
-        <perl handler="file_or_dir" >
         
-            <block name="file">
+            <block name="file" display="!{! $_[1]->{'type'} eq 'file' !}" >
             <td style="text-align: right"  x-data="{ isOpen: false }">
-                <!-- <a href="#" 
-                  @click.prevent="toggleSourceRow($el, $data)"
-                  data-filename="${filename}"
-                  data-md5="${md5_hex}"
-                  x-text="isOpen ? 'Hide Source' : 'View Source'"
-                > -->
-                <a href="#" @click.prevent="toggleSourceRow($el, $data)" x-data="{ isOpen: false }" class="cursor-pointer inline-flex items-center gap-1"  data-filename="${filename}" data-md5="${md5_hex}">
-                <svg data-lucide="chevron-left" width="16" height="16" :style="isOpen ? 'transform: rotate(-90deg)' : ''" style="transition: transform .15s ease-in-out;"></svg>
-                <!-- View Source -->
-                <!-- <img src="https://unpkg.com/lucide-static/icons/code.svg" alt="View Source icon" width="18" height="18"> -->
+                <a href="#" @click.prevent="toggleSourceRow($el, $data)" class="cursor-pointer inline-flex items-center gap-1"  data-filename="${filename}" data-md5="${md5_hex}">
+                    <svg data-lucide="chevron-left" width="16" height="16" :style="isOpen ? 'transform: rotate(-90deg)' : ''" style="transition: transform .15s ease-in-out;"></svg>
                 </a>
             </td>
             </block>
 
-            <block name="dir">
+            <block name="dir" display="!{! $_[1]->{'type'} eq 'dir' !}">
             <td style="text-align: right">
-            ${data} ${type}
+            -
             </td>
             </block>
 
-        </perl>
       </tr>
       </block>
     </tbody>
@@ -70,7 +61,11 @@
 </main>
 
 
-<!-- Blocks for file and directory links -->
+<footer>
+  <hr>
+  <small>Generated on ${timestamp} by WebDyne Indexer in ${sec} sec.</small>
+</footer>
+</perl>
 
 
 <!-- HTMX section start -->
@@ -93,26 +88,6 @@ ${code}
 
 <!-- HTMX section end -->
 
-<footer>
-  <hr>
-  <small>Generated on ${timestamp} by WebDyne Indexer in ${sec} sec.</small>
-</footer>
-</perl>
-
-<script>
-function refreshIcons() {
-    console.log("refreshIcons() running…");
-    if (window.lucide) {
-        lucide.createIcons();
-    } else {
-        console.error("lucide not found!");
-    }
-}
-document.addEventListener('DOMContentLoaded', refreshIcons);
-document.addEventListener('htmx:afterSwap', refreshIcons);
-</script>
-
-<dump force>
 
 __PERL__
 
@@ -126,12 +101,6 @@ use Cwd qw(realpath);
 use IO::File;
 use Digest::MD5 qw(md5_hex);
 
-sub file_or_dir {
-
-    use Data::Dumper;
-    return shift()->render_block('dir', data=>Dumper(shift()));
-    
-}
 
 sub source {
 
