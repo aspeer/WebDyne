@@ -199,7 +199,8 @@ sub lookup_file {
 
     my ($r, $fn)=@_;
     my $r_child;
-    if ($fn!~/\.psp$/) { # fastest
+    #if ($fn!~/\.psp$/) { # fastest
+    if ($fn!~WEBDYNE_PSP_EXT_RE) { # fastest
     #if ($fn=~/\.html$/) {
     #  If not psp file serve as static
     #unless (substr($fn, -WEBDYNE_PSP_EXT_LEN) eq WEBDYNE_PSP_EXT) {
@@ -299,7 +300,8 @@ sub new {
             #  Need to add default psp file ?
             #
             #if ($fn=~/\/$/) {
-            unless ($fn=~/\.psp$/) { # fastest
+            #unless ($fn=~/\.psp$/) { # fastest
+            unless ($fn=~WEBDYNE_PSP_EXT_RE) { # fastest
             #unless (substr($fn, -WEBDYNE_PSP_EXT_LEN ) eq WEBDYNE_PSP_EXT ) {
 
                 #  Is it a directory that exists ? Only append default document if that is the case, else let the api code

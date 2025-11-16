@@ -61,7 +61,8 @@ sub hello0 {
 }
 
 sub hello1 {
-	shift()->render({ param=> { hello=>'Hello World 1' }});
+	#shift()->render({ param=> { hello=>'Hello World 1' }});
+	shift()->render({ hello=>'Hello World 1' });
 }
 
 sub hello2 {
