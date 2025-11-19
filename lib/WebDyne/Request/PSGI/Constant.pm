@@ -20,20 +20,20 @@ package WebDyne::Request::PSGI::Constant;
 #  Pragma
 #
 use strict qw(vars);
-#use vars qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
 use vars qw($VERSION @ISA %Constant);
 use warnings;
+
+
+#  Does the heavy liftying of importing into caller namespace
+#
+require WebDyne::Constant;
+@ISA=qw(WebDyne::Constant);
 
 
 #  Version information
 #
 $VERSION='2.031';
 
-
-#  Get module file name and path, derive name of file to store local constants
-#
-use Cwd qw(abs_path);
-my $local_fn=abs_path(__FILE__) . '.local';
 
 
 #  Hash of constants
@@ -98,20 +98,7 @@ my $local_fn=abs_path(__FILE__) . '.local';
 # >>>
 
 
-sub import {
-    
-    goto &WebDyne::Constant::import;
-    
-}
-
-
-#  Export constants to namespace, place in export tags
-#
-require WebDyne::Constant;
-@ISA=qw(WebDyne::Constant);
-
-
-#  All done
+#  Done
 #
 1;
-#===================================================================================================
+

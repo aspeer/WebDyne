@@ -16,11 +16,9 @@ package WebDyne::Constant;
 #  Pragma
 #
 use strict qw(vars);
-#use vars   qw($VERSION @ISA %EXPORT_TAGS @EXPORT_OK @EXPORT %Constant);
 use vars   qw($VERSION %Constant);
 use warnings;
 no warnings qw(uninitialized);
-local $^W=0;
 
 
 #  External modules
@@ -37,14 +35,14 @@ require Opcode;
 $VERSION='2.031';
 
 
-#  Get mod_perl version. Clear $@ after evals
+#  Get mod_perl version taking intio account legacy strings. Clear $@ after evals
 #
-eval {require mod_perl2 if ($ENV{'MOD_PERL_API_VERSION'} == 2)} ||
-    eval {require Apache2 if $ENV{'MOD_PERL'}=~/1.99/} ||
-    eval {require mod_perl if $ENV{'MOD_PERL'}};
+eval {require mod_perl2 if (defined($ENV{'MOD_PERL_API_VERSION'}) && ($ENV{'MOD_PERL_API_VERSION'} == 2))} ||
+eval {require Apache2 if (defined($ENV{'MOD_PERL'}) && ($ENV{'MOD_PERL'}=~/1.99/))} ||
+eval {require mod_perl if $ENV{'MOD_PERL'}};
 eval {} if $@;
-my $Mod_perl_version=$mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION};
-my $MP2=($Mod_perl_version > 1.99) ? 1 : 0;
+my $MP_version=$mod_perl::VERSION || $mod_perl2::VERSION || $ENV{MOD_PERL_API_VERSION};
+my $MP2=(defined($MP_version) && ($MP_version  > 1.99)) ? 1 : 0;
 
 
 #  Temp location to hold vars we propagate into multiple constants below.
@@ -439,7 +437,7 @@ my %constant_temp;
     #  doing.
     #
     MP2      => $MP2,
-    MOD_PERL => $Mod_perl_version
+    MOD_PERL => $MP_version,
 
 
 );
@@ -451,6 +449,7 @@ sub local_constant_load {
     #  Load constants from override files first
     #
     my ($class, $constant_hr)=@_;
+    $constant_hr=\%{"${class}::Constant"};
     debug("class $class, constant_hr %s", Dumper($constant_hr));
     my $local_constant_pn_ar=&local_constant_pn();
     debug("local_constant_pn_ar: %s", Dumper($local_constant_pn_ar));
@@ -461,7 +460,7 @@ sub local_constant_load {
             ||
             warn "unable to read local constant file, $!"
         );
-        debug("local_hr $local_hr");
+        debug("local_hr $local_hr") if $local_hr;
         if (my $hr=$local_hr->{$class}) {
             debug("found class $class hr %s", Dumper($hr));
             while (my ($key, $val)=each %{$hr}) {
@@ -489,12 +488,12 @@ sub local_constant_load {
 
     #  Load up Apache config - only if running under mod_perl
     #
-    if ($Mod_perl_version) {
+    if ($MP_version) {
 
 
         #  Ignore die's for the moment so don't get caught by error handler
         #
-        debug("detected mod_perl version $Mod_perl_version - loading Apache directives");
+        debug("detected mod_perl version $MP_version - loading Apache directives");
         local $SIG{'__DIE__'}=undef;
         my $server_or;
         eval {
@@ -621,18 +620,49 @@ sub hashref {
 
 sub import {
     
+    #  Get caller
+    #
     my $class=shift();
-    (my $class_parent=$class)=~s/::Constant$//;
+    
+    
+    #  Return if already loaded
+    #
+    (my $class_fn=$class)=~s{::}{/}g;
+    return if $INC{"{$class_fn}.pm"};
+    
+    
+    #  Load local constants file
+    #
+    &local_constant_load($class);
+    
+    
+    #  Get hash ref of Constants file from class calling up, calling
+    #  module needs to declare a %Class:Name::Constant variable in 
+    #  global space.
+    #
     my $hr=\%{"${class}::Constant"};
-    if ($_[0] eq 'dump') {
+    
+    
+    #  Check if just dumping for view, or actually loading into caller
+    #  namespace
+    #
+    if (($_[0] ||= '') eq 'dump') {
+
+        #  We just to want to see what they are
+        #
         local $Data::Dumper::Indent=1;
         local $Data::Dumper::Terse=1;
+        local $Data::Dumper::Sortkeys=1;
         CORE::print Dumper($hr);
         exit 0;
     }
     else {
 
+        #  We want to load variable into namespace. Get the parent class
+        #
+        (my $class_parent=$class)=~s/::Constant$//;
         my $caller = caller(0);
+        debug("caller: $caller");
         no warnings qw(once);
         while (my($k, $v)=each %{$hr}) {
             #  Used to do just
@@ -677,8 +707,6 @@ sub import {
     }
 }
 
-
-&local_constant_load(__PACKAGE__, \%Constant);
 1;
 
 
