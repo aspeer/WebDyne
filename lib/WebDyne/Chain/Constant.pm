@@ -35,8 +35,8 @@ require WebDyne::Constant;
 $VERSION='2.031';
 
 
-#  Constants are empty, but havin this file allows for import of DEBUG and othe
-#  vars from /etc/constant;
+#  Constants are empty, but having this file allows for import of DEBUG and othe
+#  vars from /etc/webdyne.conf.pl;
 #
 %Constant=();
 

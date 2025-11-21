@@ -133,17 +133,26 @@ sub dir_config {
     my $location=$r->location();
     debug("in dir_config looking for key $key at location $location");
 
-    if (exists $constant_server_hr->{$location}) {
-        return $constant_server_hr->{$location}{$key}
-    }
-    elsif (exists $constant_hr->{$location}) {
-        return $constant_hr->{$location}{$key}
-
-        #|| $constant_hr->{undef()}{$key} || $Dir_config_env{$key}
+    if ($key) {
+        if (exists $constant_server_hr->{$location}) {
+            return $constant_server_hr->{$location}{$key}
+        }
+        elsif (exists $constant_hr->{$location}) {
+            return $constant_hr->{$location}{$key}
+            #|| $constant_hr->{undef()}{$key} || $Dir_config_env{$key}
+        }
+        else {
+            debug("explicit location key $key not found, returning top level");
+            #return $Dir_config_env{$key} || $constant_hr->{''}{$key} || $constant_hr->{$key};
+            return $Dir_config_env{$key} || exists($constant_hr->{''}) ? $constant_hr->{''}{$key} : $constant_hr->{$key};
+        }
     }
     else {
-        debug("explicit location key $key not found, returning top level");
-        return $constant_hr->{''}{$key} || $Dir_config_env{$key}
+        #  Return dump of whole thing
+        #
+        my %dir_config=%{$constant_hr};
+        map { $dir_config{$_}=$Dir_config_env{$key} if exists($Dir_config_env{$key}) } keys %{$constant_hr};
+        return \%dir_config;
     }
 
 }

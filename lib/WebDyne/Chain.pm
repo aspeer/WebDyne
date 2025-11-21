@@ -464,7 +464,7 @@ sub UNIVERSAL::AUTOLOAD {
 
     #  Return err
     #
-        err ("method '$method_autoload' not found in call chain: %s", join(',', @caller));
+    err ("method '$method_autoload' not found in call chain: %s", join(',', @caller));
     goto RENDER_ERROR;
 
 }
