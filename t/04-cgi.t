@@ -19,5 +19,5 @@ $ENV{'REQUEST_METHOD'}='GET';
 #
 my $ret;
 my ($stdout, $stderr)=capture { $ret=system($^X, 't/02-render.t', 't/cgi.psp') };
-diag("ret: $ret, stdout: $stdout, stderr: $stderr");
+#diag("ret: $ret, stdout: $stdout, stderr: $stderr");
 ok($ret==0);

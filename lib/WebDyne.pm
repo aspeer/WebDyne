@@ -277,8 +277,8 @@ sub handler : method {    # no subsort
     #  Debug
     #
     debug(
-        "in WebDyne::handler. class $class, self $self, r $r, param_hr %s",
-        Dumper($param_hr));
+        "in WebDyne::handler. class $class, self $self, r $r (%s), param_hr %s",
+        Dumper($r, $param_hr));
 
 
     #  Skip all processing if header request only

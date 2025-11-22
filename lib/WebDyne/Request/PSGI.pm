@@ -119,69 +119,39 @@ sub headers_in {
 }
 
 
-sub dir_config {
-
-    my ($r, $key)=@_;
-
-    my $constant_hr=$WEBDYNE_PSGI_DIR_CONFIG;
-
-    my $constant_server_hr;
-    if (my $server=$Dir_config_env{'WebDyneServer'} || $ENV{'SERVER_NAME'}) {
-        $constant_server_hr=$constant_hr->{$server} if exists($constant_hr->{$server})
-    }
-
-    my $location=$r->location();
-    debug("in dir_config looking for key $key at location $location");
-
-    if ($key) {
-        if (exists $constant_server_hr->{$location}) {
-            return $constant_server_hr->{$location}{$key}
-        }
-        elsif (exists $constant_hr->{$location}) {
-            return $constant_hr->{$location}{$key}
-            #|| $constant_hr->{undef()}{$key} || $Dir_config_env{$key}
-        }
-        else {
-            debug("explicit location key $key not found, returning top level");
-            #return $Dir_config_env{$key} || $constant_hr->{''}{$key} || $constant_hr->{$key};
-            return $Dir_config_env{$key} || exists($constant_hr->{''}) ? $constant_hr->{''}{$key} : $constant_hr->{$key};
-        }
-    }
-    else {
-        #  Return dump of whole thing
-        #
-        my %dir_config=%{$constant_hr};
-        map { $dir_config{$_}=$Dir_config_env{$key} if exists($Dir_config_env{$key}) } keys %{$constant_hr};
-        return \%dir_config;
-    }
-
-}
-
-
 sub location {
+
 
     #  Equiv to Apache::RequestUtil->location;
     #
+    my $r=shift();
+    debug("r: $r, caller: %s", Dumper([caller(0)]));
     my $location;
-    my $constant_hr=$WEBDYNE_PSGI_DIR_CONFIG;
+    my $constant_hr=$WEBDYNE_DIR_CONFIG;
     my $constant_server_hr;
     if (my $server=$Dir_config_env{'WebDyneServer'} || $ENV{'SERVER_NAME'}) {
         $constant_server_hr=$constant_hr->{$server} if exists($constant_hr->{$server})
     }
     if ($Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'}) {
 
-        #  APPL_MD_PATH is IIS virtual dir
+        #  APPL_MD_PATH is IIS virtual dir. If that or a fixed location set use it.
         #
         $location=$Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'};
     }
-    elsif ($ENV{'SCRIPT_NAME'}) {
-        my $path=(File::Spec::Unix->splitpath($ENV{'SCRIPT_NAME'}))[1];
-        my @location=grep {$_}
-            File::Spec::Unix->rootdir(), File::Spec::Unix->splitdir($path);
+    elsif (my $uri_path=join('', grep {$_} @ENV{qw(SCRIPT_NAME PATH_INFO)})) {
+        
+        #  Strip file name
+        #
+        $uri_path=~s{[^/]+\Q@{[WEBDYNE_PSP_EXT]}\E$}{}x; #\
+        debug("uri_path: $uri_path");
+        my @location=('/', grep {$_} File::Spec::Unix->splitdir($uri_path));
+        
+        #  Start iterating through directories
+        #
         while ($location=File::Spec::Unix->catdir(@location)) {
-            debug("location $location");
+            debug("location: $location");
             last if exists($constant_hr->{$location}) || exists($constant_server_hr->{$location});
-            $location.=File::Spec::Unix->rootdir();
+            $location.='/' unless ($location eq '/');
             last if exists($constant_hr->{$location}) || exists($constant_server_hr->{$location});
             pop @location;
         }
@@ -192,6 +162,9 @@ sub location {
         #
         #$location=File::Spec::Unix->rootdir();
     }
+    
+    #  
+    #
     return $location;
 
 }
@@ -280,11 +253,12 @@ sub new {
                 #
                 my $uri=$r{'uri'} || $ENV{'REQUEST_URI'};
                 debug("uri: $uri");
-                if (my $location=$class->location()) {
-                    debug("location: $location");
-                    $uri=~s/^\Q$location\E//;
-                    debug("uri now: $uri");
-                }
+                #  Not sure why I did this ? Why strip location ?
+                #if (my $location=$class->location()) {
+                #    debug("location: $location");
+                #    $uri=~s/^\Q$location\E//;
+                #    debug("uri now: $uri");
+                #}
                 my $uri_or=URI->new($uri);
                 #$fn=File::Spec->catfile($dn, $uri_or->path());
                 $fn=File::Spec->catfile($dn, split m{/+}, $uri_or->path());

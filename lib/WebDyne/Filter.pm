@@ -83,8 +83,12 @@ sub request {
 
     my ($self, $r, @param)=@_;
     debug("$self, r: $r, param: %s", Dumper(\@param));
-    if (ref(my $cr=$WEBDYNE_FILTER_REQUEST_CR) eq 'CODE') {
-        debug("calling request filter handler: $cr");
+    if (ref(my $cr=$r->dir_config('WebDyneFilterRequest')) eq 'CODE') {
+        debug("calling dir_config request filter handler: $cr");
+        return $cr->($self, $r, @param);
+    }
+    elsif (ref($cr=$WEBDYNE_FILTER_REQUEST_CR) eq 'CODE') {
+        debug("calling global request filter handler: $cr");
         return $cr->($self, $r, @param);
     }
     else {
@@ -97,7 +101,11 @@ sub request {
 sub response {
 
     my ($self, $r, $html_sr)=@_;
-    if (ref(my $cr=$WEBDYNE_FILTER_RESPONSE_CR) eq 'CODE') {
+    if (ref(my $cr=$r->dir_config('WebDyneFilterResponse')) eq 'CODE') {
+        debug("calling dir_config respones filter handler: $cr");
+        return $cr->($self, $r, $html_sr);
+    }
+    elsif (ref($cr=$WEBDYNE_FILTER_RESPONSE_CR) eq 'CODE') {
         debug("calling response filter handler: $cr");
         return $cr->($self, $r, $html_sr);
     }

@@ -84,9 +84,9 @@ $VERSION='2.031';
     ],
     
     
-    #  Dir Config
+    #  Dir Config. Now just WEBDYNE_DIR_CONFIG
     #
-    WEBDYNE_PSGI_DIR_CONFIG => undef,
+    #WEBDYNE_PSGI_DIR_CONFIG => undef,
     
     
     #  Warn on error ?

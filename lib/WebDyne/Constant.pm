@@ -431,6 +431,11 @@ my %constant_temp;
         'pdf'  => 'application/pdf',
         'svg'  => 'image/svg+xml'
     },
+    
+    
+    #  Dir_config can be loaded from here if not in Apache
+    #
+    WEBDYNE_DIR_CONFIG => undef,
 
 
     #  Mod_perl level. Do not change unless you know what you are
@@ -456,7 +461,7 @@ sub local_constant_load {
     foreach my $local_constant_pn (@{$local_constant_pn_ar}) {
         debug("load local_constant_pn: $local_constant_pn");
         my $local_hr=(-f $local_constant_pn) && (
-            do($local_constant_pn)
+            do(File::Spec->rel2abs($local_constant_pn))
             ||
             warn "unable to read local constant file, $!"
         );
