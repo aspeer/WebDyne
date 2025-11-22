@@ -32,7 +32,7 @@ require WebDyne::Constant;
 
 #  Version information. Must be all on one line
 #
-$VERSION='2.031';
+$VERSION='2.032';
 
 
 #  Constants are empty, but having this file allows for import of DEBUG and othe
