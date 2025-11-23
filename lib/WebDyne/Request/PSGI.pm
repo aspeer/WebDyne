@@ -18,6 +18,8 @@ package WebDyne::Request::PSGI;
 #
 use strict qw(vars);
 use vars   qw($VERSION @ISA);
+use warnings;
+no warnings qw(uninitialized);
 
 
 #  External modules
@@ -55,7 +57,11 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #  Save local copy of environment for ref by Dir_config handler. ENV is reset for each request,
 #  so must use a snapshot for simulating r->dir_config
 #
-my %Dir_config_env=%ENV;
+my %Dir_config_env=%{$WEBDYNE_PSGI_ENV_SET}, (map { $_=>$ENV{$_} } (
+    qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
+    @{$WEBDYNE_PSGI_ENV_KEEP},
+    grep {/WebDyne/i} keys %ENV
+));
 
 
 #  All done. Positive return
@@ -183,9 +189,6 @@ sub lookup_file {
     my $r_child;
     #if ($fn!~/\.psp$/) { # fastest
     if ($fn!~WEBDYNE_PSP_EXT_RE) { # fastest
-    #if ($fn=~/\.html$/) {
-    #  If not psp file serve as static
-    #unless (substr($fn, -WEBDYNE_PSP_EXT_LEN) eq WEBDYNE_PSP_EXT) {
 
 
         #  Static file
@@ -225,7 +228,7 @@ sub new {
     #  New PSGI request
     #
     my ($class, %r)=@_;
-    debug("$class, r: %s", Dumper(\%r));
+    debug("$class, r: %s, calller:%s", Dumper(\%r, [caller(0)]));
     
     
     #  Try to figure out filename user wants
@@ -251,7 +254,8 @@ sub new {
             
                 #  Get from URI and location
                 #
-                my $uri=$r{'uri'} || $ENV{'REQUEST_URI'};
+                ##my $uri=$r{'uri'} || $ENV{'REQUEST_URI'};
+                my $uri=$r{'uri'} || $ENV{'PATH_INFO'};
                 debug("uri: $uri");
                 #  Not sure why I did this ? Why strip location ?
                 #if (my $location=$class->location()) {
@@ -259,9 +263,10 @@ sub new {
                 #    $uri=~s/^\Q$location\E//;
                 #    debug("uri now: $uri");
                 #}
-                my $uri_or=URI->new($uri);
+                ##my $uri_or=URI->new($uri);
                 #$fn=File::Spec->catfile($dn, $uri_or->path());
-                $fn=File::Spec->catfile($dn, split m{/+}, $uri_or->path());
+                ##$fn=File::Spec->catfile($dn, split m{/+}, $uri_or->path());
+                $fn=File::Spec->catfile($dn, split m{/+}, $uri); #/
                 debug("fn: $fn from dn: $dn, uri: $uri");
                 
                 #  If PSP file spec'd on command line get rid of trailing /
@@ -282,10 +287,8 @@ sub new {
             
             #  Need to add default psp file ?
             #
-            #if ($fn=~/\/$/) {
             #unless ($fn=~/\.psp$/) { # fastest
             unless ($fn=~WEBDYNE_PSP_EXT_RE) { # fastest
-            #unless (substr($fn, -WEBDYNE_PSP_EXT_LEN ) eq WEBDYNE_PSP_EXT ) {
 
                 #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
                 #  handle it
@@ -321,6 +324,7 @@ sub new {
                 }
             }
         }
+
 
         #  Final sanity check
         #
@@ -424,7 +428,7 @@ sub err_html {
         ),
         $html_or->end_html()
     );
-    return join(undef, @message);
+    return join('', @message);
 
 }
 
@@ -461,4 +465,5 @@ sub env {
 
 }
 
+1;
 __END__

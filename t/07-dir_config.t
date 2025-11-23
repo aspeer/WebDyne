@@ -32,7 +32,7 @@ ok($r->dir_config('a')==1);
 my $hr;
 { local $/; $hr=eval(<DATA>) }
 #diag(Dumper($hr));
-#diag(Dumper($r->dir_config()));
+#iag(Dumper($r->dir_config()));
 ok(eq_deeply($hr, $r->dir_config())); 
 
 
@@ -59,5 +59,6 @@ __DATA__
   },
   '' => {
     'c' => 3
-  }
+  },
+  'WEBDYNE_CONF' => 't/webdyne_dir-config.conf.pl'
 };

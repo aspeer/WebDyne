@@ -60,16 +60,16 @@ $VERSION='2.033';
     #
     #  Serve any static file except .psp
     #
-    #WEBDYNE_PLACK_MIDDLEWARE_STATIC => qr{^(?!.*\.psp$).*\.\w+$},
+    #WEBDYNE_PSGI_MIDDLEWARE_STATIC => qr{^(?!.*\.psp$).*\.\w+$},
     #
     #  Just common files
     #
-    WEBDYNE_PLACK_MIDDLEWARE_STATIC => qr{\.(?:css|js|jpg|jpeg|png|gif|svg|ico|woff2?|ttf|eot|otf|webp|map|txt|inc|htm|html)$}i,
+    WEBDYNE_PSGI_MIDDLEWARE_STATIC => qr{\.(?:css|js|jpg|jpeg|png|gif|svg|ico|woff2?|ttf|eot|otf|webp|map|txt|inc|htm|html)$}i,
     
     
     #  All other middleware. Uncomment/modify as required
     #
-    WEBDYNE_PLACK_MIDDLEWARE_AR => [
+    WEBDYNE_PSGI_MIDDLEWARE => [
         
         #{ 'Debug' => 
         #    { panels => [ qw(Environment) ] } 
@@ -84,9 +84,10 @@ $VERSION='2.033';
     ],
     
     
-    #  Dir Config. Now just WEBDYNE_DIR_CONFIG
+    #  Environment variables to keep, needs to be array ref
     #
-    #WEBDYNE_PSGI_DIR_CONFIG => undef,
+    WEBDYNE_PSGI_ENV_KEEP => [qw(DOCUMENT_ROOT DOCUMENT_DEFAULT)],
+    WEBDYNE_PSGI_ENV_SET  => {},
     
     
     #  Warn on error ?
@@ -101,4 +102,5 @@ $VERSION='2.033';
 #  Done
 #
 1;
+__END__
 

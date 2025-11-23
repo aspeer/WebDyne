@@ -221,7 +221,13 @@ sub dir_config {
         #  too many non WebDyne vars if called with dir_config(). Do properly with Plack::Middleware::AddEnv or similar later
         #
         #my %dir_config=(%{$constant_hr}, %Dir_config_env);
-        my %dir_config=(%{$constant_hr});
+        my %dir_config=(
+            %{$constant_hr}, 
+            (map { $_=>$ENV{$_} } grep {/^WebDyne/i} keys %ENV), 
+            (map { $_=>$ENV{$_} } grep {exists $ENV{$_} } keys %{$constant_hr})
+            #(map { $_=>$ENV{$_} } @{$WEBDYNE_PSGI_ENV_KEEP},
+            #%{$WEBDYNE_PSGI_ENV_SET}
+        );
         return \%dir_config;
     }
 
