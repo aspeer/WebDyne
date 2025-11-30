@@ -17,7 +17,7 @@ package WebDyne::Request::PSGI;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION @ISA);
+use vars   qw($VERSION @ISA $AUTOLOAD);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -28,6 +28,7 @@ use File::Spec::Unix;
 use HTTP::Status qw(status_message RC_OK RC_NOT_FOUND RC_FOUND);
 use URI;
 use Data::Dumper;
+use Plack::Request;
 $Data::Dumper::Indent=1;
 
 
@@ -41,7 +42,7 @@ use WebDyne::Constant;
 #  Inheritance
 #
 use WebDyne::Request::Fake;
-@ISA=qw(WebDyne::Request::Fake);
+@ISA=qw(Plack::Request WebDyne::Request::Fake);
 
 
 #  Version information
@@ -70,156 +71,6 @@ my %Dir_config_env=%{$WEBDYNE_PSGI_ENV_SET}, (map { $_=>$ENV{$_} } (
 
 
 #==================================================================================================
-
-
-sub content_type {
-
-    my $r=shift();
-    my $hr=$r->headers_out();
-    @_ ? $hr->{'Content-Type'}=shift() : $hr->{'Content-Type'};
-
-}
-
-
-sub custom_response {
-
-    my ($r, $status)=(shift(), shift());
-    while ($r->prev) {$r=$r->prev}
-    debug("in custom response, status $status");
-    @_ ? $r->{'custom_response'}{$status}=shift() : $r->{'custom_response'}{$status};
-
-}
-
-
-sub filename {
-
-    my $r=shift();
-    @_ ? $r->{'filename'}=shift() : $r->{'filename'};
-
-}
-
-
-sub header_only {
-
-    ($ENV{'REQUEST_METHOD'} eq 'HEAD') ? 1 : 0;
-
-}
-
-
-sub headers_in {
-
-    my ($r, $header)=@_;
-    my $hr=$r->{'headers_in'} ||= do {
-        my @http_header=grep {/^HTTP_/} keys %ENV;
-        my %http_header=map  {$_ => $ENV{$_}} @http_header;
-        foreach my $k (keys %http_header) {
-            my $v=delete $http_header{$k};
-            $k=~s/^HTTP_//;
-            $k=~s/_/-/g;
-            $http_header{lc($k)}=$v;
-        }
-        \%http_header;
-    };
-    $header ? $hr->{lc($header)} : $hr;
-
-}
-
-
-sub location {
-
-
-    #  Equiv to Apache::RequestUtil->location;
-    #
-    my $r=shift();
-    debug("r: $r, caller: %s", Dumper([caller(0)]));
-    my $location;
-    my $constant_hr=$WEBDYNE_DIR_CONFIG;
-    my $constant_server_hr;
-    if (my $server=$Dir_config_env{'WebDyneServer'} || $ENV{'SERVER_NAME'}) {
-        $constant_server_hr=$constant_hr->{$server} if exists($constant_hr->{$server})
-    }
-    if ($Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'}) {
-
-        #  APPL_MD_PATH is IIS virtual dir. If that or a fixed location set use it.
-        #
-        $location=$Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'};
-    }
-    elsif (my $uri_path=join('', grep {$_} @ENV{qw(SCRIPT_NAME PATH_INFO)})) {
-        
-        #  Strip file name
-        #
-        $uri_path=~s{[^/]+\Q@{[WEBDYNE_PSP_EXT]}\E$}{}x; #\
-        debug("uri_path: $uri_path");
-        my @location=('/', grep {$_} File::Spec::Unix->splitdir($uri_path));
-        
-        #  Start iterating through directories
-        #
-        while ($location=File::Spec::Unix->catdir(@location)) {
-            debug("location: $location");
-            last if exists($constant_hr->{$location}) || exists($constant_server_hr->{$location});
-            $location.='/' unless ($location eq '/');
-            last if exists($constant_hr->{$location}) || exists($constant_server_hr->{$location});
-            pop @location;
-        }
-    }
-    else {
-        
-        #  Actually mod_perl spec says location blank if not positively given - don't default to '/'
-        #
-        #$location=File::Spec::Unix->rootdir();
-    }
-    
-    #  
-    #
-    return $location;
-
-}
-
-
-sub log_error {
-
-    shift(); warn(@_) if $WEBDYNE_PSGI_WARN_ON_ERROR;
-
-}
-
-
-sub lookup_file {
-
-    my ($r, $fn)=@_;
-    my $r_child;
-    #if ($fn!~/\.psp$/) { # fastest
-    if ($fn!~WEBDYNE_PSP_EXT_RE) { # fastest
-
-
-        #  Static file
-        #
-        require WebDyne::Request::PSGI::Static;
-        $r_child=WebDyne::Request::PSGI::Static->new(filename => $fn, prev => $r) ||
-            return err();
-
-    }
-    else {
-
-
-        #  Subrequest
-        #
-        $r_child=ref($r)->new(filename => $fn, prev => $r) || return err();
-
-    }
-
-    #  Return child
-    #
-    return $r_child;
-
-}
-
-
-sub lookup_uri {
-
-    my ($r, $uri)=@_;
-    ref($r)->new(uri => $uri, prev => $r) || return err();
-
-}
 
 
 sub new {
@@ -254,23 +105,11 @@ sub new {
             
                 #  Get from URI and location
                 #
-                ##my $uri=$r{'uri'} || $ENV{'REQUEST_URI'};
                 my $uri=$r{'uri'} || $ENV{'PATH_INFO'};
                 debug("uri: $uri");
-                #  Not sure why I did this ? Why strip location ?
-                #if (my $location=$class->location()) {
-                #    debug("location: $location");
-                #    $uri=~s/^\Q$location\E//;
-                #    debug("uri now: $uri");
-                #}
-                ##my $uri_or=URI->new($uri);
-                #$fn=File::Spec->catfile($dn, $uri_or->path());
-                ##$fn=File::Spec->catfile($dn, split m{/+}, $uri_or->path());
                 $fn=File::Spec->catfile($dn, split m{/+}, $uri); #/
                 debug("fn: $fn from dn: $dn, uri: $uri");
                 
-                #  If PSP file spec'd on command line get rid of trailing /
-                #$fn=~s/\.psp\/$/.psp/;
             }
             
             
@@ -329,17 +168,160 @@ sub new {
         #  Final sanity check
         #
         debug("final fn: $fn");
-        $r{'filename'}=$fn; # || do {
-            #my $env=join("\n", map {"$_=$ENV{$_}"} keys %ENV);
-            #return err("unable to determine filename for request from environment:%s, Dir_config_env: %s", Dumper(\%ENV, \%Dir_config_env))
-        #};
+        $r{'filename'}=$fn; 
         
     }
     
     
     #  Finished, pass back
     #
-    bless \%r, $class;
+    return bless \%r, $class;
+
+}
+
+
+
+sub content_type {
+
+    my $r=shift();
+    my $hr=$r->headers_out();
+    @_ ? $r->headers_out()->{'Content-Type'}=shift() : $r->SUPER::content_type();
+
+}
+
+
+sub custom_response {
+
+    my ($r, $status)=(shift(), shift());
+    while ($r->prev) {$r=$r->prev}
+    debug("in custom response, status $status");
+    @_ ? $r->{'custom_response'}{$status}=shift() : $r->{'custom_response'}{$status};
+
+}
+
+
+sub filename {
+
+    my $r=shift();
+    @_ ? $r->{'filename'}=shift() : $r->{'filename'};
+
+}
+
+
+sub header_only {
+
+    (shift()->method() eq 'HEAD') ? 1 : 0 
+
+}
+
+
+sub headers_in {
+    my $r=shift();
+    return $r->headers();
+}
+
+
+sub headers_out {
+
+    my $r=shift();
+    return WebDyne::Request::Fake::headers($r, 'headers_out', @_);
+
+}    
+
+
+sub location {
+
+
+    #  Equiv to Apache::RequestUtil->location;
+    #
+    my $r=shift();
+    debug("r: $r, caller: %s", Dumper([caller(0)]));
+    my $location;
+    my $constant_hr=$WEBDYNE_DIR_CONFIG;
+    my $constant_server_hr;
+    if (my $server=$Dir_config_env{'WebDyneServer'} || $ENV{'SERVER_NAME'}) {
+        $constant_server_hr=$constant_hr->{$server} if exists($constant_hr->{$server})
+    }
+    if ($Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'}) {
+
+        #  APPL_MD_PATH is IIS virtual dir. If that or a fixed location set use it.
+        #
+        $location=$Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'};
+    }
+    elsif (my $uri_path=join('', grep {$_} @ENV{qw(SCRIPT_NAME PATH_INFO)})) {
+        
+        #  Strip file name
+        #
+        $uri_path=~s{[^/]+\Q@{[WEBDYNE_PSP_EXT]}\E$}{}x; #\
+        debug("uri_path: $uri_path");
+        my @location=('/', grep {$_} File::Spec::Unix->splitdir($uri_path));
+        
+        #  Start iterating through directories
+        #
+        while ($location=File::Spec::Unix->catdir(@location)) {
+            debug("location: $location");
+            last if exists($constant_hr->{$location}) || exists($constant_server_hr->{$location});
+            $location.='/' unless ($location eq '/');
+            last if exists($constant_hr->{$location}) || exists($constant_server_hr->{$location});
+            pop @location;
+        }
+    }
+    else {
+        
+        #  Actually mod_perl spec says location blank if not positively given - don't default to '/'
+        #
+        #$location=File::Spec::Unix->rootdir();
+    }
+    
+    #  
+    #
+    return $location;
+
+}
+
+
+sub log_error {
+
+    my $r=shift();
+    warn(@_) if $WEBDYNE_PSGI_WARN_ON_ERROR;
+
+}
+
+
+sub lookup_file {
+
+    my ($r, $fn)=@_;
+    my $r_child;
+    if ($fn!~WEBDYNE_PSP_EXT_RE) { # fastest
+
+
+        #  Static file
+        #
+        require WebDyne::Request::PSGI::Static;
+        $r_child=WebDyne::Request::PSGI::Static->new(filename => $fn, prev => $r) ||
+            return err();
+
+    }
+    else {
+
+
+        #  Subrequest
+        #
+        $r_child=ref($r)->new(filename => $fn, prev => $r) || return err();
+
+    }
+
+    #  Return child
+    #
+    return $r_child;
+
+}
+
+
+sub lookup_uri {
+
+    my ($r, $uri)=@_;
+    ref($r)->new(uri => $uri, prev => $r) || return err();
 
 }
 
@@ -347,10 +329,9 @@ sub new {
 sub redirect {
 
     my ($r, $location)=@_;
-    CORE::print sprintf("Status: %s\r\n", RC_FOUND);
-    CORE::print "Location: $location\r\n";
-    $r->send_http_header;
-    return RC_FOUND;
+    $r->status(HTTP_FOUND);
+    $r->headers_out('Location' => $location);
+    return HTTP_FOUND;
 
 }
 
@@ -366,15 +347,8 @@ sub run {
         debug("file not found !");
         $r->status(RC_NOT_FOUND);
         $r->send_error_message;
-        RC_NOT_FOUND;
+        return HTTP_NOT_FOUND;
     }
-
-}
-
-
-sub set_handlers {
-
-    #  No-op
 
 }
 
@@ -383,16 +357,11 @@ sub send_error_response {
 
     my $r=shift();
     my $status=$r->status();
-    
-    CORE::print "Status: $status\r\n";
-    $r->send_http_header;
     debug("in send error response, status $status");
-    #if (my $message_ar=$r->custom_response($status)) {
     if (my $message=$r->custom_response($status)) {
 
         #  We have a custom response - send it
         #
-        #$r->print(@{$message_ar});
         $r->print($message);
 
     }
@@ -435,35 +404,7 @@ sub err_html {
 
 sub send_http_header {
 
-    my $r=shift();
-    return unless $r->{'header'};
-    while (my ($h, $v)=each %{$r->headers_out()}) {
-        CORE::print "$h: $v\r\n";
-    }
-    CORE::print "\r\n";
-
+    #  Stub
+    
 }
 
-
-sub uri {
-
-    my $r=shift();
-    @_ ? $r->{'uri'}=shift() : $r->{'uri'} || $ENV{'REQUEST_URI'}
-
-}
-
-
-sub protocol {
-
-    $ENV{'SERVER_PROTOCOL'}
-}
-
-
-sub env {
-
-    return \%Dir_config_env;
-
-}
-
-1;
-__END__

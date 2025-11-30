@@ -173,8 +173,14 @@ sub new {
     debug('in %s new(), class: %s', __PACKAGE__, ref($class) || $class);
     my $self=$class->SUPER::new(@_) ||
         return err('unable to initialize from %s, using ISA: %s', ref($class) || $class, Dumper(\@ISA));
+        
+        
+    #  We do need a HTML::Tiny object that has been instantiated with $r so it can get defaults for any
+    #  CGI fields in 
+    #
     $self->{'_html_tiny_or'}=
         WebDyne::HTML::Tiny->new(mode => 'html', @_);
+        
     return $self;
 
 }
@@ -186,6 +192,7 @@ sub line_no_debug {
     return sprintf("self $self, line_no: %s, line_no_start: %s, line_no_next: %s", @{$self}{qw(_line_no _line_no_start _line_no_next)});
     
 }
+
 
 sub parse_fh {
 
@@ -311,7 +318,7 @@ sub tag_parse {
     my ($tag, $attr_hr)=@_;
     
     
-    #  Get rid of attribute multi-line value if the start with subst cars
+    #  Get rid of attribute multi-line value if the start with subst chars
     #
     foreach my $attr (keys %{$attr_hr}) {
         my $attr_value=$attr_hr->{$attr};
@@ -367,6 +374,39 @@ sub tag_parse {
         $self->end($tag_parent);
         $html_or=$self->$method(@_);
 
+    }
+    
+    
+    elsif ($tag eq '0_html') {
+        
+        #  Special start_html tag
+        #
+        #die;
+        debug('start_html tag');
+        $html_or=$self->$method(@_);
+        $html_or->tag('foo_html');
+        #$self->pos($html_or);
+        #die Dumper($self) if ($self->parent());
+        # $self->pos($html_or);
+        #$self->root->detach();
+        #$self->root()->push_content($html_or);
+        #$self->root()->parent($html_or);
+        #$self->root->insert_element($html_or);
+        #$self->root->replace_with($html_or);
+        #$self->root->preinsert($html_or);
+        #$html_or->replace_with_content();
+        
+        #$self->{'_element'}=$html_or;
+        
+        #$self->{'_head'}->preinsert($html_or);
+        $self->{'_head'}->detach;
+        $self->{'_body'}->detach;
+        #die Dumper($self->elementify());
+        #my $parent_or=$self->root;
+        #die Dumper($parent_or->elementify());
+        #$self->{'_element'}=$html_or;
+        #$self->pos($self->root());;
+        
     }
 
 
@@ -557,7 +597,7 @@ sub script {
 }
 
 
-sub json {
+sub json0 {
 
 
     #  No special handling needed, just log for debugging purposes

@@ -179,8 +179,8 @@ sub compile {
     #
     my $tree_or=WebDyne::HTML::TreeBuilder->new(
 
-        api_version => 3,
-        webdyne	    => $self
+        api_version 	=> 3,
+        html_tiny_or   	=> $self->html_tiny(),
 
     ) || return err('unable to create HTML::TreeBuilder object');
 
@@ -226,7 +226,6 @@ sub compile {
 
     #  Muck around with strictness of P tags
     #
-    #$tree_or->implicit_tags(0);
     $tree_or->p_strict(
         exists($param_hr->{'p_strict'}) 
             ? $param_hr->{'p_strict'} 
@@ -243,7 +242,7 @@ sub compile {
     #  man page.
     #
     $tree_or->parse($parse_cr);
-
+    
 
     #  Close handler if anything goes wrong below
     #
@@ -1269,11 +1268,11 @@ sub parse {
 }
 
 
-sub html_tiny {
+sub html_tiny0 {
 
     my $self=shift();
     debug("$self html_tiny instantiate, mode:$WEBDYNE_HTML_TINY_MODE, existing: %s", $self->{'_html_tiny_or'});
-    return (shift()->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new(mode => $WEBDYNE_HTML_TINY_MODE)) ||
+    return (shift()->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new(mode => $WEBDYNE_HTML_TINY_MODE, r=>$self->r())) ||
         err('unable to instantiate new WebDybe::HTML::Tiny object');
 
 }

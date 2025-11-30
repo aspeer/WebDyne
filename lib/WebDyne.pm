@@ -25,6 +25,7 @@ use overload;
 #  WebDyne constants, base modules
 #
 use WebDyne::Util;
+use WebDyne::CGI;
 use WebDyne::Constant;
 use WebDyne::HTML::Tiny;
 
@@ -53,7 +54,7 @@ use Cwd qw(getcwd);
 #  Export a couple of convenience methods for scripts
 #
 use Exporter qw(import);
-@EXPORT_OK = qw( html html_sr );
+@EXPORT_OK = qw(html html_sr);
 
 
 #  Version information
@@ -532,9 +533,10 @@ sub handler : method {    # no subsort
         #
         #  Update: Re-init rather than delete or WebDyne::State worn't work
         #
-        #delete $self->{'_CGI'} if $WEBDYNE_CGI_PARAM_EXPAND;
+        #  delete $self->{'_CGI'} if $WEBDYNE_CGI_PARAM_EXPAND;
+        #
         if ((my $cgi_or=$self->{'_CGI'}) && $WEBDYNE_CGI_PARAM_EXPAND) {
-            $cgi_or->delete_all();  # Added this after cache code issues so don't get two instanced of param. Keep and eye for problems with WebDyne::State
+            $cgi_or->delete_all();  # Added this after cache code issues so don't get two instances of param. Keep and eye for problems with WebDyne::State
             $cgi_or->_initialize();
         }
 
@@ -556,6 +558,7 @@ sub handler : method {    # no subsort
     #  Custom handler ?
     #
     if (my $handler_ar=$meta_hr->{'handler'} || $r->dir_config('WebDyneHandler')) {
+        debug('handler_ar: %s, dir_config: %s', Dumper(\$handler_ar,  $r->dir_config('WebDyneHandler'))); 
         my ($handler, $handler_param_hr)=ref($handler_ar) ? @{$handler_ar} : $handler_ar;
         if (ref($self) ne $handler) {
             debug("passing to custom handler '$handler', param %s", Dumper($handler_param_hr));
@@ -828,7 +831,7 @@ sub handler : method {    # no subsort
 
     #  Debug
     #
-    debug('sending header');
+    debug("sending header: $r");
 
 
     #  Send header
@@ -1525,48 +1528,25 @@ sub render_data_ar {
     #  Convert data array structure into HTML
     #
     my ($self, %param)=@_;
-
-
-    #  If not supplied param as hash ref assume all vars are params to be subs't when
-    #  rendering this data block
-    #
-    #ref($param_hr) || ($param_hr={param => {@_[1..$#_]}}) if $param_hr;
-
-
-    #  Debug
-    #
-    #debug('in render, param data %s, stack: %s', $param_hr->{'data'}, join('*', @{$self->{'_perl'}}));
+    debug($self);
 
 
     #  Get node array ref
     #
-    #my $data_ar=$param_hr->{'data'} || $self->{'_perl'}[0][WEBDYNE_NODE_CHLD_IX] ||
-    my $data_ar=$param{'data'} || # $self->{'_perl'}[0][WEBDYNE_NODE_CHLD_IX] ||
+    my $data_ar=$param{'data'} || 
         return err('unable to get HTML data array');
-    #$self->{'_perl'}[0] ||= $data_ar;
 
 
     #  Debug
     #
-    #debug("render data_ar $data_ar %s", Dumper($data_ar));
     debug("render data_ar $data_ar");
 
 
-    #  If block name spec'd register it now
+    #  Get HTML::Tiny object
     #
-    #$param_hr->{'block'} && (
-    #    $self->render_block($param_hr) || return err());
-    #$param{'block'} && (
-    #    $self->render_block(\%param) || return err());
-
-
-    #  Get CGI object
-    #
-    #my $cgi_or=$self->{'_CGI'} || $self->CGI() ||
-    #    return err ("unable to get CGI object from self ref");
-    my $cgi_or=$self->{'_html_tiny_or'} || $self->html_tiny(CGI=>$self->CGI()) ||
+    my $html_or=$self->{'_html_tiny_or'} || $self->html_tiny() ||
         return err("unable to get HTML::Tiny object from self ref");
-    debug("CGI $cgi_or");
+    debug("html_or: $html_or");
 
 
     #  Stub out entity_encode - we don't want attributes escaped
@@ -1576,15 +1556,6 @@ sub render_data_ar {
         $WEBDYNE_CGI_AUTOESCAPE;
         
         
-    #  Any data params for this render ? Add them to parent data as additive
-    #
-    #my %param_data=%{$param_hr->{'param'} || $param_hr};
-    #foreach my $param_data_hr (@{$self->{'_perl_data'}}) {
-    #    map { $param_data{$_}=$param_data_hr->{$_} unless exists $param_data{$_} } keys %{$param_data_hr}
-    #}
-    
-
-
     #  Recursive anon sub to do the render, init and store in class space
     #  if not already done, saves a small amount of time if doing many
     #  iterations
@@ -1609,7 +1580,7 @@ sub render_data_ar {
             debug('recursive render node_data_ar: %s', Dumper($node_data_ar));
             push @html,
                 #${$render_cr->($render_cr, $self, $cgi_or, $node_data_ar, \%param_data) || return err()};
-                ${$render_cr->($render_cr, $self, $cgi_or, $node_data_ar, $param{'param'}) || return err()};
+                ${$render_cr->($render_cr, $self, $html_or, $node_data_ar, $param{'param'}) || return err()};
 
 
         }
@@ -1642,7 +1613,7 @@ sub render_cr {
 
     #  Get self ref, node array etc
     #
-    my ($render_cr, $self, $cgi_or, $data_ar, $param_data_hr)=@_;
+    my ($render_cr, $self, $html_or, $data_ar, $param_data_hr)=@_;
     debug("render_cr: $render_cr, self:$self, data_ar:$data_ar, param_data_hr:$param_data_hr (%s), caller:%s", Dumper($param_data_hr), Dumper([caller()]));
 
 
@@ -1726,7 +1697,7 @@ sub render_cr {
                 #
                 $html_chld.=${
                     (
-                        $render_cr->($render_cr, $self, $cgi_or, $data_chld_ar, $param_data_hr)
+                        $render_cr->($render_cr, $self, $html_or, $data_chld_ar, $param_data_hr)
                             ||
                             return err())};
 
@@ -1779,7 +1750,7 @@ sub render_cr {
         #  Normal CGI tag, with attributes and perhaps child text
         #
         debug("rendering normal HTML tag: $html_tag with attr: %s", Dumper($attr_hr));
-        $html=$cgi_or->$html_tag(grep {$_} $attr_hr || {}, $html_chld) ||
+        $html=$html_or->$html_tag(grep {$_} $attr_hr || {}, $html_chld) ||
             return err( "CGI tag '<$html_tag>' did not return any text" );
         
 
@@ -1790,7 +1761,7 @@ sub render_cr {
         #  Normal CGI tag, no attributes but with child text
         #
         debug("rendering normal HTML tag: $html_tag, no attributes but with child text");
-        $html=$cgi_or->$html_tag($html_chld) ||
+        $html=$html_or->$html_tag($html_chld) ||
             return err("CGI tag '<$html_tag>' did not return any text");
 
 
@@ -1801,7 +1772,7 @@ sub render_cr {
         #  Empty CGI object, eg <hr>
         #
         debug("rendering empty HTML tag: $html_tag");
-        $html=$cgi_or->$html_tag() ||
+        $html=$html_or->$html_tag() ||
             return err("CGI tag '<$html_tag>' did not return any text");
 
     }
@@ -3166,11 +3137,19 @@ sub subst {
     #
     my $index;
     my $cr=sub {
-        my $sr=$eval_cr->{$_[0]}($self, $data_ar, $param_data_hr, $_[1], $_[2]) ||
+
+        #  Used to be this
+        #
+        #my $sr=$eval_cr->{$_[0]}($self, $data_ar, $param_data_hr, $_[1], $_[2]) ||
+        #    return err();
+        #(ref($sr) eq 'SCALAR') ||
+        #    return err("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
+        #return $sr;
+        
+        #  But doesn't have to be scalar ref, as long as represents as scalar
+        #
+        return $eval_cr->{$_[0]}($self, $data_ar, $param_data_hr, $_[1], $_[2]) ||
             return err();
-        (ref($sr) eq 'SCALAR') ||
-            return err("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
-        $sr;
     };
     $text=~s/([\$!+*^])\{(\1?)(.*?)\2}/${$cr->($1, $3, $index++) || return err()}/ge;
 
@@ -3770,10 +3749,10 @@ sub delete_node {
 sub CGI {
 
 
-    #  Return CGI::Simple object
+    #  Return WebDyne::CGI wrapper object
     #
     my $self=shift();
-    debug("$self get CGI::Simple object");
+    debug("$self get WebDyne::CGI object");
 
 
     #  Accessor method for CGI::Simple object
@@ -3783,23 +3762,17 @@ sub CGI {
 
         #  CGI good practice
         #
-        $CGI::Simple::DISABLE_UPLOADS=$WEBDYNE_CGI_DISABLE_UPLOADS;
-        $CGI::Simple::POST_MAX=$WEBDYNE_CGI_POST_MAX;
+        debug('creating new object');
 
 
         #  And create it. CGI::Simple looks for mod_perl in an eval
         #  block and we don't want to trigger an error so be careful
         #
         local $SIG{'__DIE__'}=sub {};
-        my $cgi_or=CGI::Simple->new($MOD_PERL && $self->{'_r'});
-        eval {} if $@; # May leave $@ set on init;
-        #my $cgi_or=CGI::Simple->new(); # Needs PerlOpt +GlobalRequest
-        #$cgi_or->delete(ref($self->{'_r'})) # Pretty crappy way of doing it
-
-
-        #  Expand params if we need to
-        #
-        &CGI_param_expand($cgi_or) if $WEBDYNE_CGI_PARAM_EXPAND;
+        my $cgi_or=WebDyne::CGI->new($self->{'_r'});
+        $self->CGI_param_expand($cgi_or);
+        debug("cgi_or: $cgi_or");
+        eval {} if @_;
 
 
         #  Return new CGI object
@@ -3816,7 +3789,7 @@ sub html_tiny {
 
     my $self=shift();
     debug("$self get HTML::Tiny object");
-    return ($self->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new(mode => 'html', @_)) ||
+    return ($self->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new(mode => $WEBDYNE_HTML_TINY_MODE, r=>$self->r(),  @_)) ||
         err('unable to instantiate new WebDybe::HTTP::Tiny object');
 
 }
@@ -3824,21 +3797,22 @@ sub html_tiny {
 
 sub CGI_param_expand {
 
-    #  Expand CGI params if the form "foo;a=b" into "foo=param", "a=b";
+    #  Expand CGI params if the form "foo&a=b" into "foo=param", "a=b", so if we
+    #  have HTML like <submit name="foo&bar=1"> it will expand out to params as
+    #  foo=>Submit, bar=>1
     #
-    my $cgi_or=shift() ||
-        return err("unable to get CGI object");
+    my ($self, $cgi_or)=@_;
+    $cgi_or ||
+        return err('unable to get CGI object');
     debug("$cgi_or param_expand");
-    ##local ($CGI::LIST_CONTEXT_WARN)=0;
     foreach my $param (grep /=/, $cgi_or->param()) {
-        my (@pairs)=split(/[&;]/, $param);
+        my (@pairs)=split(/&/, $param);
+        debug('pairs: %s', Dumper(\@pairs));
         foreach my $pair (@pairs) {
             my ($key, $value)=split('=', $pair, 2);
             $value ||= $cgi_or->param($param);
-            $key=&CGI::Simple::unescape($key);
-            $value=&CGI::Simple::unescape($value);
-            debug("$cgi_or param $key => $value");
-            $cgi_or->param($key, $value);
+            debug("$cgi_or param splt $key => $value");
+            $cgi_or->append($key, $value);
         }
         $cgi_or->delete($param);
     }
@@ -4029,7 +4003,7 @@ sub render_time {
     #  Time so far in render
     #
     my $self=shift();
-    return time-$self->{'_time'}
+    return time()-$self->{'_time'}
     
 }
 

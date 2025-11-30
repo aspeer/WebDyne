@@ -29,7 +29,7 @@ our @ISA=qw(HTML::Tiny);
 #  External Modules
 #
 use HTML::Tiny;
-use CGI::Simple;
+#use CGI::Simple;
 use Data::Dumper;
 use HTML::Element;
 
@@ -38,6 +38,7 @@ use HTML::Element;
 #
 use WebDyne::Constant;
 use WebDyne::Util;
+use WebDyne::CGI;
 
 
 #  Constants
@@ -97,8 +98,8 @@ sub new {
     
     #  Were we supplied with a CGI::Simple and/or webdyne object ?
     #
-    my $cgi_or=delete $param{'CGI'};
-    my $webdyne_or=delete $param{'webdyne'};
+    #my $cgi_or=delete $param{'CGI'};
+    #my $webdyne_or=delete $param{'webdyne'};
     
 
     #  Shortcuts (start_html, start_form etc.) enabled by default.
@@ -114,8 +115,8 @@ sub new {
     
     #  Save away CGI object and return
     #
-    ($self->{'_CGI'} ||= $cgi_or) if $cgi_or;
-    ($self->{'_webdyne'} ||= $webdyne_or) if $webdyne_or;
+    #$self->{'_CGI'} ||= $self->CGI($param{'r'});
+    #($self->{'_webdyne'} ||= $webdyne_or) if $webdyne_or;
     
     
     #  Done
@@ -143,7 +144,9 @@ sub CGI {
     #
     my $self=shift();
     debug("$self CGI");
-    return ($self->{'_CGI'} ||= CGI::Simple->new());
+    #use Data::Dumper;
+    #die Dumper(\@_);
+    return ($self->{'_CGI'} ||= WebDyne::CGI->new(@_));
     
 }
 
@@ -188,7 +191,8 @@ sub _init {
             if (defined($attr_hr)) {
                 #  Copy attr so don't pollute ref
                 my %attr=%{$attr_hr};
-                my $param_hr=$self->Vars();
+                #my $param_hr=$self->Vars();
+                my $param_hr=$self->CGI->Vars();
                 if ($persist{$tag}) {
                     if ($attr{'name'} && (my $value=$param_hr->{$attr{'name'}}) && !$attr{'force'}) {
                         $attr{'value'}=$value;
@@ -1177,7 +1181,9 @@ sub textarea {
 
 
 sub AUTOLOAD {
+    debug("AUTOLOAD: $AUTOLOAD");
     if (my ($action, $tag)=($AUTOLOAD=~/\:\:(start|end|open|close)_([^:]+)$/)) {
+        debug("action: $action, tag: $tag");
         *{$AUTOLOAD}=sub {shift()->$action($tag, @_)};
         return &{$AUTOLOAD}(@_);
     }
