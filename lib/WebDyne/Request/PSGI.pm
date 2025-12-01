@@ -384,7 +384,7 @@ sub err_html {
     #
     my ($r, $status, $message)=@_;
     require WebDyne::HTML::Tiny;
-    my $html_or=WebDyne::HTML::Tiny->new() ||
+    my $html_or=WebDyne::HTML::Tiny->new( mode=>$WEBDYNE_HTML_TINY_MODE, r=>$r ) ||
         return err();
     my $error;
     my @message=(

@@ -169,18 +169,23 @@ push @HTML::Tagset::p_closure_barriers, keys %CGI_TAG_WEBDYNE;
 
 sub new {
 
-    my $class=shift();
-    debug('in %s new(), class: %s', __PACKAGE__, ref($class) || $class);
-    my $self=$class->SUPER::new(@_) ||
+
+    #  Instantiate new WebDyne::HTML::TreeBuilder object
+    #
+    my ($class, %param)=@_;
+    debug('in %s new(), class: %s, param: %s', __PACKAGE__, (ref($class) || $class), Dumper(\%param));
+    my $self=$class->SUPER::new(%param) ||
         return err('unable to initialize from %s, using ISA: %s', ref($class) || $class, Dumper(\@ISA));
         
         
-    #  We do need a HTML::Tiny object that has been instantiated with $r so it can get defaults for any
-    #  CGI fields in 
+    #  We do need a HTML::Tiny object that has been ideally already been instantiated.
     #
-    $self->{'_html_tiny_or'}=
-        WebDyne::HTML::Tiny->new(mode => 'html', @_);
+    $self->{'_html_tiny_or'}=($param{'html_tiny_or'} ||
+        WebDyne::HTML::Tiny->new(mode => $WEBDYNE_HTML_TINY_MODE, r=>$param{'r'}));
         
+        
+    #  Done
+    #
     return $self;
 
 }
@@ -377,39 +382,6 @@ sub tag_parse {
     }
     
     
-    elsif ($tag eq '0_html') {
-        
-        #  Special start_html tag
-        #
-        #die;
-        debug('start_html tag');
-        $html_or=$self->$method(@_);
-        $html_or->tag('foo_html');
-        #$self->pos($html_or);
-        #die Dumper($self) if ($self->parent());
-        # $self->pos($html_or);
-        #$self->root->detach();
-        #$self->root()->push_content($html_or);
-        #$self->root()->parent($html_or);
-        #$self->root->insert_element($html_or);
-        #$self->root->replace_with($html_or);
-        #$self->root->preinsert($html_or);
-        #$html_or->replace_with_content();
-        
-        #$self->{'_element'}=$html_or;
-        
-        #$self->{'_head'}->preinsert($html_or);
-        $self->{'_head'}->detach;
-        $self->{'_body'}->detach;
-        #die Dumper($self->elementify());
-        #my $parent_or=$self->root;
-        #die Dumper($parent_or->elementify());
-        #$self->{'_element'}=$html_or;
-        #$self->pos($self->root());;
-        
-    }
-
-
     #  Special case where <perl/block/etc> wraps <head> or <body> tags. HTML::TreeBuilder assumes
     #  head is always under html - we have to hack.
     #

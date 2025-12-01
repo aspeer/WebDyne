@@ -40,6 +40,7 @@ use Digest::MD5 qw(md5_hex);
 use File::Spec::Unix;
 use Data::Dumper;
 $Data::Dumper::Indent=1;
+$Data::Dumper::Sortkeys=1;
 use HTML::Entities qw(decode_entities encode_entities);
 use CGI::Simple;
 use JSON;
@@ -2469,7 +2470,7 @@ sub json {
 
     #  Get new WebDyne::HTML::Tiny object ready to encode result into <script> tag
     #
-    my $html_or=$self->html_tiny() ||
+    my $html_or=$self->{'_html_tiny_or'} || $self->html_tiny() ||
         return err();
     my %attr=(
         type => 'application/json',
@@ -3752,7 +3753,7 @@ sub CGI {
     #  Return WebDyne::CGI wrapper object
     #
     my $self=shift();
-    debug("$self get WebDyne::CGI object");
+    debug("$self get WebDyne::CGI object, caller: %s", Dumper([caller(0)]));
 
 
     #  Accessor method for CGI::Simple object
@@ -3769,7 +3770,8 @@ sub CGI {
         #  block and we don't want to trigger an error so be careful
         #
         local $SIG{'__DIE__'}=sub {};
-        my $cgi_or=WebDyne::CGI->new($self->{'_r'});
+        my $cgi_or=WebDyne::CGI->new($self->{'_r'}) ||
+           return err('unable to get WebDyne::CGI object');
         $self->CGI_param_expand($cgi_or);
         debug("cgi_or: $cgi_or");
         eval {} if @_;
@@ -3786,11 +3788,10 @@ sub CGI {
 
 sub html_tiny {
 
-
     my $self=shift();
     debug("$self get HTML::Tiny object");
-    return ($self->{'_html_tiny_or'} ||= WebDyne::HTML::Tiny->new(mode => $WEBDYNE_HTML_TINY_MODE, r=>$self->r(),  @_)) ||
-        err('unable to instantiate new WebDybe::HTTP::Tiny object');
+    return ($self->{'_html_tiny_or'} ||= (WebDyne::HTML::Tiny->new(mode => $WEBDYNE_HTML_TINY_MODE, r=>$self->{'_r'}) ||
+        err('unable to instantiate new WebDybe::HTTP::Tiny object')));
 
 }
 
@@ -3846,9 +3847,7 @@ sub dump {
 
         #  Always do CGI vars
         #
-        my $cgi_ix=tie(my %cgi, 'Tie::IxHash', $cgi_or->Vars());
-        $cgi_ix->SortByKey();
-        push @html, Data::Dumper->Dump([\%cgi], ['WebDyne::CGI']);
+        push @html, Data::Dumper->Dump([$cgi_or->Vars()], ['WebDyne::CGI']);
         
         
         #  Others are optional. Environment
@@ -3858,9 +3857,7 @@ sub dump {
 
             #  Environment
             #
-            my $env_ix=tie(my %env, 'Tie::IxHash', %ENV);
-            $env_ix->SortByKey();
-            push @html, Data::Dumper->Dump([\%env], ['WebDyne::ENV']);
+            push @html, Data::Dumper->Dump([\%ENV], ['WebDyne::ENV']);
             
         }
         
@@ -3876,9 +3873,7 @@ sub dump {
 
             #  %INC wanted
             #
-            my $inc_ix=tie(my %inc, 'Tie::IxHash', %INC);
-            $inc_ix->SortByKey();
-            push @html, Data::Dumper->Dump([\%inc], ['WebDyne::INC']);
+            push @html, Data::Dumper->Dump([\%INC], ['WebDyne::INC']);
             
         }
         
@@ -3891,10 +3886,7 @@ sub dump {
 
             #  Constant
             #
-            my $constant_ix=tie(my %constant, 'Tie::IxHash', 
-                map { $_=> encode_entities($WebDyne::Constant::Constant{$_}) } keys(%WebDyne::Constant::Constant)
-            );
-            $constant_ix->SortByKey();
+            my %constant=map { $_=> encode_entities($WebDyne::Constant::Constant{$_}) } keys(%WebDyne::Constant::Constant);
             push @html, Data::Dumper->Dump([\%constant], ['WebDyne::Constant']);
             
         }
@@ -3902,10 +3894,10 @@ sub dump {
 
         #  Version mandatory
         #
-        my $version_ix=tie(my %version, 'Tie::IxHash', (
+        my %version=(
             VERSION         => $VERSION,
             VERSION_GIT_REF => $VERSION_GIT_REF
-        ));
+        );
         push @html, Data::Dumper->Dump([\%version], ['WebDyne::VERSION']);
         
 
@@ -3916,8 +3908,8 @@ sub dump {
         
         #  Wrap in a pre tag and return
         #
-        my $html_or=$self->html_tiny();
-        return \($html_or->pre(join(undef, @html)));
+        my $html_or=$self->{'_html_tiny_or'} || $self->html_tiny();
+        return \($html_or->pre(join("\n", @html)));
         
     }
     else {

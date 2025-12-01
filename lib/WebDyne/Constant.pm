@@ -460,7 +460,14 @@ sub local_constant_load {
     #
     my ($class, $constant_hr)=@_;
     $constant_hr=\%{"${class}::Constant"};
-    debug("class $class, constant_hr %s", Dumper($constant_hr));
+    
+    if ($constant_temp{$class}++) {
+        debug("class: $class, local_constant_load already performed, skipping");
+        return;
+    }
+    else {
+        debug("class: $class, constant_hr %s", Dumper($constant_hr));
+    }
     my $local_constant_pn_ar=&local_constant_pn();
     debug("local_constant_pn_ar: %s", Dumper($local_constant_pn_ar));
     foreach my $local_constant_pn (@{$local_constant_pn_ar}) {

@@ -96,12 +96,6 @@ sub new {
     debug("$class new, %s", Dumper(\%param));
     
     
-    #  Were we supplied with a CGI::Simple and/or webdyne object ?
-    #
-    #my $cgi_or=delete $param{'CGI'};
-    #my $webdyne_or=delete $param{'webdyne'};
-    
-
     #  Shortcuts (start_html, start_form etc.) enabled by default.
     #
     &shortcut_enable() unless
@@ -110,15 +104,14 @@ sub new {
         
     #  Get HTML::Tiny ref
     #
-    my $self=$class->SUPER::new(%param);
+    my $self=$class->SUPER::new( mode=>(delete($param{'mode'}) || $WEBDYNE_HTML_TINY_MODE));
     
     
-    #  Save away CGI object and return
+    #  Save away other supplied params into self ref
     #
-    #$self->{'_CGI'} ||= $self->CGI($param{'r'});
-    #($self->{'_webdyne'} ||= $webdyne_or) if $webdyne_or;
+    $self->{'_r'}=$param{'r'};
     
-    
+
     #  Done
     #
     return $self;
@@ -144,9 +137,7 @@ sub CGI {
     #
     my $self=shift();
     debug("$self CGI");
-    #use Data::Dumper;
-    #die Dumper(\@_);
-    return ($self->{'_CGI'} ||= WebDyne::CGI->new(@_));
+    return ($self->{'_CGI'} ||= WebDyne::CGI->new($self->{'_r'}));
     
 }
 
