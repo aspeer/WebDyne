@@ -3811,9 +3811,11 @@ sub CGI_param_expand {
         debug('pairs: %s', Dumper(\@pairs));
         foreach my $pair (@pairs) {
             my ($key, $value)=split('=', $pair, 2);
-            $value ||= $cgi_or->param($param);
+            defined($value) || ($value=$cgi_or->param($param));
+            my @value=$cgi_or->param($key);
+            push @value, $value;
             debug("$cgi_or param splt $key => $value");
-            $cgi_or->append($key, $value);
+            $cgi_or->param($key, @value);
         }
         $cgi_or->delete($param);
     }
@@ -3847,7 +3849,7 @@ sub dump {
 
         #  Always do CGI vars
         #
-        push @html, Data::Dumper->Dump([$cgi_or->Vars()], ['WebDyne::CGI']);
+        push @html, Data::Dumper->Dump([scalar $cgi_or->Vars()], ['WebDyne::CGI']);
         
         
         #  Others are optional. Environment
