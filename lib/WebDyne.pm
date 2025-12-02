@@ -134,11 +134,16 @@ sub html_sr {
     #  Supplied with class and options hash. Options can be supplied as hash ref
     #  or hash, convert.
     #
-    my ($fn, $opt_hr)=(shift(), shift());
-    unless (ref($opt_hr) eq 'HASH') {
-        $opt_hr={ %{$opt_hr}, @_ } if $opt_hr;
+    my ($fn, $opt_hr, @param)=@_;;
+    if (ref($fn)) {
+        $opt_hr=$fn
     }
-    $opt_hr->{'filename'} ||= $fn;
+    elsif (ref($opt_hr) ne 'HASH') {
+        $opt_hr={ %{$opt_hr}, @param } if $opt_hr;
+    }
+    $opt_hr->{'filename'}=$fn unless ref($fn);
+    #use Data::Dumper;
+    #die Dumper($opt_hr);
 
 
     #  Capture handler output
@@ -153,7 +158,7 @@ sub html_sr {
     #  Need to setup a fake request handler if initiated via script
     #
     require WebDyne::Request::Fake;
-    my $r=WebDyne::Request::Fake->new(%{$opt_hr}) ||
+    my $r=$opt_hr->{'r'} || WebDyne::Request::Fake->new(%{$opt_hr}) ||
         return err();
         
 

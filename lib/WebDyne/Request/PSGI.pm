@@ -17,7 +17,7 @@ package WebDyne::Request::PSGI;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION @ISA $AUTOLOAD);
+use vars   qw($VERSION @ISA);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -91,21 +91,27 @@ sub new {
         #
         debug('filename not supplied, determining from request');
 
+    
+        #  Env ?
+        #
+        my $env_hr=$r{'env'} ||= \%ENV;
+        debug("env_hr: %s", Dumper($env_hr));
+    
 
         #  Iterate through options. If *not* supplied by SCRIPT_FILENAME keep going.
         #
         my $fn;
-        unless (($fn=$ENV{'SCRIPT_FILENAME'}) && !$r{'uri'}) {
+        unless (($fn=$env_hr->{'SCRIPT_FILENAME'}) && !$r{'uri'}) {
         
         
             #  Need to calc from document root in PSGI environment
             #
             debug('not supplied in SCRIPT_FILENAME or r{uri}. calculating');
-            if (my $dn=($r{'document_root'} || $Dir_config_env{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
+            if (my $dn=($r{'document_root'} || $env_hr->{'DOCUMENT_ROOT'} || $Dir_config_env{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
             
                 #  Get from URI and location
                 #
-                my $uri=$r{'uri'} || $ENV{'PATH_INFO'};
+                my $uri=$r{'uri'} || $env_hr->{'PATH_INFO'} || $env_hr->{'SCRIPT_NAME'};
                 debug("uri: $uri");
                 $fn=File::Spec->catfile($dn, split m{/+}, $uri); #/
                 debug("fn: $fn from dn: $dn, uri: $uri");
@@ -115,10 +121,10 @@ sub new {
             
             #  IIS/FastCGI, not tested recently unsure if works
             #
-            elsif ($fn=$ENV{'PATH_TRANSLATED'}) {
+            elsif ($fn=$env_hr->{'PATH_TRANSLATED'}) {
 
                 #  Feel free to let me know a better way under IIS/FastCGI ..
-                my $script_fn=(File::Spec::Unix->splitpath($ENV{'SCRIPT_NAME'}))[2];
+                my $script_fn=(File::Spec::Unix->splitpath($env_hr->{'SCRIPT_NAME'}))[2];
                 $fn=~s/\Q$script_fn\E.*/$script_fn/;
                 debug("fn: $fn derived from PATH_TRANSLATED script_fn: $script_fn");
             }
