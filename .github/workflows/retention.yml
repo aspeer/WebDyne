@@ -17,6 +17,6 @@ jobs:
         with:
           image-names: webdyne
           cut-off: 30 days ago UTC
-          keep-at-least: 3
+          keep-at-least: 64
           account-type: personal
           token: ${{ secrets.GHCR_PAT }}   # or GITHUB_TOKEN if appropriate
