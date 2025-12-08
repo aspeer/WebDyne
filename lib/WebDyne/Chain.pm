@@ -37,7 +37,7 @@ use Data::Dumper;
 #  Version information in a formate suitable for CPAN etc. Must be
 #  all on one line
 #
-$VERSION='2.036';
+$VERSION='2.037';
 
 
 #  Debug using WebDyne debug handler
@@ -600,8 +600,17 @@ WebDyne::Chain does not expose any options other than the names of modules to ad
 
 Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
-=head1 LICENSE
+=head1 LICENSE and COPYRIGHT
 
-This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself. See  L<http://dev.perl.org/licenses/|http://dev.perl.org/licenses/> .
+This file is part of WebDyne.
+
+This software is copyright (c) 2025 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>
 
 =cut

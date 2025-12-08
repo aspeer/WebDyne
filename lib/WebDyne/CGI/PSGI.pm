@@ -36,7 +36,7 @@ use Plack::Request;
 
 #  Version information
 #
-$VERSION='2.036';
+$VERSION='2.037';
 
 
 #  Debug load
