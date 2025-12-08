@@ -24,7 +24,7 @@ $ cpanm WebDyne
 Building and testing Webdyne-2.04 ... OK
 
 $ cpanm Plack
-Building and testing Webdyne-1.0051 ... OK
+Building and testing Plack-1.0051 ... OK
 ```
 
 Run the PSGI variant in test mode and connect to the server to check that it is working

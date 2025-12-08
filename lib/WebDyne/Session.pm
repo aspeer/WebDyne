@@ -62,13 +62,12 @@ sub import {
 
     #  Will only work if called from within a __PERL__ block in WebDyne
     #
+    my $class=shift();
     my $self_cr=UNIVERSAL::can(scalar caller, 'self') || return;
     my $self=$self_cr->()                             || return;
-
-    #$self->set_handler('WebDyne::Session');
     $self->set_handler('WebDyne::Chain');
     my $meta_hr=$self->meta();
-    push @{$meta_hr->{'webdynechain'}}, __PACKAGE__;
+    push @{$meta_hr->{'webdynechain'}}, $class;
 
 
 }
@@ -97,11 +96,13 @@ sub handler : method {
     #  Get cookie name we are looking for
     #
     my $cookie_name=$WEBDYNE_SESSION_ID_COOKIE_NAME;
+    debug("using cookie_name: $cookie_name");
     
     
     #  Get current value
     #
     my $session_id=$cgi_or->cookie($cookie_name);
+    debug("found session_id: $session_id");
 
 
     #  Get or set the cookie id

@@ -62,7 +62,7 @@ use Exporter qw(import);
 #
 $AUTHORITY='cpan:ASPEER';
 $VERSION='2.036';
-chomp($VERSION_GIT_REF=do { local (@ARGV, $/) = ($_=__FILE__.'.tmp'); <> if -f $_ });
+chomp($VERSION_GIT_REF=do { local (@ARGV, $/) = ($_=__FILE__.'.ref'); <> if -f $_ });
 
 
 #  Debug load

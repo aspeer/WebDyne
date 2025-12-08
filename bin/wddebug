@@ -123,7 +123,7 @@ sub main {
         $webdyne_dn=$webdyne_pm=$INC{'WebDyne.pm'};
         my $webdyne_fn=(File::Spec->splitpath($webdyne_dn))[2];
         $webdyne_dn=~s/\Q$webdyne_fn\E$//;
-        print "debug location: $webdyne_dn\n"
+        print "debug module location: $webdyne_dn\n"
     }
     else {
         $webdyne_pm=File::Spec->catfile($webdyne_dn, 'WebDyne.pm');
@@ -144,7 +144,7 @@ sub main {
     #
     my $webdyne_display_dn;
     unless ($webdyne_dn=$opt{'directory'}) {
-        $webdyne_dn=$INC{'WebDyne/Base.pm'};
+        $webdyne_dn=$INC{'WebDyne/Util.pm'};
         my $webdyne_fn=(File::Spec->splitpath($webdyne_dn))[2];
         $webdyne_dn=~s/\Q$webdyne_fn\E$//;
         $webdyne_display_dn=realpath(File::Spec->catdir($webdyne_dn, File::Spec->updir));
@@ -266,7 +266,6 @@ sub status {
     my ($debug, $found);
     while (my $line=<$fh>) {
         next unless ($line=~/^\s*(\d?)\s+&&\s+debug/ || $line=~/^\s*debug/);
-
         #print "line $line, $1\n";
         $debug=($1 eq '0') ? 0 : 1;
         $found++;

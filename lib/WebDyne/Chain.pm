@@ -77,6 +77,22 @@ BEGIN {
 }
 
 
+sub import {
+
+
+    #  Will only work if called from within a __PERL__ block in WebDyne
+    #
+    my ($class, @import)=@_;
+    my $self_cr=UNIVERSAL::can(scalar caller, 'self') || return;
+    my $self=$self_cr->()                             || return;
+    $self->set_handler($class);
+    my $meta_hr=$self->meta();
+    push @{$meta_hr->{'webdynechain'}}, @import;
+
+
+}
+
+
 sub handler : method {
 
 
@@ -135,6 +151,8 @@ sub handler : method {
     else {
         debug('could not find any module chain info');
     }
+    debug('module: %s', Dumper(\@module));
+
 
 
     #  WebDyne::Chain must be the first handler in line, Webdyne the last
@@ -249,7 +267,7 @@ sub handler : method {
 
     #  Only get here if subrequest invoked.
     HANDLER_COMPLETE:
-    return &Apache::OK;
+    return $MP2 ? &Apache::OK : HTTP_OK;
 
 
 }
@@ -468,6 +486,7 @@ sub UNIVERSAL::AUTOLOAD {
     goto RENDER_ERROR;
 
 }
+1;
 
 __END__
 

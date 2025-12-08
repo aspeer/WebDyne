@@ -40,10 +40,7 @@ use Data::Dumper;
 use File::Spec;
 use FindBin qw($RealBin $Script);
 $Data::Dumper::Indent=1;
-#$Data::Dumper::Terse=1;
 $Data::Dumper::Sortkeys=1;
-#$Data::Dumper::Deepcopy=1;
-#$Data::Dumper::Purity=1;
 
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
@@ -95,7 +92,7 @@ sub main {
             meta
             data
             manifest!
-            dest|dest_fn:s
+            outfile|dest|dest_fn:s
             all
             timestamp!
             repeat|r|num|n=s
@@ -110,7 +107,7 @@ sub main {
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {
         print "$Script version: $VERSION\n";
-        print "WebDyne version: $WebDyne::VERSION\n";
+        print "WebDyne version: $WebDyne::VERSION ($WebDyne::VERSION_GIT_REF)\n";
         exit 0
     };
 

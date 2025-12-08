@@ -1115,3 +1115,7 @@ t/data/08-cgi_param_expand.dat.5
 t/data/08-cgi_param_expand.dat.final     
 t/data/08-cgi_param_expand.html          
 t/data/08-cgi_param_expand.tree          
+INSTALL.xml                              
+bin/wddebug.xml                          
+lib/WebDyne/Chain.pm.xml                 
+lib/WebDyne/Filter/Constant.pm           
