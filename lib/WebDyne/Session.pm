@@ -185,43 +185,10 @@ sub session_id {
 
 __END__
 
-=head1 Name
-
-WebDyne::Session - WebDyne extension module that implements browser sessions
-
-=head1 Description
-
-WebDyne::Session is a WebDyne extension module that implements browser
-sessions.  An API provides access to get and set session ID's via browser
-cookies.
-
-=head1 Documentation
-
-Information on configuration and usage is availeble from the WebDyne site,
-http://webdyne.org/ - or from a snapshot of current documentation in PDF
-format available in the WebDyne module source /doc directory.
-
-=head1 LICENSE and COPYRIGHT
-
-This file is part of WebDyne.
-
-This software is copyright (c) 2025 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
-Full license text is available at:
-
-L<http://dev.perl.org/licenses/>
-
-=head1 Author
-
-Andrew Speer, andrew@webdyne.org
-
-=head1 Bugs
-
-Please report any bugs or feature requests to "bug-webdyne-session at
-rt.cpan.org", or via
-http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WebDyne-Session
+=begin markdown
 
 
+=end markdown
+
+
+=cut
