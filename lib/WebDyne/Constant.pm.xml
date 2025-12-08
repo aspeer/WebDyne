@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry version="5.2" xmlns="http://docbook.org/ns/docbook">
+  <refmeta>
+    <refentrytitle>WebDyne::Constant</refentrytitle>
+
+    <manvolnum>3pm</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>WebDyne::Constant</refname>
+
+    <refpurpose>WebDyne module that sets constants and defaults for WebDyne
+    processing</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <programlisting>#!env perl
+#
+use WebDyne::Constant;
+print $WEBDYNE_CACHE_DN</programlisting>
+  </refsynopsisdiv>
+
+  <refsection>
+    <title>Description</title>
+
+    <para>This module provides a list of configuration constants used in the
+    WebDyne code. These constants are used to configure the behavior of the
+    WebDyne module and can be accessed by importing the module and referencing
+    the constants by name. Constants can be configured to different values by
+    overriding values in local configuration files, setting environment
+    variables, command line options, or Apache directives.</para>
+
+    <para>Common uses for modifying constant value allow for:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Changing default language from en-US</para>
+      </listitem>
+
+      <listitem>
+        <para>Modifying or adding new meta-data or default headers to
+        output</para>
+      </listitem>
+
+      <listitem>
+        <para>Adding default style-sheets or other inclusions to all output
+        files</para>
+      </listitem>
+    </itemizedlist>
+  </refsection>
+
+  <refsection>
+    <title>CONSTANTS</title>
+
+    <para>The following user configurable constants are defined in the module.
+    The default value of the configuration constant is provided after the
+    constant name:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>WEBDYNE_CACHE_DN ()</term>
+
+        <listitem>
+          <para>Directory where compiled pages are stored. Unset by default on
+          command line, usually set to temporary directory by installer or
+          PSGI handler. Pages that are compiled from .psp source into an
+          intermediate data structure in Storable format are stored in this
+          location. </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>WEBDYNE_STARTUP_CACHE_FLUSH (1)</term>
+
+        <listitem>
+          <para>Flush cache files at startup. If set will delete all cache
+          files and force re-read and recompile of all source .psp files at
+          startup. Recommended to leave at (1) </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>WEBDYNE_CACHE_CHECK_FREQ</term>
+
+        <listitem>
+          <para/>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsection>
+</refentry>

@@ -24,7 +24,7 @@ use WebDyne::Static;</programlisting>
   </refsynopsisdiv>
 
   <refsection>
-    <title>Description</title>
+    <title>DESCRIPTION</title>
 
     <para>The WebDyne::Static module will flag that all dynamic components of
     a page should be run at compile time, and the resulting HTML saved as a
@@ -35,7 +35,7 @@ use WebDyne::Static;</programlisting>
   </refsection>
 
   <refsection>
-    <title>Methods</title>
+    <title>METHODS</title>
 
     <variablelist>
       <varlistentry>
@@ -53,21 +53,21 @@ use WebDyne::Static;</programlisting>
   </refsection>
 
   <refsection>
-    <title>Options</title>
+    <title>OPTIONS</title>
 
     <para>WebDyne::Static does not expose any options to the import function
     when called via use.</para>
   </refsection>
 
   <refsection>
-    <title>Author</title>
+    <title>AUTHOR</title>
 
     <para>Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and
     contributors.</para>
   </refsection>
 
   <refsection>
-    <title>License</title>
+    <title>LICENSE</title>
 
     <para>This library is free software; you can redistribute it and/or modify
     it under the same terms as Perl itself. See <link
