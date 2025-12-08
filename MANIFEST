@@ -1120,3 +1120,4 @@ bin/wddebug.xml
 lib/WebDyne/Chain.pm.xml                 
 lib/WebDyne/Filter/Constant.pm           
 INSTALL.md                               
+lib/WebDyne/Chain.pm.md                  
