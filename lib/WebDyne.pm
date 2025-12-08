@@ -4107,12 +4107,29 @@ sub meta {
 sub static {
 
 
-    #  Set static flag for this instance only. If all instances wanted
+    #  Set/get static flag for this instance only. If all instances wanted
     #  set in meta data. This method used by WebDyne::Static module
     #
-    my $self=shift();
-    $self->{'_static'}=1;
+    my ($self, $static)=@_;
+    
+    
+    #  Set or get
+    #
+    if (defined($static)) {
+        
 
+        #  Set
+        #
+        return $self->{'_static'}=$static;
+        
+    }
+    else {
+    
+        #  Get
+        #
+        return $self->meta()->{'static'} || $self->{'_static'} || 0
+        
+    }
 
 }
 
