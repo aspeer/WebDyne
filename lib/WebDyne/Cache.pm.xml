@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry version="5.2" xmlns="http://docbook.org/ns/docbook">
+  <refmeta>
+    <refentrytitle>WebDyne::Cache</refentrytitle>
+
+    <manvolnum>3pm</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>WebDyne::Cache</refname>
+
+    <refpurpose>WebDyne module to cache dynamic output for improved
+    performance.</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <programlisting>#  Sample time.psp compiled to static HTML. Every time this page is requested it will show
+#  the same time unless an interval of more than 10 seconds has elapsed.
+#
+&lt;start_html&gt;
+The most recent time this page was run was &lt;? localtime ?&gt;
+__PERL__
+use WebDyne::Static;
+use WebDyne::Cache (\&amp;cache);
+
+sub cache {
+    
+    #  Self ref
+    #
+    my $self=shift();
+
+    #  Get file last modified time (mtime)
+    #
+    my $mtime=${ $self-&gt;cache_mtime() };
+
+    #  If older than 10 seconds force recompile
+    #
+    if ((time()-$mtime) &gt; 10) { 
+        $self-&gt;cache_compile(1) 
+    };
+
+    #  Done
+    #
+    return \1;
+
+}</programlisting>
+  </refsynopsisdiv>
+
+  <refsection>
+    <title>DESCRIPTION</title>
+
+    <para>The WebDyne::Compile module works in conjunction with the
+    WebDyne::Static module to allow less frequent running of dynamic code,
+    speeding up responsiveness for CPU or I/O heavy pages.</para>
+
+    <para>The WebDyne framework will monitor for changes in the source file
+    and recompile to a new HTML if the source .psp file is updated.</para>
+  </refsection>
+
+  <refsection>
+    <title>METHODS</title>
+
+    <variablelist>
+      <varlistentry>
+        <term>static()</term>
+
+        <listitem>
+          <para>Get or set the static attribute for this page. When setting
+          the static attribute for a page it is only set for that instance of
+          the page. To set a page as permanently static (except on source file
+          update) use the WebDyne::Static module as per synopsis, or update
+          the meta data via $self-&gt;meta-&gt;{'static'}=1;</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsection>
+
+  <refsection>
+    <title>OPTIONS</title>
+
+    <para>WebDyne::Static does not expose any options to the import function
+    when called via use.</para>
+  </refsection>
+
+  <refsection>
+    <title>AUTHOR</title>
+
+    <para>Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and
+    contributors.</para>
+  </refsection>
+
+  <refsection>
+    <title>LICENSE</title>
+
+    <para>This library is free software; you can redistribute it and/or modify
+    it under the same terms as Perl itself. See <link
+    xlink:href="https://dev.perl.org/licenses/"
+    xmlns:xlink="http://www.w3.org/1999/xlink">https://dev.perl.org/licenses/</link>.</para>
+  </refsection>
+</refentry>
