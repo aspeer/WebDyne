@@ -341,6 +341,9 @@ sub compile {
                 my $hr=$self->subst_attr(undef, {$name => $value}) ||
                     return err();
                 $meta{$name}=$hr->{$name};
+                if ($name eq 'cache') {
+                    $meta{'static'} ||= 1;
+                }
             }
 
             #  Do not want anymore
@@ -361,6 +364,9 @@ sub compile {
                         my ($name, $value)=split(/[=:]/, $meta, 2);
                         defined($value) || ($value=1);
                         $meta{$name}=$value;
+                        if ($name eq 'cache') {
+                            $meta{'static'} ||= 1;
+                        }
                     }
                 }
             }

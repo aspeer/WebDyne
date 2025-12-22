@@ -344,6 +344,7 @@ sub _start_html {
         if (my $value=$attr_page{$attr}) {
             debug("found attr: $attr, setting to value: $value");
             $self->{"_${attr}"}=$value;
+            $self->{'_static'} ||=1 if ($attr eq 'cache');
         }
     }
 

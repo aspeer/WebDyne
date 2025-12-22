@@ -560,7 +560,6 @@ sub handler : method {    # no subsort
     #
     my ($meta_hr, $data_ar)=@{$cache_inode_hr}{qw(meta data)};
     debug('meta_hr %s, ', Dumper($meta_hr));
-    #$self->meta()->{'static'}=1;
 
 
     #  Custom handler ?
@@ -4144,7 +4143,6 @@ sub static {
     #
     my ($self, $static)=@_;
     debug("self: $self, static: $static");
-    die;
     
     
     #  Set or get
