@@ -238,7 +238,7 @@ sub debug {
 
     #  Get the debug message
     #
-    my $debug=$_[1] ? sprintf(shift(), @_) : shift();
+    my $debug=$#_ ? sprintf(shift(), @_) : shift();
 
 
     #  Filtering ?

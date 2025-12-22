@@ -96,6 +96,7 @@ sub main {
         'repeat|r|num|n=s',
         'loop',
         'get=s@',
+        'delay=i',
         'man',
         'version'
     ) || pod2usage(2);
@@ -225,6 +226,12 @@ sub main {
             #
             #print("SV: ",  scalar @{$gladiator_ar}, "\n") if $opt{'leak'};
             #@{$gladiator_ar} = ();
+            
+            #  Delay (presumably to test caching code)
+            #
+            if (my $delay=$opt{'delay'}) {
+                sleep $delay
+            }
 
         }
 
