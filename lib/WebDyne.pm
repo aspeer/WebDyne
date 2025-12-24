@@ -134,16 +134,14 @@ sub html_sr {
     #  Supplied with class and options hash. Options can be supplied as hash ref
     #  or hash, convert.
     #
-    my ($fn, $opt_hr, @param)=@_;;
+    my ($fn, $opt_hr, @param)=@_;
     if (ref($fn)) {
         $opt_hr=$fn
     }
     elsif (ref($opt_hr) ne 'HASH') {
-        $opt_hr={ %{$opt_hr}, @param } if $opt_hr;
+        $opt_hr={ $opt_hr, @param } if $opt_hr;
     }
     $opt_hr->{'filename'}=$fn unless ref($fn);
-    #use Data::Dumper;
-    #die Dumper($opt_hr);
 
 
     #  Capture handler output
@@ -174,7 +172,7 @@ sub html_sr {
     
     #  Run
     #
-    defined($handler->handler($r)) || return err();
+    defined($handler->handler(grep {$_} $r, $opt_hr->{'param'})) || return err();
 
 
     #  Manual cleanup
