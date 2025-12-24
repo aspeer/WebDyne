@@ -1,0 +1,4 @@
+<start_html>
+The current server time is: <? localtime() ?>
+__PERL__
+use WebDyne::Static;
