@@ -1,3 +1,5 @@
+#  Run compile once and service static page thereafter
+#
 <start_html>
 The current server time is: <? localtime() ?>
 __PERL__

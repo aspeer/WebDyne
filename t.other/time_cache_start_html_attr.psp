@@ -1,5 +1,4 @@
-#  Sample time.psp compiled to static HTML. Every time this page is requested it will show
-#  the same time
+#  Recompile page only if last compile > 10 seconds ago
 #
 <start_html cache="&cache">
 

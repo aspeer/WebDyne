@@ -1,4 +1,4 @@
-#  Show time only every 10 seconds.
+#  Recompile page only if last compile > 10 seconds ago
 #
 <start_html>
 The most recent time this page was run was <? localtime ?>

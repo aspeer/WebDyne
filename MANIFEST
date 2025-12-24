@@ -1206,3 +1206,10 @@ t/static_meta.psp
 t/static_start_html_attr.psp             
 t/static_start_html_meta.psp             
 t/static_start_html_module.psp           
+t.other/time.psp                         
+t.other/time_cache.psp                   
+t.other/time_cache_start_html_attr.psp   
+t.other/time_cache_start_html_meta.psp   
+t.other/time_static.psp                  
+t.other/time_static_start_html.psp       
+t.other/time_static_start_html_meta.psp  
