@@ -114,6 +114,31 @@ sub dir_config {
     my $constant_hr=$WEBDYNE_DIR_CONFIG;
     debug('using constant_hr: %s', Dumper($constant_hr));
     
+    
+    #  Look for .webdyne.conf.pl in document root. Ony do once
+    #
+    unless ($Package{'_dir_config'}++) {
+        debug("looking for webdyne.conf.pl in document_root");
+        if (my $root_dn=$r->document_root()) {
+            my $webdyne_conf_fn=File::Spec->rel2abs(File::Spec->catfile($root_dn, sprintf('.%s', $WEBDYNE_CONF_FN)));
+            debug("fn: $webdyne_conf_fn");
+            if (-f $webdyne_conf_fn) {
+                debug("found: $webdyne_conf_fn, reading");
+                my $local_hr=do($webdyne_conf_fn) ||
+                    warn "unable to read document root dir_config constant file, $!";
+                debug('local_hr: %s', Dumper($local_hr));
+                if (my $hr=$local_hr->{'WebDyne::Constant'}{'WEBDYNE_DIR_CONFIG'}) {
+                    debug('hr: %s', Dumper($hr));
+                    $WEBDYNE_DIR_CONFIG={
+                        %{$WEBDYNE_DIR_CONFIG},
+                        %{$hr}
+                    };
+                    debug('final WEBDYNE_DIR_CONFIG: %s', Dumper($WEBDYNE_DIR_CONFIG));
+                }
+            }
+        }
+    }
+    
 
     #  OK - heirarchy is this:
     #

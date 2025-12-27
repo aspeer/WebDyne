@@ -439,7 +439,12 @@ my %constant_temp;
     
     #  Local constant path names
     #
-    WEBDYNE_LOCAL_CONSTANT_FN => &local_constant_pn(),
+    WEBDYNE_CONF_AR => &local_constant_pn(),
+    
+    
+    #  Config file name
+    #
+    WEBDYNE_CONF_FN => 'webdyne.conf.pl',
 
 
     #  Mod_perl level. Do not change unless you know what you are
@@ -573,7 +578,7 @@ sub local_constant_pn {
     #  Where local constants reside
     #
     my @local_constant_pn;
-    my $local_constant_fn='webdyne.conf.pl';
+    my $local_constant_fn=$Constant{'WEBDYNE_CONF_FN'};
     if ($^O=~/MSWin[32|64]/) {
         my $dn=$ENV{'WEBDYNE_HOME'} || $ENV{'WEBDYNE'} || $ENV{'WINDIR'};
         push @local_constant_pn, ($ENV{'WEBDYNE_CONF'} || 
@@ -588,6 +593,7 @@ sub local_constant_pn {
     unless ($ENV{'WEBDYNE_CONF'}) {
         push @local_constant_pn, glob(sprintf('~/.%s', $local_constant_fn));
     }
+    debug('local_constant_pn: %s, env: %s', Dumper(\@local_constant_pn, \%ENV));
     return \@local_constant_pn;
 
 }

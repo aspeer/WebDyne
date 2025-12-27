@@ -162,7 +162,8 @@ sub err_html {
             "using text error (%s:%s:%s:%s) - update $r content_type",
             $WEBDYNE_ERROR_TEXT, $WEBDYNE_EVAL_SAFE, $self->{'_error_handler_run'}, $cgi_or
         );
-        $r->content_type('text/plain');
+        #$r->content_type('text/plain');
+        $r->content_type($WEBDYNE_CONTENT_TYPE_TEXT);
         
 
         #  Push error
