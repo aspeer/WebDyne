@@ -262,7 +262,7 @@ sub handler {
 
     #  Cache handler for a location
     #
-    my ($handler, %handler);
+    #my ($handler, %handler);
 
 
     #  Create new PSGI Request object, will pull filename from
@@ -276,25 +276,30 @@ sub handler {
     debug("r: $r");
 
 
-    #  Get handler
+    #  Get handler. Update - Commented out. Let WebDyne handle this as borks if
+    #  using WebDyne::Template and index.psp gets called. Keep code for reference
     #
-    unless ($handler=$handler{my $location=$r->location()}) {
-        my $handler_package=
-            $r->dir_config('WebDyneHandler') || $ENV{'WebDyneHandler'};
-        if ($handler_package) {
-            local $SIG{'__DIE__'};
-            (my $handler_package_pm=$handler_package)=~s{::}{/}g;
-            $handler_package_pm.='.pm';
-            unless (eval {require $handler_package_pm}) {
-                #  Didn't load - let Webdyne handle the error.
-                $handler='WebDyne';
+    my $handler='WebDyne';
+    if (0) {
+        my %handler;
+        unless ($handler=$handler{my $location=$r->location()}) {
+            my $handler_package=
+                $r->dir_config('WebDyneHandler') || $ENV{'WebDyneHandler'};
+            if ($handler_package) {
+                local $SIG{'__DIE__'};
+                (my $handler_package_pm=$handler_package)=~s{::}{/}g;
+                $handler_package_pm.='.pm';
+                unless (eval {require $handler_package_pm}) {
+                    #  Didn't load - let Webdyne handle the error.
+                    $handler='WebDyne';
+                }
+                else {
+                    $handler=$handler{$location}=$handler_package;
+                }
             }
             else {
-                $handler=$handler{$location}=$handler_package;
+                $handler=$handler{$location}='WebDyne';
             }
-        }
-        else {
-            $handler=$handler{$location}='WebDyne';
         }
     }
     debug("calling handler: $handler");
@@ -394,7 +399,7 @@ sub handler {
         }
 
     }
-    debug("final handler status is $status, html:$html");
+    debug("final handler status: %s, content_type: %s, html:%s", $status, $r->content_type(), $html);
 
 
 	#  If html defined set header content type unless already set during handler run

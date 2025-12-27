@@ -231,7 +231,6 @@ sub debug {
     #  Time in human readable format
     #
     my ($sec, $msec)=gettimeofday();
-
     #my $timestamp=strftime("%Y-%m-%d %H:%M:%S", localtime($sec)) . sprintf(".%04d", $msec);
     my $timestamp=strftime("%H:%M:%S", localtime($sec)) . sprintf('.%06d', $msec);
 

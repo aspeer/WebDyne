@@ -195,7 +195,8 @@ sub content_type {
 
     my $r=shift();
     my $hr=$r->headers_out();
-    @_ ? $r->headers_out()->{'Content-Type'}=shift() : $r->SUPER::content_type();
+    #@_ ? $r->headers_out()->{'Content-Type'}=shift() : $r->SUPER::content_type();
+    return @_ ? $r->headers_out()->{'Content-Type'}=shift() : ($r->headers_out()->{'Content-Type'} || $ENV{'CONTENT_TYPE'});
 
 }
 
