@@ -53,6 +53,11 @@ $VERSION='2.037';
     DOCUMENT_DEFAULT	=> 'app.psp',
     
     
+    #  File to use for indexing
+    #
+    WEBDYNE_PSGI_INDEX	=> 'index.psp',
+    
+    
     #  Middeware config, static module. Loaded by default for convenience if
     #  started via webdyne.psgi script directly (i.e. not invoked by plakup
     #  or starman). Activate in middleware section below if wanted with plackup

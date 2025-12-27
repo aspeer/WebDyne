@@ -18,7 +18,7 @@ package WebDyne;
 use strict qw(vars);
 use vars   qw($VERSION $AUTHORITY $VERSION_GIT_REF %CGI_TAG_WEBDYNE @ISA $AUTOLOAD @EXPORT_OK);
 use warnings;
-no warnings qw(uninitialized redefine once);
+no warnings qw(uninitialized redefine once qw);
 use overload;
 
 

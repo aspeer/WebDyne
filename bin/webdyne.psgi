@@ -130,7 +130,7 @@ if (!caller || exists $ENV{PAR_TEMP}) {
     
             #  We can do indexing
             #
-            $DOCUMENT_DEFAULT=File::Spec->rel2abs(File::Spec->catfile($test_dn, 'index.psp'));
+            $DOCUMENT_DEFAULT=File::Spec->rel2abs(File::Spec->catfile($test_dn, $WEBDYNE_PSGI_INDEX));
             
         }
         
@@ -257,7 +257,7 @@ sub handler {
     #
     my ($env_hr, @param)=@_;
     local *ENV=$env_hr;
-    debug('in handler, env: %s, param:%s', Dumper(\%ENV));
+    debug('in handler, env: %s, param:%s', Dumper(\%ENV, \@param));
     
 
     #  Cache handler for a location
