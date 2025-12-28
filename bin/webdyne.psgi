@@ -137,6 +137,11 @@ if (!caller || exists $ENV{PAR_TEMP}) {
     }
     
     
+    #  Read in local webdyne.conf.pl
+    #
+    &local_constant_load($DOCUMENT_ROOT);
+    
+    
     #  Show error information by default
     #
     $WebDyne::WEBDYNE_ERROR_SHOW=1;
@@ -158,6 +163,11 @@ else {
         || $DOCUMENT_ROOT || $test_fn;
     $DOCUMENT_ROOT=&normalize_dn($DOCUMENT_ROOT);
 
+
+    #  Read in local webdyne.conf.pl
+    #
+    &local_constant_load($DOCUMENT_ROOT);
+
 }
 
 
@@ -177,6 +187,23 @@ sub normalize_dn {
     $abs_dn =~ s{/$}{} unless $abs_dn eq '/';
     return $abs_dn;
     
+}
+
+
+sub local_constant_load {
+
+
+    #  Read in local webdyne.conf.pl
+    #
+    my $root_dn=shift();
+    
+    
+    #  If root_dn is a file get dir name
+    if (-f $root_dn) {
+        $root_dn=(File::Spec->splitpath($root_dn))[1];
+    }
+    WebDyne::Constant->import(File::Spec->catfile($root_dn, sprintf('.%s', $WEBDYNE_CONF_FN)));
+
 }
     
 
