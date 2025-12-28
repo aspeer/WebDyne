@@ -328,6 +328,7 @@ sub _start_html {
         include_style
         static
         cache
+        handler
     );
     debug('start_html %s', Dumper(\%attr_page));
 
@@ -340,7 +341,7 @@ sub _start_html {
     #  Static, cache ? If so mark as such in HTML::Tiny object to be 
     #  reviewed at end of parse by Treebuilder. Not ideal, good enough
     #
-    foreach my $attr (qw(static cache)) {
+    foreach my $attr (qw(static cache handler)) {
         if (my $value=$attr_page{$attr}) {
             debug("found attr: $attr, setting to value: $value");
             $self->{"_${attr}"}=$value;

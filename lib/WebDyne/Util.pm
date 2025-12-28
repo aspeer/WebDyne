@@ -231,13 +231,13 @@ sub debug {
     #  Time in human readable format
     #
     my ($sec, $msec)=gettimeofday();
-
     #my $timestamp=strftime("%Y-%m-%d %H:%M:%S", localtime($sec)) . sprintf(".%04d", $msec);
     my $timestamp=strftime("%H:%M:%S", localtime($sec)) . sprintf('.%06d', $msec);
 
 
     #  Get the debug message
     #
+    #local $SIG{__WARN__}=sub { die @_ };  #uncomment if want to trace any missing sprintf params
     my $debug=$#_ ? sprintf(shift(), @_) : shift();
 
 

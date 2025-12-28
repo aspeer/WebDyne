@@ -376,7 +376,7 @@ sub compile {
     
     #  And look for any static or cache tags found in start_html and noted 
     #
-    foreach my $attr (qw(static cache)) {
+    foreach my $attr (qw(static cache handler)) {
         if (my $value=$html_tiny_or->{"_${attr}"}) {
             $meta{$attr}=$value;
         }

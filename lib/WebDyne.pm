@@ -18,7 +18,7 @@ package WebDyne;
 use strict qw(vars);
 use vars   qw($VERSION $AUTHORITY $VERSION_GIT_REF %CGI_TAG_WEBDYNE @ISA $AUTOLOAD @EXPORT_OK);
 use warnings;
-no warnings qw(uninitialized redefine once);
+no warnings qw(uninitialized redefine once qw);
 use overload;
 
 
@@ -44,7 +44,7 @@ $Data::Dumper::Sortkeys=1;
 use HTML::Entities qw(decode_entities encode_entities);
 use CGI::Simple;
 use JSON;
-use Cwd qw(getcwd);
+use Cwd qw(fastcwd);
 
 
 #  Inherit from the Compile module, not loaded until needed though.
@@ -3938,6 +3938,19 @@ sub dump {
             push @html, Data::Dumper->Dump([\%constant], ['WebDyne::Constant']);
             
         }
+        
+        
+        #  Dir_config
+        #
+        if ($attr_hr->{'dir_config'} || $attr_hr->{'all'}) {
+    
+
+            #  Yes, wanted
+            #
+            push @html, Data::Dumper->Dump([$self->r->dir_config()], ['WebDyne::Dir_Config']);
+            
+        }
+        
 
 
         #  Version mandatory
@@ -3982,7 +3995,7 @@ sub cwd {
         unless (-d ($dn=File::Spec->rel2abs($fn))) {
             #  Not a directory, must be file
             #
-            $dn=(File::Spec->splitpath($self->{'_r'}->filename()))[1] || getcwd();
+            $dn=(File::Spec->splitpath($fn))[1] || fastcwd();
             debug("return calculated dn: $dn");
             $dn;
         }
@@ -3990,6 +4003,7 @@ sub cwd {
             debug("return existing dn: $dn");
             $dn;
         }
+        
     }
 
 }
