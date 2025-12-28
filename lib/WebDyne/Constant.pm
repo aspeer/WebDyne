@@ -437,6 +437,12 @@ my %constant_temp;
     WEBDYNE_DIR_CONFIG => undef,
     
     
+    #  Dir_config can be loaded from each directory via webdyne.conf.pl 
+    #  if desired, only under Plack at the moment
+    #
+    WEBDYNE_DIR_CONFIG_CWD_LOAD => 1,
+    
+    
     #  Local constant path names. Used as marker only, updated dynamically
     #  by &local_constant_load;
     #
@@ -492,18 +498,18 @@ sub local_constant_load {
     #  Iterate through them, including any specified in import
     #
     foreach my $local_constant_pn (grep {$_} @{$local_constant_pn_ar}, $local_constant_fn) {
-        debug("load local_constant_pn: $local_constant_pn");
-        $Constant{'WEBDYNE_CONF_HR'}{$local_constant_pn}++;
-        my $local_hr=(-f $local_constant_pn) && (
-            do(File::Spec->rel2abs($local_constant_pn))
-            ||
-            warn "unable to read local constant file, $!"
-        );
-        debug("local_hr $local_hr") if $local_hr;
-        if (my $hr=$local_hr->{$class}) {
-            debug("found class $class hr %s", Dumper($hr));
-            while (my ($key, $val)=each %{$hr}) {
-                $constant_hr->{$key}=$val;
+        debug("attempt load local_constant_pn: $local_constant_pn");
+        if (-f $local_constant_pn) {
+            debug("file exists, about to load from: $local_constant_pn");
+            $Constant{'WEBDYNE_CONF_HR'}{$local_constant_pn}++;
+            if (my $local_hr=do(File::Spec->rel2abs($local_constant_pn)) ||
+                warn "unable to read local constant file, $!") {
+                if (my $hr=$local_hr->{$class}) {
+                    debug("found class $class hr %s", Dumper($hr));
+                    while (my ($key, $val)=each %{$hr}) {
+                        $constant_hr->{$key}=$val;
+                    }
+                }
             }
         }
     }
