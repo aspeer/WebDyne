@@ -38,7 +38,7 @@ $Data::Dumper::Indent=1;
 
 #  Version information
 #
-$VERSION='2.039';
+$VERSION='2.040';
 
 
 #  Debug

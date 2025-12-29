@@ -61,7 +61,7 @@ use Exporter qw(import);
 #  Version information
 #
 $AUTHORITY='cpan:ASPEER';
-$VERSION='2.039';
+$VERSION='2.040';
 chomp($VERSION_GIT_REF=do { local (@ARGV, $/) = ($_=__FILE__.'.ref'); <> if -f $_ });
 
 
