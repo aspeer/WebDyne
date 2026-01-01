@@ -1699,14 +1699,26 @@ sub render_cr {
     #  If param present, use for sub-render. Commented out was when render was co-mingled, not needed now separated to render_data_ar(), render() methods
     #
     #if (!exists($param_data_hr->{'param'})) {
-        if ($attr_hr->{'param'}) {
-            my %param_data=(%{$param_data_hr}, %{$attr_hr->{'param'}});
-            $param_data_hr=\%param_data;
-        }
+    ##    if ($attr_hr->{'param'}) {
+    ##        my %param_data=(%{$param_data_hr}, %{$attr_hr->{'param'}});
+    ##        $param_data_hr=\%param_data;
+    ##    }
     #}
     #elsif ($attr_hr->{'param'})  {
     #    $param_data_hr=$attr_hr->{'param'}
     #}
+
+    if (exists ($attr_hr->{'param'})) {
+        if (ref($attr_hr->{'param'}) eq 'HASH') {
+            my %param_data=(%{$param_data_hr}, %{$attr_hr->{'param'}});
+            $param_data_hr=\%param_data;
+        }
+        elsif (ref($attr_hr->{'param'})) {
+            return err("perl param attribute is %s ref, must be HASH ref or plain scalar", ref($attr_hr->{'param'}));
+        }
+    }
+
+
     debug('result: %s', Dumper($param_data_hr));
 
 
@@ -2816,13 +2828,25 @@ sub perl {
         
         #  Inherit params from data stack and add any supplied here
         #
-        my %param=(%{$self->{'_perl_data'}[0]}, %{$attr_hr->{'param'}});
+        my (%param, $param_scalar);
+        if (exists ($attr_hr->{'param'})) {
+            if (ref($attr_hr->{'param'}) eq 'HASH') {
+                %param=(%{$self->{'_perl_data'}[0]}, %{$attr_hr->{'param'}});
+            }
+            elsif (!ref($attr_hr->{'param'})) {
+                $param_scalar=$attr_hr->{'param'};
+            }
+            else {
+                return err("perl param attribute is %s ref, must be HASH ref or plain scalar", ref($attr_hr->{'param'}));
+            }
+        }
 
 
         #  Run the eval code to get HTML
         #
         #$html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $attr_hr->{'param'}, "&${function}") || do {
-        $html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, \%param, "&${function}") || do {
+        $html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $param_scalar ? $param_scalar : \%param, "&${function}") || do {
+        #$html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, \%param, "&${function}") || do {
 
 
             #  Error occurred. Pop data ref off stack and return
@@ -3934,8 +3958,19 @@ sub dump {
 
             #  Constant
             #
-            my %constant=map { $_=> encode_entities($WebDyne::Constant::Constant{$_}) } keys(%WebDyne::Constant::Constant);
+            #my %constant=map { $_=> encode_entities($WebDyne::Constant::Constant{$_}) } keys(%WebDyne::Constant::Constant);
+            #push @html, Data::Dumper->Dump([\%constant], ['WebDyne::Constant']);
+
+
+            #  Update - take from WebDyne module vars, don't trust hasn't changed from Constants file
+            #
+            my %constant;
+            while (my ($k, $cv) = each %WebDyne::Constant::Constant) {
+                my $wv=${"WebDyne::${k}"};
+                $constant{$k}=($cv eq $wv) ? $wv : "$wv [$cv]";
+            }
             push @html, Data::Dumper->Dump([\%constant], ['WebDyne::Constant']);
+
             
         }
         

@@ -231,7 +231,6 @@ sub debug {
     #  Time in human readable format
     #
     my ($sec, $msec)=gettimeofday();
-    #my $timestamp=strftime("%Y-%m-%d %H:%M:%S", localtime($sec)) . sprintf(".%04d", $msec);
     my $timestamp=strftime("%H:%M:%S", localtime($sec)) . sprintf('.%06d', $msec);
 
 
@@ -243,30 +242,32 @@ sub debug {
 
     #  Filtering ?
     #
-    #if ($ENV{'WEBDYNE_DEBUG'} && ($ENV{'WEBDYNE_DEBUG'} ne '1')) {
     if ($Package{'WEBDYNE_DEBUG'} && ($Package{'WEBDYNE_DEBUG'} ne '1')) {
 
 
         #  Yes - check we are getting from caller we are interested in
         #
-        #my @debug_target=split(/[,;]/, $ENV{'WEBDYNE_DEBUG'});
         my @debug_target=split(/[,;]/, $Package{'WEBDYNE_DEBUG'});
         foreach my $debug_target (@debug_target) {
             if (($caller eq $debug_target) || ($method=~/\Q$debug_target\E$/)) {
-
-                #CORE::print $debug_fh "[$timestamp $subroutine] ", $_[1] ? sprintf(shift(), @_) : $_[0], $/;
-                #CORE::print $debug_fh "[$timestamp $subroutine] ", $debug, $/;
+            
+                #  Print debug after checking for any regexp wanted
+                #
+                if (my $regexp=$ENV{'WEBDYNE_DEBUG_FILTER'}) {
+                    next unless $debug=~qr/$regexp/;
+                }
                 CORE::print $debug_fh "[$timestamp $class ($subroutine)] ", $debug, $/;
             }
         }
     }
     else {
 
-        #  No filtering. Open floodgates
+        #  No filtering. Open floodgates but still apply any regexp
         #
-        #CORE::print $debug_fh "[$timestamp $subroutine] ", $_[1] ? sprintf(shift(), @_) : $_[0], $/;
-        #CORE::print $debug_fh "[$timestamp $subroutine] ", $debug, $/;
-        CORE::print $debug_fh "[$timestamp $class $subroutine] ", $debug, $/;
+        if (my $regexp=$ENV{'WEBDYNE_DEBUG_FILTER'}) {
+            next unless $debug=~qr/$regexp/;
+        }
+        CORE::print $debug_fh "[$timestamp $class ($subroutine)] ", $debug, $/;
     }
 
 }

@@ -16,7 +16,7 @@ package WebDyne::Constant;
 #  Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION %Constant %Caller);
+use vars   qw($VERSION %Constant %Package);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -464,161 +464,29 @@ my %constant_temp;
 );
 
 
-sub local_constant_load {
-
-
-    #  Load constants from override files first
-    #
-    my ($class, $local_constant_fn)=@_;
-    debug("class: $class, local_constant_fn: $local_constant_fn");
-    
-    
-    #  Which hash ref are we loading into ?
-    #
-    my $constant_hr=\%{"${class}::Constant"};
-    
-    
-    #  Don't do twice unless a new local constant file spec'd
-    #
-    if ($constant_temp{$class}++ && !$local_constant_fn) {
-        debug("class: $class, local_constant_load already performed, skipping");
-        return;
-    }
-    else {
-        debug("class: $class, constant_hr %s", Dumper($constant_hr));
-    }
-    
-    
-    #  Get nominal list of local constant file paths to load
-    #
-    my $local_constant_pn_ar=&local_constant_pn();
-    debug("local_constant_pn_ar: %s", Dumper($local_constant_pn_ar));
-    
-    
-    #  Iterate through them, including any specified in import
-    #
-    foreach my $local_constant_pn (grep {$_} @{$local_constant_pn_ar}, $local_constant_fn) {
-        debug("attempt load local_constant_pn: $local_constant_pn");
-        if (-f $local_constant_pn) {
-            debug("file exists, about to load from: $local_constant_pn");
-            $Constant{'WEBDYNE_CONF_HR'}{$local_constant_pn}++;
-            if (my $local_hr=do(File::Spec->rel2abs($local_constant_pn)) ||
-                warn "unable to read local constant file, $!") {
-                if (my $hr=$local_hr->{$class}) {
-                    debug("found class $class hr %s", Dumper($hr));
-                    while (my ($key, $val)=each %{$hr}) {
-                        $constant_hr->{$key}=$val;
-                    }
-                }
-            }
-        }
-    }
-
-
-    #  Now from environment vars - override anything in config file
-    #
-    foreach my $key (keys %{$constant_hr}) {
-        if (defined $ENV{$key}) {
-            my $val=$ENV{$key};
-            debug("using environment value $val for key: $key");
-            $constant_hr->{$key}=$val;
-        }
-    }
-
-
-    #  Then command line
-    #
-    #GetOptions($constant_hr, map { "$_=s" } keys %{$constant_hr});
-
-
-    #  Load up Apache config - only if running under mod_perl
-    #
-    if ($MP_version) {
-
-
-        #  Ignore die's for the moment so don't get caught by error handler
-        #
-        debug("detected mod_perl version $MP_version - loading Apache directives");
-        local $SIG{'__DIE__'}=undef;
-        my $server_or;
-        eval {
-            #  Modern mod_perl 2
-            require Apache2::ServerUtil;
-            require APR::Table;
-            $server_or=Apache2::ServerUtil->server();
-        };
-        $@ && eval {
-
-            #  Interim mod_perl 1.99x
-            require Apache::ServerUtil;
-            require APR::Table;
-            $server_or=Apache::ServerUtil->server();
-        };
-        $@ && eval {
-
-            #  mod_perl 1x ?
-            require Apache::Table;
-            $server_or=Apache->server();
-        };
-
-        #  Clear any eval errors, set via dir_config now (overrides env)
-        #
-        $@ && do {
-            eval {undef}; errclr()
-        };
-        debug("loaded server_or: $server_or");
-        if ($server_or) {
-            my $table_or=$server_or->dir_config();
-            while (my ($key, $val)=each %{$table_or}) {
-                debug("installing value $val for Apache directive: $key");
-                $constant_hr->{$key}=$val if exists $constant_hr->{$key};
-            }
-        }
-    }
-
-
-    #  Is charset defined ? If so combine into content-type header
-    #
-    if (my $charset=$constant_hr->{'WEBDYNE_CHARSET'}) {
-        $constant_hr->{'WEBDYNE_CONTENT_TYPE_HTML'}=sprintf("%s; charset=$charset", $constant_hr->{'WEBDYNE_CONTENT_TYPE_HTML'})
-            unless $constant_hr->{'WEBDYNE_CONTENT_TYPE_HTML'}=~/charset=/;
-        $constant_hr->{'WEBDYNE_CONTENT_TYPE_TEXT'}=sprintf("%s; charset=$charset", $constant_hr->{'WEBDYNE_CONTENT_TYPE_TEXT'})
-            unless $constant_hr->{'WEBDYNE_CONTENT_TYPE_TEXT'}=~/charset=/;
-        $constant_hr->{'WEBDYNE_CONTENT_TYPE_JSON'}=sprintf("%s; charset=$charset", $constant_hr->{'WEBDYNE_CONTENT_TYPE_JSON'})
-            unless $constant_hr->{'WEBDYNE_CONTENT_TYPE_JSON'}=~/charset=/;
-    }
-
-
-    #  Done - return constant hash ref
-    #
-    $constant_hr;
-
-}
-
-
-sub local_constant_pn {
+sub local_constant_fn {
 
 
     #  Where local constants reside
     #
-    my @local_constant_pn;
+    my @local_constant_fn;
     my $local_constant_fn=$Constant{'WEBDYNE_CONF_FN'};
     if ($^O=~/MSWin[32|64]/) {
         my $dn=$ENV{'WEBDYNE_HOME'} || $ENV{'WEBDYNE'} || $ENV{'WINDIR'};
-        push @local_constant_pn, ($ENV{'WEBDYNE_CONF'} || 
+        push @local_constant_fn, ($ENV{'WEBDYNE_CONF'} || 
             File::Spec->catfile($dn, $local_constant_fn))
     }
     else {
-        push @local_constant_pn, ($ENV{'WEBDYNE_CONF'} || 
+        push @local_constant_fn, ($ENV{'WEBDYNE_CONF'} || 
             File::Spec->catfile(
                 File::Spec->rootdir(), 'etc', $local_constant_fn
         ))
     }
     unless ($ENV{'WEBDYNE_CONF'}) {
-        push @local_constant_pn, glob(sprintf('~/.%s', $local_constant_fn));
+        push @local_constant_fn, glob(sprintf('~/.%s', $local_constant_fn));
     }
-    debug('local_constant_pn: %s, env: %s', Dumper(\@local_constant_pn, \%ENV));
-    return \@local_constant_pn;
+    debug('local_constant_fn: %s, env: %s', Dumper(\@local_constant_fn, \%ENV));
+    return \@local_constant_fn;
 
 }
 
@@ -664,23 +532,314 @@ sub hashref {
 }
 
 
+
+sub local_constant_load {
+
+
+    #  Load constants from override files.
+    #
+    my ($class, $local_constant_fn)=@_;
+    debug("class: $class, local_constant_fn: $local_constant_fn");
+    
+    
+    #  Var to hold hash ref we load
+    #
+    my $constant_hr;
+    
+    
+    #  Now load
+    #
+    debug("attempt load local_constant_fn: $local_constant_fn");
+    if (-f $local_constant_fn) {
+        debug("file exists, about to load from: $local_constant_fn (%s)", File::Spec->rel2abs($local_constant_fn));
+        $Constant{'WEBDYNE_CONF_HR'}{$local_constant_fn}++;
+        $constant_hr=do(File::Spec->rel2abs($local_constant_fn)) ||
+            warn("unable to read local constant file, $!"); 
+    }
+
+
+    #  Now from environment vars - override anything in config file
+    #
+    foreach my $key (keys %{$constant_hr}) {
+        if (defined $ENV{$key}) {
+            my $val=$ENV{$key};
+            debug("using environment value $val for key: $key");
+            $constant_hr->{$key}=$val;
+        }
+    }
+
+
+    #  Load up Apache config - only if running under mod_perl
+    #
+    if ($MP_version) {
+
+
+        #  Ignore die's for the moment so don't get caught by error handler
+        #
+        debug("detected mod_perl version $MP_version - loading Apache directives");
+        local $SIG{'__DIE__'}=undef;
+        my $server_or;
+        eval {
+            #  Modern mod_perl 2
+            require Apache2::ServerUtil;
+            require APR::Table;
+            $server_or=Apache2::ServerUtil->server();
+        };
+        $@ && eval {
+
+            #  Interim mod_perl 1.99x
+            require Apache::ServerUtil;
+            require APR::Table;
+            $server_or=Apache::ServerUtil->server();
+        };
+        $@ && eval {
+
+            #  mod_perl 1x ?
+            require Apache::Table;
+            $server_or=Apache->server();
+        };
+
+        #  Clear any eval errors, set via dir_config now (overrides env)
+        #
+        $@ && do {
+            eval {undef}; errclr()
+        };
+        debug("loaded server_or: $server_or");
+        if ($server_or) {
+            my $table_or=$server_or->dir_config();
+            while (my ($key, $val)=each %{$table_or}) {
+                debug("installing value $val for Apache directive: $key");
+                $constant_hr->{$key}=$val if exists $constant_hr->{$key};
+                #$constant{$key}=$val if exists $constant{$key};
+            }
+        }
+    }
+
+
+    #  Is charset defined ? If so combine into content-type header
+    #
+    #if (my $charset=$constant_hr->{'WEBDYNE_CHARSET'}) {
+    #    $constant_hr->{'WEBDYNE_CONTENT_TYPE_HTML'}=sprintf("%s; charset=$charset", $constant_hr->{'WEBDYNE_CONTENT_TYPE_HTML'})
+    #        unless $constant_hr->{'WEBDYNE_CONTENT_TYPE_HTML'}=~/charset=/;
+    #    $constant_hr->{'WEBDYNE_CONTENT_TYPE_TEXT'}=sprintf("%s; charset=$charset", $constant_hr->{'WEBDYNE_CONTENT_TYPE_TEXT'})
+    #        unless $constant_hr->{'WEBDYNE_CONTENT_TYPE_TEXT'}=~/charset=/;
+    #    $constant_hr->{'WEBDYNE_CONTENT_TYPE_JSON'}=sprintf("%s; charset=$charset", $constant_hr->{'WEBDYNE_CONTENT_TYPE_JSON'})
+    #        unless $constant_hr->{'WEBDYNE_CONTENT_TYPE_JSON'}=~/charset=/;
+    #}
+
+
+    #  Done - return constant hash ref
+    #
+    return $constant_hr;
+
+}
+
+
+
 sub import {
     
+
     #  Get caller
     #
     my ($class, $local_constant_fn)=@_;
     
     
+    #  Get array of local files also
+    #
+    my $local_constant_fn_ar=&local_constant_fn();
+    debug("local_constant_fn_ar: %s", Dumper($local_constant_fn_ar));
+    
+    
+    #  Load files if neccessary, get hash of constants to be applied
+    #
+    my @class_constant_hr;
+    foreach my $fn (grep {$_} (@{$local_constant_fn_ar}, $local_constant_fn)) {
+        
+        
+        #  Don't process twice
+        #
+        my $fn_hr=$Package{'import'}{$fn} ||= do {
+        
+            #  Need to load in file, haven't seen it yet/
+            #
+            debug("loading file: $fn");
+            
+        
+            #  If here need to read hash ref in from file
+            #
+            &local_constant_load($class, $fn);
+            
+        };
+        debug("local_constant_load hr: $fn_hr, %s", Dumper($fn_hr));
+        
+        
+        #  Any constants for this class into array for loading
+        #
+        if (my $class_constant_hr=$fn_hr->{$class}) {
+            
+            
+            #   Yes, save for later processing
+            #
+            debug("adding class_constant_hr: $class_constant_hr for processing, %s", Dumper($class_constant_hr));
+            push @class_constant_hr, $class_constant_hr;
+            
+        }
+        else {
+            
+            debug("skip $fn, no class: $class component in hash ref");
+            
+        }
+        
+    }
+
+    
+    #  Debug what we have
+    #
+    debug('class_constant_hr: %s', Dumper(\@class_constant_hr));
+        
+    
+    #  Get hash ref of Constants file from class calling us - calling
+    #  module needs to declare a %Class:Name::Constant variable in 
+    #  global space.
+    #
+    my $class_constant_hr=\%{"${class}::Constant"};
+    
+
+    #  We want to load variable into namespace. Get the parent class and who is
+    #  calling us/
+    #
+    (my $class_parent=$class)=~s/::Constant$//;
+    my $caller = caller(0);
+    debug("caller: $caller");        
+    
+
+    #  Now start iterating over and loading
+    #
+    foreach my $constant_hr ($class_constant_hr, @class_constant_hr) {
+    
+
+        #  Now iterate across all callers and load vars into namespace. Turn off warnings as
+        #  we may have to redefine some variables
+        #
+        no warnings qw(once redefine);
+        debug("importing for caller: $caller");
+        
+        
+        #  Don't load hash ref into caller if already done
+        #
+        if ($Package{'caller'}{$caller}{$constant_hr}++) {
+            debug("skip, already applied $constant_hr to caller: $caller");
+            next;
+        }
+        else {
+            debug('continue');
+        }
+        
+        
+        #  Start iterating over all constants in class 
+        #
+        while (my($k, $v)=each %{$class_constant_hr}) {
+        
+            #  Override ?
+            #
+            if (defined($constant_hr->{$k}) && ($constant_hr ne $class_constant_hr)) {
+            
+                #  Yes
+                #
+                debug("override constant_hr $k value: $v with file value: %s", $constant_hr->{$k});
+                $v=$class_constant_hr->{$k}=$constant_hr->{$k};
+
+            }
+            debug("caller: $caller, class: $class  set:$k value:$v");
+
+
+            #  Used to do just
+            #  
+            # *{"${caller}::${k}"}=\$v;
+            #
+            #  Make a bit more sophisticated so if the
+            #  var is updated anywhere it is used all 
+            #  modules see + put a hash called Constant in
+            #  the parent module so we don't have to do
+            #
+            #  %WebDyne::Constant::Constant 
+            # 
+            #  now just
+            #
+            #  %WebDyne::Constant
+            #
+            if ($caller eq $class_parent) {
+                *{"${caller}::${k}"}=\$v;
+                #*{"${caller}::Constant"}=$hr; # Pulled for moment, bit polluting without ability to ref constant scalars in hash values
+            }
+            else {
+                if (defined *{"${class_parent}::${k}"}) {
+                    *{"${caller}::${k}"} = *{"${class_parent}::${k}"};
+                }
+                else {
+                    *{"${caller}::${k}"} = \$v;
+                }
+                #  Used to be this                
+                #*{"${caller}::${k}"}=\${"${class_parent}::${k}"};
+            }
+            debug("caller: $caller, set:$k value:$v");
+            #next if ref($v); # Not needed, stop Regexp conversion
+            if ($v=~/^\d+$/) {
+                *{"${caller}::${k}"}=eval("sub () { $v }");
+            }
+            else {
+                debug('fall through');
+                *{"${caller}::${k}"}=eval("sub () { q($v) }");
+            }
+                
+        }
+    }
+    
+    
+    #  Check if just dumping for view, or actually loading into caller
+    #  namespace
+    #
+    if (($local_constant_fn ||= '') eq 'dump') {
+
+        #  We just to want to see what they are
+        #
+        local $Data::Dumper::Indent=1;
+        local $Data::Dumper::Terse=1;
+        local $Data::Dumper::Sortkeys=1;
+        CORE::print Dumper($class_constant_hr);
+        exit 0;
+    }
+    
+}
+
+
+sub import0 {
+    
+
+    #  Get caller
+    #
+    my ($class, $local_constant_fn)=@_;
+    
+    
+    #  If fn supplied save away
+    #
+    if ($local_constant_fn) {
+        push @{$Package{'local_constant_fn_ar'}}, $local_constant_fn
+    }
+    
+    
     #  Load local constants file
     #
-    &local_constant_load($class, $local_constant_fn);
+    my $hr=&local_constant_load($class, $local_constant_fn);
+    #&local_constant_load($class, $local_constant_fn);
+    debug("hr: %s,local_constant_fn:  $local_constant_fn", Dumper($hr));
     
     
     #  Get hash ref of Constants file from class calling up, calling
     #  module needs to declare a %Class:Name::Constant variable in 
     #  global space.
     #
-    my $hr=\%{"${class}::Constant"};
+    #my $hr=\%{"${class}::Constant"};
     
     
     #  Check if just dumping for view, or actually loading into caller
@@ -711,14 +870,17 @@ sub import {
         #  import we need to refresh all callers with any changes that file 
         #  introduces.
         #
-        $Caller{$class}{$caller}++;
+        ##$Caller{$class}{$caller}++;
 
 
         #  Now iterate across all callers and load vars into namespace
         #
-        no warnings qw(once);
-        foreach $caller (keys %{$Caller{$class}}) {
+        no warnings qw(once redefine);
+        ##foreach $caller (keys %{$Caller{$class}}) {
             while (my($k, $v)=each %{$hr}) {
+                #if ($k eq 'WEBDYNE_ERROR_SHOW_EXTENDED') {
+                    debug("caller: $caller, class: $class  set:$k value:$v");
+                #}
                 #  Used to do just
                 #  
                 # *{"${caller}::${k}"}=\$v;
@@ -734,6 +896,11 @@ sub import {
                 #
                 #  %WebDyne::Constant
                 #
+                #next if *{"${caller}::${k}"}{'CODE'};
+                #if (*{"${caller}::${k}"}{'CODE'}) {
+                #    debug("skip caller: $caller, key: $k, value: $v");
+                #    next;
+                #}
                 if ($caller eq $class_parent) {
                     *{"${caller}::${k}"}=\$v;
                     #*{"${caller}::Constant"}=$hr; # Pulled for moment, bit polluting without ability to ref constant scalars in hash values
@@ -748,17 +915,19 @@ sub import {
                     #  Used to be this                
                     #*{"${caller}::${k}"}=\${"${class_parent}::${k}"};
                 }
-                next if *{"${caller}::${k}"}{'CODE'};
+                #next if *{"${caller}::${k}"}{'CODE'};
+                debug("caller: $caller, set:$k value:$v");
                 #next if ref($v); # Not needed, stop Regexp conversion
                 if ($v=~/^\d+$/) {
                     *{"${caller}::${k}"}=eval("sub () { $v }");
                 }
                 else {
+                    debug('fall through');
                     *{"${caller}::${k}"}=eval("sub () { q($v) }");
                 }
                     
             }
-        }
+        ##}
     }
 }
 
