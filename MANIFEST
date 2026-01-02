@@ -1275,3 +1275,4 @@ t/data/02-perl_param_scalar.html
 t/data/02-perl_param_scalar.tree         
 t/perl_param_scalar.psp                  
 t.other/perl_param_array.psp             
+t/11-constant.t                          
