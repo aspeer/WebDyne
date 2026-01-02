@@ -1264,3 +1264,14 @@ t/title_blank.psp
 t/title_default.psp                      
 t/title_normal.psp                       
 t/09-static.t                            
+t/data/02-perl_param_scalar.dat.0        
+t/data/02-perl_param_scalar.dat.1        
+t/data/02-perl_param_scalar.dat.2        
+t/data/02-perl_param_scalar.dat.3        
+t/data/02-perl_param_scalar.dat.4        
+t/data/02-perl_param_scalar.dat.5        
+t/data/02-perl_param_scalar.dat.final    
+t/data/02-perl_param_scalar.html         
+t/data/02-perl_param_scalar.tree         
+t/perl_param_scalar.psp                  
+t.other/perl_param_array.psp             

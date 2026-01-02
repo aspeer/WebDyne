@@ -2842,11 +2842,11 @@ sub perl {
         }
 
 
-        #  Run the eval code to get HTML
+        #  Run the eval code to get HTML. Various previous iterations get for reference
         #
         #$html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $attr_hr->{'param'}, "&${function}") || do {
-        $html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $param_scalar ? $param_scalar : \%param, "&${function}") || do {
         #$html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, \%param, "&${function}") || do {
+        $html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $param_scalar ? $param_scalar : \%param, "&${function}") || do {
 
 
             #  Error occurred. Pop data ref off stack and return
