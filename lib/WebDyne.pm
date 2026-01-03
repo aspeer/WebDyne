@@ -1185,7 +1185,7 @@ sub init_class {
 
         #  Quick sanity check on return
         #
-        if (grep {ref($_) && (ref($_) !~ /(?:SCALAR|ARRAY|HASH)/)} @eval) {
+        if (grep {ref($_) && (ref($_) !~ /(?:SCALAR|ARRAY|HASH|JSON)/)} @eval) {
 
             #  Whatever it is we can't render it unless SCALAR, ARRAY or HASH
             #
@@ -1355,7 +1355,7 @@ sub init_class {
         my ($self, $data_ar, $eval_param_hr, $eval_text, $index, $tag_fg)=@_;
         debug("eval code start $eval_text");
         my $html_ar=$eval_perl_cr->(@_) || return err();
-        debug("eval code finish %s", Dumper($html_ar));
+        debug("eval code finish %s, %s", Dumper($html_ar, $eval_param_hr));
 
 
         #  We only accept first item of any array ref returned (which might be an array ref itself)
@@ -2510,8 +2510,11 @@ sub json {
     #  Run the code in perl routine specifying it is JSON, get return ref of
     #  some kind
     #
-    my $json_xr=$self->perl(undef, {json => 1, %{$attr_hr}}) ||
+    defined(my $json_xr=$self->perl(undef, {json => 1, %{$attr_hr}})) ||
         return err();
+    if (ref($json_xr) eq 'SCALAR') {
+        $json_xr=${$json_xr}
+    }
     debug("json_xr %s", Dumper($json_xr));
 
 
@@ -2718,6 +2721,13 @@ sub perl {
     #
     my ($self, $data_ar, $attr_hr, $param_data_hr, $text)=@_;
     debug("$self rendering perl tag in block $data_ar, attr %s", Dumper($attr_hr));
+    
+    
+    #  Look for run param and if exists only run if value evaluates to true
+    #
+    if(exists $attr_hr->{'run'}) {
+        return \undef unless $attr_hr->{'run'};
+    }
 
 
     #  Add current working directory to @INC for any use or require commands
@@ -2848,13 +2858,20 @@ sub perl {
                 return err("perl param attribute is %s ref, must be HASH ref or plain scalar", ref($attr_hr->{'param'}));
             }
         }
+        
+        
+        #  If want json set tag_fg to 1 so eval doesn't try and process. If we don't want json then tag_fg is set to
+        #  false which is default and fine.
+        #
+        my $tag_fg=$attr_hr->{'json'};
 
 
         #  Run the eval code to get HTML. Various previous iterations get for reference
         #
         #$html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $attr_hr->{'param'}, "&${function}") || do {
         #$html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, \%param, "&${function}") || do {
-        $html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $param_scalar ? $param_scalar : \%param, "&${function}") || do {
+        #$html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $param_scalar ? $param_scalar : \%param, "&${function}") || do {
+        defined($html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $param_scalar ? $param_scalar : \%param, "&${function}", undef, $tag_fg)) || do {
 
 
             #  Error occurred. Pop data ref off stack and return
