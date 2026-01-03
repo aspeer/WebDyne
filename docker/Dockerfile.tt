@@ -128,6 +128,13 @@ RUN carton install --deployment
 WORKDIR ..
 #RUN carton exec -- cpanm --local-lib-contained=${PERL_CARTON_PATH} .
 RUN carton exec -- cpanm .
+
+
+#  Dump out build logs
+#
+RUN cat /root/.cpanm/work/*/build.log
+
+
 # Clean carton cache and create empty webdyne cache dir
 RUN rm -rf ${PERL_CARTON_PATH}/cache
 RUN mkdir ${PERL_CARTON_PATH}/cache
