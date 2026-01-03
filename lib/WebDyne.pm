@@ -2750,9 +2750,16 @@ sub perl {
     }
 
 
+    #  Get current autonewline setting, set if defined
+    #
+    my $autonewline=$self->autonewline($attr_hr->{'autonewline'});
+
+
     #  If inline, run now
     #
     if (my $perl_code=$attr_hr->{'perl'}) {
+    
+    
 
 
         #  May be inline code params to supply to this block
@@ -2766,7 +2773,8 @@ sub perl {
         #
         $html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $perl_param_hr, $perl_code) ||
             err();
-
+        
+        
 
     }
     elsif (grep {$attr_hr->{$_}} qw(package method handler)) {
@@ -2898,6 +2906,14 @@ sub perl {
 
     }
 
+
+    #  Restore autonewline to whatever it was
+    #
+    $self->autonewline($autonewline);
+    
+    
+    #  Return whatever was generated unless hidden attr set
+    #
     return $attr_hr->{'hidden'} ? \undef : $html_sr;
 
 }
@@ -4324,7 +4340,7 @@ sub data_ar_html_line_no {
 sub print {
 
     my $self=shift();
-    debug("$self in print, %s", Dumper(\@_));
+    debug("$self in print, autonewline: %d, %s", $self->autonewline() ? 1 : 0, Dumper(\@_));
     return $self->say(@_) if $self->{'_autonewline'};
     #push @{$self->{'_print_ar'} ||= []}, [map {(ref($_) eq 'ARRAY') ? @{$_} : $_ } @_];
     push @{$self->{'_print_ar'} ||= []}, map {(ref($_) eq 'ARRAY') ? @{$_} : $_ } @_;
@@ -4345,8 +4361,15 @@ sub printf {
 
 
 sub autonewline {
+
     my $self=shift();
-    return @_ ? $self->{'_autonewline'}=($_[0] ? "\n" : 0) : $self->{'_autonewline'};
+    debug("$self in autonewline");
+    my $autonewline=$self->{'_autonewline'};
+    if (@_) {
+        $self->{'_autonewline'}=($_[0] ? "\n" : '');
+    }
+    return $autonewline;
+    #return @_ ? $self->{'_autonewline'}=($_[0] ? "\n" : 0) : $self->{'_autonewline'};
     
 }
 
