@@ -37,7 +37,7 @@ use CGI::Simple;
 
 #  Version information
 #
-$VERSION='2.044';
+$VERSION='2.045';
 
 
 #  CGI upload vars
