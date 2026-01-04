@@ -1,8 +1,9 @@
 <start_html>
-<json handler=true/>
-<json handler=false/>
-<json handler=hash/>
+<json handler="true"/>
+<json handler="false"/>
+<json handler="hash"/>
 __PERL__
+use JSON;
 sub true {
     return JSON::true
 }
