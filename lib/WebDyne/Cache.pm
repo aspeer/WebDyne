@@ -29,7 +29,7 @@ use WebDyne::Util;
 
 #  Version information
 #
-$VERSION='2.045';
+$VERSION='2.046';
 
 
 #  Debug
