@@ -62,6 +62,13 @@ my %WriteMakefile=(
         'meta-spec' => {
             version => 2
         },
+        "prereqs" => {
+            "runtime" => {
+                "recommends" => {
+                    'Plack' => 0,
+                },
+            },
+        },
         resources => {
             homepage   => 'https://github.com/aspeer/WebDyne',
             repository => {

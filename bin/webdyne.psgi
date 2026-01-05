@@ -263,13 +263,13 @@ sub handler_build {
             }
         }
     }
-    if ($WEBDYNE_PSGI_ENV_KEEP || $WEBDYNE_PSGI_ENV_SET) {
-        require Plack::Middleware::ForceEnv;
-        $handler_cr=Plack::Middleware::ForceEnv->wrap($handler_cr, 
-            %{$WEBDYNE_PSGI_ENV_SET},
-            map {$_=>$ENV{$_}} @{$WEBDYNE_PSGI_ENV_KEEP}
-        )
-    }
+    #if ($WEBDYNE_PSGI_ENV_KEEP || $WEBDYNE_PSGI_ENV_SET) {
+    #    require Plack::Middleware::ForceEnv;
+    #    $handler_cr=Plack::Middleware::ForceEnv->wrap($handler_cr, 
+    #        %{$WEBDYNE_PSGI_ENV_SET},
+    #        map {$_=>$ENV{$_}} @{$WEBDYNE_PSGI_ENV_KEEP}
+    #    )
+    #}
     return $handler_cr;
     
 }
@@ -286,6 +286,14 @@ sub handler {
     local *ENV=$env_hr;
     debug('in handler, env: %s, param:%s', Dumper(\%ENV, \@param));
     
+    
+    #  Set any env vars we want
+    #
+    @ENV{qw(DOCUMENT_ROOT DOCUMENT_DEFAULT)}=($DOCUMENT_ROOT, $DOCUMENT_DEFAULT);
+    if (WEBDYNE_PSGI_ENV_SET) {
+        map { $ENV{$_}=$WEBDYNE_PSGI_ENV_SET->{$_} } keys %{$WEBDYNE_PSGI_ENV_SET}
+    }
+
 
     #  Cache handler for a location
     #
