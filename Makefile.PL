@@ -179,6 +179,23 @@ END
 }
 
 
+sub top_targets {
+
+    my $mm_or=shift();
+    my $top_targets=<<'END';
+
+git_version_increment ::
+	cd docker && $(PERL) build.pl
+
+docker_update ::
+	cd docker && $(PERL) build.pl
+
+END
+    $top_targets.=$mm_or->SUPER::top_targets();
+    
+}
+
+
 sub MM::init_main {
 
     #  Strip .pl, .sh extension from script files before installing
