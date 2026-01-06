@@ -39,7 +39,7 @@ use WebDyne::Util;
 
 #  Version information
 #
-$VERSION='2.046';
+$VERSION='2.047';
 
 
 #  Debug load
