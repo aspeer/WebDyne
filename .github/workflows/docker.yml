@@ -118,16 +118,15 @@ jobs:
           docker pull ghcr.io/${{ github.repository_owner }}/webdyne:debian
           docker tag ghcr.io/${{ github.repository_owner }}/webdyne:debian ghcr.io/${{ github.repository_owner }}/webdyne:latest
           docker push ghcr.io/${{ github.repository_owner }}/webdyne:latest
+      - name: Install skopeo
+        run: sudo apt-get install -y skopeo
+      - name: Get digest with skopeo
+        id: get-digest
+        run: |
+          DIGEST=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/webdyne:latest | jq -r '.Digest')
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
-      - name: Get digest of pushed 'latest' tag
-        id: get-latest-digest
-        run: |
-          DIGEST=$(crane digest ghcr.io/${{ github.repository_owner }}/webdyne:latest)
-          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
-        env:
-          # crane is a Go-based OCI registry CLI from Google (part of cosign/sigstore tooling)
-          COSIGN_EXPERIMENTAL: "true"
       - name: Sign the 'latest' tag
         if: ${{ github.event_name != 'pull_request' }}
         run: |
