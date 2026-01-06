@@ -9,7 +9,7 @@ on:
       - 'lib/**'
       - 'bin/**'
 jobs:
-  build:
+  build-variants:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -108,6 +108,7 @@ jobs:
     strategy:
       matrix:
         variant: [debian]
+    needs: build-variants
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
