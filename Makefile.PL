@@ -168,7 +168,7 @@ filter_scripts :
 
 pure_all :: filter_scripts
 
-git_version_increment ::
+git_version_increment0 ::
 	cd docker && $(PERL) build.pl
 
 docker_update ::
@@ -176,23 +176,6 @@ docker_update ::
 
 END
     return $postamble;
-}
-
-
-sub top_targets {
-
-    my $mm_or=shift();
-    my $top_targets=<<'END';
-
-git_version_increment ::
-	cd docker && $(PERL) build.pl
-
-docker_update ::
-	cd docker && $(PERL) build.pl
-
-END
-    $top_targets.=$mm_or->SUPER::top_targets();
-    
 }
 
 
