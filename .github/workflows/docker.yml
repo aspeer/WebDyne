@@ -124,10 +124,11 @@ jobs:
         id: get-digest
         run: |
           DIGEST=$(skopeo inspect docker://ghcr.io/${{ github.repository_owner }}/webdyne:latest | jq -r '.Digest')
+          echo "DIGEST: $DIGEST"
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
       - name: Sign the 'latest' tag
         if: ${{ github.event_name != 'pull_request' }}
         run: |
-          cosign sign --yes ghcr.io/${{ github.repository_owner }}/webdyne:latest@${{ steps.get-latest-digest.outputs.digest }}
+          cosign sign --yes ghcr.io/${{ github.repository_owner }}/webdyne:latest@${{ steps.get-digest.outputs.digest }}
