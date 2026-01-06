@@ -19,6 +19,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      # Install the cosign tool except on PR
+      # https://github.com/sigstore/cosign-installer
+      - name: Install cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
+        with:
+          cosign-release: 'v2.2.4'
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -50,6 +57,7 @@ jobs:
           echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
           
       - name: Build and push Docker image (${{ matrix.variant }})
+        id: build-and-push
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -65,23 +73,24 @@ jobs:
               ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.branch }}
           labels: |
             org.opencontainers.image.title=WebDyne
-            org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl - arg label
+            org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl 
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.licenses=Artistic-1.0-Perl OR GPL-1.0-or-later
-            org.opencontainers.image.version=${{ github.version }}
-            org.opencontainers.image.revision=${{ github.revision }}
-            org.opencontainers.image.created=${{ github.created }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.revision=${{ steps.version.outputs.revision }}
+            org.opencontainers.image.created=${{ steps.version.outputs.created }}
+
+      # Sign the resulting Docker image digest except on PRs.
+      - name: Sign the published Docker image (${{ matrix.platform }})
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+          TAGS: ${{ steps.build-and-push.tags }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        # This step uses the identity token to provision an ephemeral certificate
+        # against the sigstore community Fulcio instance.
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
             
-      - name: Cleanup GHCR Images (keep latest 32 only)
-        uses: dataaxiom/ghcr-cleanup-action@v1
-        with:
-          token: ${{ secrets.GHCR_PAT }}
-          package: webdyne
-          exclude-tags: latest
-          keep-n-tagged: 32
-          delete-untagged: true
-          dry-run: false
-          delete-ghost-images: true
   latest-tag:
     needs: build
     runs-on: ubuntu-22.04
