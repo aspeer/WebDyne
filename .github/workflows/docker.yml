@@ -13,6 +13,7 @@ jobs:
     permissions:
       contents: read
       packages: write  # Required to push to GHCR
+      id-token: write
     strategy:
       matrix:
         variant: [fedora, debian, alpine]
@@ -66,7 +67,7 @@ jobs:
           platforms: linux/arm64,linux/amd64
           tags: |
               ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}
-              ghcr.io/${{ github.repository_owner }}/webdyne-${{ matrix.variant }}:latest
+              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-latest
               ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.version }}
               ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.major }}
               ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.revision }}
@@ -75,21 +76,29 @@ jobs:
             org.opencontainers.image.title=WebDyne
             org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl 
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.url=https://github.com/${{ github.repository }}
             org.opencontainers.image.licenses=Artistic-1.0-Perl OR GPL-1.0-or-later
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
             org.opencontainers.image.revision=${{ steps.version.outputs.revision }}
             org.opencontainers.image.created=${{ steps.version.outputs.created }}
 
       # Sign the resulting Docker image digest except on PRs.
-      - name: Sign the published Docker image (${{ matrix.platform }})
+      - name: Sign the published Docker image (${{ matrix.variant }})
         if: ${{ github.event_name != 'pull_request' }}
         env:
           # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-          TAGS: ${{ steps.build-and-push.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
+          TAGS: >
+              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}
+              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-latest
+              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.version }}
+              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.major }}
+              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.revision }}
+              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.branch }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+        #run: echo "${TAGS}" | xargs -n 1 -I {} sh -c 'echo "Signing {}@${DIGEST}"; cosign sign --yes {}@${DIGEST}'
+        run: printf "%s\n" $TAGS | xargs -I {} sh -c 'echo "Signing {}@'"$DIGEST"'"; cosign sign --yes {}@'"$DIGEST"
             
   latest-tag:
     needs: build
@@ -109,3 +118,19 @@ jobs:
           docker pull ghcr.io/${{ github.repository_owner }}/webdyne:debian
           docker tag ghcr.io/${{ github.repository_owner }}/webdyne:debian ghcr.io/${{ github.repository_owner }}/webdyne:latest
           docker push ghcr.io/${{ github.repository_owner }}/webdyne:latest
+
+    - name: Install cosign
+      uses: sigstore/cosign-installer@v3
+
+    - name: Get digest of pushed 'latest' tag
+      id: get-latest-digest
+      run: |
+        DIGEST=$(crane digest ghcr.io/${{ github.repository_owner }}/webdyne:latest)
+        echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+      env:
+        # crane is a Go-based OCI registry CLI from Google (part of cosign/sigstore tooling)
+        COSIGN_EXPERIMENTAL: "true"
+    - name: Sign the 'latest' tag
+      if: ${{ github.event_name != 'pull_request' }}
+      run: |
+        cosign sign --yes ghcr.io/${{ github.repository_owner }}/webdyne:latest@${{ steps.get-latest-digest.outputs.digest }}
