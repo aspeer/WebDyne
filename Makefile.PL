@@ -168,6 +168,12 @@ filter_scripts :
 
 pure_all :: filter_scripts
 
+git_version_increment ::
+	cd docker && $(PERL) build.pl
+
+docker_update ::
+	cd docker && $(PERL) build.pl
+
 END
     return $postamble;
 }
