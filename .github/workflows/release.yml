@@ -25,7 +25,7 @@ jobs:
       - name: Set up archive name
         id: vars
         run: |
-          VERSION_FROM=$(find . -name 'app.pm' | head -n 1)
+          VERSION_FROM=$(find . -name 'WebDyne.pm' | head -n 1)
           VERSION=$(perl -ne "print \$1 if (m{\\\$VERSION\\s*=\\s*['\"]([^'\"]+)['\"]})" "$VERSION_FROM")
           NAME="WebDyne-${VERSION}"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
