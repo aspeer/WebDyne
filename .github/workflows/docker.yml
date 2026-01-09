@@ -126,7 +126,7 @@ jobs:
             type=raw,prefix=${{ matrix.variant }}-,value={{version}}
             type=raw,prefix=${{ matrix.variant }}-,value=${{ steps.branch.outputs.branch }}
             type=sha,prefix=${{ matrix.variant }}-sha-
-            type=semver,prefix=${{ matrix.variant }-,pattern={{version}}
+            type=semver,prefix=${{ matrix.variant }}-,pattern={{version}}
           labels: |
             org.opencontainers.image.title=${{ env.LABEL_TITLE }}
             org.opencontainers.image.description=${{ env.LABEL_DESCRIPTION }}
