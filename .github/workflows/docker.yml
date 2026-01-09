@@ -116,16 +116,17 @@ jobs:
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+        flavor: false
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ matrix.variant == 'debian' && steps.branch.outputs.branch == 'main' }}
             type=raw,value=${{ matrix.variant }}
             type=raw,prefix=${{ matrix.variant }}-,value=${{ steps.branch.outputs.branch }}
             type=raw,prefix=${{ matrix.variant }}-,value=latest
             type=raw,prefix=${{ matrix.variant }}-,value={{version}}
             type=raw,prefix=${{ matrix.variant }}-,value=${{ steps.branch.outputs.branch }}
-            type=sha,prefix=${{ matrix.variant }}-sha-
+            type=sha,prefix=${{ matrix.variant }}-
             type=semver,prefix=${{ matrix.variant }}-,pattern={{version}}
           labels: |
             org.opencontainers.image.title=${{ env.LABEL_TITLE }}
