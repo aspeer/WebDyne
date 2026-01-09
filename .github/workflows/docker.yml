@@ -52,16 +52,18 @@ jobs:
         with:
           cosign-release: 'v2.2.4'
       
-        #  Shouldn't be needed anymore
+        #  Apparently need QEMU for some reason even though using Buildx
         #    
-      #- name: Set up QEMU
-      #  uses: docker/setup-qemu-action@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
       
+
         #  Setup BuildX
         #
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         
+
         # Login against a Docker registry except on PR
         # https://github.com/docker/login-action
       - name: Log in to GitHub Container Registry
