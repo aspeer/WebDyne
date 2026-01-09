@@ -20,7 +20,7 @@ env:
   # shared description labels
   #
   LABEL_TITLE: "WebDyne"
-  LABEL_DESCRIPTION: "Perl based dynamic HTML engine"
+  LABEL_DESCRIPTION: "WebDyne is a Perl based dynamic HTML engine"
   LABEL_LICENSE: "Artistic-1.0-Perl"
 
 
