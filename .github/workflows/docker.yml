@@ -1,4 +1,3 @@
----
 name: Docker
 on:
 
@@ -44,6 +43,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+
         # Install the cosign tool except on PR
         # https://github.com/sigstore/cosign-installer
       - name: Install cosign
@@ -51,6 +51,7 @@ jobs:
         uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20  # v3.5.0
         with:
           cosign-release: 'v2.2.4'
+
       
         #  Apparently need QEMU for some reason even though using Buildx
         #    
@@ -75,30 +76,6 @@ jobs:
           password: ${{ secrets.GHCR_PAT }}
           
         
-        #  Don't need these anymore ?
-        #
-      - name: Extract Perl VERSION and Git tag
-        id: version
-        if: false
-        run: |
-          PERL_MODULE=$(find lib -name 'WebDyne.pm' | head -n 1)
-          VERSION=$(perl -ne "print \$1 if (m{\\\$VERSION\\s*=\\s*['\"]([^'\"]+)['\"]})" "$PERL_MODULE")
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
-          REVISION=$(git rev-parse --short HEAD)
-          BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-          echo "VERSION: $VERSION"
-          echo "MAJOR: $MAJOR"
-          echo "REVISION: $REVISION"
-          echo "BRANCH: $BRANCH"
-
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "major=$MAJOR" >> $GITHUB_OUTPUT
-          echo "revision=$REVISION" >> $GITHUB_OUTPUT
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
-
-
       #  Get branch we are on
       #
       - name: Determine branch that created tag
@@ -118,7 +95,8 @@ jobs:
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          flavor: false
+          flavor: |
+            latest=false
           tags: |
             type=raw,value=latest,enable=${{ matrix.variant == 'debian' && steps.branch.outputs.branch == 'main' }}
             type=raw,value=${{ matrix.variant }}
@@ -164,44 +142,13 @@ jobs:
           platforms: linux/arm64,linux/amd64
           
         
-        #  Main event
-        #
-      - name: Build and push Docker image (${{ matrix.variant }})
-        if: false
-        id: build-and-push-old
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: docker/Dockerfile.${{ matrix.variant }}
-          push: true
-          platforms: linux/arm64,linux/amd64
-          tags: |
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-latest
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.version }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.major }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.revision }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.branch }}
-          labels: |
-            org.opencontainers.image.title=WebDyne
-            org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.url=https://github.com/${{ github.repository }}
-            org.opencontainers.image.licenses=Artistic-1.0-Perl OR GPL-1.0-or-later
-            org.opencontainers.image.version=${{ steps.version.outputs.version }}
-            org.opencontainers.image.revision=${{ steps.version.outputs.revision }}
-            org.opencontainers.image.created=${{ steps.version.outputs.created }}
-        # Sign the resulting Docker image digest except on PRs.
-
-
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
       # repository is public to avoid leaking data.  If you would like to publish
       # transparency data even for private images, pass --force to cosign below.
       # https://github.com/sigstore/cosign
       - name: Sign the published Docker image (${{ matrix.variant }})
-        #if: ${{ github.event_name != 'pull_request' }}
-        #if: false
+        if: ${{ github.event_name != 'pull_request' }}
         env:
           # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
           TAGS: ${{ steps.meta.outputs.tags }}
@@ -209,24 +156,3 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
-
-
-      - name: Sign the published Docker image Old (${{ matrix.variant }})
-        #if: ${{ github.event_name != 'pull_request' }}
-        if: false
-        env:
-          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-          TAGS: >
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-latest
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.version }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.major }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.revision }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.branch }}
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
-        # run: echo "${TAGS}" | xargs -n 1 -I {} sh -c 'echo "Signing {}@${DIGEST}"; cosign sign --yes {}@${DIGEST}'
-        run: printf "%s\n" $TAGS | xargs -I {} sh -c 'echo "Signing {}@${DIGEST}"; cosign sign --yes {}@${DIGEST}'
-
-
