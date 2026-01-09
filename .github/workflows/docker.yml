@@ -120,9 +120,13 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=${{ steps.branch.outputs.branch }}
-            type=sha
-            type=semver,pattern={{version}}
+            type=raw,value=${{ matrix.variant }}
+            type=raw,prefix=${{ matrix.variant }}-,value=${{ steps.branch.outputs.branch }}
+            type=raw,prefix=${{ matrix.variant }}-,value=latest
+            type=raw,prefix=${{ matrix.variant }}-,value={{version}}
+            type=raw,prefix=${{ matrix.variant }}-,value=${{ steps.branch.outputs.branch }}
+            type=sha,prefix=${{ matrix.variant }}-sha-
+            type=semver,prefix=${{ matrix.variant }-,pattern={{version}}
           labels: |
             org.opencontainers.image.title=${{ env.LABEL_TITLE }}
             org.opencontainers.image.description=${{ env.LABEL_DESCRIPTION }}
