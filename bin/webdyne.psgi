@@ -41,7 +41,7 @@ use WebDyne::Request::PSGI::Constant;
 
 #  Version information
 #
-$VERSION='2.050';
+$VERSION='2.051';
 
 
 #  API file name cache
