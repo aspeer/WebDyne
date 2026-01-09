@@ -1,4 +1,4 @@
-name: Cleanup old images
+name: Cleanup
 on:
   schedule:
     - cron: "0 3 * * 0"
@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run retention action
-        uses: snok/container-retention-policy@v2
+        uses: snok/container-retention-policy@v3.0.0
         with:
           image-names: webdyne
           cut-off: 30 days ago UTC
-          keep-at-least: 64
-          account-type: personal
+          keep-n-most-recent: 64
+          account: user
           token: ${{ secrets.GHCR_PAT }}   # or GITHUB_TOKEN if appropriate

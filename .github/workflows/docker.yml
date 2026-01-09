@@ -1,26 +1,49 @@
 ---
-name: Build and Push Docker Image
+name: Docker
 on:
+
+  #  Only run on tag updates or manually
+  #
   push:
-    branches: [main]
-    paths:
-      - 'docker/**'
-      - '.github/workflows/docker.yml'
-      - 'lib/**'
-      - 'bin/**'
+    # Publish semver tags as releases.
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
+  # shared description labels
+  #
+  LABEL_TITLE: "WebDyne"
+  LABEL_DESCRIPTION: "Perl based dynamic HTML engine"
+  LABEL_LICENSE: "Artistic-1.0-Perl"
+
+
 jobs:
+
   build-variants:
+
     runs-on: ubuntu-22.04
     permissions:
       contents: read
       packages: write  # Required to push to GHCR
       id-token: write
+
     strategy:
       matrix:
-        variant: [fedora, alpine]
+        variant: [fedora, alpine, debian]
     steps:
+
+        #  Checkout repo to start build
+        #
       - name: Checkout repository
         uses: actions/checkout@v4
+
         # Install the cosign tool except on PR
         # https://github.com/sigstore/cosign-installer
       - name: Install cosign
@@ -28,18 +51,33 @@ jobs:
         uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20  # v3.5.0
         with:
           cosign-release: 'v2.2.4'
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      
+        #  Shouldn't be needed anymore
+        #    
+      #- name: Set up QEMU
+      #  uses: docker/setup-qemu-action@v3
+      
+        #  Setup BuildX
+        #
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        
+        # Login against a Docker registry except on PR
+        # https://github.com/docker/login-action
       - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
+          
+        
+        #  Don't need these anymore ?
+        #
       - name: Extract Perl VERSION and Git tag
         id: version
+        if: false
         run: |
           PERL_MODULE=$(find lib -name 'WebDyne.pm' | head -n 1)
           VERSION=$(perl -ne "print \$1 if (m{\\\$VERSION\\s*=\\s*['\"]([^'\"]+)['\"]})" "$PERL_MODULE")
@@ -57,8 +95,73 @@ jobs:
           echo "revision=$REVISION" >> $GITHUB_OUTPUT
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
           echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
-      - name: Build and push Docker image (${{ matrix.variant }})
+
+
+      #  Get branch we are on
+      #
+      - name: Determine branch that created tag
+        id: branch
+        run: |
+          git fetch --all --quiet
+          BRANCH=$(git branch -r --contains "$GITHUB_SHA" | grep -v '\->' | head -n1 | sed 's|origin/||' | xargs)
+          echo "branch: $BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+    
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.branch.outputs.branch }}
+            type=sha
+            type=semver,pattern={{version}}
+          labels: |
+            org.opencontainers.image.title=${{ env.LABEL_TITLE }}
+            org.opencontainers.image.description=${{ env.LABEL_DESCRIPTION }}
+            org.opencontainers.image.license=${{ env.LABEL_LICENSE }}
+            org.opencontainers.image.created=${{ steps.branch.outputs.created }}
+            
+      #  Debug
+      #
+      - name: Debug
+        run: |
+            echo "branch:${{ github.ref }}"
+            echo "branch (calculated):${{ steps.branch.outputs.branch }}"
+            echo "tags: ${{ steps.meta.outputs.tags }}"
+            echo "labels: ${{ steps.meta.outputs.labels }}"
+
+
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
         id: build-and-push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.${{ matrix.variant }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=${{ env.LABEL_DESCRIPTION }}
+          #annotations: |
+          #    ${{ steps.meta.outputs.labels }}
+          #annotations: |
+          #    org.opencontainers.image.description=Simple self-contained WebDyne demonstration application 
+          cache-to: type=gha,mode=max
+          platforms: linux/arm64,linux/amd64
+          
+        
+        #  Main event
+        #
+      - name: Build and push Docker image (${{ matrix.variant }})
+        if: false
+        id: build-and-push-old
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -82,8 +185,28 @@ jobs:
             org.opencontainers.image.revision=${{ steps.version.outputs.revision }}
             org.opencontainers.image.created=${{ steps.version.outputs.created }}
         # Sign the resulting Docker image digest except on PRs.
+
+
+      # Sign the resulting Docker image digest except on PRs.
+      # This will only write to the public Rekor transparency log when the Docker
+      # repository is public to avoid leaking data.  If you would like to publish
+      # transparency data even for private images, pass --force to cosign below.
+      # https://github.com/sigstore/cosign
       - name: Sign the published Docker image (${{ matrix.variant }})
-        if: ${{ github.event_name != 'pull_request' }}
+        #if: ${{ github.event_name != 'pull_request' }}
+        #if: false
+        env:
+          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        # This step uses the identity token to provision an ephemeral certificate
+        # against the sigstore community Fulcio instance.
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+
+
+      - name: Sign the published Docker image Old (${{ matrix.variant }})
+        #if: ${{ github.event_name != 'pull_request' }}
+        if: false
         env:
           # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
@@ -99,95 +222,4 @@ jobs:
         # run: echo "${TAGS}" | xargs -n 1 -I {} sh -c 'echo "Signing {}@${DIGEST}"; cosign sign --yes {}@${DIGEST}'
         run: printf "%s\n" $TAGS | xargs -I {} sh -c 'echo "Signing {}@${DIGEST}"; cosign sign --yes {}@${DIGEST}'
 
-  build-latest:
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      packages: write  # Required to push to GHCR
-      id-token: write
-    strategy:
-      matrix:
-        variant: [debian]
-    needs: build-variants
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        # Install the cosign tool except on PR
-        # https://github.com/sigstore/cosign-installer
-      - name: Install cosign
-        if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20  # v3.5.0
-        with:
-          cosign-release: 'v2.2.4'
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
-      - name: Extract Perl VERSION and Git tag
-        id: version
-        run: |
-          PERL_MODULE=$(find lib -name 'WebDyne.pm' | head -n 1)
-          VERSION=$(perl -ne "print \$1 if (m{\\\$VERSION\\s*=\\s*['\"]([^'\"]+)['\"]})" "$PERL_MODULE")
-          MAJOR=$(echo "$VERSION" | cut -d. -f1)
-          REVISION=$(git rev-parse --short HEAD)
-          BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-          echo "VERSION: $VERSION"
-          echo "MAJOR: $MAJOR"
-          echo "REVISION: $REVISION"
-          echo "BRANCH: $BRANCH"
-
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "major=$MAJOR" >> $GITHUB_OUTPUT
-          echo "revision=$REVISION" >> $GITHUB_OUTPUT
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
-      - name: Build and push Docker image (${{ matrix.variant }})
-        id: build-and-push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: docker/Dockerfile.${{ matrix.variant }}
-          push: true
-          platforms: linux/arm64,linux/amd64
-          tags: |
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-latest
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.version }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.major }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.revision }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.branch }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:latest
-          labels: |
-            org.opencontainers.image.title=WebDyne
-            org.opencontainers.image.description=PSGI web service for generating dynamic HTML pages with embedded Perl
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.url=https://github.com/${{ github.repository }}
-            org.opencontainers.image.licenses=Artistic-1.0-Perl OR GPL-1.0-or-later
-            org.opencontainers.image.version=${{ steps.version.outputs.version }}
-            org.opencontainers.image.revision=${{ steps.version.outputs.revision }}
-            org.opencontainers.image.created=${{ steps.version.outputs.created }}
-        # Sign the resulting Docker image digest except on PRs.
-      - name: Sign the published Docker image (${{ matrix.variant }})
-        if: ${{ github.event_name != 'pull_request' }}
-        env:
-          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-          TAGS: >
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-latest
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.version }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.major }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.revision }}
-              ghcr.io/${{ github.repository_owner }}/webdyne:${{ matrix.variant }}-${{ steps.version.outputs.branch }}
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
-        # run: echo "${TAGS}" | xargs -n 1 -I {} sh -c 'echo "Signing {}@${DIGEST}"; cosign sign --yes {}@${DIGEST}'
-        run: printf "%s\n" $TAGS | xargs -I {} sh -c 'echo "Signing {}@${DIGEST}"; cosign sign --yes {}@${DIGEST}'
 

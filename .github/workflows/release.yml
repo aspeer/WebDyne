@@ -1,0 +1,45 @@
+name: Release
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+  push:
+    # Publish semver tags as releases.
+    tags: [ 'v*.*.*' ]
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up archive name
+        id: vars
+        run: |
+          VERSION_FROM=$(find . -name 'app.pm' | head -n 1)
+          VERSION=$(perl -ne "print \$1 if (m{\\\$VERSION\\s*=\\s*['\"]([^'\"]+)['\"]})" "$VERSION_FROM")
+          NAME="WebDyne-${VERSION}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "NAME=$NAME" >> $GITHUB_ENV
+          echo "ARCHIVE=${NAME}.tar.gz" >> $GITHUB_ENV
+
+      - name: Create .tar.gz archive
+        run: |
+          mkdir -p dist
+          tar -czf "dist/${ARCHIVE}" --exclude=dist .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/${{ env.ARCHIVE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
