@@ -102,8 +102,6 @@ jobs:
             type=raw,value=${{ matrix.variant }}
             type=raw,prefix=${{ matrix.variant }}-,value=${{ steps.branch.outputs.branch }}
             type=raw,prefix=${{ matrix.variant }}-,value=latest
-            type=raw,prefix=${{ matrix.variant }}-,value={{version}}
-            type=raw,prefix=${{ matrix.variant }}-,value=${{ steps.branch.outputs.branch }}
             type=sha,prefix=${{ matrix.variant }}-
             type=semver,prefix=${{ matrix.variant }}-,pattern={{version}}
           labels: |
