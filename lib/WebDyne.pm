@@ -16,7 +16,7 @@ package WebDyne;
 #  Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION $AUTHORITY $VERSION_GIT_REF %CGI_TAG_WEBDYNE @ISA $AUTOLOAD @EXPORT_OK);
+use vars   qw($VERSION $AUTHORITY $VERSION_GIT_SHA %CGI_TAG_WEBDYNE @ISA $AUTOLOAD @EXPORT_OK);
 use warnings;
 no warnings qw(uninitialized redefine once qw);
 use overload;
@@ -62,7 +62,7 @@ use Exporter qw(import);
 #
 $AUTHORITY='cpan:ASPEER';
 $VERSION='2.056';
-chomp($VERSION_GIT_REF=do { local (@ARGV, $/) = ($_=__FILE__.'.sha'); <> if -f $_ });
+chomp($VERSION_GIT_SHA=do { local (@ARGV, $/) = ($_=__FILE__.'.sha'); <> if -f $_ });
 
 
 #  Debug load
@@ -4025,7 +4025,7 @@ sub dump {
         #
         my %version=(
             VERSION         => $VERSION,
-            VERSION_GIT_REF => $VERSION_GIT_REF
+            VERSION_GIT_SHA => $VERSION_GIT_SHA
         );
         push @html, Data::Dumper->Dump([\%version], ['WebDyne::VERSION']);
         

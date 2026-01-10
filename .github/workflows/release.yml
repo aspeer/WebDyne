@@ -28,6 +28,9 @@ jobs:
       - name: Configure
         run: perl Makefile.PL
 
+      - name: Run tests
+        run: make test
+
       - name: Build and create distribution
         run: make dist
 
