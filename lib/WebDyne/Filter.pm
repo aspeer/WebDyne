@@ -30,7 +30,7 @@ use Data::Dumper;
 
 #  Version information
 #
-$VERSION='2.057';
+$VERSION='2.058';
 
 
 #  Shortcut error handler.
