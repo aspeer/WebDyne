@@ -43,3 +43,7 @@ jobs:
           files: '*.tar.gz'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Publish to CPAN
+        run: |
+          cpan-upload -u ${{ secrets.CPAN_USERNAME }} -p ${{ secrets.CPAN_PASSWORD }} *.tar.gz
