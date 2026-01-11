@@ -254,7 +254,7 @@ sub debug {
                 #  Print debug after checking for any regexp wanted
                 #
                 if (my $regexp=$ENV{'WEBDYNE_DEBUG_FILTER'}) {
-                    next unless $debug=~qr/$regexp/;
+                    next unless $debug=~qr/$regexp/m;
                 }
                 CORE::print $debug_fh "[$timestamp $class ($subroutine)] ", $debug, $/;
             }

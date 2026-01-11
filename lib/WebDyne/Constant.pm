@@ -579,11 +579,12 @@ sub local_constant_load {
 
     #  Now from environment vars - override anything in config file
     #
-    foreach my $key (keys %{$constant_hr}) {
+    my %constant_class=%{"${class}::Constant"};
+    foreach my $key (keys %constant_class) {
         if (defined $ENV{$key}) {
             my $val=$ENV{$key};
             debug("using environment value $val for key: $key");
-            $constant_hr->{$key}=$val;
+            $constant_hr->{$class}{$key}=$val;
         }
     }
 
@@ -594,7 +595,7 @@ sub local_constant_load {
         my $table_or=$server_or->dir_config();
         while (my ($key, $val)=each %{$table_or}) {
             debug("installing value $val for Apache directive: $key");
-            $constant_hr->{$key}=$val if exists $constant_hr->{$key};
+            $constant_hr->{$class}{$key}=$val if exists $constant_class{$key}
         }
     }
 
