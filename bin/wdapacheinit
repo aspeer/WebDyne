@@ -97,12 +97,14 @@ require WebDyne::Install::Apache;
 #
 my $prefix_dn=realpath(File::Spec->rel2abs(File::Spec->updir(), $RealBin));
 debug("about to call install/uninstall with prefix_dn: $prefix_dn, RealBin: $RealBin, opt: %s", Dumper(\%opt));
+my $rc;
 if ($opt{'uninstall'}) {
-    exit ${WebDyne::Install::Apache->uninstall($prefix_dn, $RealBin, \%opt) || die errstr()}
+    $rc=${WebDyne::Install::Apache->uninstall($prefix_dn, $RealBin, \%opt) || die errstr()} || 0;
 }
 else {
-    exit ${WebDyne::Install::Apache->install($prefix_dn, $RealBin, \%opt) || die errstr()}
+    $rc=${WebDyne::Install::Apache->install($prefix_dn, $RealBin, \%opt) || die errstr()} || 0;
 }
+exit $rc;
 
 __END__
 

@@ -133,6 +133,12 @@ sub post_initialize {
         push @{$mm_or->{'EXE_FILES'}}, $mm_or->{'VERSION_FROM'}.'.sha';
     }
     
+    
+    #  Don't install docs/tmp files etc.
+    #
+    my %pm=map { $_=>$mm_or->{'PM'}{$_} } grep { !/\.(?:md|xml|pod|bak|tmp|0)$/ } keys %{$mm_or->{'PM'}};
+    $mm_or->{'PM'}=\%pm;
+    
 
     #  Update Git Ref in file if needed/available
     #
