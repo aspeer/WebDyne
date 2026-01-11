@@ -58,7 +58,7 @@ my %Package;
 
 #  Version information
 #
-$VERSION='2.059';
+$VERSION='2.060';
 
 
 #  Debug load
