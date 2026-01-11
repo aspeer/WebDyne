@@ -23,7 +23,8 @@ jobs:
       - name: Install build deps
         run: |
           cpanm --installdeps .   # install prerequisites
-          cpanm --notest ExtUtils::MakeMaker  # if needed
+          cpanm --notest ExtUtils::MakeMaker
+          cpanm --notest CPAN::Uploader
 
       - name: Configure
         run: perl Makefile.PL
