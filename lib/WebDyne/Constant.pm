@@ -781,14 +781,20 @@ sub import {
             debug("importing for caller: $caller");
             
             
-            #  Don't load hash ref into caller if already done
+            #  Don't load hash ref into caller if already done. This probably needs to be reworked ..
             #
-            if ($Package{'caller'}{$caller}{$constant_hr}++) {
-                debug("skip, already applied $constant_hr to caller: $caller");
-                next;
+            if (my $var_test= (keys(%{$constant_hr}))[0] ) {
+                debug("picking var: $var_test as test, exists *{${caller}::${var_test}}: %s", defined(*{"${caller}::${var_test}"}));
+                if ($Package{'caller'}{$caller}{$constant_hr}++ && defined(*{"${caller}::${var_test}"})) {
+                    debug("skip, already applied $constant_hr to caller: $caller");
+                    next;
+                }
+                else {
+                    debug('continue');
+                }
             }
             else {
-                debug('continue');
+                debug('no test var found in constant_hr: %s', Dumper($constant_hr));
             }
             
             
