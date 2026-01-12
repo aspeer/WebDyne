@@ -32,7 +32,7 @@ require Opcode;
 
 #  Version information
 #
-$VERSION='2.062';
+$VERSION='2.063';
 
 
 #  Get mod_perl version taking intio account legacy strings. Clear $@ after evals
