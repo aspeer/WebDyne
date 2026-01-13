@@ -1,4 +1,4 @@
-name: Docker
+name: Docker - development
 on:
 
   #  Only run on tag updates or manually
@@ -65,7 +65,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           #password: ${{ secrets.GHCR_PAT }}
-          password: ${{ secrets.token }}
+          password: ${{ github.token }}
           
         
       # Extract metadata (tags, labels) for Docker
