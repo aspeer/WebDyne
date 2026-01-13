@@ -75,6 +75,7 @@ WORKDIR /app
 #  Otherwise copy working repo content
 #
 COPY . .
+RUN git rev-parse --short HEAD
 
 
 # And now install CPAN modules using Carton
