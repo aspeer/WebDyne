@@ -29,11 +29,12 @@ jobs:
     permissions:
       contents: read
       packages: write  # Required to push to GHCR
-      id-token: write
+      #id-token: write
 
     strategy:
       matrix:
         variant: [alpine]
+        platform: [ linux/amd64 ]
     steps:
 
         #  Checkout repo to start build
@@ -63,21 +64,10 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
+          #password: ${{ secrets.GHCR_PAT }}
+          password: ${{ secrets.GITHUB_TOKEN }}
           
         
-      #  Get branch we are on
-      #
-      - name: Determine branch that created tag
-        id: branch
-        run: |
-          git fetch --all --quiet
-          BRANCH=$(git branch -r --contains "$GITHUB_SHA" | grep -v '\->' | head -n1 | sed 's|origin/||' | xargs)
-          echo "branch: $BRANCH"
-          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
-          echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
-    
-
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
       - name: Extract Docker metadata
@@ -88,21 +78,20 @@ jobs:
           flavor: |
             latest=false
           tags: |
-            type=raw,value=development,enable=${{ matrix.variant == 'alpine' && steps.branch.outputs.branch == 'development' }}
-            type=raw,prefix=${{ matrix.variant }}-,value=${{ steps.branch.outputs.branch }}
+            type=raw,value=${{ github.ref_name }}
+            type=raw,prefix=${{ matrix.variant }}-,value=${{ github.ref_name }}
             type=sha,prefix=${{ matrix.variant }}-
           labels: |
             org.opencontainers.image.title=${{ env.LABEL_TITLE }}
             org.opencontainers.image.description=${{ env.LABEL_DESCRIPTION }}
             org.opencontainers.image.license=${{ env.LABEL_LICENSE }}
-            org.opencontainers.image.created=${{ steps.branch.outputs.created }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
             
       #  Debug
       #
       - name: Debug
         run: |
-            echo "branch:${{ github.ref }}"
-            echo "branch (calculated):${{ steps.branch.outputs.branch }}"
+            echo "branch:${{ github.ref_name }}"
             echo "tags: ${{ steps.meta.outputs.tags }}"
             echo "labels: ${{ steps.meta.outputs.labels }}"
 
@@ -114,7 +103,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: docker/Dockerfile.${{ matrix.variant }}-development
+          file: docker/Dockerfile.${{ matrix.variant }}-${{ github.ref_name }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -124,7 +113,6 @@ jobs:
           #annotations: |
           #    org.opencontainers.image.description=Simple self-contained WebDyne demonstration application 
           cache-to: type=gha,mode=max
-          #platforms: linux/arm64,linux/amd64
-          platforms: linux/amd64
+          platforms: ${{ matrix.platform }}
           
         
