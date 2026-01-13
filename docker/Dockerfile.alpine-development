@@ -75,7 +75,6 @@ WORKDIR /app
 #  Otherwise copy working repo content
 #
 COPY . .
-RUN git rev-parse --short HEAD
 
 
 # And now install CPAN modules using Carton
@@ -89,6 +88,11 @@ RUN carton install --deployment
 #
 WORKDIR ..
 RUN carton exec -- cpanm --local-lib-contained=${PERL_CARTON_PATH} .
+
+
+# Load in checksum
+#
+RUN git rev-parse --short HEAD > $PERL5LIB/WebDyne.pm.sha
 
 
 # Debug
