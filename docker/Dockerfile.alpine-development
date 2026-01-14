@@ -1,5 +1,5 @@
 #  
-# WebDyne docker image for Fedora
+# WebDyne docker image for Alpine (development)
 #
 # ====
 #
@@ -22,7 +22,7 @@ ARG DOCUMENT_ROOT="/app"
 #
 
 
-# Using Fedora as base
+# Using Alpine as base
 #
 FROM ${BASE} AS builder
 
@@ -42,7 +42,6 @@ RUN apk add --no-cache \
     build-base \
     unzip tzdata \
     git
-
 
 
 #  Install Carton
@@ -90,7 +89,8 @@ WORKDIR ..
 RUN carton exec -- cpanm --local-lib-contained=${PERL_CARTON_PATH} .
 
 
-# Load in checksum
+# Load in digest file. Should be done by carton when Makefile.PL run but doesn't work
+# for some reason so create manually as a backup
 #
 RUN git rev-parse --short HEAD > $PERL5LIB/WebDyne.pm.sha
 
