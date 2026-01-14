@@ -31,7 +31,7 @@ use WebDyne::Util;
 
 #  Version information in a format
 #
-$VERSION='2.067';
+$VERSION='2.068';
 
 
 #  Debug
