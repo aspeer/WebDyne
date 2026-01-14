@@ -4009,8 +4009,9 @@ sub dump {
                 my $wv=${"WebDyne::${k}"};
                 $constant{$k}=($cv eq $wv) ? $wv : "$wv [$cv]";
             }
-            push @html, Data::Dumper->Dump([\%constant], ['WebDyne::Constant']);
-
+            my $constant_dumper=Data::Dumper->Dump([\%constant], ['WebDyne::Constant']);
+            $constant_dumper=$cgi_or->escapeHTML($constant_dumper);
+            push @html, $constant_dumper;
             
         }
         
