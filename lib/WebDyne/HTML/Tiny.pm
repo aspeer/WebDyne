@@ -408,6 +408,17 @@ sub _start_html {
     ##push @meta, $self->meta({ content => $WEBDYNE_META }) unless 
 
 
+    #  Base and/or target
+    #
+    my @base;
+    if ($attr_page{'base'} || $attr_page{'target'}) {
+        my %attr_base;
+        $attr_base{'href'} = $attr_page{'base'} if $attr_page{'base'};
+        $attr_base{'target'} = $attr_page{'target'} if $attr_page{'target'};
+        push @base, $self->base(\%attr_base);
+    }
+    
+
     #  Add any stylesheets
     #
     my @link;
@@ -530,6 +541,7 @@ sub _start_html {
             grep {$_} (
                 $title,
                 @meta,
+                @base,
                 @link,
                 @script,
                 @include
@@ -1075,6 +1087,11 @@ sub popup_menu {
     #  Hold generated HTML in array until end
     #
     my @html;
+    
+    
+    #  Pull off any label
+    #
+    my $label=delete $attr_select{'label'};    
 
 
     #  If values is a hash not an array then convert to array and use hash as values
@@ -1186,7 +1203,6 @@ sub popup_menu {
     #  Fix multiple tag if true
     #
     $attr_select{'multiple'}=[] if $attr_select{'multiple'};
-
     #map { delete $attr_select{$_} } (qw(default selected disabled));
     debug('in popup_menu attr_select: %s', Dumper(\%attr_select));
 
@@ -1216,12 +1232,22 @@ sub popup_menu {
 
         #}
     }
-
+    
+    
+    #  Now wrap in label if needed
+    #
+    debug('creating select group with attr: %s, options:%s, label: %s', Dumper(\%attr_select, \@html), $label);
+    if ($label) {
+        return $self->label($label . $self->select(\%attr_select, join($/, @html)));
+    }
+    else {
+        return $self->select(\%attr_select, join($/, @html));
+    }
+    
 
     #  Return
     #
-    debug('creating select group with attr: %s, options:%s', Dumper(\%attr_select, \@html));
-    return $self->select(\%attr_select, join($/, @html));
+    #return $self->select(\%attr_select, join($/, @html));
 
 }
 
@@ -1257,6 +1283,11 @@ sub textarea {
     #  Copy attr_hr so don't mangle original
     #
     my %attr=%{$attr_hr};
+    
+    
+    #  Label ?
+    #
+    my $label=delete $attr{'label'};
         
 
     #  Make sure entered text persists unless force in effect
@@ -1271,9 +1302,16 @@ sub textarea {
     }
     
     
-    #  Have enough to build now
+    #  Wrap in label if needed
     #
-    return $self->SUPER::textarea(grep {$_} \%attr, $content);
+    if ($label) {
+        return $self->label( $label . $self->SUPER::textarea(grep {$_} \%attr, $content));
+    }
+    else {
+        #  Have enough to build now
+        #
+        return $self->SUPER::textarea(grep {$_} \%attr, $content);
+    }
     
 }
 
