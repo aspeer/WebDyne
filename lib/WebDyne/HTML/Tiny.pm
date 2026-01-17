@@ -182,6 +182,7 @@ sub _init {
             if (defined($attr_hr)) {
                 #  Copy attr so don't pollute ref
                 my %attr=%{$attr_hr};
+                my $label=delete $attr{'label'};
                 #my $param_hr=$self->Vars();
                 my $param_hr=$self->CGI->Vars();
                 if ($persist{$tag}) {
@@ -189,15 +190,21 @@ sub _init {
                         $attr{'value'}=$value;
                     }
                 }
-                return $self->input({type => $type{$tag} || $tag, %attr}, @param);
+                
+                #  Wrap in label if needed
+                #
+                if ($label) {
+                    return $self->label(join('', grep {$_} @param, $label) . $self->input({type => $type{tag}, %attr}));
+                }
+                else {
+                    return $self->input({type => $type{$tag} || $tag, %attr}, @param);
+                }
             }
             else {
                 return $self->input({type => $type{$tag} || $tag}, @param)
             }
 
-            }
-            unless UNIVERSAL::can(__PACKAGE__, $tag);
-
+        } unless UNIVERSAL::can(__PACKAGE__, $tag);
     }
 
 
@@ -304,7 +311,6 @@ sub _start_html {
         %{$attr_hr}
     );
     debug('attr: %s', Dumper(\%attr));
-    #die Dumper(\%attr);
 
 
     #  If no attributes passed used defaults from constants file
@@ -560,7 +566,7 @@ sub _start_html_tag {
 }
         
 
-sub _end_html {
+sub _end_html0 { # No longer needed
 
     #  Stub for WebDyne UNIVERSAL::can to find
     #
@@ -620,7 +626,8 @@ sub _start_form {
     debug("$self _start_form, attr_hr:%s param:%s", Dumper($attr_hr, \@param));
     my %default=(
         method  => 'post',
-        enctype => +URL_ENCODED
+        # Redundant
+        # enctype => +URL_ENCODED
     );
     map {$attr_hr->{$_} ||= $default{$_}}
         keys %default;
@@ -637,7 +644,7 @@ sub _start_multipart_form {
 }
 
 
-sub _end_multipart_form {
+sub end_multipart_form {
     debug("$_[0] _end_multipart_form");
     return shift()->end_form(@_);
 }
@@ -649,7 +656,12 @@ sub _comment {
 
     my ($self, $attr_hr)=@_;
     debug("$self comment, attr:%s", Dumper($attr_hr));
-    return sprintf('<!-- %s -->', $attr_hr->{'text'});
+    #return sprintf("\n<!-- %s -->\n", $attr_hr->{'text'});
+    my $html=sprintf('<!-- %s -->', $attr_hr->{'text'});
+    if (WEBDYNE_HTML_NEWLINE) {
+        $html="\n${html}\n";
+    }
+    return $html;
 
 }
 
@@ -1193,6 +1205,7 @@ sub popup_menu {
         $attr_tag{'selected'}=[] if $attr_option{'selected'}{$value};
         $attr_tag{'disabled'}=[] if $attr_option{'disabled'}{$value};
         my $label=$attr_option{'labels'}{$value} ? $attr_option{'labels'}{$value} : $value;
+        #debug("attr_option label: %s, value: $value, label: $label", Dumper($attr_option{'labels'}));
 
         #if ($label) {
         #    push @html, $self->label($self->option(\%attr_tag) . $label);

@@ -236,7 +236,7 @@ sub debug {
 
     #  Get the debug message
     #
-    #local $SIG{__WARN__}=sub { die @_ };  #uncomment if want to trace any missing sprintf params
+    #local $SIG{__WARN__}=sub { require Carp; &Carp::confess @_ };  #uncomment if want to trace any missing sprintf params
     my $debug=$#_ ? sprintf(shift(), @_) : shift();
 
 
