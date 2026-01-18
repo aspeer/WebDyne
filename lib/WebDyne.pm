@@ -2965,7 +2965,8 @@ sub perl {
     
     #  Return whatever was generated unless hidden attr set
     #
-    unless ( $attr_hr->{'hidden'} || (defined $attr_hr->{'display'} && ($attr_hr->{'display'}==0))) {
+    #unless ( $attr_hr->{'hidden'} || (defined $attr_hr->{'display'} && ($attr_hr->{'display'}==0))) {
+    unless ( $attr_hr->{'hidden'} ) {
     
         #  Not hidden return
         #
