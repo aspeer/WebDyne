@@ -265,7 +265,7 @@ sub debug {
         #  No filtering. Open floodgates but still apply any regexp
         #
         if (my $regexp=$ENV{'WEBDYNE_DEBUG_FILTER'}) {
-            next unless $debug=~qr/$regexp/;
+            return unless $debug=~qr/$regexp/;
         }
         CORE::print $debug_fh "[$timestamp $class ($subroutine)] ", $debug, $/;
     }
