@@ -479,6 +479,15 @@ my %constant_temp;
     },
     
     
+    #  Other files the PSGI indexer is allowed to open
+    #
+    WEBDYNE_INDEX_EXT_ALLOWED_HR => { map {$_=>1} qw(
+        psp
+        pm
+        pl
+    )},
+    
+    
     #  Dir_config can be loaded from here if not in Apache
     #
     WEBDYNE_DIR_CONFIG => undef,

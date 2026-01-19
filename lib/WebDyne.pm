@@ -2623,10 +2623,10 @@ sub htmx {
         #  Return whatever HTML we get back
         #
         $handler ||= '*perl*';
-        debug("htmx rendering with handler $handler");
+        debug("htmx rendering with handler: $handler");
         $html_sr=$self->perl($data_ar, $attr_hr) ||
             return err();
-        debug("html_sr: $html_sr");
+        debug("html_sr: $html_sr, %s", Dumper($html_sr));
         
     }
     else {
@@ -2636,7 +2636,7 @@ sub htmx {
         debug('htmx render without handler');
         $html_sr=$self->render_data_ar(data=> $data_ar->[WEBDYNE_NODE_CHLD_IX]) ||
             return err();
-        debug("html_sr: $html_sr");
+        debug("html_sr: $html_sr, %s", Dumper($html_sr));
         
     }
     
@@ -2760,7 +2760,10 @@ sub perl {
     #  Look for run param and if exists only run if value evaluates to true
     #
     if(exists $attr_hr->{'run'}) {
-        return \undef unless $attr_hr->{'run'};
+        unless ($attr_hr->{'run'}) {
+            debug('run attribute evaluated as false, not running');
+            return \undef;
+        }
     }
 
 
