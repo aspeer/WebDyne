@@ -64,6 +64,16 @@ sub new {
  
         
     }
+    elsif (ref($r) eq 'WebDyne::Request::PAGI') {
+    
+        # PAGI
+        #
+        debug('detected PAGI request handler');
+        require WebDyne::CGI::PAGI;
+        *new=WebDyne::CGI::PAGI::new;
+ 
+        
+    }
     elsif (ref($r)=~/^Apache2(?:::Request)?/) {
     
         #  Apache 2

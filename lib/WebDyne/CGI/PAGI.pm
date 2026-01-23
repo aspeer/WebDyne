@@ -10,7 +10,7 @@
 #
 #  <http://dev.perl.org/licenses/>
 #
-package WebDyne::CGI::PSGI;
+package WebDyne::CGI::PAGI;
 
 
 #  Pragma
@@ -29,9 +29,9 @@ use WebDyne::Util;
 #  External modules
 #
 use Data::Dumper;
-use CGI::Simple;
-use Plack::Request;
-@ISA=qw(Plack::Request CGI::Simple);
+use PAGI::Request;
+use WebDyne::CGI::PSGI;
+@ISA=qw(PAGI::Request WebDyne::CGI::PSGI);
 
 
 #  Version information
@@ -46,16 +46,15 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 
 #==============================================================================
 
-
 sub new {
 
 
-    #  New instance of Plack::Request with CGI interface
+    #  New instance of PAGI::Request with CGI interface
     #
     my ($class, $r, %param)=@_;
     debug("class: $class, r: $r, param: %s", Dumper(\%param));
-    my $cgi_or=Plack::Request->new($r->env()) ||
-        return err('unable to get Plack::Request objedt');
+    my $cgi_or=PAGI::Request->new(@{$r}{qw(scope receive)}) ||
+        return err('unable to get PAGI::Request objedt');
     my $self=bless($cgi_or, __PACKAGE__);
     while (my ($key, $value) = each %param) {
         map $self->param($key, $value)
@@ -64,6 +63,14 @@ sub new {
     
 }
 
+sub parameters {
+
+    shift()->query_params();
+    
+}
+
+1;
+__END__
 
 sub Vars {
 
@@ -79,7 +86,6 @@ sub param {
     #  Get or set param
     #
     my ($self, $key, @value)=@_;
-    debug("in param, key: $key, value: %s", Dumper(\@value));
     
     
     #  Getting or setting ? Some handlers can't handle updates 
