@@ -201,7 +201,7 @@ sub content_type {
 }
 
 
-sub custom_response {
+sub custom_response0 {
 
     my ($r, $status)=(shift(), shift());
     while ($r->prev) {$r=$r->prev}

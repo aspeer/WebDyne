@@ -534,8 +534,9 @@ sub errdump {
 
         #  Include any user supplied info
         #
-        while (my ($key, $value)=each %{$info_hr}) {
-
+        #while (my ($key, $value)=each %{$info_hr}) {
+        foreach my $key (sort keys %{$info_hr}) {
+            my $value=$info_hr->{$key};
 
             #  Print separator, info
             #

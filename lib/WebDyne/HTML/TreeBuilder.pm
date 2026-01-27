@@ -125,6 +125,7 @@ map {$CGI_TAG_SPECIAL{$_}++} qw(
     api
     json
     htmx
+    sse
     table
 );
 
@@ -589,15 +590,15 @@ sub table {
     #  Modify HTML::Tagset to allow perl/block/htmx tags within a table tag, then pull them out
     #  when the table tag closes.
     #
-    my ($self, $method, @param)=@_;
-    debug("self $self, tag: api, method: $method");
+    my ($self, $method, $tag, @param)=@_;
+    debug("self $self, tag: $tag, method: $method");
     if ($method eq 'SUPER::start') {
         map { $HTML::Tagset::isTableElement{$_}=1 } qw(perl block htmx)
     }
     elsif ($method eq 'SUPER::end') {
         map { delete $HTML::Tagset::isTableElement{$_} } qw(perl block htmx)
     }
-    return $self->$method(@param);
+    return $self->$method($tag, @param);
     
 }
 
@@ -661,6 +662,15 @@ sub json {
         return $self->$method($tag, $attr_hr, @param);
     }
 
+}
+
+
+sub sse {
+
+    #  Same as JSON
+    #
+    return &json(@_);
+    
 }
 
 
@@ -987,7 +997,7 @@ sub text {
     #  Are we in an inline perl block ?
     #
     #if ($self->_text_block_tag() eq 'perl') {
-    if (grep { $self->_text_block_tag() eq $_ } qw(perl htmx api json)) {
+    if (grep { $self->_text_block_tag() eq $_ } qw(perl htmx api sse json)) {
 
 
         #  Yes. We have inline perl code, not text. Just add to perl attribute, which

@@ -244,8 +244,9 @@ my %constant_temp;
     #
     WEBDYNE_START_HTML_SHORTCUT_HR => {
     
-        pico    => { style  => 'https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css' },
-        htmx    => { script => 'https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js' }
+        pico    => { style  => 'https://cdn.jsdelivr.net/npm/@picocss/pico@latest/css/pico.min.css' },
+        htmx    => { script => 'https://cdn.jsdelivr.net/npm/htmx.org@latest/dist/htmx.min.js' },
+        alpine	=> { script => 'https://cdn.jsdelivr.net/npm/alpinejs@latest/dist/cdn.min.js#defer' }
         
         #  Commented out for now, left as syntax examples
         #
@@ -254,7 +255,6 @@ my %constant_temp;
         #    style => 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css', 
         #    script => 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js' 
         #},
-        #alpine		=> { script => 'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js#defer' },
         #tailwind	=> { style => 'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4' },
         #alpine_ajax	=> { script => [
         #    'https://cdn.jsdelivr.net/npm/@imacrayon/alpine-ajax@0.12.6/dist/cdn.min.js#defer',
@@ -871,7 +871,7 @@ sub import {
                 debug("picking var: $var_test as test, exists *{${caller}::${var_test}}: %s", defined(*{"${caller}::${var_test}"}));
                 if ($Package{'caller'}{$caller}{$constant_hr}++ && defined(*{"${caller}::${var_test}"})) {
                     debug("skip, already applied $constant_hr to caller: $caller");
-                    next;
+                    #next;
                 }
                 else {
                     debug('continue');

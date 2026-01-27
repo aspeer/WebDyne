@@ -153,6 +153,8 @@ sub err_html {
 
     #  Error can be text or HTML, must be text if in Safe eval mode
     #
+    debug("WEBDYNE_ERROR_TEXT: $WEBDYNE_ERROR_TEXT");
+    #if ($WEBDYNE_ERROR_TEXT || $WEBDYNE_EVAL_SAFE || $self->{'_error_handler_run'}++ || !$cgi_or || UNIVERSAL::can($self, 'debug')) {
     if ($WEBDYNE_ERROR_TEXT || $WEBDYNE_EVAL_SAFE || $self->{'_error_handler_run'}++ || !$cgi_or) {
 
 
@@ -163,7 +165,9 @@ sub err_html {
             $WEBDYNE_ERROR_TEXT, $WEBDYNE_EVAL_SAFE, $self->{'_error_handler_run'}, $cgi_or
         );
         #$r->content_type('text/plain');
+        debug('existing content type: %s', $r->content_type);
         $r->content_type($WEBDYNE_CONTENT_TYPE_TEXT);
+        debug('updated content type: %s', $r->content_type);
         
 
         #  Push error
@@ -186,8 +190,11 @@ sub err_html {
         #  Print error and return
         #
         $r->send_http_header() if !$MP2;
+        $r->custom_response(500, $err_text);
+        $r->status(500);
         $r->print($err_text);
-        return &Apache::OK;
+        #return &Apache::OK;
+        return 500;
 
 
     }

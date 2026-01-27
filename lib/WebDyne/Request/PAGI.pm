@@ -25,7 +25,7 @@ no warnings qw(uninitialized);
 #  External modules
 #
 use File::Spec::Unix;
-use HTTP::Status qw(status_message RC_OK RC_NOT_FOUND RC_FOUND);
+use HTTP::Status qw(status_message HTTP_OK HTTP_NOT_FOUND HTTP_FOUND);
 use URI;
 use Data::Dumper;
 use PAGI::Request;
@@ -44,7 +44,8 @@ use WebDyne::Constant;
 #  Inheritance
 #
 use WebDyne::Request::Fake;
-@ISA=qw(PAGI::Request WebDyne::Request::PSGI);
+#@ISA=qw(PAGI::Request WebDyne::Request::PSGI);
+@ISA=qw(WebDyne::Request::Fake);
 
 
 #  Version information
@@ -67,6 +68,50 @@ my %Dir_config_env=%{$WEBDYNE_PSGI_ENV_SET}, (map { $_=>$ENV{$_} } (
 ));
 
 
+#  Setup pass through methods
+#
+my %method=(
+    req => [qw(
+        method path raw_path query_string scheme host http_version client content_type content_length raw 
+        header header_all headers
+        query_params query_param raw_query_param
+        path_params path_param
+        cookies cookie
+        body_stream body text json form_params form_param raw_form_params raw_form_param
+        uploads upload upload_all
+        is_get is_post_is_put is_patch is_delete is_head is_options is_json is_form is_multipart accepts preferred_type
+        connection is_connection is_disconnected disconnect_reason on_disconnect disconnect_future
+        bearer_token basic_auth
+        stash state
+   )], 
+   res => [qw(
+        status status_try header headers header_try content_type content_type_try cookie delete_cookie stash is_sent has_status has_header has_content_type cors
+        text html json redirect empty send send_raw stream send_file
+   )]
+        
+);
+my %method_req; @method_req{@{$method{'req'}}}=();
+my %method_all=map {$_=>1} grep { exists $method_req{$_} } @{$method{'res'}};
+#die Dumper(\%method_all);
+foreach my $handler (qw(req res)) {
+    foreach my $method (@{$method{$handler}}) {
+        my $method_pagi=$method;
+        if ($method_all{$method}) {
+            my $inout=($handler eq 'req') ? 'in' : 'out';
+            $method_pagi.="_${inout}";
+        }
+        unless (__PACKAGE__->can($method_pagi)) {
+            *{$method_pagi}=sub {
+                return @_ ? shift()->{$handler}->$method(@_) : shift()->{$handler}->$method();
+            }
+        }
+        else {
+            debug("skip $method_pagi");
+        }
+    }
+}
+            
+
 #  All done. Positive return
 #
 1;
@@ -74,18 +119,18 @@ my %Dir_config_env=%{$WEBDYNE_PSGI_ENV_SET}, (map { $_=>$ENV{$_} } (
 
 #==================================================================================================
 
+
 sub new {
 
     my ($class, %r)=@_;
     unless ($r{'filename'}) {
+
         my $fn;
-        my $r=($r{'req'} ||= PAGI::Request->new(@r{qw(scope receive)})) ||
-            return err('unable to get PAGI::Request object');
         if (my $dn=($r{'document_root'} || $ENV{'DOCUMENT_ROOT'} || $Dir_config_env{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT || fastcwd())) {
         
             #  Get from URI and location
             #
-            my $uri=$r->path();
+            my $uri=$r{'req'}->path();
             debug("uri: $uri");
             $fn=File::Spec->catfile($dn, split m{/+}, $uri); #/
             debug("fn: $fn from dn: $dn, uri: $uri");
@@ -94,7 +139,6 @@ sub new {
             
         #  Need to add default psp file ?
         #
-        #unless ($fn=~/\.psp$/) { # fastest
         unless ($fn=~WEBDYNE_PSP_EXT_RE) { # fastest
 
             #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
@@ -148,38 +192,151 @@ sub new {
 
 
 sub path_info {
-
     shift()->path()
-    
 }
 
 
 sub protocol {
-
     shift()->http_version()
-    
 }
 
 
 sub user {
-
-    return '';
-    
+    #  Stub
 }
 
 
 sub content_encoding {
-
-    return '';
-    
+    #  Stub
 }
 
 
-sub uri {
+sub header_only {
+    return (shift()->method eq 'HEAD')
+}
+
+
+sub headers_in {
+    my $r=shift();
+    my $headers_hr=$r->{'req'}->headers();
+    use HTTP::Headers::Fast;
+    return HTTP::Headers::Fast->new($headers_hr->flatten());
+}
+
+sub headers_out {
+    my $r=shift();
+    my $headers_ar=$r->{'res'}->headers();
+    use HTTP::Headers::Fast;
+    return HTTP::Headers::Fast->new(@{$headers_ar});
+}
+
+
+sub content_type {
+
+    my $r=shift();
+    debug("$r content_type: %s", Dumper(\@_));
+    return @_ ? $r->{'res'}->content_type(@_) : $r->{'res'}->content_type();
+
+}
+
+sub header {
+
+    my ($r, $header, @value)=@_;
+    debug("$r header: $header: %s", Dumper(\@value));
+    return @value ? $r->{'res'}->header($header, @value) : $r->{'req'}->header($header);
+
+}
+
+sub res {
+    shift()->{'res'};
+}
+
+sub req {
+    shift()->{'req'};
+}
+
+
+
+__END__
+
+sub headers_out0 {
+    my $r=shift();
+    return $r->{'res'}->headers();
+}
+
+sub send_http_header0 {
+    
+}
+
+sub status0 {
+
+    my $r=shift();
+    debug("$r status: %s", Dumper(\@_));
+    return @_ ? $r->{'res'}->status(@_) : $r->{'res'}->status();
+
+}
+
+#no warnings qw(once);
+#*status=\&res;
+#*content_type=\&res;
+
+sub res0 {
+
+    my $r=shift();
+    my $method=(caller(0))[3];
+    if ($method eq 'res') {
+        return $r->{'res'}
+    }
+    else {
+        return @_ ? $r->{'res'}->$method(@_) : $r->{'res'}->$method();
+    }
+    
+}
+
+sub send0 {
+
+    my $r=shift();
+    debug("$r send: %s", Dumper(\@_));
+    return @_ ? $r->{'res'}->send(@_) : $r->{'res'}->send();
+
+}
+
+
+sub location0 {
+    return shift()->WebDyne::Request::Fake::location(@_);
+}
+
+sub dir_config0 {
+    return shift()->WebDyne::Request::Fake::dir_config(@_);
+}
+
+sub cwd0 {
+    return shift()->WebDyne::Request::Fake::cwd(@_);
+}
+
+sub filename0 {
+    return shift()->{'filename'};
+}
+
+sub content_type0 {
+    return shift()->{'res'}->content_type(@_);
+}
+
+sub send0 {
+    my ($r, $self)=@_;
+    $r->{'res'}->send(@_);
+}
+
+sub send0 {
+    my $r=shift();
+    $r->{'res'}->send(@_);
+}
+
+sub uri0 {
     my $self = shift;
     #return Dumper($self);
 
-    my $base = $self->_uri_base;
+    my $base = $self->_uri_base($self->{'scope'});
 
     # We have to escape back PATH_INFO in case they include stuff like
     # ? or # so that the URI parser won't be tricked. However we should
@@ -205,16 +362,182 @@ sub base {
     URI->new($self->_uri_base)->canonical;
 }
 
-sub _uri_base {
+use Data::Dumper;
+sub _uri_base0 {
     my $self = shift;
-    my $server_ar=$self->server();
+    debug("self: $self, %s", Dumper($self));
+    my $server_ar=$self->{'server'};
     my $scheme=$self->scheme() || 'http';
-    #my $uri="${scheme}://${client_ar}->[0]:${client_ar}->[1]/";
     my $uri=sprintf('%s://%s:%s', $scheme, @{$server_ar});
     return $uri;
 }
 
+sub _uri_base {
+    my ($self, $scope_hr) = @_;
+    debug("self: $self, scope: $scope_hr %s", Dumper($scope_hr));
+    my $server_ar=$scope_hr->{'server'};
+    my $scheme=$scope_hr->{'scheme'} || 'http';
+    debug("server_ar: %s, scheme: $scheme", Dumper($server_ar));
+    my $uri=sprintf('%s://%s:%s', $scheme, @{$server_ar});
+    return $uri;
+}
+
+__END__
+
+use Future::AsyncAwait;
+use Future::IO;
+
+
+
+async sub watch_sse_disconnect {
+    my ($receive) = @_;
+
+    while (1) {
+        my $event = await $receive->();
+        return $event if $event->{type} eq 'sse.disconnect';
+    }
+}
+
+
+
+sub  send1 {
+
+    my ($self)=@_;
+
+    #my ($scope, $receive, $send) = @_;
+    my $send=$self->{'send'};
+    my $receive=$self->{'receive'};
+    debug("$self send: $send");
+
+
+    $send->({
+        type    => 'sse.start',
+        status  => 200,
+        headers => [ [ 'content-type', 'text/event-stream' ] ],
+    });
     
+    #my $disconnect = Future->wait_any(watch_sse_disconnect($receive));
+    while (1) {
+
+        #last if $disconnect->is_ready;
+        #await Future::IO->sleep(2);
+        sleep (2);
+        debug('send');
+        $send->({ type => 'sse.send', data => scalar localtime  });
+        #await $send->({ type => 'sse.send', data => Dumper($scope)  });
+    }
+    debug("send end");
+
+    #$disconnect->cancel if $disconnect->can('cancel') && !$disconnect->is_ready;
+
+}
+
+
+async sub  send2 {
+
+    my ($self)=@_;
+
+    #my ($scope, $receive, $send) = @_;
+    my $send=$self->{'send'};
+    my $receive=$self->{'receive'};
+    debug("$self send: $send");
+
+
+    await $send->({
+        type    => 'sse.start',
+        status  => 200,
+        headers => [ [ 'content-type', 'text/event-stream' ] ],
+    });
+    
+    #my $disconnect = Future->wait_any(watch_sse_disconnect($receive));
+    while (1) {
+
+        #last if $disconnect->is_ready;
+        await Future::IO->sleep(2);
+        await $send->({ type => 'sse.send', data => scalar localtime  });
+        #await $send->({ type => 'sse.send', data => Dumper($scope)  });
+    }
+    #debug("send end");
+
+    #$disconnect->cancel if $disconnect->can('cancel') && !$disconnect->is_ready;
+
+}
+
+async sub send0 {
+
+    my ($self)=@_;
+
+    #my ($scope, $receive, $send) = @_;
+    my $send=$self->{'send'};
+    my $receive=$self->{'receive'};
+    #debug("$self send: $send");
+
+
+    await $send->({
+        type    => 'sse.start',
+        status  => 200,
+        headers => [ [ 'content-type', 'text/event-stream' ] ],
+    });
+    
+    my $disconnect = Future->wait_any(watch_sse_disconnect($receive));
+    while (1) {
+
+        last if $disconnect->is_ready;
+        await Future::IO->sleep(2);
+        await $send->({ type => 'sse.send', data => scalar localtime  });
+        #await $send->({ type => 'sse.send', data => Dumper($scope)  });
+    }
+    #debug("send end");
+
+    $disconnect->cancel if $disconnect->can('cancel') && !$disconnect->is_ready;
+
+}
+
+
+#  Doesn't crash, doesn't work, closes connection
+sub send4 {
+
+
+    #  Send SSE response
+    #
+    my ($self, $event_hr, $cr)=@_;
+    debug("$self send: %s", Dumper($event_hr));
+    my $send=$self->{'send'};
+    
+    #await $send->({
+    $send->({
+        type    => 'sse.start',
+        status  => 200,
+        headers => [ [ 'content-type', 'text/event-stream' ] ],
+    });
+    #die "Bang !";
+
+    #  Turn event hash into text/event-stream format
+    #
+    my @data=map { sprintf('%s: %s', ($_ =>$event_hr->{$_})) } keys %{$event_hr};
+    my $data=join("\n", @data, undef);
+    debug("sse return: $data");
+    
+    
+
+    #my $disconnect = Future->wait_any(watch_sse_disconnect($receive));
+    #while (1) {
+
+    #last if $disconnect->is_ready;
+        #await Future::IO->sleep(2);
+        $send->({ type => 'sse.send', data => scalar localtime  });
+    #await $send->({ type => 'sse.send', data => Dumper($event_hr)  });
+    #$send->({ type => 'sse.send', data => 'Hello'  });
+    #}
+
+}
+
+sub DESTROY {
+
+    debug(shift().' destroy');
+    
+} 
+1;
 
 __END__
 

@@ -27,7 +27,7 @@ no warnings qw(uninitialized);
 #
 use Cwd qw(fastcwd);
 use Data::Dumper;
-use HTTP::Status (RC_OK);
+use HTTP::Status (HTTP_OK);
 use WebDyne::Util;
 use WebDyne::Constant;
 
@@ -476,13 +476,15 @@ sub run {
 sub status {
 
     my $r=shift();
-    @_ ? $r->{'status'}=shift() : $r->{'status'} || RC_OK;
+    @_ ? $r->{'status'}=shift() : $r->{'status'} || HTTP_OK;
 
 }
 
 
 sub uri {
 
+
+    #  Probably should subtract root_dn/DOCUMENT_ROOT
     shift()->{'filename'}
 
 }
@@ -569,14 +571,26 @@ sub handler {
 }
 
 
-sub custom_response {
+sub custom_response0 {
 
-    my ($r, $status)=(shift, shift);
+    my ($r, $status, @param)=@_;
+    debug("r: $r, status: $status, %s", \@param);
     $r->status($status);
     $r->send_http_header();
-    $r->print(@_);
+    $r->print(@param);
 
 }
+
+
+sub custom_response {
+
+    my ($r, $status)=(shift(), shift());
+    while ($r->prev) {$r=$r->prev}
+    debug("in custom response, status $status");
+    @_ ? $r->{'custom_response'}{$status}=shift() : $r->{'custom_response'}{$status};
+
+}
+
 
 
 sub args {

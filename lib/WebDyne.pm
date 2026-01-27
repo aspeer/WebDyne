@@ -87,6 +87,7 @@ require WebDyne::Err;
     'dump',
     'json',
     'api',
+    'sse',
     'include',
     'htmx'
 
@@ -197,6 +198,14 @@ sub html_sr {
 #
 sub html { return ${&html_sr(@_)} };
 
+sub new {
+
+    my $class=shift();
+    my %self;
+    Dumper("new $class, %s", Dumper(\@_));
+    return bless (\%self, $class);
+    
+}
 
 #  Main handler for mod_perl and PSGI
 #
@@ -206,7 +215,7 @@ sub handler : method {    # no subsort
     #  Get self ref/class, request ref
     #
     my ($self, $r, $param_hr)=@_;
-    debug("handler called with self $self, r $r, MP2 $MP2");
+    debug("handler called with self $self, r $r, MP2 $MP2, param: %s", Dumper($param_hr));
 
 
     #  Start timer so we can optionally keep stats on how long handler takes to run
@@ -237,7 +246,10 @@ sub handler : method {    # no subsort
 
     #  Setup error handlers
     #
-    local $SIG{'__DIE__'}=sub {
+    local $SIG{'__DIE__'}=\&handler_die;
+    
+    
+    my $die_cr=sub {
         debug('in __DIE__ sig handler, caller %s', join(',', (caller(0))[0..3]));
         
         #  Go back through call stack looking for eval errors
@@ -274,7 +286,9 @@ sub handler : method {    # no subsort
         #  sophisticated and look at traceback for Autoload::AUTOLOAD but another day
         return err(@_) unless $@;
     };
-    local $SIG{'__WARN__'}=sub {
+    local $SIG{'__WARN__'}=\&handler_warn;
+    
+    my $warn_cr=sub {
         debug('in __WARN__ sig handler, caller %s', join(',', (caller(0))[0..3]));
         return err(@_)
         }
@@ -284,8 +298,7 @@ sub handler : method {    # no subsort
     #  Debug
     #
     debug(
-        "in WebDyne::handler. class $class, self $self, r $r (%s), param_hr %s",
-        Dumper($r, $param_hr));
+        "in WebDyne::handler. class $class, self $self, r $r (%s), param_hr %s", Dumper($r, $param_hr));
 
 
     #  Skip all processing if header request only
@@ -564,8 +577,8 @@ sub handler : method {    # no subsort
     #
     my ($meta_hr, $data_ar)=@{$cache_inode_hr}{qw(meta data)};
     debug('meta_hr %s, ', Dumper($meta_hr));
-
-
+    
+    
     #  Custom handler ?
     #
     if (my $handler_ar=$meta_hr->{'handler'} || $r->dir_config('WebDyneHandler')) {
@@ -596,6 +609,34 @@ sub handler : method {    # no subsort
             $self->{'_meta_hr'}=$meta_hr;
             return &{"${handler}::handler"}($self, $r, \%handler_param_hr);
         }
+    }
+
+
+    #  SSE ?
+    #
+    use Future::IO;
+    use Future::AsyncAwait;
+
+    if ($r->{'scope'} && ($r->{'scope'}->{'type'} eq 'sse')) {
+        debug('sse request');
+        my $eval_cr=$Package{'_eval_cr'}{'!'};
+        #$eval_cr->($self, undef, $srce_inode, 'sse', 0) ||
+        #$eval_cr->($self, undef, $srce_inode, (sub { 'sse' })->($self), 0) ||
+        #return async sub {
+        ##    my $future=$eval_cr->($self, undef, $srce_inode, '&sse_go' , 0) ||
+        #        $self->err_html(
+        #        errsubst(
+        #            'error in sse code: %s', errstr() || $@ || 'no inode returned'
+        #        ));
+        #    #};
+        #    return await $r->custom_response(302, $future);
+        #    #$future->retain;
+        #};
+        #my $sse_cr=async sub { $eval_cr->($self, undef, $srce_inode, '&sse_go' , 0) };
+        my $sse_cr=sub { $eval_cr->($self, undef, $srce_inode, '&sse_go' , 0) };
+        #return $sse_cr;
+        return $r->custom_response(302, $sse_cr);
+        
     }
 
 
@@ -689,8 +730,8 @@ sub handler : method {    # no subsort
         debug('not running cache code');
         
     }
-
-
+    
+    
     #  Is it plain HTML which can be/is pre-rendered and stored on disk ? Note to self, leave here - should
     #  run after any cache code is run, as that may change inode.
     #
@@ -740,7 +781,7 @@ sub handler : method {    # no subsort
                 $r->filename($fn);
                 $r->handler('default-handler');
                 $r->content_type(WEBDYNE_CONTENT_TYPE_HTML);
-                return &Apache::DECLINED;
+                return $MP2 ? &Apache::DECLINED : $r->status(HTTP_NOT_FOUND);;
             }
         }
         elsif ($cache_pn) {
@@ -891,6 +932,7 @@ sub handler : method {    # no subsort
         %{$WEBDYNE_HTTP_HEADER}
 
     );
+    debug('header_out_hr: %s', Dumper($header_out_hr));
     foreach (keys %header_out) {$header_out_hr->{$_}=$header_out{$_}}
 
 
@@ -982,6 +1024,59 @@ sub handler : method {    # no subsort
 
 }
 
+
+sub handler_die {
+
+    #  Die signal handler
+    #
+    debug('in __DIE__ sig handler: %s, caller %s', $_[0], join(',', (caller(0))[0..3]));
+    
+    #  Go back through call stack looking for eval errors
+    #
+    my $i=0;
+    my @eval_nest;
+    my $eval_nest;
+    while (my @caller=caller($i++)) {
+        if ($caller[3] eq '(eval)') {
+            push @eval_nest, \@caller;
+            $eval_nest++;
+        }
+    }
+    debug("eval_nest: $eval_nest, eval_nest_ar: %s", Dumper(\@eval_nest)); 
+    
+    
+    #  Don't error out if not a WebDyne error (i.e. if eval{} block was in module called from
+    #  user code
+    #
+    #if ($eval_nest[0][0]!~/^WebDyne::/) {
+    if ($eval_nest[0][0] !~ /^WebDyne(?:::|$)/) {
+    
+        #  Not us, clear eval stack
+        #
+        debug("eval_nest: $eval_nest[0][0] did not match WebDyne module, clearning eval error");
+        eval {};
+        return;
+        
+    }
+            
+
+    #  Updated to *NOT* throw error if in eval block (i.e. if $@ is set). Stops error handler being called
+    #  if non WebDyne module has eval code which triggers non WebDyne AUTOLOAD block. Might need to be more
+    #  sophisticated and look at traceback for Autoload::AUTOLOAD but another day
+    return err(@_) unless $@;
+
+}
+
+
+sub handler_warn {
+
+    #  Warn signal handler
+    #
+    debug('in __WARN__ sig handler, caller %s', join(',', (caller(0))[0..3]));
+    return err(@_)
+
+}
+    
 
 sub init_class {
 
@@ -1199,6 +1294,11 @@ sub init_class {
             undef @eval;
 
         }
+        
+        if (ref($eval[0])=~/Future$/) {
+            debug("return IO::Async::Future $eval[0]");
+            return $eval[0];
+        }
 
 
         #  Quick sanity check on return
@@ -1374,6 +1474,12 @@ sub init_class {
         debug("eval code start $eval_text");
         my $html_ar=$eval_perl_cr->(@_) || return err();
         debug("eval code finish %s, %s", Dumper($html_ar, $eval_param_hr));
+        
+        
+        if (ref($html_ar)=~/Future/) {
+            debug("return future: $html_ar");
+            return $html_ar;
+        }
 
 
         #  We only accept first item of any array ref returned (which might be an array ref itself)
@@ -2663,6 +2769,105 @@ sub htmx {
 }
 
 
+use Future::AsyncAwait;
+use Future::IO;
+
+async sub sse0 {
+
+
+    #  Called when we encounter a <sse> tag
+    #
+    my ($self, $data_ar, $attr_hr, @param)=@_;
+    debug("$self rendering htmx tag, data_ar: $data_ar, attr_hr: %s", Dumper($attr_hr));
+    
+    
+    #  Get the request headers to look for a 'HX-Request' flag
+    #
+    my $r=$self->r() ||
+        return err('unable to get request handler !');
+    my $sse_request=$r->headers_in->{'accept'};
+    debug("sse_request header: %s", Dumper($r->headers_in));
+    
+    
+    #  If not SSE request don't display unless forced
+    #
+    unless(($sse_request eq 'text/event-stream') || $attr_hr->{'force'} || WEBDYNE_HTMX_FORCE) {
+
+        #  Not SSE request, bail
+        #
+        debug('not sse request and no force attribute or flag, bailing');
+        return \undef;
+        
+    }
+    else {
+        debug('valid sse request, continuing');
+    }
+    
+    
+    #  Check if we want to fire on match
+    #
+    if (exists ($attr_hr->{'display'})) {
+        unless ($attr_hr->{'display'}) {
+            #  Defined but no match. Bail
+            #
+            debug('display attribute present but no match, bailing');
+            return \undef;
+        }
+    }
+
+
+    my $send_cr=sub {
+    
+        my $event_hr=shift();
+        debug('event_hr: %s', Dumper($event_hr));
+
+        #  Turn event hash into text/event-stream format
+        #
+        my @html=map { sprintf('%s: %s', ($_ =>$event_hr->{$_})) } keys %{$event_hr};
+        my $html=join("\n", @html, undef);
+        debug("sse return: $html");
+        
+        
+        my $send=$r->{'send'};
+        #await $send->({
+        #    type    => 'sse.start',
+        #    status  => 200,
+        #    headers => [ [ 'content-type', 'text/event-stream' ] ],
+        #});
+        #die "Bang !";
+    
+        #my $disconnect = Future->wait_any(watch_sse_disconnect($receive));
+        #while (1) {
+
+        #last if $disconnect->is_ready;
+        #await Future::IO->sleep(2);
+        #await $send->({ type => 'sse.send', data => scalar localtime  });
+        #await $send->({ type => 'sse.send', data => Dumper($event_hr)  });
+        
+    };
+
+
+    #  Make the callback handler available
+    #
+    #my $handler=$attr_hr->{'handler'};
+    #my %attr=(param => $send_cr, $handler && (handler => $handler));
+
+
+    #  Return whatever HTML we get back
+    #
+    await $self->perl($data_ar, $attr_hr) ||
+        return err();
+    #debug("event_hr: $event_hr, %s", Dumper($event_hr));
+    
+    
+    #  Done
+    #
+    goto RENDER_COMPLETE;
+    
+    
+}
+
+
 sub api {
 
 
@@ -2944,7 +3149,7 @@ sub perl {
 
                 # If not JSON or HASH ref should be scalar. If not error
                 #
-                return err("error in perl method '$method'- code did not return a SCALAR ref value.");
+                #return err("error in perl method '$method'- code did not return a SCALAR ref value.");
             }
 
         }
@@ -3112,7 +3317,7 @@ sub eval_cr {
         "#line $_[2] WebDyne::$_[0]",
         "sub{${$_[1]}}"
     );
-    #debug("eval_cr: $eval");
+    debug("eval_cr: $eval");
     return eval($eval);
 
 
