@@ -246,54 +246,9 @@ sub handler : method {    # no subsort
 
     #  Setup error handlers
     #
-    local $SIG{'__DIE__'}=\&handler_die;
-    
-    
-    my $die_cr=sub {
-        debug('in __DIE__ sig handler, caller %s', join(',', (caller(0))[0..3]));
-        
-        #  Go back through call stack looking for eval errors
-        #
-        my $i=0;
-        my @eval_nest;
-        my $eval_nest;
-        while (my @caller=caller($i++)) {
-            if ($caller[3] eq '(eval)') {
-                push @eval_nest, \@caller;
-                $eval_nest++;
-            }
-        }
-        debug("eval_nest: $eval_nest, eval_nest_ar: %s", Dumper(\@eval_nest)); 
-        
-        
-        #  Don't error out if not a WebDyne error (i.e. if eval{} block was in module called from
-        #  user code
-        #
-        #if ($eval_nest[0][0]!~/^WebDyne::/) {
-        if ($eval_nest[0][0] !~ /^WebDyne(?:::|$)/) {
-        
-            #  Not us, clear eval stack
-            #
-            debug("eval_nest: $eval_nest[0][0] did not match WebDyne module, clearning eval error");
-            eval {};
-            return;
-            
-        }
-                
-
-        #  Updated to *NOT* throw error if in eval block (i.e. if $@ is set). Stops error handler being called
-        #  if non WebDyne module has eval code which triggers non WebDyne AUTOLOAD block. Might need to be more
-        #  sophisticated and look at traceback for Autoload::AUTOLOAD but another day
-        return err(@_) unless $@;
-    };
+    local $SIG{'__DIE__'} =\&handler_die;
     local $SIG{'__WARN__'}=\&handler_warn;
     
-    my $warn_cr=sub {
-        debug('in __WARN__ sig handler, caller %s', join(',', (caller(0))[0..3]));
-        return err(@_)
-        }
-        if WEBDYNE_WARNINGS_FATAL;
-
 
     #  Debug
     #
@@ -614,29 +569,46 @@ sub handler : method {    # no subsort
 
     #  SSE ?
     #
-    use Future::IO;
+    use PAGI::SSE;
     use Future::AsyncAwait;
+    use Future::IO;
 
     if ($r->{'scope'} && ($r->{'scope'}->{'type'} eq 'sse')) {
-        debug('sse request');
-        my $eval_cr=$Package{'_eval_cr'}{'!'};
-        #$eval_cr->($self, undef, $srce_inode, 'sse', 0) ||
-        #$eval_cr->($self, undef, $srce_inode, (sub { 'sse' })->($self), 0) ||
-        #return async sub {
-        ##    my $future=$eval_cr->($self, undef, $srce_inode, '&sse_go' , 0) ||
-        #        $self->err_html(
-        #        errsubst(
-        #            'error in sse code: %s', errstr() || $@ || 'no inode returned'
-        #        ));
-        #    #};
-        #    return await $r->custom_response(302, $future);
-        #    #$future->retain;
-        #};
-        #my $sse_cr=async sub { $eval_cr->($self, undef, $srce_inode, '&sse_go' , 0) };
-        my $sse_cr=sub { $eval_cr->($self, undef, $srce_inode, '&sse_go' , 0) };
-        #return $sse_cr;
-        return $r->custom_response(302, $sse_cr);
-        
+        debug('sse scope');
+        if (0) {
+            debug('sse_cr return');
+            my $sse_cr=async sub {   
+                my ($scope, $receive, $send)=@{$r}{qw(scope receive send)};
+                my $sse_or=PAGI::SSE->new($scope, $receive, $send);
+                        my $self=shift();
+                debug("in time_sse sse, self: $self, %s", Dumper(\@_));
+                #my $sse_or=$self->r->{'sse'};
+                debug("in time_sse sse: $sse_or %s", Dumper($sse_or));
+                await $sse_or->keepalive(30);  
+
+                # Send metrics every 2 seconds
+                await $sse_or->every(2, async sub {
+                    await $sse_or->send_event(
+                        data  => scalar localtime()
+                    );
+                    #await $sse_or->run;
+                });
+            };
+            $r->custom_response(HTTP_CONTINUE, $sse_cr);
+            return HTTP_CONTINUE
+        }
+
+    
+        if (1) {
+            my $sse;
+            debug("sse request: $sse");
+            $sse=~s/^&//;
+            my $eval_cr=$Package{'_eval_cr'}{'!'};
+            #my $sse_cr=sub { $eval_cr->($self, undef, $srce_inode, "&${sse}" , 0) };
+            my $sse_cr=sub { $eval_cr->($self, undef, $srce_inode, '&sse' , 0) };
+            $r->custom_response(HTTP_CONTINUE, $sse_cr);
+            return HTTP_CONTINUE
+        }
     }
 
 

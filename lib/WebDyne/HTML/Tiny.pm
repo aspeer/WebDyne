@@ -341,6 +341,8 @@ sub _start_html {
         h5
         h6
         hr
+        sse
+        ws
     ), keys %{$WEBDYNE_START_HTML_SHORTCUT_HR});
     debug('start_html %s', Dumper(\%attr_page));
 
@@ -353,7 +355,7 @@ sub _start_html {
     #  Static, cache ? If so mark as such in HTML::Tiny object to be 
     #  reviewed at end of parse by Treebuilder. Not ideal, good enough
     #
-    foreach my $attr (qw(static cache handler)) {
+    foreach my $attr (qw(static cache handler sse ws)) {
         if (my $value=$attr_page{$attr}) {
             debug("found attr: $attr, setting to value: $value");
             $self->{"_${attr}"}=$value;
