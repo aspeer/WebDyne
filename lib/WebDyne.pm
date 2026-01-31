@@ -87,7 +87,6 @@ require WebDyne::Err;
     'dump',
     'json',
     'api',
-    'sse',
     'include',
     'htmx'
 
@@ -198,14 +197,6 @@ sub html_sr {
 #
 sub html { return ${&html_sr(@_)} };
 
-sub new {
-
-    my $class=shift();
-    my %self;
-    Dumper("new $class, %s", Dumper(\@_));
-    return bless (\%self, $class);
-    
-}
 
 #  Main handler for mod_perl and PSGI
 #
@@ -569,46 +560,10 @@ sub handler : method {    # no subsort
 
     #  SSE ?
     #
-    use PAGI::SSE;
-    use Future::AsyncAwait;
-    use Future::IO;
-
-    if ($r->{'scope'} && ($r->{'scope'}->{'type'} eq 'sse')) {
-        debug('sse scope');
-        if (0) {
-            debug('sse_cr return');
-            my $sse_cr=async sub {   
-                my ($scope, $receive, $send)=@{$r}{qw(scope receive send)};
-                my $sse_or=PAGI::SSE->new($scope, $receive, $send);
-                        my $self=shift();
-                debug("in time_sse sse, self: $self, %s", Dumper(\@_));
-                #my $sse_or=$self->r->{'sse'};
-                debug("in time_sse sse: $sse_or %s", Dumper($sse_or));
-                await $sse_or->keepalive(30);  
-
-                # Send metrics every 2 seconds
-                await $sse_or->every(2, async sub {
-                    await $sse_or->send_event(
-                        data  => scalar localtime()
-                    );
-                    #await $sse_or->run;
-                });
-            };
-            $r->custom_response(HTTP_CONTINUE, $sse_cr);
-            return HTTP_CONTINUE
-        }
-
-    
-        if (1) {
-            my $sse;
-            debug("sse request: $sse");
-            $sse=~s/^&//;
-            my $eval_cr=$Package{'_eval_cr'}{'!'};
-            #my $sse_cr=sub { $eval_cr->($self, undef, $srce_inode, "&${sse}" , 0) };
-            my $sse_cr=sub { $eval_cr->($self, undef, $srce_inode, '&sse' , 0) };
-            $r->custom_response(HTTP_CONTINUE, $sse_cr);
-            return HTTP_CONTINUE
-        }
+    if (WEBDYNE_PAGI && ($r->{'scope'}->{'type'} eq 'sse') && (my $sse=($self->{'_sse'} || $meta_hr->{'sse'}))) {
+        my $sse_cr=&eval_cr($srce_inode, \"&${sse}");
+        $r->custom_response(HTTP_CONTINUE, sub { $sse_cr->($self) });
+        return HTTP_CONTINUE
     }
 
 
@@ -1240,7 +1195,7 @@ sub init_class {
         };
         if (!@eval || $@ || !$eval[0]) {
 
-            #  An error occurred - handle it and return.
+            #  An error occurred - handle it and return
             #
             if (my $err=(errstr() || $@)) {
 
@@ -1267,13 +1222,8 @@ sub init_class {
 
         }
         
-        if (ref($eval[0])=~/Future$/) {
-            debug("return IO::Async::Future $eval[0]");
-            return $eval[0];
-        }
 
-
-        #  Quick sanity check on return
+        #  Quick sanity check on return.
         #
         if (grep {ref($_) && (ref($_) !~ /(?:SCALAR|ARRAY|HASH|JSON)/)} @eval) {
 
@@ -1448,11 +1398,6 @@ sub init_class {
         debug("eval code finish %s, %s", Dumper($html_ar, $eval_param_hr));
         
         
-        if (ref($html_ar)=~/Future/) {
-            debug("return future: $html_ar");
-            return $html_ar;
-        }
-
 
         #  We only accept first item of any array ref returned (which might be an array ref itself)
         #
@@ -1518,6 +1463,7 @@ sub init_class {
         '@' => $eval_array_cr,
         '%' => $eval_hash_cr,
         '!' => $eval_code_cr,
+        '#' => $eval_perl_cr,
         '+' => sub {return \($_[0]->CGI()->param($_[3]))},
         '*' => sub {return \$ENV{$_[3]}},
         '^' => sub {
@@ -2741,105 +2687,6 @@ sub htmx {
 }
 
 
-use Future::AsyncAwait;
-use Future::IO;
-
-async sub sse0 {
-
-
-    #  Called when we encounter a <sse> tag
-    #
-    my ($self, $data_ar, $attr_hr, @param)=@_;
-    debug("$self rendering htmx tag, data_ar: $data_ar, attr_hr: %s", Dumper($attr_hr));
-    
-    
-    #  Get the request headers to look for a 'HX-Request' flag
-    #
-    my $r=$self->r() ||
-        return err('unable to get request handler !');
-    my $sse_request=$r->headers_in->{'accept'};
-    debug("sse_request header: %s", Dumper($r->headers_in));
-    
-    
-    #  If not SSE request don't display unless forced
-    #
-    unless(($sse_request eq 'text/event-stream') || $attr_hr->{'force'} || WEBDYNE_HTMX_FORCE) {
-
-        #  Not SSE request, bail
-        #
-        debug('not sse request and no force attribute or flag, bailing');
-        return \undef;
-        
-    }
-    else {
-        debug('valid sse request, continuing');
-    }
-    
-    
-    #  Check if we want to fire on match
-    #
-    if (exists ($attr_hr->{'display'})) {
-        unless ($attr_hr->{'display'}) {
-            #  Defined but no match. Bail
-            #
-            debug('display attribute present but no match, bailing');
-            return \undef;
-        }
-    }
-
-
-    my $send_cr=sub {
-    
-        my $event_hr=shift();
-        debug('event_hr: %s', Dumper($event_hr));
-
-        #  Turn event hash into text/event-stream format
-        #
-        my @html=map { sprintf('%s: %s', ($_ =>$event_hr->{$_})) } keys %{$event_hr};
-        my $html=join("\n", @html, undef);
-        debug("sse return: $html");
-        
-        
-        my $send=$r->{'send'};
-        #await $send->({
-        #    type    => 'sse.start',
-        #    status  => 200,
-        #    headers => [ [ 'content-type', 'text/event-stream' ] ],
-        #});
-        #die "Bang !";
-    
-        #my $disconnect = Future->wait_any(watch_sse_disconnect($receive));
-        #while (1) {
-
-        #last if $disconnect->is_ready;
-        #await Future::IO->sleep(2);
-        #await $send->({ type => 'sse.send', data => scalar localtime  });
-        #await $send->({ type => 'sse.send', data => Dumper($event_hr)  });
-        
-    };
-
-
-    #  Make the callback handler available
-    #
-    #my $handler=$attr_hr->{'handler'};
-    #my %attr=(param => $send_cr, $handler && (handler => $handler));
-
-
-    #  Return whatever HTML we get back
-    #
-    await $self->perl($data_ar, $attr_hr) ||
-        return err();
-    #debug("event_hr: $event_hr, %s", Dumper($event_hr));
-    
-    
-    #  Done
-    #
-    goto RENDER_COMPLETE;
-    
-    
-}
-
-
 sub api {
 
 
@@ -3121,7 +2968,7 @@ sub perl {
 
                 # If not JSON or HASH ref should be scalar. If not error
                 #
-                #return err("error in perl method '$method'- code did not return a SCALAR ref value.");
+                return err("error in perl method '$method'- code did not return a SCALAR ref value.");
             }
 
         }
@@ -3289,7 +3136,7 @@ sub eval_cr {
         "#line $_[2] WebDyne::$_[0]",
         "sub{${$_[1]}}"
     );
-    debug("eval_cr: $eval");
+    #debug("eval_cr: $eval");
     return eval($eval);
 
 
@@ -3305,6 +3152,11 @@ sub perl_init_eval {
     my $eval=join(
         $/,
         "package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;",
+        grep {$_} (
+        (WEBDYNE_EVAL_PREPEND && WEBDYNE_EVAL_PREPEND),
+        (WEBDYNE_PAGI && $WebDyne::PAGI::WEBDYNE_PAGI_EVAL_PREPEND),
+        (WEBDYNE_PSGI && $WebDyne::PSGI::WEBDYNE_PSGI_EVAL_PREPEND),
+        ),
         "#line $_[2] WebDyne::$_[0]",
         "${$_[1]}",
         ';1'

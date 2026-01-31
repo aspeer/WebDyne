@@ -87,13 +87,19 @@ my %method=(
    res => [qw(
         status status_try header headers header_try content_type content_type_try cookie delete_cookie stash is_sent has_status has_header has_content_type cors
         text html json redirect empty send send_raw stream send_file
-   )]
+   )],
+   sse => [
+   ],
+   ws  => [
+   ]
         
 );
 my %method_req; @method_req{@{$method{'req'}}}=();
 my %method_all=map {$_=>1} grep { exists $method_req{$_} } @{$method{'res'}};
-#die Dumper(\%method_all);
-foreach my $handler (qw(req res)) {
+foreach my $handler (qw(req res sse ws)) {
+    *{$handler}=sub {
+        return @_ ? $_[0]->{$handler}=$_[1] : $_[0]->{$handler};
+    };
     foreach my $method (@{$method{$handler}}) {
         my $method_pagi=$method;
         if ($method_all{$method}) {
@@ -247,14 +253,21 @@ sub header {
 
 }
 
-sub res {
+sub res0 {
     shift()->{'res'};
 }
 
-sub req {
+sub req0 {
     shift()->{'req'};
 }
 
+sub sse0 {
+    shift()->{'sse'};
+}
+
+sub ws0 {
+    shift()->{'ws'};
+}
 
 
 __END__

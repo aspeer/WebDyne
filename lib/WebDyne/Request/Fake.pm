@@ -27,7 +27,7 @@ no warnings qw(uninitialized);
 #
 use Cwd qw(fastcwd);
 use Data::Dumper;
-use HTTP::Status (HTTP_OK);
+use HTTP::Status qw(status_message HTTP_OK HTTP_NOT_FOUND HTTP_FOUND);
 use WebDyne::Util;
 use WebDyne::Constant;
 
@@ -622,6 +622,30 @@ sub cwd {
         }
         
     }
+
+}
+
+
+sub err_html {
+
+    #  Very basic HTML error messages for file not found and similar
+    #
+    my ($r, $status, $message)=@_;
+    require WebDyne::HTML::Tiny;
+    my $html_or=WebDyne::HTML::Tiny->new( mode=>$WEBDYNE_HTML_TINY_MODE, r=>$r ) ||
+        return err();
+    my $error;
+    my @message=(
+        $html_or->start_html($error=sprintf("%s Error $status", __PACKAGE__)),
+        $html_or->h1($error),
+        $html_or->hr(),
+        $html_or->em(status_message($status) || 'Unknown Error'), $html_or->br(), $html_or->br(),
+        $html_or->pre(
+            sprintf("The requested URI '%s' generated error:\n\n$message", $r->uri)
+        ),
+        $html_or->end_html()
+    );
+    return join('', @message);
 
 }
 

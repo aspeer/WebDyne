@@ -125,7 +125,6 @@ map {$CGI_TAG_SPECIAL{$_}++} qw(
     api
     json
     htmx
-    sse
     table
 );
 
@@ -665,15 +664,6 @@ sub json {
 }
 
 
-sub sse {
-
-    #  Same as JSON
-    #
-    return &json(@_);
-    
-}
-
-
 sub style {
 
     my ($self, $method)=(shift, shift);
@@ -997,7 +987,7 @@ sub text {
     #  Are we in an inline perl block ?
     #
     #if ($self->_text_block_tag() eq 'perl') {
-    if (grep { $self->_text_block_tag() eq $_ } qw(perl htmx api sse json)) {
+    if (grep { $self->_text_block_tag() eq $_ } qw(perl htmx api json)) {
 
 
         #  Yes. We have inline perl code, not text. Just add to perl attribute, which

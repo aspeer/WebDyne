@@ -115,6 +115,11 @@ my %constant_temp;
     #  this behaviour, or altered to suit local taste
     #
     WEBDYNE_EVAL_USE_STRICT => 'use strict qw(vars);',
+    
+    
+    #  Anything to prepend after use strict
+    #
+    WEBDYNE_EVAL_PREPEND => '',
 
 
     #  Global opcode set, only these opcodes can be used if using a
@@ -553,6 +558,16 @@ my %constant_temp;
     #  Add some linefeeds via "\n" to output
     #
     WEBDYNE_HTML_NEWLINE => 0,
+    
+    
+    #  PAGI loaded ?
+    #
+    WEBDYNE_PAGI => $INC{'WebDyne/PAGI.pm'} ? 1 : 0,
+    
+
+    #  PSGI loaded ?
+    #
+    WEBDYNE_PSGI => $INC{'WebDyne/PSGI.pm'} ? 1 : 0,
 
 
     #  Mod_perl level. Do not change unless you know what you are
