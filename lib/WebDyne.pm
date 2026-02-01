@@ -45,6 +45,7 @@ use HTML::Entities qw(decode_entities encode_entities);
 use CGI::Simple;
 use JSON;
 use Cwd qw(fastcwd);
+use Sub::Util qw(set_subname);
 
 
 #  Inherit from the Compile module, not loaded until needed though.
@@ -206,7 +207,7 @@ sub handler : method {    # no subsort
     #  Get self ref/class, request ref
     #
     my ($self, $r, $param_hr)=@_;
-    debug("handler called with self $self, r $r, MP2 $MP2, param: %s", Dumper($param_hr));
+    debug("handler called with self: $self, r: $r, MP2: $MP2, param: %s", Dumper($param_hr));
 
 
     #  Start timer so we can optionally keep stats on how long handler takes to run
@@ -244,7 +245,7 @@ sub handler : method {    # no subsort
     #  Debug
     #
     debug(
-        "in WebDyne::handler. class $class, self $self, r $r (%s), param_hr %s", Dumper($r, $param_hr));
+        "in WebDyne::handler, class: $class, self: $self, r: $r (%s), param_hr: %s", Dumper($r, $param_hr));
 
 
     #  Skip all processing if header request only
@@ -255,7 +256,7 @@ sub handler : method {    # no subsort
     #  Debug
     #
     debug(
-        "enter handler, r $r, location %s file %s, param %s",
+        "enter handler, r: $r, location: %s, file: %s, param: %s",
         $r->location(), $r->filename(), Dumper($param_hr));
 
 
@@ -277,7 +278,7 @@ sub handler : method {    # no subsort
         # return &Apache::DECLINED;
 
     };
-    debug("srce_pn $srce_pn, srce_mtime (real) $srce_mtime");
+    debug("srce_pn: $srce_pn, srce_mtime (real): $srce_mtime");
 
 
     #  Used to use inode as unique identifier for file in cache, but that
@@ -291,7 +292,7 @@ sub handler : method {    # no subsort
         $self->{'_inode'} ||= md5_hex(ref($self), $r->location, $srce_pn)
             ||
             return $self->err_html("could not get md5 for file $srce_pn, $!"));
-    debug("srce_inode $srce_inode");
+    debug("srce_inode: $srce_inode");
 
 
     #  Var to hold pointer to cached metadata area, so we are not constantly
@@ -318,11 +319,11 @@ sub handler : method {    # no subsort
     #  template (eg menu) mtime. Here so can be subclassed by other handler like
     #  menu systems
     #
-    debug("about to call source_mtime, self $self");
+    debug("about to call source_mtime, self: $self");
     $srce_mtime=${
         $self->source_mtime($srce_mtime) || return $self->err_html()}
         || $srce_mtime;
-    debug("srce_pn $srce_pn, srce_mtime (computed) $srce_mtime");
+    debug("srce_pn: $srce_pn, srce_mtime (computed): $srce_mtime");
 
 
     #  Need to stat cache file mtime in case another process has updated it (ie via self->cache_compile(1)) call,
@@ -333,7 +334,7 @@ sub handler : method {    # no subsort
     #
     my ($cache_pn, $cache_mtime);
     if (WEBDYNE_CACHE_DN) {
-        debug("webdyne_cache_dn $WEBDYNE_CACHE_DN");
+        debug("webdyne_cache_dn: $WEBDYNE_CACHE_DN");
         $cache_pn=File::Spec->catfile(WEBDYNE_CACHE_DN, $srce_inode);
         $cache_mtime=((-f $cache_pn) && (stat(_))[9]);
         debug("webdyne_cache file: $cache_pn, cache_mtime: $cache_mtime");
@@ -351,7 +352,7 @@ sub handler : method {    # no subsort
         #  Debug
         #
         debug(
-            "compile/reload needed _compile %s, cache_inode_hr mtime %s, srce_mtime $srce_mtime, WEBDYNE::RELOAD $WEBDYNE_RELOAD",
+            "compile/reload needed _compile: %s, cache_inode_hr mtime: %s, srce_mtime: $srce_mtime, WEBDYNE::RELOAD: $WEBDYNE_RELOAD",
             $self->{'_compile'}, $cache_inode_hr->{'mtime'});
 
 
@@ -398,7 +399,7 @@ sub handler : method {    # no subsort
 
         #  Debug
         #
-        debug("srce_pn $srce_pn, cache_pn $cache_pn, mtime $cache_mtime");
+        debug("srce_pn: $srce_pn, cache_pn: $cache_pn, mtime: $cache_mtime");
 
 
         my $container_ar;
@@ -407,7 +408,7 @@ sub handler : method {    # no subsort
 
             #  Debug
             #
-            debug("compiling srce: $srce_pn, dest $cache_pn");
+            debug("compiling srce: $srce_pn, dest: $cache_pn");
 
 
             #  Recompile from source
@@ -454,7 +455,7 @@ sub handler : method {    # no subsort
             #  Load from storeable file
             #
             $container_ar=Storable::lock_retrieve($cache_pn) ||
-                return $self->err_html("Storable error when retreiveing cached file '$cache_pn', $!");
+                return $self->err_html("Storable error when retreiveing cached file: '$cache_pn', $!");
 
 
             #  Update mtime flag
@@ -717,10 +718,10 @@ sub handler : method {    # no subsort
             #  after render complete
             #
             debug("storing inode: %s to disk file: ${cache_pn}.html, cache html %s", $self->{'_inode'}, \$data_ar->[0]);
-            my $cr=sub {
+            my $cr=set_subname('cache_disk_writeback_anon', sub {
                 &cache_html(
                     "${cache_pn}.html", ($meta_hr->{'static'} || $self->{'_static'}) ? $html_sr : \$data_ar->[0])
-            };
+            });
             $MP2 ? $r->pool->cleanup_register($cr) : $r->register_cleanup($cr);
         }
         else {
@@ -729,10 +730,10 @@ sub handler : method {    # no subsort
             #  at least still be only compiled once for each version.
             #
             debug('storing to memory cache html %s', \$data_ar->[0]);
-            my $cr=sub {
+            my $cr=set_subname('cache_mem_writeback_anon', sub {
                 $cache_inode_hr->{'data'}=[
                     ($meta_hr->{'static'} || $self->{'_static'}) ? ${$html_sr} : $data_ar->[0]]
-            };
+            });
             $MP2 ? $r->pool->cleanup_register($cr) : $r->register_cleanup($cr);
         }
 
@@ -830,9 +831,12 @@ sub handler : method {    # no subsort
     debug('r status set, %s', $r->status());
     
     
-    #  Tidy ? Run under eval in case module not installed/working, considerd non-fatal
+    #  Tidy ? Run under eval in case module not installed/working, considerd non-fatal. Note
+    #  use of folding contstant and variable - lets it be turned on in wdrender via folding
+    #  constant, then toggled off by options if not wanted
+    # 
     #
-    if (WEBDYNE_HTML_TIDY) { 
+    if (WEBDYNE_HTML_TIDY && $param_hr->{'tidy'}) {
         eval {
             require HTML::Tidy5;
             my $html=HTML::Tidy5->new($WEBDYNE_HTML_TIDY_CONFIG_HR)->clean(${$html_sr});
@@ -904,7 +908,7 @@ sub handler : method {    # no subsort
 
         #  Yes, we need to clean cache after finished
         #
-        my $cr=sub {&cache_clean($Package{'_cache'})};
+        my $cr=set_subname('cache_clean_anon', sub {&cache_clean($Package{'_cache'})});
         $MP2 ? $r->pool->cleanup_register($cr) : $r->register_cleanup($cr);
 
 
@@ -1095,7 +1099,7 @@ sub init_class {
     #  code could probably easily subvert us, as all operations are
     #  allowed, including redefining our subroutines etc).
     #
-    my $eval_perl_cr=sub {
+    my $eval_perl_cr=set_subname('eval_perl_cr_anon', sub {
 
 
         #  Get self ref
@@ -1238,12 +1242,12 @@ sub init_class {
         #
         \@eval;
 
-    };
+    });
 
 
     #  The code ref for the eval statement if using Safe module. NOTE: old and unmaintained.
     #
-    my $eval_safe_cr=sub {
+    my $eval_safe_cr=set_subname('eval_safe_cr_anon', sub {
 
 
         #  Get self ref
@@ -1354,12 +1358,12 @@ sub init_class {
         return ref($html_sr) ? $html_sr : \$html_sr;
 
 
-    };
+    });
 
 
     #  Hash eval routine, works similar to the above, but returns a hash ref
     #
-    my $eval_hash_cr=sub {
+    my $eval_hash_cr=set_subname('eval_hash_cr_anon', sub {
 
 
         #  Run eval and turn into tied hash
@@ -1369,12 +1373,12 @@ sub init_class {
         return \%hr;
 
 
-    };
+    });
 
 
     #  Array eval routine, works similar to the above, but returns an array ref
     #
-    my $eval_array_cr=sub {
+    my $eval_array_cr=set_subname('eval_array_cr_anon', sub {
 
 
         #  Run eval and return default - which is an array ref
@@ -1382,12 +1386,12 @@ sub init_class {
         debug('eval_array_cr, %s', Dumper(\@_));
         return $eval_perl_cr->(@_) || err();
 
-    };
+    });
 
 
     #  Code ref eval routine
     #
-    my $eval_code_cr=sub {
+    my $eval_code_cr=set_subname('eval_code_cr_anon', sub {
 
 
         #  Need to eval some code. Dispatch to perl code ref
@@ -1433,12 +1437,12 @@ sub init_class {
         #
         return ref($html_sr) ? $html_sr : \$html_sr;
 
-    };
+    });
 
 
     #  Scalar (${foo}) routine
     #
-    my $eval_scalar_cr=sub {
+    my $eval_scalar_cr=set_subname('eval_scalar_cr_anon', sub {
 
         my $value=$_[2]->{$_[3]};
         unless ($value) {
@@ -1451,7 +1455,7 @@ sub init_class {
         if (ref($value) && overload::Overloaded($value)) {$value="$value"}
         return ref($value) ? $value : \$value
 
-    };
+    });
 
 
     #  Init anon text and attr evaluation subroutines, store in class space
@@ -3031,7 +3035,7 @@ sub eval_require {
 
     #  Eval cr
     #
-    my $eval_cr=sub {
+    my $eval_cr=set_subname('eval_require_cr_anon', sub {
 
         local $SIG{__DIE__};
         eval {} if $@;    #Clear $@;
@@ -3045,7 +3049,7 @@ sub eval_require {
         }
         return $ret
 
-    };
+    });
 
 
     #  File or module ? Try via syntax, allow force with 'file' attribute
@@ -3180,7 +3184,7 @@ sub perl_init {
     #
     debug("$self init perl code $perl_ar in $inode, %s", Dumper($perl_ar));
     *{"WebDyne::${inode}::err"}=\&err;
-    *{"WebDyne::${inode}::self"}=sub {$self};
+    *{"WebDyne::${inode}::self"}=set_subname('perl_init_inode_self_cr_anon', sub {$self});
     *{"WebDyne::${inode}::AUTOLOAD"}=sub {die("unknown function $AUTOLOAD")};
 
 
@@ -3210,7 +3214,7 @@ sub perl_init {
 
         #  Error handler
         #
-        my $error_cr=sub {
+        my $error_cr=set_subname('error_cr_anon', sub {
 
             #  An error has occurred. Deregister self subroutine call in package
             #
@@ -3231,7 +3235,7 @@ sub perl_init {
             #
             push @{$self->{'_data_ar_err'}}, \@data;
 
-        };
+        });
 
 
         #  Var for eval return value
@@ -3325,7 +3329,7 @@ sub subst {
     #  compile time in front of text with one of theses patterns
     #
     my $index;
-    my $cr=sub {
+    my $cr=set_subname('subst_cr_anon', sub {
 
         #  Used to be this
         #
@@ -3339,7 +3343,7 @@ sub subst {
         #
         return $eval_cr->{$_[0]}($self, $data_ar, $param_data_hr, $_[1], $_[2]) ||
             return err();
-    };
+    });
     $text=~s/([\$!+*^])\{(\1?)(.*?)\2}/${$cr->($1, $3, $index++) || return err()}/ge;
 
 
@@ -3420,13 +3424,13 @@ sub subst_attr {
             #  Substitution needed
             #
             debug("subst_attr path 2: $attr_name, $attr_value");
-            my $cr=sub {
+            my $cr=set_subname('subst_attr_cr_anon', sub {
                 my $sr=$eval_cr->{$_[0]}($self, $data_ar, $param_hr, $_[1], $_[2]) ||
                     return err();
                 (ref($sr) eq 'SCALAR') ||
                     return err("eval of '$_[1]' returned %s ref, should return SCALAR ref", ref($sr));
                 $sr;
-            };
+            });
 
             #$attr_value=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$index++) || return err()}/ge;
             $attr_value=~s/([\$!+*^]){1}{(\1?)(.*?)\2}/${$cr->($1,$3,$attr_name) || return err()}/ge;
@@ -3774,7 +3778,7 @@ sub find_node {
 
     #  Create recursive anon sub
     #
-    my $find_cr=sub {
+    my $find_cr=set_subname('find_node_cr_anon', sub {
 
 
         #  Get params
@@ -3859,7 +3863,7 @@ sub find_node {
 
         }
 
-    };
+    });
 
 
     #  Start it running with our top node
@@ -3895,7 +3899,7 @@ sub delete_node {
 
     #  Create recursive anon sub
     #
-    my $find_cr=sub {
+    my $find_cr=set_subname('delete_node_cr_anon', sub {
 
 
         #  Get params
@@ -3937,7 +3941,7 @@ sub delete_node {
         #
         return \undef;
 
-    };
+    });
 
 
     #  Start

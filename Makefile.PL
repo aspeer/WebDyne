@@ -40,6 +40,8 @@ my %WriteMakefile=(
         'Hash::MultiValue'  => 0,
         'Devel::Confess'    => 0,
         'Time::HiRes'       => 0,
+        'Sub::Util'         => 0,
+        'Term::ANSIColor'   => 0,
         
         #  Plack recommended but not mandatory
         #

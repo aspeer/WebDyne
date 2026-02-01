@@ -35,8 +35,8 @@ use Cwd qw(fastcwd);
 
 #  WebDyne modules
 #
-use WebDyne::Request::PSGI;
 use WebDyne::Request::PSGI::Constant;
+use WebDyne::PAGI::Constant;
 use WebDyne::Util;
 use WebDyne::Constant;
 
@@ -44,7 +44,6 @@ use WebDyne::Constant;
 #  Inheritance
 #
 use WebDyne::Request::Fake;
-#@ISA=qw(PAGI::Request WebDyne::Request::PSGI);
 @ISA=qw(WebDyne::Request::Fake);
 
 
@@ -61,10 +60,10 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #  Save local copy of environment for ref by Dir_config handler. ENV is reset for each request,
 #  so must use a snapshot for simulating r->dir_config
 #
-my %Dir_config_env=%{$WEBDYNE_PSGI_ENV_SET}, (map { $_=>$ENV{$_} } (
+my %Dir_config_env=%{$WEBDYNE_PAGI_ENV_SET}, (map { $_=>$ENV{$_} } (
     qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
-    @{$WEBDYNE_PSGI_ENV_KEEP},
-    grep {/WebDyne/i} keys %ENV
+    @{$WEBDYNE_PAGI_ENV_KEEP},
+    grep {/WEBDYNE/i} keys %ENV
 ));
 
 
@@ -98,7 +97,7 @@ my %method_req; @method_req{@{$method{'req'}}}=();
 my %method_all=map {$_=>1} grep { exists $method_req{$_} } @{$method{'res'}};
 foreach my $handler (qw(req res sse ws)) {
     *{$handler}=sub {
-        return @_ ? $_[0]->{$handler}=$_[1] : $_[0]->{$handler};
+        return shift()->{$handler}
     };
     foreach my $method (@{$method{$handler}}) {
         my $method_pagi=$method;
@@ -108,7 +107,7 @@ foreach my $handler (qw(req res sse ws)) {
         }
         unless (__PACKAGE__->can($method_pagi)) {
             *{$method_pagi}=sub {
-                return @_ ? shift()->{$handler}->$method(@_) : shift()->{$handler}->$method();
+                return $#_ ? shift()->{$handler}->$method(@_) : shift()->{$handler}->$method();
             }
         }
         else {
@@ -124,7 +123,6 @@ foreach my $handler (qw(req res sse ws)) {
 
 
 #==================================================================================================
-
 
 sub new {
 
@@ -151,7 +149,6 @@ sub new {
             #  handle it
             #
             if  ((-d $fn) || !$fn) {
-                
         
                 #  Append default doc to path, which appears at moment to be a directory ?
                 #
@@ -251,22 +248,6 @@ sub header {
     debug("$r header: $header: %s", Dumper(\@value));
     return @value ? $r->{'res'}->header($header, @value) : $r->{'req'}->header($header);
 
-}
-
-sub res0 {
-    shift()->{'res'};
-}
-
-sub req0 {
-    shift()->{'req'};
-}
-
-sub sse0 {
-    shift()->{'sse'};
-}
-
-sub ws0 {
-    shift()->{'ws'};
 }
 
 

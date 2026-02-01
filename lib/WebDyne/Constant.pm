@@ -568,8 +568,8 @@ my %constant_temp;
     #  PSGI loaded ?
     #
     WEBDYNE_PSGI => $INC{'WebDyne/PSGI.pm'} ? 1 : 0,
-
-
+    
+    
     #  Mod_perl level. Do not change unless you know what you are
     #  doing.
     #
@@ -882,7 +882,7 @@ sub import {
             
             #  Don't load hash ref into caller if already done. This probably needs to be reworked ..
             #
-            if (my $var_test= (keys(%{$constant_hr}))[0] ) {
+            if (0 && (my $var_test= (keys(%{$constant_hr}))[0])) {
                 debug("picking var: $var_test as test, exists *{${caller}::${var_test}}: %s", defined(*{"${caller}::${var_test}"}));
                 if ($Package{'caller'}{$caller}{$constant_hr}++ && defined(*{"${caller}::${var_test}"})) {
                     debug("skip, already applied $constant_hr to caller: $caller");
@@ -903,15 +903,16 @@ sub import {
             
                 #  Override ?
                 #
-                if (defined($constant_hr->{$k}) && ($constant_hr ne $class_constant_hr)) {
+                #if (defined($constant_hr->{$k}) && ($constant_hr ne $class_constant_hr)) {
+                if (defined($constant_hr->{$k}) && ($constant_hr->{$k} ne $class_constant_hr->{$k})) {
                 
                     #  Yes
                     #
-                    debug('override constant_hr $k value: %s with file value: %s', $v, $constant_hr->{$k});
+                    debug('override constant_hr: %s value: %s with file value: %s', $k, $v, $constant_hr->{$k});
                     $v=$class_constant_hr->{$k}=$constant_hr->{$k};
 
                 }
-                debug("caller: $caller, class: $class  set:$k value:$v");
+                debug("caller: $caller, class: $class  set: $k=%s", defined($v) ? $v : q[]);
 
 
                 #  Used to do just
@@ -943,14 +944,14 @@ sub import {
                     #  Used to be this                
                     #*{"${caller}::${k}"}=\${"${class_parent}::${k}"};
                 }
-                debug("caller: $caller, set:$k value:$v");
+                #debug("caller: $caller, set:$k value:$v");
                 #next if ref($v); # Not needed, stop Regexp conversion
                 if ($v=~/^\d+$/) {
-                    debug("using sub() ${caller}::${k}=$v");
+                    #debug("using sub() ${caller}::${k}=$v");
                     *{"${caller}::${k}"}=eval("sub () { $v }");
                 }
                 else {
-                    debug("fall through, using sub() ${caller}::${k}=q($v)");
+                    #debug("fall through, using sub() ${caller}::${k}=q($v)");
                     *{"${caller}::${k}"}=eval("sub () { q($v) }");
                 }
                     

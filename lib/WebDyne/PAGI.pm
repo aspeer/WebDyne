@@ -27,6 +27,7 @@ use IO::String;
 use Data::Dumper;
 use Cwd qw(fastcwd);
 use Future::AsyncAwait;
+use Sub::Util qw(set_subname);
 
 
 #  PAGI modules
@@ -140,13 +141,12 @@ sub handler_sse_error {
     
 }
 
-
 sub handler_http {
 
 
     #  Return async sub for handling WebDyne requests
     #
-    return async sub {
+    return set_subname('handler_http_anon', async sub {
 
 
         #  Get request
@@ -177,8 +177,20 @@ sub handler_http {
         
         #  Call handler and evaluate results
         #
+        if (0) {
+        use Devel::Confess;
+        my @stack;
+        my $i=0;
+        while (1) {
+            my @caller=caller($i++);
+            last unless @caller;
+            push @stack, [@caller];
+        }
+        die Dumper(\@stack);
+        }
         my $status=WebDyne->handler($r);
         debug("handler returned status: $status");
+        $r->status($status);
 
 
         #  Can close html file handle now
@@ -215,6 +227,7 @@ sub handler_http {
                     #  Some other error besides 404
                     #
                     debug("returning custom error: $status");
+                    $r->status($status);
                     $html=$r->custom_response($status) || errstr() ||
                         "Error $status with no content - try server error logs ?";
                     $r->content_type($WEBDYNE_CONTENT_TYPE_TEXT);
@@ -254,14 +267,14 @@ sub handler_http {
             return await $r->send($html || err);
        }
         
-    }
+    })
     
 }
 
 
 sub handler_lifespan {
 
-    return async sub {
+    return set_subname('handler_lifespan_anon', async sub {
 
         my ($scope, $receive, $send) = @_;
         while (1) {
@@ -277,7 +290,7 @@ sub handler_lifespan {
                 last;
             }
         }
-    }
+    })
 }
 
 

@@ -11,6 +11,14 @@
 #
 #  <http://dev.perl.org/licenses/>
 #
+BEGIN {
+
+    #  Get in before module load
+    #
+    $ENV{WEBDYNE_HTML_TIDY}=1;
+    $ENV{WEBDYNE_HTML_NEWLINE}=0;
+    
+}
 
 
 #
@@ -38,9 +46,12 @@ use WebDyne::Request::Fake;
 use Getopt::Long;
 use Pod::Usage;
 use IO::File;
+use IO::String;
 use File::Spec;
 use FindBin qw($RealBin $Script);
 use URI::Escape;
+use Term::ANSIColor;
+use File::Basename;
 
 
 #  Error handling and environment
@@ -60,6 +71,7 @@ exit ${&main(\@ARGV) || die errdump()};
 
 #===================================================================================================
 
+
 sub main {
 
 
@@ -76,6 +88,11 @@ sub main {
         error   => 'text',
         header  => 0,
         warn    => 0,
+        tidy    => 0,
+        colour  => 1,
+        lineno  => 0,
+        theme   => 'light',
+        %{do(glob(sprintf('~/.%s.opt', basename(__FILE__))))}
 
     );
 
@@ -97,6 +114,10 @@ sub main {
         'loop',
         'get=s@',
         'delay=i',
+        'theme=s',
+        'tidy!',
+        'colour|color!',
+        'lineno!',
         'man',
         'version'
     ) || pod2usage(2);
@@ -107,16 +128,19 @@ sub main {
         print "WebDyne version: $WebDyne::VERSION ($WebDyne::VERSION_GIT_SHA)\n";
         exit 0
     };
-
-
+    
+    
     #  Is dest file set ? If so open
     #
-    my $dest_fh;
+    my ($html, $html_fh);
     if (my $dest_fn=$opt{'outfile'}) {
-        $dest_fh=IO::File->new($dest_fn, O_CREAT | O_TRUNC | O_WRONLY) ||
+        $html_fh=IO::File->new($dest_fn, O_CREAT | O_TRUNC | O_WRONLY) ||
             return err("unable to open file $dest_fn for output, $!");
-        $opt{'select'}=$dest_fh;
     }
+    else {
+        $html_fh=IO::String->new($html);
+    }
+    $opt{'select'}=$html_fh;
 
 
     #  Get srce file, add to options
@@ -164,7 +188,7 @@ sub main {
                 filename => $srce_fn,
                 %opt
 
-                #select          =>  $dest_fh,
+                #select          =>  $html_fh,
                 #status          =>  $opt{'status'},
 
             ) || return err();
@@ -208,8 +232,24 @@ sub main {
 
             #  Run it and display results, or any error generated
             #
-            defined($handler->handler($r)) || return err();
-            print $/;
+            defined($handler->handler($r, \%opt)) || return err();
+            
+            
+            #  Close file handle
+            #
+            $html_fh->close();
+            
+            
+            #  Send to syntax higlighter
+            #
+            if ($opt{'colour'}) {
+                $html=&html_colour($html, \%opt);
+            }
+            
+            
+            #  Print it
+            #
+            print $html, $/;
 
             
             #  If looking for leak
@@ -246,10 +286,140 @@ sub main {
 }
 
 
+sub html_colour {
+
+
+    #  Tidy html
+    #
+    my ($html, $opt_hr)=@_;
+
+
+    #  Try to load colour module
+    #
+    eval { require Syntax::Highlight::Engine::Kate } ||
+        return err('unable to load Syntax::Highlight::Engine::Kate module - is it installed ?');
+
+    
+    #  Var to hold output
+    #    
+    my $html_colour;
+
+
+    # Parse optional theme argument
+    #
+    my $theme = $opt_hr->{'theme'};
+
+
+    # Theme definitions
+    #
+    my %themes = (
+        dark => {
+            Alert       => [ color('bold red'),       color('reset') ],
+            Error       => [ color('bold red'),       color('reset') ],
+            Warning     => [ color('red'),            color('reset') ],
+
+            Comment     => [ color('bright_black'),   color('reset') ],
+            Documentation => [ color('bright_black'), color('reset') ],
+
+            Keyword     => [ color('bold yellow'),    color('reset') ],
+            ControlFlow => [ color('bold yellow'),    color('reset') ],
+            Operator    => [ color('blue'),           color('reset') ],
+
+            DataType    => [ color('cyan'),           color('reset') ],
+            DecVal      => [ color('cyan'),           color('reset') ],
+            Float       => [ color('cyan'),           color('reset') ],
+            BaseN       => [ color('cyan'),           color('reset') ],
+            Constant    => [ color('cyan'),           color('reset') ],
+
+            String      => [ color('green'),          color('reset') ],
+            Char        => [ color('green'),          color('reset') ],
+            SpecialString => [ color('green'),        color('reset') ],
+
+            Function    => [ color('magenta'),        color('reset') ],
+            Variable    => [ color('white'),          color('reset') ],
+
+            Others      => [ color('blue'),           color('reset') ],
+            Normal      => [ '',                      '' ],
+
+            LineNum     => color('bright_black'),
+        },
+
+        light => {
+            Alert       => [ color('red'),            color('reset') ],
+            Error       => [ color('red'),            color('reset') ],
+            Warning     => [ color('magenta'),        color('reset') ],
+
+            Comment     => [ color('bright_black'),   color('reset') ],
+            Documentation => [ color('bright_black'), color('reset') ],
+
+            Keyword     => [ color('bold blue'),      color('reset') ],
+            ControlFlow => [ color('bold blue'),      color('reset') ],
+            Operator    => [ color('cyan'),           color('reset') ],
+
+            DataType    => [ color('magenta'),        color('reset') ],
+            DecVal      => [ color('magenta'),        color('reset') ],
+            Float       => [ color('magenta'),        color('reset') ],
+            BaseN       => [ color('magenta'),        color('reset') ],
+            Constant    => [ color('magenta'),        color('reset') ],
+
+            String      => [ color('bold green'),     color('reset') ],
+            Char        => [ color('bold green'),     color('reset') ],
+            SpecialString => [ color('bold green'),   color('reset') ],
+
+            Function    => [ color('bold red'),       color('reset') ],
+            Variable    => [ color('black'),          color('reset') ],
+
+            Others      => [ color('cyan'),           color('reset') ],
+            Normal      => [ '',                      '' ],
+
+            LineNum     => color('bright_black'),
+        }
+    );
+    my $colors = $themes{$theme};
+
+
+    # Set up Kate highlighter
+    #
+    my $hl = Syntax::Highlight::Engine::Kate->new(
+        language      => 'HTML',
+        substitutions => {
+            map { $_ => $colors->{$_}[0] } keys %{ $themes{$theme} }
+        },
+        format_table => {
+            map { $_ => $colors->{$_} } keys %{ $themes{$theme} }
+        },
+    );
+
+    # Highlight
+    #
+    my $html_highlighted = $hl->highlightText($html);
+
+
+    # Print with line numbers if wanted
+    #
+    if ($opt_hr->{'lineno'}) {
+        my @lines = split /\n/, $html_highlighted;
+        my $width = length(scalar @lines);
+        for my $i (0..$#lines) {
+            my $num = sprintf("%*d", $width, $i + 1);
+            $html_colour.=join('',  $colors->{LineNum}, "$num | ", color('reset'), "$lines[$i]\n");
+        }
+    }
+    else {
+    
+        #  Or just raw
+        #
+        $html_colour=$html_highlighted
+    }
+        
+        
+    #  Done
+    #
+    return $html_colour;
+
+}    
+
 __END__
-
-
-
 
 
 =pod

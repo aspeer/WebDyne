@@ -10,7 +10,6 @@
 #
 #  <http://dev.perl.org/licenses/>
 #
-
 package WebDyne::Util;
 
 
@@ -21,6 +20,16 @@ use strict qw(vars);
 use vars   qw($VERSION @EXPORT);
 use warnings;
 no warnings qw(uninitialized redefine once);
+
+
+#  Package wide vars and defaults
+#
+our $WEBDYNE_DEBUG=$ENV{'WEBDYNE_DEBUG'};
+our $WEBDYNE_DEBUG_FILE=$ENV{'WEBDYNE_DEBUG_FILE'};
+our $WEBDYNE_DEBUG_FILTER=$ENV{'WEBDYNE_DEBUG_FILTER'};
+our $WEBDYNE_DEBUG_MAX_LINES=$ENV{'WEBDYNE_DEBUG_MAX_LINES'} || 6;
+our $WEBDYNE_DEBUG_MAX_LENGTH=$ENV{'WEBDYNE_DEBUG_MAX_LENGTH'} || 1024;
+our $WEBDYNE_DEBUG_NO_COLOUR=$ENV{'WEBDYNE_DEBUG_NO_COLOUR'} || $ENV{'WEBDYNE_DBEUG_NO_COLOR'};
 
 
 #  External modules
@@ -48,12 +57,6 @@ $VERSION='2.075';
 #  Var to hold package wide hash, for data shared across package, and error stack
 #
 my (%Package, @Err);
-
-
-#  Bring the WEBDYNE_DEBUG env var into package var so available via Plack handler,
-#  which normally replaces env with its own
-#
-$Package{'WEBDYNE_DEBUG'}=$ENV{'WEBDYNE_DEBUG'};
 
 
 #  All done. Positive return
@@ -90,7 +93,7 @@ sub import {
 
     #  Environment var overrides all
     #
-    if ($debug_fn=$ENV{'WEBDYNE_DEBUG_FILE'}) {
+    if ($debug_fn=$WEBDYNE_DEBUG_FILE) {
 
         #  fn is whatever spec'd
         #
@@ -100,7 +103,7 @@ sub import {
         };
 
     }
-    elsif ($ENV{'WEBDYNE_DEBUG'}) {
+    elsif ($WEBDYNE_DEBUG) {
 
 
         #  fh is stderr
@@ -217,15 +220,24 @@ sub debug {
         return undef;
 
 
-    #  Get caller
-    #
-    #  Get who is calling us
+    #  Get caller, iterate until not eval
     #
     my $caller=(caller(0))[0] ||
         return undef;
-    my $method=(caller(1))[3] || 'main';
+    my ($eval_fg, $method);
+    { my $i=1; while(1) {
+        my @caller=caller($i++);
+        last unless @caller;
+        $method=$caller[3] || 'main';
+        if ($method=~/\(eval\)/) {
+            $eval_fg++;
+            next;
+        }
+        last;
+    }}
     (my $subroutine=$method)=~s/^.*:://;
     (my $class=$method)=~s/::\Q${subroutine}\E$//;
+    $subroutine.='(eval)' if $eval_fg;
 
 
     #  Time in human readable format
@@ -238,22 +250,61 @@ sub debug {
     #
     #local $SIG{__WARN__}=sub { require Carp; &Carp::confess @_ };  #uncomment if want to trace any missing sprintf params
     my $debug=$#_ ? sprintf(shift(), @_) : shift();
-
-
+    
+    
+    #  Truncate ?
+    #
+    if (length($debug) > $WEBDYNE_DEBUG_MAX_LENGTH) {
+        $debug=substr($debug, 0, $WEBDYNE_DEBUG_MAX_LENGTH);
+    }
+    
+    
+    #  Wrap lines ?
+    #
+    $debug =~ s/\n(?!\z)/\n    /g;
+    
+    
+    #  Truncate lines ?
+    #
+    if ($WEBDYNE_DEBUG_MAX_LINES) {
+        my @debug=split(/\n/, $debug, $WEBDYNE_DEBUG_MAX_LINES+1);
+        if (@debug > $WEBDYNE_DEBUG_MAX_LINES) {
+            splice(@debug, $WEBDYNE_DEBUG_MAX_LINES);
+            push @debug, '...';
+        }
+        $debug=join("\n", @debug);
+    }
+    chomp($debug);
+    
+    
+    #  Colourise
+    #
+    if (-t STDOUT && !($WEBDYNE_DEBUG_NO_COLOUR)) {
+        eval {
+            require Term::ANSIColor;
+            $timestamp=Term::ANSIColor::color('cyan') . $timestamp;
+            $class=Term::ANSIColor::color('magenta') . $class;
+            $subroutine=Term::ANSIColor::color('bold green') . $subroutine;
+            $debug=Term::ANSIColor::color('reset') . $debug;
+        };
+        eval {} if $@;
+    }
+    
+    
     #  Filtering ?
     #
-    if ($Package{'WEBDYNE_DEBUG'} && ($Package{'WEBDYNE_DEBUG'} ne '1')) {
+    if ($WEBDYNE_DEBUG && ($WEBDYNE_DEBUG ne '1')) {
 
 
         #  Yes - check we are getting from caller we are interested in
         #
-        my @debug_target=split(/[,;]/, $Package{'WEBDYNE_DEBUG'});
+        my @debug_target=split(/[,;]/, $WEBDYNE_DEBUG);
         foreach my $debug_target (@debug_target) {
             if (($caller eq $debug_target) || ($method=~/\Q$debug_target\E$/)) {
             
                 #  Print debug after checking for any regexp wanted
                 #
-                if (my $regexp=$ENV{'WEBDYNE_DEBUG_FILTER'}) {
+                if (my $regexp=$WEBDYNE_DEBUG_FILTER) {
                     next unless $debug=~qr/$regexp/m;
                 }
                 CORE::print $debug_fh "[$timestamp $class ($subroutine)] ", $debug, $/;
@@ -264,7 +315,7 @@ sub debug {
 
         #  No filtering. Open floodgates but still apply any regexp
         #
-        if (my $regexp=$ENV{'WEBDYNE_DEBUG_FILTER'}) {
+        if (my $regexp=$WEBDYNE_DEBUG_FILTER) {
             return unless $debug=~qr/$regexp/;
         }
         CORE::print $debug_fh "[$timestamp $class ($subroutine)] ", $debug, $/;
@@ -575,3 +626,4 @@ sub errstack {
 
 }
 
+1;

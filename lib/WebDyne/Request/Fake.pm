@@ -1,4 +1,4 @@
-#
+
 #  This file is part of WebDyne.
 #
 #  This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
@@ -177,7 +177,7 @@ sub dir_config {
             #  Get location we are operating in
             #
             my $location=$r->location();
-            debug("in dir_config looking for key $key at location $location");
+            debug("in dir_config looking for key: $key at location: $location");
             
             
             #  Array of hashes we may need to look through
@@ -207,32 +207,34 @@ sub dir_config {
             #  Now iterate across array, return on first match
             #
             foreach my $hr (@constant_hr) {
+                my %location;
                 foreach my $hr_key ($location, '') {
-                    debug("looking at hr: $hr, k: $hr_key");
+                    next if ($location{$location}++);
+                    debug("looking at hr: $hr, hr_key: $hr_key");
                     #  Maybe $hr->{$location}{$key} or $hr->{''}{$key} ?
                     #
                     if (exists $constant_hr->{$hr_key}) {
-                        debug('found $hr->{%s}', $hr_key);
+                        debug("found hr: $hr, hr_key: $hr_key");
                         return $hr->{$hr_key}{$key} if exists($hr->{$hr_key}{$key});
                     }
                     else {
-                        debug('no match on hr:$hr {%s}', $hr_key);
+                        debug("no match on hr: $hr, hr_key: $hr_key");
                     }
                 }
                 #  No - $hr->{$key} is last chance
                 #
                 if (exists $hr->{$key}) {
-                    debug('found $hr->{%s}', $key);
+                    debug("found hr: $hr, key: $key");
                     return $hr->{$key}
                 }
                 else {
-                    debug("no match on $hr {%s}", $key);
+                    debug("no match on hr: $hr, key: $key");
                 }
             }
                 
             #  Nothing found
             #
-            debug("no key found for location: $location or any other match, %s");
+            debug("no key found for location: $location or any other match");
             return undef;
             
         }
