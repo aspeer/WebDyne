@@ -273,19 +273,19 @@ sub headers {
 
     #  Set/get header. r=request, d=direction(in/out), k=key, v=value
     #
-    my ($r, $d, $k, $v)=@_;
+    my ($r, $d, $h, $v)=@_;
     
     if (@_ == 4) {
-        return $r->{$d}{$k}=$v
+        return $r->{$d}{$h}=$v
     }
     elsif (@_ == 3) {
-        return $r->{$d}{$k}
+        return $r->{$d}{$h}
     }
     elsif (@_ == 2) {
         return ($r->{$d} ||= {});
     }
     else {
-        return err("incorrect usage of %s $d object, r->$d(%s)", ref($r), join(',', @_[1..$#_]));
+        return err("incorrect usage of $r object, direction:%s, header: %s, value: %s", $d, $h, $v);
     }
 
 }

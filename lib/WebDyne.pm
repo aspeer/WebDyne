@@ -958,9 +958,16 @@ sub handler : method {    # no subsort
 
 sub handler_die {
 
+
     #  Die signal handler
     #
-    debug('in __DIE__ sig handler: %s, caller %s', $_[0], join(',', (caller(0))[0..3]));
+    debug('in __DIE__ sig handler, $^S: %s: message: %s, caller %s', $^S, $_[0], join(',', (caller(0))[0..3]));
+    
+    
+    #  Avoid recursion
+    #
+    local $SIG{__DIE__};
+    
     
     #  Go back through call stack looking for eval errors
     #
@@ -969,7 +976,8 @@ sub handler_die {
     my $eval_nest;
     while (my @caller=caller($i++)) {
         if ($caller[3] eq '(eval)') {
-            push @eval_nest, \@caller;
+            push @eval_nest, [@caller[0..3]];
+            #push @eval_nest, \@caller;
             $eval_nest++;
         }
     }
@@ -984,11 +992,21 @@ sub handler_die {
     
         #  Not us, clear eval stack
         #
-        debug("eval_nest: $eval_nest[0][0] did not match WebDyne module, clearning eval error");
+        debug('eval_nest: %sdid not match WebDyne module, clearning eval error',  $eval_nest[0][0] );
         eval {};
         return;
         
     }
+    
+    
+    #  If operating under eval and withing a WebDyne::<inode> block call CORE::die;
+    #
+    #foreach my $eval_nest_ar (@{$eval_nest}) {
+    #    if ($eval_nest_ar->[0]=~/^WebDyne::[a-f0-9]{32}$/) {
+    #        debug("die with WebDyne::<inode> eval detected, calling CORE::die");
+    #        CORE::die(\@_);
+    #    }
+    #}
             
 
     #  Updated to *NOT* throw error if in eval block (i.e. if $@ is set). Stops error handler being called
@@ -1106,6 +1124,12 @@ sub init_class {
         #
         my ($self, $data_ar, $eval_param_hr, $eval_text, $index, $tag_fg)=@_;
         $eval_text=decode_entities($eval_text);
+        
+        
+        #  Debug
+        #
+        debug("self: $self, data_ar: $data_ar, eval_param_hr: %s, eval_text: %s, index: $index, tag_fg: $tag_fg", Dumper($eval_param_hr, \$eval_text));
+        debug('caller: %s', Dumper([(caller(0))[0..3]]));
 
 
         #  Debug
@@ -1205,6 +1229,7 @@ sub init_class {
 
                 #  Eval error or err() called during routine.
                 #
+                debug("eval error detected: $err");
                 return $self->err_eval($err, \$eval_text, $inode);
 
             }
@@ -1222,6 +1247,7 @@ sub init_class {
 
             #  $self fell through, probably means no explicit return was done, e.g perl code was sub foo {}
             #
+            debug('self ref detected, erasing eval');
             undef @eval;
 
         }
@@ -1233,6 +1259,7 @@ sub init_class {
 
             #  Whatever it is we can't render it unless SCALAR, ARRAY or HASH
             #
+            debug('incorrect ref type detected');
             return err('return from eval of ref type \'%s\' not supported', join(',', grep {$_} map {ref($_)} @eval));
 
         }
@@ -1240,6 +1267,7 @@ sub init_class {
 
         #  Done
         #
+        debug('no error detected, returning: %s', Dumper(\@eval));
         \@eval;
 
     });
@@ -2847,7 +2875,7 @@ sub perl {
         #  for consistancy
         #
         $html_sr=$Package{'_eval_cr'}{'!'}->($self, $data_ar, $perl_param_hr, $perl_code) ||
-            err();
+            return err();
         
         
 
@@ -3152,7 +3180,7 @@ sub perl_init_eval {
 
     #  Eval routine for perl_init code. Avoid using var names so things like $self not available
     #  in eval code;
-    #local $SIG{__DIE__};
+    #  local $SIG{__DIE__};
     my $eval=join(
         $/,
         "package WebDyne::$_[0]; $WebDyne::WEBDYNE_EVAL_USE_STRICT;",
@@ -3165,6 +3193,7 @@ sub perl_init_eval {
         "${$_[1]}",
         ';1'
     );
+    debug("perl_init_eval:\n%s", $eval);
     return eval($eval);
 
 }
@@ -3341,10 +3370,13 @@ sub subst {
         
         #  But doesn't have to be scalar ref, as long as represents as scalar
         #
-        return $eval_cr->{$_[0]}($self, $data_ar, $param_data_hr, $_[1], $_[2]) ||
+        debug('running subst');
+        return $eval_cr->{$_[0]}($self, $data_ar, $param_data_hr, $_[1], $_[2]) || do {
+            debug('subst_cr_anon returning error');
             return err();
+        };
     });
-    $text=~s/([\$!+*^])\{(\1?)(.*?)\2}/${$cr->($1, $3, $index++) || return err()}/ge;
+    $text=~s/([\$!+*^])\{(\1?)(.*?)\2}/${$cr->($1, $3, $index++) || do { debug('subst returning error'); return err() } }/ge;
 
 
     #  Done

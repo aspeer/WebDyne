@@ -40,10 +40,24 @@ $VERSION='2.075';
 #  <<<
 %Constant=(
 
+
+    #  Document Root, usually supplied as env var or command line option but
+    #  can be set here.
+    #
+    DOCUMENT_ROOT	=> undef,
+    
+    
+    #  Document default - will be served if exists in DOCUMENT_ROOT and no other
+    #  file specified.
+    #
+    DOCUMENT_DEFAULT	=> 'app.psp',
+
     
     #  Middeware config, static module. Loaded by default for convenience if
     #  started via webdyne.pagi script directly
     #
+
+
     #  Serve any static file except .psp
     #
     #WEBDYNE_PSGI_MIDDLEWARE_STATIC => qr{^(?!.*\.psp$).*\.\w+$},
@@ -53,19 +67,28 @@ $VERSION='2.075';
     WEBDYNE_PAGI_MIDDLEWARE_STATIC => qr{\.(?:css|js|jpg|jpeg|png|gif|svg|ico|woff2?|ttf|eot|otf|webp|map|txt|inc|htm|html)$}i,
     
     
+    #  Serve static files ?
+    #
+    WEBDYNE_PAGI_STATIC => 1,
+    
+    
     #  All other middleware. Uncomment/modify as required
     #
     WEBDYNE_PAGI_MIDDLEWARE => [
         
-        #{ 'Debug' => 
-        #    { panels => [ qw(Environment) ] } 
-        #},
+        [ 'Debug' => 
+            { enabled => 1 } 
+        ],
         
         #  If given as a sub code ref the $DOCUMENT_ROOT is first param 
         #
         #{ 'Static' => sub { 
         #    { path=>qr{^(?!.*\.psp$).*\.\w+$}, root=>shift() }
         #}}
+        [ 'Static' => sub { 
+            { path=>$WebDyne::PAGI::Constant::Constant{'WEBDYNE_PAGI_MIDDLEWARE_STATIC'}, root=>$_[0]->{'root'}, pass_through=>1 }
+        }]
+        
         
     ],
     
@@ -86,8 +109,6 @@ $VERSION='2.075';
     WEBDYNE_PAGI_EVAL_PREPEND => << 'END'
 use Future::AsyncAwait;
 use Future::IO;
-*err=sub { die sprintf(shift, @_) || 'undefined error' };
-*WebDyne::err=\&err;
 END
 ,
 

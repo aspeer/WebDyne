@@ -47,10 +47,12 @@ use WebDyne::Request::PSGI::Constant;
 use WebDyne::Request::PAGI;
 
 
-#  Test file to use if no DOCUMENT_ROOT found
+#  Test, index file locations
 #
-(my $test_dn=$INC{'WebDyne.pm'})=~s/\.pm$//;
-my $test_fn=File::Spec->catfile($test_dn, 'time.psp');
+(my $mod_dn=$INC{'WebDyne.pm'})=~s/\.pm$//;
+my $test_fn =File::Spec->rel2abs(File::Spec->catfile($mod_dn, 'time.psp'));
+my $index_fn=File::Spec->rel2abs(File::Spec->catfile($mod_dn, $WEBDYNE_PSGI_INDEX));
+
 
 
 #  Set DOCUMENT_DEFAULT
@@ -60,7 +62,7 @@ $DOCUMENT_DEFAULT=$ENV{'DOCUMENT_DEFAULT'} || $DOCUMENT_DEFAULT;
 
 #  Initialise
 #
-&init();
+#&init();
 
 
 #  Version information
@@ -70,12 +72,86 @@ $VERSION='2.075';
 
 #==================================================================================================
 
+sub new {
+
+
+    #  Get options
+    #
+    my ($class, %opt)=@_;
+    
+    
+    #  Test ?
+    #
+    if ($opt{'test'}) {
+        $opt{'root'}=$test_fn;
+    }
+    
+    
+    #  Indexing. 1 for enable with internal, string for some other indexing file
+    #
+    if ($opt{'index'} eq '1') {
+        $opt{'index'}=$index_fn
+    }
+    
+
+    #  Set document root
+    #
+    return bless(\%opt, $class);
+    
+}
+
+    
+sub to_app {
+
+
+    #  Self ref
+    #
+    my $self=shift();
+
+
+    #  Dispatch table
+    #
+    my %handler=(
+        #http        => $self->handler_http,
+        http        => \&WebDyne::PAGI::handler_http,
+        sse         => \&WebDyne::PAGI::handler_sse,
+        lifespan    => \&WebDyne::PAGI::handler_lifespan,
+        ws          => \&WebDyne::PAGI::handler_ws,
+    );
+        
+
+    # Main application
+    #
+    my $app_cr = async sub {
+
+        my ($scope, $receive, $send) = @_;
+        if (my $handler_cr=$handler{my $type=$scope->{type}}) {
+            #  Supported type, dispatch
+            #
+            return await $handler_cr->($self, $scope, $receive, $send)->($scope, $receive, $send);
+        }
+        else {
+            #  Unsupported type
+            #
+            die "Unsupported scope type: $type";
+        }
+
+    };
+    
+    
+    #  Done
+    #
+    return $app_cr;
+    
+}
+
+
 sub handler_sse {
 
 
     #  Get request
     #
-    my ($scope, $receive, $send)=@_;
+    my ($self, $scope, $receive, $send)=@_;
     debug('in handler, scope:%s receive:%s, send:%s', Dumper($scope, $receive, $send));
 
 
@@ -143,6 +219,11 @@ sub handler_sse_error {
 
 sub handler_http {
 
+    
+    #  Self ref contains things like document_root, dcoument_default
+    #
+    my $self=shift();
+
 
     #  Return async sub for handling WebDyne requests
     #
@@ -154,6 +235,19 @@ sub handler_http {
         my ($scope, $receive, $send)=@_;
         debug('in handler, scope:%s receive:%s, send:%s', Dumper($scope, $receive, $send));
         
+
+        #  Restrict local env
+        #
+        local %ENV=(
+            %{$WEBDYNE_PAGI_ENV_SET}, 
+            (map { $_=>$ENV{$_}  } (
+                grep { defined($ENV{$_}) }
+                qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
+                @{$WEBDYNE_PAGI_ENV_KEEP},
+                grep {/WEBDYNE/i} keys %ENV
+            ))
+        );
+
         
         #  Only need request and response helper objects
         #
@@ -168,7 +262,8 @@ sub handler_http {
         #
         my $html;
         my $html_fh=IO::String->new($html);
-        my $r=WebDyne::Request::PAGI->new(select => $html_fh, document_root => $DOCUMENT_ROOT, document_default => $DOCUMENT_DEFAULT, scope=>$scope, req=>$req_or, res=>$res_or, 
+        #my $r=WebDyne::Request::PAGI->new(select => $html_fh, document_root => $DOCUMENT_ROOT, document_default => $DOCUMENT_DEFAULT, scope=>$scope, req=>$req_or, res=>$res_or, 
+        my $r=WebDyne::Request::PAGI->new(select => $html_fh, document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, res=>$res_or, 
             receive => $receive, send=> $send) ||
                 return err('unable to create new WebDyne::Request::PAGI object: %s', 
                     $@ || errclr() || 'unknown error');
@@ -177,17 +272,6 @@ sub handler_http {
         
         #  Call handler and evaluate results
         #
-        if (0) {
-        use Devel::Confess;
-        my @stack;
-        my $i=0;
-        while (1) {
-            my @caller=caller($i++);
-            last unless @caller;
-            push @stack, [@caller];
-        }
-        die Dumper(\@stack);
-        }
         my $status=WebDyne->handler($r);
         debug("handler returned status: $status");
         $r->status($status);
@@ -207,7 +291,8 @@ sub handler_http {
             
             #  OK. Most common match didn't happen. Is it an error ?
             #
-            if (!defined($status) || ($status < 0) ||  is_error($status) || $html) {
+            debug('status: %s is not HTTP_OK, branching', $status);
+            if (!defined($status) || ($status < 0) ||  is_error($status) || !$html) {
         
             
                 #  Something went wrong. Let's start working through it
@@ -228,10 +313,10 @@ sub handler_http {
                     #
                     debug("returning custom error: $status");
                     $r->status($status);
-                    $html=$r->custom_response($status) || errstr() ||
-                        "Error $status with no content - try server error logs ?";
-                    $r->content_type($WEBDYNE_CONTENT_TYPE_TEXT);
-                    
+                    $html=$r->custom_response($status) || errstr() || do {
+                        $r->content_type($WEBDYNE_CONTENT_TYPE_TEXT);
+                        "Error: $status with no content - try server error logs ?";
+                    };
 
                 }
                 else {
@@ -260,10 +345,21 @@ sub handler_http {
         debug("final handler status: %s, content_type: %s, html:%s", $status, $r->content_type(), $html);
         
         
-        #  If html defined set header content type unless already set during handler run
+        #  Send headers unless already sent
+        #
+        my $headers_ar=$r->headers_out->psgi_flatten_without_sort();
+        debug('sending headers: %s', Dumper($headers_ar));
+        for (my $i=0; $i<@{$headers_ar}; $i+=2) {
+            my ($header, $value)=@{$headers_ar}[$i, $i+1];
+            $r->header_try($header => $value);
+        }
+        
+        
+        #  If html defined set header content type unless already set during handler run and send
         #
         if ($html) {
-            $r->content_type($WEBDYNE_CONTENT_TYPE_HTML) unless $r->content_type();
+            debug('sending html to client via await()');
+            $r->content_type_try($WEBDYNE_CONTENT_TYPE_HTML);
             return await $r->send($html || err);
        }
         
@@ -303,63 +399,6 @@ sub normalize_dn {
     $abs_dn =~ s{/$}{} unless $abs_dn eq '/';
     return $abs_dn;
     
-}
-
-
-sub init {
-
-    #  Finalise DOCUMENT_ROOT. 
-    #  flag wins over everything else
-    #
-    my %plack;
-    my $plack_or=\%plack;
-    my ($noindex_fg, $test_fg);
-
-
-    #  Finalise DOCUMENT_ROOT. First try and get as last command line option or env or variable but --test
-    #  flag wins over everything else
-    #
-    $DOCUMENT_ROOT=shift(@{$plack_or->{'argv'}}) ||
-        $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT;
-    #if ($test_fg || !$DOCUMENT_ROOT) {
-    #    $DOCUMENT_ROOT=$test_fn;
-    #}
-    if ($test_fg) {
-        $DOCUMENT_ROOT=$test_fn;
-    }
-    elsif(! $DOCUMENT_ROOT) {
-        $DOCUMENT_ROOT=fastcwd();
-    }
-    $DOCUMENT_ROOT=&normalize_dn($DOCUMENT_ROOT);
-    
-    
-    #  Indexing ? Do by default unless file specified as DOCUMENT_ROOT or --noindex spec'd etc.
-    #
-    unless (-f $DOCUMENT_ROOT || -f File::Spec->catfile($DOCUMENT_ROOT, $DOCUMENT_DEFAULT) || $noindex_fg) {
-
-        #  Final check. Only do if directory
-        #
-        if (-d $DOCUMENT_ROOT) {
-    
-            #  We can do indexing
-            #
-            $DOCUMENT_DEFAULT=File::Spec->rel2abs(File::Spec->catfile($test_dn, $WEBDYNE_PSGI_INDEX));
-            
-        }
-        
-    }
-    
-    
-    #  Read in local webdyne.conf.pl
-    #
-    #&local_constant_load($DOCUMENT_ROOT);
-    
-    
-    #  Show error information by default
-    #
-    $WebDyne::WEBDYNE_ERROR_SHOW=1;
-    $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
-        
 }
 
 1;

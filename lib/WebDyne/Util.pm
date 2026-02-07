@@ -22,14 +22,17 @@ use warnings;
 no warnings qw(uninitialized redefine once);
 
 
-#  Package wide vars and defaults
+#  Package wide vars and defaults, initialised in BEGIN
 #
-our $WEBDYNE_DEBUG=$ENV{'WEBDYNE_DEBUG'};
-our $WEBDYNE_DEBUG_FILE=$ENV{'WEBDYNE_DEBUG_FILE'};
-our $WEBDYNE_DEBUG_FILTER=$ENV{'WEBDYNE_DEBUG_FILTER'};
-our $WEBDYNE_DEBUG_MAX_LINES=$ENV{'WEBDYNE_DEBUG_MAX_LINES'} || 6;
-our $WEBDYNE_DEBUG_MAX_LENGTH=$ENV{'WEBDYNE_DEBUG_MAX_LENGTH'} || 1024;
-our $WEBDYNE_DEBUG_NO_COLOUR=$ENV{'WEBDYNE_DEBUG_NO_COLOUR'} || $ENV{'WEBDYNE_DBEUG_NO_COLOR'};
+our (
+    $WEBDYNE_DEBUG,
+    $WEBDYNE_DEBUG_FILE,
+    $WEBDYNE_DEBUG_FILTER,
+    $WEBDYNE_DEBUG_MAX_LINES,
+    $WEBDYNE_DEBUG_MAX_LENGTH,
+    $WEBDYNE_DEBUG_NO_COLOUR,
+    $WEBDYNE_ERROR_TEXT_SHOW_ALL
+);
 
 
 #  External modules
@@ -70,6 +73,18 @@ my (%Package, @Err);
 #
 BEGIN {
     eval {require Time::HiRes; Time::HiRes->import(qw(time gettimeofday))};
+    my %config=(
+        WEBDYNE_DEBUG               => '',
+        WEBDYNE_DEBUG_FILE          => '',
+        WEBDYNE_DEBUG_FILTER        => '',
+        WEBDYNE_DEBUG_MAX_LINES     => 6,
+        WEBDYNE_DEBUG_MAX_LENGTH    => 1024,
+        WEBDYNE_DEBUG_NO_COLOUR     => $ENV{'WEBDYNE_DEBUG_NO_COLOR'},
+        WEBDYNE_ERROR_TEXT_SHOW_ALL => '',
+    );
+    while (my($name, $value)=each(%config)) {
+        ${__PACKAGE__."::${name}"}=defined($ENV{$name}) ? $ENV{$name} : $value;
+    }
 }
 
 
@@ -215,6 +230,7 @@ sub debug {
 
     #  Send debug message to log file. Turn off buffering and get file handle
     #
+    my ($debug, @param)=@_;
     local $|=1;
     my $debug_fh=$Package{'debug_fh'} ||
         return undef;
@@ -248,8 +264,9 @@ sub debug {
 
     #  Get the debug message
     #
-    #local $SIG{__WARN__}=sub { require Carp; &Carp::confess @_ };  #uncomment if want to trace any missing sprintf params
-    my $debug=$#_ ? sprintf(shift(), @_) : shift();
+    #local $SIG{__WARN__}=sub { CORE::die("SPRINTF: ". Dumper([$debug, @param])) }; #uncomment if want to trace any missing sprintf params
+    #local $SIG{__WARN__}=sub { require Carp; &Carp::confess(@_) };  #uncomment if want to trace any missing sprintf params
+    $debug=@param ? sprintf($debug, map { defined($_) ? $_ : 'undef' } @param) : $debug;
     
     
     #  Truncate ?
@@ -346,10 +363,10 @@ sub err {
     #  If no message supplied return last one seen
     #
     unless ($message) {
-        $message=@Err ? $Err[$#Err]->[0] && return undef : 'undefined error';
+        $message=@Err ? ($Err[$#Err]->[0] && return undef) : 'undefined error';
     }
     else {
-        $message=sprintf($message, @param) if @param;
+        $message=@param ? sprintf($message, map { defined($_) ? $_ : 'undef' } @param) : $message;
     }
 
 
@@ -370,6 +387,8 @@ sub err {
 
 
     }
+    debug("err: $message, caller:%s", Dumper(\@caller));
+
 
 
     #  If this message is *not* the same as the last one we saw,
@@ -416,9 +435,20 @@ sub err {
     }
 
 
+    #  If operating under eval and withing a WebDyne::<inode> block call CORE::die;
+    #
+    foreach my $caller_ar (@caller) {
+        if ($caller_ar->[0]=~/^WebDyne::[a-f0-9]{32}$/) {
+            debug("die with WebDyne::<inode> eval detected, calling CORE::die");
+            CORE::die($message);
+        }
+    }
+    debug('not under WebDyne eval, proceeding');
+
+
     #  Return undef
     #
-    return $Package{'nofatal'} ? undef : die(&errdump);
+    return $Package{'nofatal'} ? undef : die(&errdump || 'undefined webdyne error');
 
 }
 
@@ -605,6 +635,11 @@ sub errdump {
         formline $format[1], 'PID', "$$";
         formline $format[0];
         formline "\n";
+        
+        
+        #  Only show first error message
+        #
+        last unless $WEBDYNE_ERROR_TEXT_SHOW_ALL;
 
 
     }

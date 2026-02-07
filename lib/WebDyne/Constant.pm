@@ -25,6 +25,7 @@ no warnings qw(uninitialized);
 #
 use WebDyne::Util;
 use File::Spec;
+use File::Basename qw(dirname);
 use Data::Dumper;
 $Data::Dumper::Indent=1;
 require Opcode;
@@ -114,7 +115,7 @@ my %constant_temp;
     #  Prefix eval code with strict pragma. Can be undef'd to remove
     #  this behaviour, or altered to suit local taste
     #
-    WEBDYNE_EVAL_USE_STRICT => 'use strict qw(vars);',
+    WEBDYNE_EVAL_USE_STRICT => 'use strict qw(vars)',
     
     
     #  Anything to prepend after use strict
@@ -570,6 +571,12 @@ my %constant_temp;
     WEBDYNE_PSGI => $INC{'WebDyne/PSGI.pm'} ? 1 : 0,
     
     
+    #  Indexer and test files
+    #
+    WEBDYNE_DEFAULT_TEST_FN  => &fullpath('time.psp'),
+    WEBDYNE_DEFAULT_INDEX_FN => &fullpath('index.psp'),
+
+    
     #  Mod_perl level. Do not change unless you know what you are
     #  doing.
     #
@@ -578,6 +585,18 @@ my %constant_temp;
 
 
 );
+
+
+sub fullpath {
+
+
+    #  Test file to use if no DOCUMENT_ROOT found
+    #
+    my ($fn, $dn)=@_;
+    $dn ||= dirname(__FILE__);
+    return File::Spec->rel2abs(File::Spec->catfile($dn, $fn));
+    
+}
 
 
 sub local_constant_fn {

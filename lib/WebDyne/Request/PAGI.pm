@@ -31,6 +31,7 @@ use Data::Dumper;
 use PAGI::Request;
 $Data::Dumper::Indent=1;
 use Cwd qw(fastcwd);
+use HTTP::Headers::Fast;
 
 
 #  WebDyne modules
@@ -105,8 +106,13 @@ foreach my $handler (qw(req res sse ws)) {
             my $inout=($handler eq 'req') ? 'in' : 'out';
             $method_pagi.="_${inout}";
         }
-        unless (__PACKAGE__->can($method_pagi)) {
+
+        #  Ignore inheritance - only this package
+        #unless (__PACKAGE__->can($method_pagi)) {
+        unless (defined(&{__PACKAGE__."::${method_pagi}"})) {
+            #debug("setting method: $method_pagi to handler: $handler");
             *{$method_pagi}=sub {
+                #debug("calling PAGI $handler, method: $method_pagi");
                 return $#_ ? shift()->{$handler}->$method(@_) : shift()->{$handler}->$method();
             }
         }
@@ -194,6 +200,17 @@ sub new {
 }
 
 
+sub status {
+
+    #  PAGI doesn't return the status code when setting, so code like
+    #  return $r->status(500) doesn't work.
+    #
+    my $r=shift();
+    return @_ ? do { $r->{'res'}->status(@_); shift() } : $r->{'res'}->status()
+    
+}
+
+
 sub path_info {
     shift()->path()
 }
@@ -222,22 +239,34 @@ sub header_only {
 sub headers_in {
     my $r=shift();
     my $headers_hr=$r->{'req'}->headers();
-    use HTTP::Headers::Fast;
     return HTTP::Headers::Fast->new($headers_hr->flatten());
 }
 
 sub headers_out {
     my $r=shift();
-    my $headers_ar=$r->{'res'}->headers();
-    use HTTP::Headers::Fast;
-    return HTTP::Headers::Fast->new(@{$headers_ar});
+    my $headers_or=$r->{'headers_out'} 
+        ||= HTTP::Headers::Fast->new(map { @{$_} } @{$r->{'res'}->headers()});
+    debug("headers_or: $headers_or, %s", Dumper(\@_));
+    if (@_) {
+        $r->{'res'}->header(@_);
+        return $headers_or->header(@_);
+    }
+    else {
+        return $headers_or;
+    }
+    #my $headers_or=$r->{'headers_out'} 
+    #    ||= HTTP::Headers::Fast->new(map { @{$_} } @{$r->{'res'}->headers()});
+    #    return HTTP::Headers::Fast->new(map { @{$_} } @{$r->{'res'}->headers()});
+    #}    
+    #$headers_or->header(@_);
+    #debug('headers_out: %s, %s', Dumper(\@_, $headers_or));
+    #return @_ ? $headers_or->header(@_) : $headers_or;
 }
-
 
 sub content_type {
 
     my $r=shift();
-    debug("$r content_type: %s", Dumper(\@_));
+    debug("$r content_type, existing: %s, param: %s", $r->{'res'}->content_type(), Dumper(\@_));
     return @_ ? $r->{'res'}->content_type(@_) : $r->{'res'}->content_type();
 
 }

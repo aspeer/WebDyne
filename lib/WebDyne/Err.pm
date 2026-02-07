@@ -80,7 +80,7 @@ sub err_html {
 
     #  Debug
     #
-    debug("in error routine self $self, errstr $errstr, caller %s", join(',', (caller(0))[0..3]));
+    debug("in error routine self: $self, errstr: $errstr, caller: %s", Dumper( [ (caller(0))[0..3] ]));
 
 
     #  Get errstr from stack if not supplied, or add if it
@@ -92,7 +92,7 @@ sub err_html {
     }
 
     #$errstr ? err($errstr) : ($errstr=errstr() || do {err($_='undefined error from handler'); $_});
-    debug("final errstr $errstr");
+    debug("final errstr: $errstr");
 
 
     #  Try to get request handler;
@@ -131,7 +131,9 @@ sub err_html {
 
     #  Status must be internal error if not set to something else already
     #
+    debug('existing status: %s', $r->status());
     unless ($r->status() && (is_error($r->status()))) {
+        debug('setting status to: %s', HTTP_INTERNAL_SERVER_ERROR);
         $r->status(HTTP_INTERNAL_SERVER_ERROR);
     }
 
@@ -161,7 +163,7 @@ sub err_html {
         #  Text error, set content type
         #
         debug(
-            "using text error (%s:%s:%s:%s) - update $r content_type",
+            "using text error; WEBDYNE_ERROR_TEXT: %s, WEBDYNE_EVAL_SAFE: %s, _error_handler_run: %s, cgi_or: %s, updating $r content_type",
             $WEBDYNE_ERROR_TEXT, $WEBDYNE_EVAL_SAFE, $self->{'_error_handler_run'}, $cgi_or
         );
         #$r->content_type('text/plain');
@@ -190,12 +192,21 @@ sub err_html {
         #  Print error and return
         #
         $r->send_http_header() if !$MP2;
-        $r->custom_response(500, $err_text);
-        $r->status(500);
-        $r->print($err_text);
-        #return &Apache::OK;
-        return 500;
-
+        if (1) {
+            my $status=$r->status();
+            unless($status && is_error($status)) {
+                $r->status($status=HTTP_INTERNAL_SERVER_ERROR);
+            };
+            $r->custom_response($status, $err_text);
+            $r->print($err_text);
+            return $status;
+        }
+        else {
+            $r->custom_response(HTTP_INTERNAL_SERVER_ERROR, $err_text);
+            $r->status(HTTP_INTERNAL_SERVER_ERROR);
+            $r->print($err_text);
+            return HTTP_INTERNAL_SERVER_ERROR;
+        }
 
     }
     else {
@@ -313,7 +324,7 @@ sub err_eval {
     #  Special handler for eval errors
     #
     my ($self, $message, $perl_sr, $inode)=@_;
-    debug("err_eval $message, %s, caller %s", Dumper($perl_sr), Dumper([caller()]));
+    debug("err_eval: %s, perl_sr:  %s, caller %s", $message, Dumper($perl_sr), Dumper([caller()]));
 
 
     #  Try to scrape line from message
@@ -338,7 +349,8 @@ sub err_eval {
 
     #  Send message off to main error handler and return
     #
-    return &errsubst($message);
+    #return &errsubst($message);
+    return err($message);
 
 }
 
