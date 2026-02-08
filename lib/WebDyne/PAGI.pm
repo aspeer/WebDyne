@@ -28,6 +28,8 @@ use Data::Dumper;
 use Cwd qw(fastcwd);
 use Future::AsyncAwait;
 use Sub::Util qw(set_subname);
+use File::Basename;
+use File::Spec;
 
 
 #  PAGI modules
@@ -43,26 +45,7 @@ use WebDyne;
 use WebDyne::Constant;
 use WebDyne::Util;
 use WebDyne::PAGI::Constant;
-use WebDyne::Request::PSGI::Constant;
 use WebDyne::Request::PAGI;
-
-
-#  Test, index file locations
-#
-(my $mod_dn=$INC{'WebDyne.pm'})=~s/\.pm$//;
-my $test_fn =File::Spec->rel2abs(File::Spec->catfile($mod_dn, 'time.psp'));
-my $index_fn=File::Spec->rel2abs(File::Spec->catfile($mod_dn, $WEBDYNE_PSGI_INDEX));
-
-
-
-#  Set DOCUMENT_DEFAULT
-#
-$DOCUMENT_DEFAULT=$ENV{'DOCUMENT_DEFAULT'} || $DOCUMENT_DEFAULT;
-
-
-#  Initialise
-#
-#&init();
 
 
 #  Version information
@@ -83,18 +66,23 @@ sub new {
     #  Test ?
     #
     if ($opt{'test'}) {
-        $opt{'root'}=$test_fn;
+        $opt{'root'}=$WEBDYNE_DEFAULT_TEST_FN;
     }
     
     
     #  Indexing. 1 for enable with internal, string for some other indexing file
     #
     if ($opt{'index'} eq '1') {
-        $opt{'index'}=$index_fn
+        $opt{'index'}=$WEBDYNE_DEFAULT_INDEX_FN;
     }
     
 
-    #  Set document root
+    #  Fix document root
+    #
+    $opt{'root'}=File::Spec->rel2abs($opt{'root'});
+    
+    
+    #  Done
     #
     return bless(\%opt, $class);
     
@@ -112,11 +100,10 @@ sub to_app {
     #  Dispatch table
     #
     my %handler=(
-        #http        => $self->handler_http,
-        http        => \&WebDyne::PAGI::handler_http,
-        sse         => \&WebDyne::PAGI::handler_sse,
-        lifespan    => \&WebDyne::PAGI::handler_lifespan,
-        ws          => \&WebDyne::PAGI::handler_ws,
+        http        => sub { shift()->handler_http(@_) },
+        sse         => sub { shift()->handler_sse(@_) },
+        ws          => sub { shift()->handler_ws(@_) },
+        lifespan    => sub { shift()->handler_lifespan(@_) }
     );
         
 
@@ -164,11 +151,11 @@ sub handler_sse {
     my $sse_or=PAGI::SSE->new($scope, $receive, $send) ||
         return err('unable to get PAGI::SSE object');
     debug("req_or: $req_or, res_or: $res_or, sse_or: $sse_or");
-    
-    
+
+
     #  Get main WebDyne handler request object
     #
-    my $r=WebDyne::Request::PAGI->new( document_root => $DOCUMENT_ROOT, document_default => $DOCUMENT_DEFAULT, scope=>$scope, req=>$req_or, res=>$res_or, sse=>$sse_or,
+    my $r=WebDyne::Request::PAGI->new( document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, res=>$res_or, sse=>$sse_or,
         receive => $receive, send=> $send) ||
             return err('unable to create new WebDyne::Request::PAGI object: %s', 
                 $@ || errclr() || 'unknown error');
@@ -217,6 +204,7 @@ sub handler_sse_error {
     
 }
 
+
 sub handler_http {
 
     
@@ -262,7 +250,6 @@ sub handler_http {
         #
         my $html;
         my $html_fh=IO::String->new($html);
-        #my $r=WebDyne::Request::PAGI->new(select => $html_fh, document_root => $DOCUMENT_ROOT, document_default => $DOCUMENT_DEFAULT, scope=>$scope, req=>$req_or, res=>$res_or, 
         my $r=WebDyne::Request::PAGI->new(select => $html_fh, document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, res=>$res_or, 
             receive => $receive, send=> $send) ||
                 return err('unable to create new WebDyne::Request::PAGI object: %s', 
@@ -370,13 +357,15 @@ sub handler_http {
 
 sub handler_lifespan {
 
+    my $self=shift();
+    
     return set_subname('handler_lifespan_anon', async sub {
 
         my ($scope, $receive, $send) = @_;
         while (1) {
             my $event_hr = await $receive->();
             if ($event_hr->{'type'} eq 'lifespan.startup') {
-                print STDERR "[lifespan] WebDyne PAGI handler startup. DOCUMENT_ROOT: $DOCUMENT_ROOT, DOCUMENT_DEFAULT: $DOCUMENT_DEFAULT\n";
+                printf STDERR "[lifespan] WebDyne PAGI handler startup. DOCUMENT_ROOT: %s, DOCUMENT_DEFAULT: %s\n", $self->{'root'}, basename($self->{'index'});
                 await $send->({ type => 'lifespan.startup.complete' });
                 
             }

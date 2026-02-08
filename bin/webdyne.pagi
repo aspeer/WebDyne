@@ -10,6 +10,8 @@ use strict;
 #
 use Cwd qw(fastcwd);
 use Data::Dumper;
+use File::Basename;
+use File::Spec;
 
 
 #  PAGI modules we need
@@ -20,21 +22,20 @@ use WebDyne::Constant;
 use WebDyne::PAGI::Constant;
 
 
-
 #  Called from command line ?
 #
 if (!caller || exists $ENV{PAR_TEMP}) {
 
 
-    #  Startup when script called from command line. Get options
+    #  Yes. Get options
     #
     my %opt=(
         test    => 0,
         static  => 1,
-        index   => $WEBDYNE_DEFAULT_INDEX_FN
-        %{do(glob(sprintf('~/.%s.opt', basename(__FILE__))))}
+        index   => 1,
+        %{do(glob(sprintf('~/.%s.opt', basename(__FILE__)))) || {}}
     );
-    
+
 
     #  Process
     #
@@ -46,6 +47,7 @@ if (!caller || exists $ENV{PAR_TEMP}) {
         'static!',
         'index!',
         'root:s',
+        'argv:s'
     );
     
     
@@ -61,12 +63,12 @@ if (!caller || exists $ENV{PAR_TEMP}) {
     
     #  Startup
     #
-    exit &startup(\%opt, @ARGV);
+    exit &startup(\%opt, split(/\s+/, $opt{'argv'}), @ARGV);
 
 }
 else {
 
-    # Return simple code ref. Called from pagi_server. Need document root and defauult from 
+    # No - called from pagi_server. Need document root and doc default from 
     # env or var
     #
     my %opt=(
@@ -92,13 +94,13 @@ sub build {
     
     
     #  Adjust static service config var based on opts if
-    #  the exist
+    #  they exist
     #
     if (exists($opt_hr->{'static'})) {
         $WEBDYNE_PAGI_STATIC=$opt_hr->{'static'};
     }
     
-
+    
     #  Add in any middleware in config file
     #
     foreach my $middleware_ar (@{$WEBDYNE_PAGI_MIDDLEWARE}) {
@@ -123,6 +125,11 @@ sub build {
         $builder_or->add_middleware($middleware, %{$middleware_opt_hr});
     }
     
+
+    #  Read in local webdyne.conf.pl
+    #
+    &local_constant_load($opt_hr->{'root'});
+
 
     #  Finally return as app code ref
     #
@@ -169,7 +176,7 @@ sub startup {
     #  Run it
     #
     *PAGI::Runner::load_app=sub { return $app_cr };
-    exit PAGI::Runner->new( host=>'0.0.0.0' )->run();
+    exit $pagi_or->run();
 
 }
 
