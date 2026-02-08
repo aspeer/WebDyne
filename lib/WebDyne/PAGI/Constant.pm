@@ -76,15 +76,12 @@ $VERSION='2.075';
     #
     WEBDYNE_PAGI_MIDDLEWARE => [
         
-        [ 'Debug' => 
-            { enabled => 1 } 
-        ],
+        #[ 'Debug' => 
+        #    { enabled => 1 } 
+        #],
         
-        #  If given as a sub code ref the $DOCUMENT_ROOT is first param 
+        #  If given as a sub code ref then option hash ref is first param 
         #
-        #{ 'Static' => sub { 
-        #    { path=>qr{^(?!.*\.psp$).*\.\w+$}, root=>shift() }
-        #}}
         [ 'Static' => sub { 
             { path=>$WebDyne::PAGI::Constant::Constant{'WEBDYNE_PAGI_MIDDLEWARE_STATIC'}, root=>$_[0]->{'root'}, pass_through=>1 }
         }]
