@@ -24,6 +24,11 @@ use vars qw($VERSION @ISA %Constant);
 use warnings;
 
 
+#  External modules
+#
+use File::Basename;
+
+
 #  Does the heavy liftying of importing into caller namespace
 #
 require WebDyne::Constant;
@@ -35,7 +40,6 @@ require WebDyne::Constant;
 $VERSION='2.075';
 
 
-
 #  Hash of constants
 #  <<<
 %Constant=(
@@ -44,7 +48,7 @@ $VERSION='2.075';
     #  Document Root, usually supplied as env var or command line option but
     #  can be set here.
     #
-    DOCUMENT_ROOT	=> undef,
+    DOCUMENT_ROOT	    => undef,
     
     
     #  Document default - will be served if exists in DOCUMENT_ROOT and no other
@@ -53,8 +57,8 @@ $VERSION='2.075';
     DOCUMENT_DEFAULT	=> 'app.psp',
 
     
-    #  Middeware config, static module. Loaded by default for convenience if
-    #  started via webdyne.pagi script directly
+    #  Middeware config, static module. Loaded by default for convenience, comment out if
+    #  not wanted
     #
 
 
@@ -83,7 +87,7 @@ $VERSION='2.075';
         #  If given as a sub code ref then option hash ref is first param 
         #
         [ 'Static' => sub { 
-            { path=>$WebDyne::PAGI::Constant::Constant{'WEBDYNE_PAGI_MIDDLEWARE_STATIC'}, root=>$_[0]->{'root'}, pass_through=>1 }
+            { path=>$WebDyne::PAGI::WEBDYNE_PAGI_MIDDLEWARE_STATIC, root=>(-f $_[0]->{'root'}) ? dirname($_[0]->{'root'}) : $_[0]->{'root'}, pass_through=>1 }
         }]
         
         
