@@ -15,7 +15,7 @@ BEGIN {
 
     #  Get in before module load
     #
-    $ENV{WEBDYNE_HTML_TIDY}=1;
+    #$ENV{WEBDYNE_HTML_TIDY}=1;
     $ENV{WEBDYNE_HTML_NEWLINE}=0;
     
 }
@@ -36,18 +36,20 @@ use warnings;
 
 #  Use the base module
 #
-use WebDyne::Util;
+#use WebDyne::Util;
 
 
 #  Other external modules
 #
 use WebDyne;
+use WebDyne::Constant;
 use WebDyne::Request::Fake;
 use Getopt::Long;
 use Pod::Usage;
 use IO::File;
 use IO::String;
 use File::Spec;
+use File::Temp qw(tempdir);
 use FindBin qw($RealBin $Script);
 use URI::Escape;
 use Term::ANSIColor;
@@ -71,6 +73,8 @@ exit ${&main(\@ARGV) || die errdump()};
 
 #===================================================================================================
 
+use Carp;
+sub err { croak(@_) }
 
 sub main {
 
@@ -92,6 +96,7 @@ sub main {
         colour  => 1,
         lineno  => 0,
         theme   => 'light',
+        request => 'fake',
         %{do(glob(sprintf('~/.%s.opt', basename(__FILE__))))}
 
     );
@@ -110,12 +115,17 @@ sub main {
         'headers_out|header_out=s@',
         'headers_in|header_in=s@',
         'outfile=s',
-        'repeat|r|num|n=s',
+        'repeat|num|n=s',
         'loop',
         'get=s@',
         'delay=i',
         'theme=s',
         'tidy!',
+        'psgi',
+        'pagi',
+        'fake',
+        'mod_perl|apache',
+        'request|r=s',
         'colour|color!',
         'lineno!',
         'man',
@@ -159,6 +169,12 @@ sub main {
     );
     
     
+    #  Consolidate backend request handler options into one multiplexer option
+    #
+    $opt{'request'}=(grep {$opt{$_}} qw(fake psgi pagi mod_perl))[0] || $opt{'request'};
+    #warn(sprintf('using "%s" request backend', $opt{'request'}));
+    
+
     #  Simulate a GET request with parameters if supplied
     #
     if (my $query_opt_ar=delete $opt{'get'}) {
@@ -174,12 +190,56 @@ sub main {
         $ENV{'REQUEST_METHOD'}='GET';
         ## use critic
     }
+    
+    
+    #  If we're running apache backend start server now
+    #
+    my ($apache_runner, $apache_svr_root_dn);
+    if ($opt{'mod_perl'}) {
+        ($apache_runner, $apache_svr_root_dn)=&request_mod_perl_startup($srce_fn);
+        $apache_runner || return err('could not start Apache daemon');
+    }
 
 
     #  Get new request object
     #
     LOOP: while (1) {
         for (1..($opt{'repeat'} || 1)) {
+        
+        
+            #  Send out to backend for render
+            #
+            my $html=&{sprintf('request_%s', $opt{'request'})}($srce_fn, \%opt);
+            
+            
+            #  If headers wanted strip them out
+            #
+            my $header;
+            if ($opt{'header'}) {
+                ($header, $html)=($html =~ /\A(.*?)\r?\n\r?\n(.*)\z/s);
+            }
+            
+
+            #  Tidy ?
+            #
+            if ($opt{'tidy'}) {
+                $html=&html_tidy($html, \%opt);
+            }
+
+
+            #  Send to syntax higlighter
+            #
+            if ($opt{'colour'}) {
+                $html=&html_colour($html, $header, \%opt);
+            }
+            
+            
+            #  Print it
+            #
+            print $html, $/;
+            
+            next;
+
 
             #  Get new request handler
             #
@@ -279,6 +339,13 @@ sub main {
     }
 
 
+    #  Shutdown server if using Apache backend
+    #
+    if ($apache_runner) {
+        &request_mod_perl_shutdown($apache_runner, $apache_svr_root_dn);
+    }
+    
+
     #  Done, return success
     #
     return \0;
@@ -289,9 +356,9 @@ sub main {
 sub html_colour {
 
 
-    #  Tidy html
+    #  Colouris HTML
     #
-    my ($html, $opt_hr)=@_;
+    my ($html, $header, $opt_hr)=@_;
 
 
     #  Try to load colour module
@@ -398,7 +465,7 @@ sub html_colour {
     # Print with line numbers if wanted
     #
     if ($opt_hr->{'lineno'}) {
-        my @lines = split /\n/, $html_highlighted;
+        my @lines = split /\n/, (join("\n\n", grep {$_} $header,  $html_highlighted));
         my $width = length(scalar @lines);
         for my $i (0..$#lines) {
             my $num = sprintf("%*d", $width, $i + 1);
@@ -418,6 +485,306 @@ sub html_colour {
     return $html_colour;
 
 }    
+
+
+sub html_tidy {
+
+    my $html=shift();
+    eval {
+        require HTML::Tidy5;
+        $html=HTML::Tidy5->new($WEBDYNE_HTML_TIDY_CONFIG_HR)->clean($html);
+    };
+    return $html;
+
+}
+
+
+sub request_psgi {
+
+
+    #  Use PSGI mock handler. Get filename we want to render
+    #
+    my $srce_fn=shift();
+    
+
+    #  Load modules we need
+    #
+    require WebDyne::PSGI;
+    require Plack::Test;
+    require HTTP::Request::Common;
+    
+    
+    #  Create new instance of WebDyne PSGI handler
+    #
+    my $app_cr=WebDyne::PSGI->new(root=>File::Spec->rel2abs(dirname($srce_fn)))->to_app();
+    my $test_or=Plack::Test->create($app_cr);
+    my $res_or=$test_or->request(&HTTP::Request::Common::GET(basename($srce_fn)));
+    my $html=$res_or->decoded_content();
+    my %header=$res_or->headers->flatten;
+    my $header=join("\n", map { sprintf('%s %s', $_, $header{$_}) } keys %header);
+    $html=$header."\n\n".$html;
+    #use Data::Dumper;
+    #die Dumper(\%header);
+    #die $html;
+    return $html;
+    
+}
+
+
+sub request_pagi {
+
+
+    #  Use PSGI mock handler. Get filename we want to render
+    #
+    my $srce_fn=shift();
+    
+
+    #  Load modules we need
+    #
+    require WebDyne::PAGI;
+    require PAGI::Test::Client;
+    #require HTTP::Request::Common;
+    
+    
+    #  Create new instance of WebDyne::PAGI handler and run
+    #
+    my $app_cr=WebDyne::PAGI->new(root=>File::Spec->rel2abs(dirname($srce_fn)))->to_app();
+    my $test_or=PAGI::Test::Client->new(app => $app_cr);
+    my $res_or=$test_or->get(basename($srce_fn));
+    return $res_or->text;
+    
+}
+
+
+sub request_mod_perl {
+
+
+    #  Spin up Apache and use that
+    #
+    my $srce_fn=shift();
+    
+    
+    #  Startup
+    #
+    #my ($runner, $svr_root_dn)=&request_mod_perl_startup($srce_fn);
+    #$runner || return err('could not start Apache daemon');
+    
+    
+    #  Get rendered HTML
+    #
+    require Apache::TestRequest; 
+    my $html=Apache::TestRequest::GET_BODY(my $fn=basename(File::Spec->rel2abs($srce_fn)));
+    #warn("fn: $fn");
+    
+    
+    #  Shutdown server
+    #
+    #&request_mod_perl_shutdown($runner, $svr_root_dn);
+    
+    
+    #  Done, return html
+    #
+    return $html;
+    
+}
+
+
+sub request_mod_perl_shutdown {
+
+    
+    #  Shut down Apache server
+    #
+    my ($runner, $svr_root_dn)=@_;
+    
+    
+    #  Shutdown
+    #
+    $runner->{'server'}->stop();
+    #sleep 1;
+    
+    
+    #  Remove temp
+    #
+    if ($svr_root_dn && ($svr_root_dn=~/webdyne_apache_\w{4}/) && (-d $svr_root_dn)) {
+        #warn("would delete $svr_root_dn");
+    }
+    
+} 
+
+
+sub request_mod_perl_startup {
+
+
+    #  Srcefn so we can set directory root
+    #
+    my $srce_fn=shift();
+    
+    
+    #  Get document root
+    #
+    my $doc_root_dn=dirname(File::Spec->rel2abs($srce_fn));
+    
+    
+    #  Server root
+    #
+    my $svr_root_dn=tempdir(
+        'webdyne_apache_XXXXXXXX',
+        TMPDIR  => 1,
+        CLEANUP => 1,   # we’ll stop httpd first, then remove manually
+    );
+
+
+    #  Start Apache server. Mask warnings about duplicate options
+    #
+    local $SIG{__WARN__}=sub { 
+        return if $_[0] =~ /Duplicate specification/;
+        CORE::warn @_;
+    };
+
+
+    #  Runner object init
+    #
+    require Apache::TestRunPerl;
+    my $runner = Apache::TestRunPerl->new() ||
+        return err('unable to create Apache::TestRunPerl instance');
+        
+        
+    #  Get postamble with WebDyne config
+    #
+    my $postamble=&request_mod_perl_postamble();
+
+    # Choose a random port the "Apache::Test" way: -port=select
+    # And tell it we intend to start httpd (so it generates config)
+    #
+    my @argv=(
+        '-port'         => 'select', 
+        '-serverroot'   => $svr_root_dn,
+        '-documentroot' => $doc_root_dn,
+        '-postamble'    => $postamble,
+        '-one-process',
+        '-start-httpd'
+    );
+
+
+    #  Now start. Will die if can't start
+    #
+    $runner->run(@argv);
+    
+    
+    #  Done
+    #
+    return ($runner, $svr_root_dn);
+
+}
+
+
+sub request_mod_perl_postamble {
+
+    #  Get all WEBDYNE_CONF env vars
+    #
+    my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
+    push (@PerlSetEnv, "PerlSetEnv WEBDYNE_ERROR_TEXT 1") unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
+    my $PerlSetEnv=join("\n", @PerlSetEnv);
+    return <<"END"
+$PerlSetEnv
+PerlSwitches -I../lib
+PerlModule WebDyne
+<Location />
+SetHandler modperl
+PerlResponseHandler WebDyne
+</Location>
+END
+
+}
+
+
+sub request_fake {
+
+
+    #  Use fake request handler
+    #
+    my ($srce_fn, $opt_hr)=@_;
+
+
+    #  Open file hanldle to receive HTML
+    #
+    my $html;
+    my $html_fh=IO::String->new($html);
+
+
+    #  Get new request handler
+    #
+    my $r=WebDyne::Request::Fake->new(
+
+        filename => $srce_fn,
+        %{$opt_hr},
+        select          =>  $html_fh,
+        #status          =>  $opt{'status'},
+
+    ) || return err();
+    
+
+    #  Split out header in/out arrays as Request::Fake uses hash to hold them (should be array one day)
+    #
+    my ($header_out_ar, $header_in_ar)=map {$opt_hr->{$_}} qw(
+        headers_out
+        headers_in
+    );
+    
+
+    #  Set headers
+    #
+    foreach my $header_out (@{$header_out_ar}) {
+        my ($k, $v)=split(/\s*:\s*/, $header_out);
+        $r->headers_out($k, $v);
+    }
+    foreach my $header_in (@{$header_in_ar}) {
+        my ($k, $v)=split(/\s*:\s*/, $header_in);
+        $r->headers_in($k, $v);
+    }
+
+
+    #  Get handler
+    #
+    my $handler=$opt_hr->{'handler'};
+
+
+    #  Load up whichever handler we are using
+    #
+    (my $handler_pm = $handler) =~ s{::}{/}g;
+    $handler_pm.='.pm';
+    eval {require $handler_pm} ||
+        return err("$Script: unable to load handler $handler, $@");
+
+
+    #  Set text errors only
+    #
+    #$WebDyne::Err::WEBDYNE_ERROR_TEXT=1 if ($opt{'error'} eq 'text');
+
+
+    #  Set header, warning output
+    #
+    #$r->notes('noheader', $opt{'header'} ? 0 : 1);
+    #$r->notes('nowarn',   $opt{'warn'} ? 0 : 1);
+
+
+    #  Run it and display results, or any error generated
+    #
+    #defined($handler->handler($r, \%opt)) || return err();
+    defined($handler->handler($r, $opt_hr)) || return err();
+    
+    
+    #  Close file handle
+    #
+    $html_fh->close();
+    
+
+    #  Return it
+    #
+    return $html;
+    
+}    
+
 
 __END__
 

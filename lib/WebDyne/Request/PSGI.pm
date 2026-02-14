@@ -29,20 +29,22 @@ use HTTP::Status qw(status_message RC_OK RC_NOT_FOUND RC_FOUND);
 use URI;
 use Data::Dumper;
 use Plack::Request;
+use Plack::Response;
 $Data::Dumper::Indent=1;
 
 
 #  WebDyne modules
 #
-use WebDyne::Request::PSGI::Constant;
 use WebDyne::Util;
 use WebDyne::Constant;
+use WebDyne::PSGI::Constant;
 
 
 #  Inheritance
 #
 use WebDyne::Request::Fake;
 @ISA=qw(Plack::Request WebDyne::Request::Fake);
+#@ISA=qw(WebDyne::Request::Fake);
 
 
 #  Version information
@@ -65,12 +67,61 @@ my %Dir_config_env=%{$WEBDYNE_PSGI_ENV_SET}, (map { $_=>$ENV{$_} } (
 ));
 
 
+#  Init
+#
+#&init();
+
+
 #  All done. Positive return
 #
 1;
 
 
 #==================================================================================================
+
+sub init {
+
+    #  Setup pass through methods
+    #
+    my %method=(
+        req => [qw(
+            env address remote_host method protocol request_uri path_info path query_string script_name scheme secure body input
+            session session_options logger cookies query_parameters body_parameters parameters content raw_body uri base user
+            headers uploads content_encoding content_length content_type header referer user_agent param upload new_response
+        )], 
+        res => [qw(
+           status headers body header content_type content_length content_encoding redirect location cookies finalize to_app
+        )],
+            
+    );
+    my %method_req; @method_req{@{$method{'req'}}}=();
+    my %method_all=map {$_=>1} grep { exists $method_req{$_} } @{$method{'res'}};
+    foreach my $handler (qw(req res)) {
+        *{$handler}=sub {
+            return $_[0]->{$handler} ||= ({req => 'Plack::Request', res=> 'Plack::Response' }->{$handler}->new($_[0]->{'env'}));
+        };
+        foreach my $method (@{$method{$handler}}) {
+            my $method_psgi=$method;
+            if ($method_all{$method}) {
+                my $inout=($handler eq 'req') ? 'in' : 'out';
+                $method_psgi.="_${inout}";
+            }
+
+            #  Ignore inheritance - only this package
+            #unless (__PACKAGE__->can($method_psgi)) {
+            unless (defined(&{__PACKAGE__."::${method_psgi}"})) {
+                debug("setting method: $method_psgi to handler: $handler");
+                *{$method_psgi}=sub {
+                    debug("calling psgi $handler, method: $method_psgi");
+                    return $#_ ? shift()->{$handler}->$method(@_) : shift()->{$handler}->$method();
+                }
+            }
+            else {
+                debug("skip $method_psgi");
+            }
+        }
+    }
+}
 
 
 sub new {
@@ -173,6 +224,12 @@ sub new {
     }
     
     
+    #  Setup request and response handlers
+    #
+    $r{'req'}=Plack::Request->new($r{'env'});
+    $r{'res'}=Plack::Response->new($r{'env'});
+    
+    
     #  Finished, pass back
     #
     return bless \%r, $class;
@@ -187,6 +244,18 @@ sub new_from_filename {
     my ($class, $fn, $select_fh)=@_;
     my %r=(filename=>$fn, select=>$select_fh, env=>\%ENV);
     return bless(\%r, $class);
+    
+}
+
+
+sub status {
+
+    #  PSGI doesn't return the status code when setting, so code like
+    #  return $r->status(500) doesn't work.
+    #
+    my $r=shift();
+    $r->{'res'}->status($r->{'status'}=shift()) if @_;
+    return $r->{'status'}
     
 }
 

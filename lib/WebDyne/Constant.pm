@@ -618,7 +618,8 @@ sub local_constant_fn {
         ))
     }
     unless ($ENV{'WEBDYNE_CONF'}) {
-        push @local_constant_fn, glob(sprintf('~/.%s', $local_constant_fn));
+        push @local_constant_fn, (my ($fn)=glob(sprintf('~/.%s', $local_constant_fn)));
+        debug("push fn: $fn onto local_constant_fn: %s, env: %s", Dumper(\@local_constant_fn, \%ENV));
     }
     debug('local_constant_fn: %s, env: %s', Dumper(\@local_constant_fn, \%ENV));
     return \@local_constant_fn;

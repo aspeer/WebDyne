@@ -9,7 +9,7 @@
 #
 #  <http://dev.perl.org/licenses/>
 #
-package WebDyne::PAGI;
+package WebDyne::PSGI;
 
 
 #  Compiler Pragma
@@ -26,17 +26,14 @@ use HTTP::Status qw(:constants is_success is_error);
 use IO::String;
 use Data::Dumper;
 use Cwd qw(fastcwd);
-use Future::AsyncAwait;
-use Sub::Util qw(set_subname);
 use File::Basename;
 use File::Spec;
 
 
-#  PAGI modules
+#  PSGI modules
 #
-use PAGI::Request;
-use PAGI::Response;
-use PAGI::SSE;
+use Plack::Request;
+use Plack::Response;
 
 
 #  WebDyne Modules
@@ -44,18 +41,23 @@ use PAGI::SSE;
 use WebDyne;
 use WebDyne::Constant;
 use WebDyne::Util;
-use WebDyne::PAGI::Constant;
-use WebDyne::Request::PAGI;
+use WebDyne::PSGI::Constant;
+use WebDyne::Request::PSGI;
+
+
+#  Vars. API file name cache
+#
+our (%API_fn);
 
 
 #  Environment
 #
 my %env_config=(
-    %{$WEBDYNE_PAGI_ENV_SET}, 
+    %{$WEBDYNE_PSGI_ENV_SET}, 
     (map { $_=>$ENV{$_}  } (
         grep { defined($ENV{$_}) }
         qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
-        @{$WEBDYNE_PAGI_ENV_KEEP},
+        @{$WEBDYNE_PSGI_ENV_KEEP},
         grep {/WEBDYNE/i} keys %ENV
     ))
 );
@@ -94,12 +96,223 @@ sub new {
     #
     $opt{'root'}=File::Spec->rel2abs($opt{'root'});
     
-    
+
     #  Done
     #
     return bless(\%opt, $class);
     
 }
+
+
+sub to_app {
+
+
+    #  Self ref
+    #
+    my $self=shift();
+
+
+    #  Dispatch code ref
+    #
+    my $app_cr=sub { $self->handler(@_) };
+    
+
+    #  Done
+    #
+    return $app_cr;
+    
+}
+
+
+#  Actual Plack handler
+#
+sub handler {
+
+
+    #  Get env
+    #
+    my ($self, $env_hr, @param)=@_;
+    local %ENV=(%env_config, %{$env_hr});
+    debug('in handler, env: %s, param:%s', Dumper(\%ENV, \@param));
+    
+    
+    #  Create new PSGI Request object, will pull filename from
+    #  environment. 
+    #
+    my $html;
+    my $html_fh=IO::String->new($html);
+    my $r=WebDyne::Request::PSGI->new(select => $html_fh, document_root => $self->{'root'}, document_default => $self->{'index'}, uri=>$ENV{'PATH_INFO'}, env=>$env_hr, @param) ||
+        return err('unable to create new WebDyne::Request::PSGI object: %s', 
+    			$@ || errclr() || 'unknown error');
+    debug("r: $r");
+    
+    
+    #  Get handler
+    #
+    my $handler=$self->{'handler'} ||= 'WebDyne';
+
+
+    #  Call handler and evaluate results
+    #
+    my $status=eval {$handler->handler($r)};
+    debug("handler returned status: $status");
+
+
+    #  Can close html file handle now
+    #
+    $html_fh->close();
+    debug("html returned: $html");
+
+
+	#  Present error if non 200 (success) status returned. Yes - there are other status codes but this is most
+	#  common and quickest test, other 200 codes will fall through the if/else statements and still work
+	#
+	unless ($status == HTTP_OK) {
+	    
+	    
+	    #  OK. Most common match didn't happen. Is it an error ?
+	    #
+	    debug('status: %s is not HTTP_OK, branching', $status);
+ 	    if (!defined($status) || ($status < 0) ||  is_error($status) || !$html) {
+	
+	    
+            #  Something went wrong. Let's start working through it
+            #
+            if (($status eq HTTP_NOT_FOUND) && !(-f (my $fn=$r->filename()))) {
+
+            
+                #  We couldn't find file but this might be an API request. Go back through
+                #  file paths looking for a file that matches the apu request, e.g. if URI
+                #  is /api/user/42 go back looking for /api/user.psp or /api.psp in the treet
+                #
+                debug("status: $status, fn: $fn");
+                my $document_root=$r->document_root;
+                if ($WEBDYNE_API_ENABLE) {
+                    debug("status: $status, fn:$fn (%s), looking for API match", $r->filename());
+                    #(my $api_dn=$fn)=~s/^${document_root}//;
+                    (my $api_dn=$ENV{'PATH_INFO'})=~s/^${document_root}//;
+                    my @api_dn=grep {$_} File::Spec::Unix->splitdir($api_dn);
+                    my @api_fn;
+                    while (my $dn=shift @api_dn) {
+                        push @api_fn, $dn;
+                        my $api_fn=File::Spec->catfile($document_root, @api_fn) . WEBDYNE_PSP_EXT;
+                        debug("check $api_fn");
+                        #  Check of outside docroot
+                        last if (index($api_fn, $document_root) !=0);
+                        if ($API_fn{$api_fn} || (-f $api_fn)) {
+                            debug("found api file name: $api_fn, %s, dispatching", Dumper(\%API_fn));
+                            $API_fn{$api_fn}++; # Cache so not stat()ing on file system
+                            return &handler($env_hr, filename=>$api_fn);
+                        }
+                    }
+                }
+                
+                
+                #  If get here nothing found, send 404 error
+                #
+                debug("status: $status, fn:$fn, setting HTTP_NOT_FOUND");
+                $r->status(HTTP_NOT_FOUND);
+                my $error=errdump() || "File not found, status ($status)"; errclr();
+                $html=$r->err_html($status, $error)
+            }
+            elsif (is_error($status)) {
+            
+                #  Some other error besides 404
+                #
+                debug("returning custom error: $status");
+                $r->status($status);
+                $html=$r->custom_response($status) || errstr() || do {
+                     $r->content_type($WEBDYNE_CONTENT_TYPE_TEXT);
+                    "Error $status with no content - try server error logs ?";
+                };
+            }
+            else {
+            
+                #  Weird non HTTP status code, something has gone wrong along way
+                #
+                debug('undefined status returned, looking for error handler');
+                my $error=errdump() || $@; errclr();
+                $error ||=  "Unexpected return status ($status) from handler $handler";
+                debug("request handler status:$status, detected error: $error, calling err_html");
+                $r->status(HTTP_INTERNAL_SERVER_ERROR);
+                $html=$r->err_html($status, $error)
+
+            }
+                
+        }
+        else {
+        
+        
+            #  Not an error, but not HTTP_OK
+            #
+            debug("status: $status is not an error, proceeding");
+            
+        }
+
+    }
+    debug("final handler status: %s, content_type: %s, html:%s", $status, $r->content_type(), $html);
+
+
+    #  If html defined set header content type unless already set during handler run
+    #
+    $r->content_type($WEBDYNE_CONTENT_TYPE_HTML) 
+        if ($html && !$r->content_type());
+
+    
+    #  Return structure
+    #
+    my @return=(
+    $r->status() || HTTP_INTERNAL_SERVER_ERROR,
+    [
+                    %{$r->headers_out()}
+            ],
+    [
+                    $html 
+            ]
+    );
+
+
+    #  Finished with response handler now
+    #
+    $r->DESTROY();
+
+
+    #  And return
+    #
+    debug('return %s', Dumper(\@return));
+    return \@return;
+
+
+}
+
+
+sub error {
+
+    #  Get and return error string as last resort. Test function not used 
+    #  in main handler.
+    #
+    my @error=@_;
+    my $error=sprintf(shift(), @error) ||
+            'Unknown error';
+
+    #  Basic error response
+    #
+    return [
+        HTTP_INTERNAL_SERVER_ERROR,
+        ['Content-Type' => 'text/plain'],
+        [join($/,
+	    'Internal Server Error:',
+	    undef, 
+	    $error
+        )]
+    ];
+
+}
+
+
+
+__END__
+
 
     
 sub to_app {
@@ -146,81 +359,6 @@ sub to_app {
 }
 
 
-sub handler_sse {
-
-
-    #  Get request
-    #
-    my ($self, $scope, $receive, $send)=@_;
-    debug('in handler, scope:%s receive:%s, send:%s', Dumper($scope, $receive, $send));
-
-
-    #  Setup %ENV
-    #
-    local *ENV=\%env_config;
-
-
-    #  Create helper objects
-    #
-    my $req_or=PAGI::Request->new($scope, $receive) ||
-        return err('unable to get PAGI::Request object');
-    my $res_or=PAGI::Response->new($scope, $send) ||
-        return err('unable to get PAGI::Response object');
-    my $sse_or=PAGI::SSE->new($scope, $receive, $send) ||
-        return err('unable to get PAGI::SSE object');
-    debug("req_or: $req_or, res_or: $res_or, sse_or: $sse_or");
-
-
-    #  Get main WebDyne handler request object
-    #
-    my $r=WebDyne::Request::PAGI->new( document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, res=>$res_or, sse=>$sse_or,
-        receive => $receive, send=> $send) ||
-            return err('unable to create new WebDyne::Request::PAGI object: %s', 
-                $@ || errclr() || 'unknown error');
-    debug("r: $r");
-    
-    
-    #  Call handler. No point error checking but log errors
-    #
-    debug('calling WebDyne handler');
-    my $status=WebDyne->handler($r);
-    debug("status: $status");
-    if ($status eq HTTP_CONTINUE) {
-        my $sse_cr=$r->custom_response($status);
-        return $sse_cr;
-    }
-    else {
-        return err();
-    }
-
-}
-
-
-sub handler_sse_error {
-
-    return async sub {
-    
-
-        #  Get request
-        #
-        my ($scope, $receive, $send)=@_;
-        debug('in handler, scope:%s receive:%s, send:%s', Dumper($scope, $receive, $send));
-
-
-        #  Create helper objects
-        #
-        my $sse_or=PAGI::SSE->new($scope, $receive, $send) ||
-            return err('unable to get PAGI::SSE object');
-        debug("sse_or: $sse_or");
-        
-        
-        #  Send error
-        #
-        await $sse_or->send('SSE error - see logs');
-        
-    }
-    
-}
 
 
 sub handler_http {
@@ -244,7 +382,15 @@ sub handler_http {
 
         #  Restrict local env
         #
-        local *ENV=\%env_config;
+        local %ENV=(
+            %{$WEBDYNE_PAGI_ENV_SET}, 
+            (map { $_=>$ENV{$_}  } (
+                grep { defined($ENV{$_}) }
+                qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
+                @{$WEBDYNE_PAGI_ENV_KEEP},
+                grep {/WEBDYNE/i} keys %ENV
+            ))
+        );
 
         
         #  Only need request and response helper objects
@@ -358,14 +504,7 @@ sub handler_http {
             debug('sending html to client via await()');
             $r->content_type_try($WEBDYNE_CONTENT_TYPE_HTML);
             return await $r->send($html || err);
-        }
-        
-        
-        #  Done with response handler now
-        #
-        $r->DESTROY();
-
-
+       }
         
     })
     
