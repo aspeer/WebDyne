@@ -273,10 +273,16 @@ sub headers {
 
     #  Set/get header. r=request, d=direction(in/out), k=key, v=value
     #
-    my ($r, $d, $h, $v)=@_;
+    my ($r, $d, $h, $v, %param)=@_;
     
-    if (@_ == 4) {
-        return $r->{$d}{$h}=$v
+    if (@_ >= 4) {
+        #return $r->{$d}{$h}=$v;
+        $r->{$d}{$h}=$v;
+        while (my($key,$val)=each %param) {
+            $r->{$d}{$key}=$val;
+        }
+        #die Dumper($r->{$d});
+        return $v;
     }
     elsif (@_ == 3) {
         return $r->{$d}{$h}

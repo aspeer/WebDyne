@@ -59,7 +59,7 @@ sub new {
     #  New instance of CGI::Common
     #
     my ($class, $r, %param)=@_;
-    debug("class: $class, r: $r, param: %s", Dumper(\%param));
+    debug("class: $class, r: $r, param: %s, caller %s", Dumper(\%param, [caller(0)]));
     my $cgi_or=CGI::Simple->new($r) ||
         return err('unable to get CGI::Simple objedt');
     my $self=bless($cgi_or, __PACKAGE__);

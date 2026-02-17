@@ -60,6 +60,7 @@ sub new {
         #
         debug('detected Plack request handler');
         require WebDyne::CGI::PSGI;
+        return  WebDyne::CGI::PSGI->new($r, %param);
         *new=WebDyne::CGI::PSGI::new;
  
         
@@ -70,6 +71,7 @@ sub new {
         #
         debug('detected PAGI request handler');
         require WebDyne::CGI::PAGI;
+        return  WebDyne::CGI::PAGI->new($r, %param);
         *new=WebDyne::CGI::PAGI::new;
  
         
@@ -80,6 +82,7 @@ sub new {
         #
         debug('detected Apache MP2 request handler');
         require WebDyne::CGI::Simple;
+        return  WebDyne::CGI::Simple->new($r, %param);
         *new=WebDyne::CGI::Simple::new;
 
 
@@ -90,6 +93,7 @@ sub new {
         #
         debug('detected Apache MP1 request handler');
         require WebDyne::CGI::Simple;
+        return  WebDyne::CGI::Simple->new($r, %param);
         *new=WebDyne::CGI::Simple::new;
         
 
@@ -103,6 +107,8 @@ sub new {
         
         #  Note closure - we *don't* want to pass $r or param to CGI::Simple if 
         #  not in mod_perl
+        #die Dumper(\@_);
+        return  WebDyne::CGI::Simple->new();
         *new=sub { &WebDyne::CGI::Simple::new() };
         
     }

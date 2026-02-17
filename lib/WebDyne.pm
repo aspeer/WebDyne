@@ -2596,6 +2596,8 @@ sub json {
     #
     my $json_or=JSON->new() ||
         return err('unable to create new JSON object');
+    #$json_or->allow_blessed(1);
+    #$json_or->convert_blessed(1);
     debug("json_or: $json_or");
     $json_or->canonical(defined($attr_hr->{'canonical'}) ? ($attr_hr->{'canonical'} ? 1 : 0) : WEBDYNE_JSON_CANONICAL);
     $json_or->pretty(defined($attr_hr->{'pretty'}) ? ($attr_hr->{'pretty'} ? 1 : 0)  : WEBDYNE_JSON_PRETTY);

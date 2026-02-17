@@ -425,6 +425,8 @@ my %constant_temp;
     WEBDYNE_HTTP_HEADER_AJAX_HR => { map { $_=> 1} @{$_=[qw(
         hx-request
         x-alpine-request
+        Hx-Request
+        X-Alpine-Request
     )]}},
     WEBDYNE_HTTP_HEADER_AJAX_AR => $_,
     

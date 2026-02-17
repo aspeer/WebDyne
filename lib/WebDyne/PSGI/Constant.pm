@@ -25,6 +25,11 @@ use warnings;
 no warnings qw(once);
 
 
+#  External modules
+#
+use File::Basename;
+
+
 #  Does the heavy liftying of importing into caller namespace
 #
 require WebDyne::Constant;

@@ -19,7 +19,7 @@ BEGIN {
     if (@missing) {
         plan skip_all => "Skipping PSGI tests: missing " . join(", ", @missing);
     }
-    plan skip_all => "Skipping PSGI tests: AUTHOR_TEST not set." unless $ENV{'AUTHOR_TEST'};
+    plan skip_all => "AUTHOR_TEST not set, omitting PSGI test" unless $ENV{'AUTHOR_TEST'};
     
 }
 
