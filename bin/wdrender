@@ -132,7 +132,7 @@ sub main {
         'put=s@',
         'options=s@',
         'head',
-        'delay=i',
+        'delay|sleep=i',
         'theme=s',
         'tidy!',
         'psgi',
@@ -147,6 +147,7 @@ sub main {
         'lineno!',
         'htmx',
         'sse',
+        'compare',
         'man',
         'version'
     ) || pod2usage(2);
@@ -274,6 +275,19 @@ sub main {
                 next;
             }
             
+            if ($opt{'compare'}) {
+                unless ($html eq ($_{'html'} ||= $html)) {
+                    eval { require Text::Diff } || do {
+                        die(sprintf("compare mismatch:\n\n$html\n\n%s",$_{'html'}));
+                    };
+                    my $diff=Text::Diff::diff(
+                        \Data::Dumper->Dump([\$html], ['$ACTUAL']),
+                        \Data::Dumper->Dump([\$_{'html'}], ['$EXPECT']),
+                        { STYLE => 'Unified' }
+                    );
+                    die("compare mismatch: $diff");
+                }
+            }
 
             #  Tidy ?
             #
@@ -293,13 +307,13 @@ sub main {
             #
             print $html, $/;
             
-            next;
+            #next;
 
 
             
             #  Print it
             #
-            print $html, $/;
+            #print $html, $/;
 
             
             #  If looking for leak
@@ -309,8 +323,8 @@ sub main {
 
             #  Manual cleanup
             #
-            my $r;
-            $r->DESTROY();
+            #my $r;
+            #$r->DESTROY();
             
             
             #  Leak detection
@@ -323,9 +337,25 @@ sub main {
             if (my $delay=$opt{'delay'}) {
                 sleep $delay
             }
+            next;
+
+            if ($opt{'compare'}) {
+                unless ($html eq ($_{'html'} ||= $html)) {
+                    eval { require Text::Diff } || do {
+                        die(sprintf("compare mismatch:\n\n$html\n\n%s",$_{'html'}));
+                    };
+                    my $diff=Text::Diff::diff(
+                        \Data::Dumper->Dump([\$html], ['$ACTUAL']),
+                        \Data::Dumper->Dump([\$_{'html'}], ['$EXPECT']),
+                        { STYLE => 'Unified' }
+                    );
+                    die("compare mismatch: $diff");
+                }
+            }
 
         }
         }
+        
         last LOOP unless $opt{'loop'};
     }
 

@@ -2584,7 +2584,7 @@ sub json {
     #  Run the code in perl routine specifying it is JSON, get return ref of
     #  some kind
     #
-    defined(my $json_xr=$self->perl(undef, {json => 1, %{$attr_hr}})) ||
+    defined(my $json_xr=$self->perl($data_ar, {json => 1, %{$attr_hr}})) ||
         return err();
     if (ref($json_xr) eq 'SCALAR') {
         $json_xr=${$json_xr}
@@ -2773,7 +2773,8 @@ sub api {
         #  some kind
         #
         #my $json_xr=$self->perl(undef, {json => 1, %{$attr_hr}, param=>$match_hr }) ||
-        my $json_xr=$self->perl(undef, {json => 1, %attr, param=>$match_hr }) ||
+        #my $json_xr=$self->perl(undef, {json => 1, %attr, param=>$match_hr }) ||
+        my $json_xr=$self->perl($data_ar, {json => 1, %attr, param=>$match_hr }) ||
             return err();
         debug("json_xr %s", Dumper($json_xr));
 

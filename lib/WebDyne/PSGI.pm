@@ -52,16 +52,25 @@ our (%API_fn);
 
 #  Environment
 #
-my %env_config=(
+#my %env_config=(
+#    %{$WEBDYNE_PSGI_ENV_SET}, 
+#    (map { $_=>$ENV{$_}  } (
+#        grep { defined($ENV{$_}) }
+#        qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
+#        @{$WEBDYNE_PSGI_ENV_KEEP},
+#        grep {/WEBDYNE/i} keys %ENV
+#    ))
+#);
+%ENV=(
     %{$WEBDYNE_PSGI_ENV_SET}, 
     (map { $_=>$ENV{$_}  } (
         grep { defined($ENV{$_}) }
-        qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
+        qw(DOCUMENT_DEFAULT DOCUMENT_ROOT SERVER_NAME APPL_MD_PATH),
         @{$WEBDYNE_PSGI_ENV_KEEP},
-        grep {/WEBDYNE/i} keys %ENV
+        grep {/^WEBDYNE/i} keys %ENV
     ))
 );
-
+#die Dumper(\%ENV);
 
 #  Version information
 #
@@ -123,6 +132,8 @@ sub to_app {
     
 }
 
+our $FOO;
+1;
 
 #  Actual Plack handler
 #
@@ -132,7 +143,14 @@ sub handler {
     #  Get env
     #
     my ($self, $env_hr, @param)=@_;
-    local %ENV=(%env_config, %{$env_hr});
+    #local %ENV=(%env_config, %{$env_hr});
+    #unless ($FOO++) {
+    #    %ENV=(%env_config, %{$env_hr}, map {$_=>$ENV{$_}} grep {/^WEBDYNE/} keys %ENV); # unless $FOO++;;
+    #}
+    #map {$ENV{$_}=$env_config{$_}} keys %env_config;
+    #map {$ENV{$_}=$env_hr->{$_}} keys %{$env_hr};
+    #%ENV=(%ENV, %{$env_hr});
+    
     debug('in handler, env: %s, param:%s', Dumper(\%ENV, \@param));
     
     

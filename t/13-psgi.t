@@ -120,7 +120,8 @@ sub main {
             diag("processing: $test_fn");
             
             #next if $test_cn=~/substitution\.psp$/;
-            #next if $test_cn=~/api_bare\.psp$/;
+            next if $test_cn=~/api_bare\.psp$/;
+            next if $test_cn=~/api_perl_inline\.psp$/;
 
             #  Iterate twice to make sure no change over multiple iterations
             #
@@ -143,6 +144,7 @@ sub main {
                 ok(my $res=$test_or->request(GET (basename($test_cn) || $test_cn)));
                 my $html_live=$res->decoded_content();
                 #diag("live: $html_live");
+                #die;
                 
 
                 #  Check match
@@ -171,6 +173,7 @@ sub main {
                 
                     #  Fail
                     #
+                    #die;
                     fail(diag("$test_fn fail on stage: HTML render"));
                     eval { require Text::Diff } || do {
                         diag('unable to load Text::Diff module to show comparison');

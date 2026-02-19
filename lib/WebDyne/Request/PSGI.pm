@@ -60,11 +60,12 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #  Save local copy of environment for ref by Dir_config handler. ENV is reset for each request,
 #  so must use a snapshot for simulating r->dir_config
 #
-my %Dir_config_env=%{$WEBDYNE_PSGI_ENV_SET}, (map { $_=>$ENV{$_} } (
-    qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
-    @{$WEBDYNE_PSGI_ENV_KEEP},
-    grep {/WebDyne/i} keys %ENV
-));
+#my %Dir_config_env=%{$WEBDYNE_PSGI_ENV_SET}, (map { $_=>$ENV{$_} } (
+#    qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
+#    @{$WEBDYNE_PSGI_ENV_KEEP},
+#    grep {/WebDyne/i} keys %ENV
+#));
+my %Dir_config_env;
 
 
 #  Init
@@ -125,6 +126,114 @@ sub init {
 
 
 sub new {
+
+
+    #  New PSGI request
+    #
+    my ($class, %r)=@_;
+    debug("$class, r: %s, calller:%s", Dumper(\%r, [caller(0)]));
+    
+
+    #  Get PSGI env var
+    #
+    my $env_hr=$r{'env'} ||
+        return err('no PSGI env supplied');
+    
+
+    #  Try to figure out filename user wants
+    #
+    unless ($r{'filename'}) {
+    
+    
+        #  Not supplied - need to work out
+        #
+        debug('filename not supplied, determining from request');
+
+    
+        #  Iterate through options. If *not* supplied by SCRIPT_FILENAME keep going.
+        #
+        my $fn;
+        unless (($fn=$env_hr->{'SCRIPT_FILENAME'}) && !$r{'uri'}) {
+        
+        
+            #  Need to calc from document root in PSGI environment
+            #
+            debug('not supplied in SCRIPT_FILENAME or r{uri}. calculating');
+            if (my $dn=($r{'document_root'} || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
+            
+                #  Get from URI and location
+                #
+                my $uri=$r{'uri'} || $env_hr->{'PATH_INFO'};
+                debug("uri: $uri");
+                $fn=File::Spec->catfile($dn, split m{/+}, $uri); #/
+                debug("fn: $fn from dn: $dn, uri: $uri");
+                
+            }
+            
+            
+            #  Need to add default psp file ?
+            #
+            #unless ($fn=~/\.psp$/) { # fastest
+            unless ($fn=~WEBDYNE_PSP_EXT_RE) { # fastest
+
+                #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
+                #  handle it
+                #
+                if  (($fn=~/\/$/) && ((-d $fn) || !$fn)) {
+                    
+            
+                    #  Append default doc to path, which appears at moment to be a directory ?
+                    #
+                    my $document_default=$r{'document_default'} || $DOCUMENT_DEFAULT;
+                    debug("appending document default $document_default to fn:$fn");
+                    
+                    #  If absolute path just use it
+                    #
+                    if (File::Spec->file_name_is_absolute($document_default)) {
+                    
+                        #  Yep - absolute path
+                        #
+                        $fn=$document_default
+                    }
+                    else {
+                    
+                        #  Otherwise append to existing path
+                        #
+                        $fn=File::Spec->catfile($fn, split m{/+}, $document_default); #/
+                    }
+                }
+                else {
+                    
+                    #  Not .psp file, do not want
+                    #
+                    $fn=undef;
+                }
+            }
+        }
+
+
+        #  Final sanity check
+        #
+        debug("final fn: $fn");
+        $r{'filename'}=$fn; 
+        
+    }
+    
+    
+    #  Setup request and response handlers
+    #
+    $r{'req'}=Plack::Request->new($env_hr);
+    $r{'res'}=Plack::Response->new($env_hr);
+    
+    
+    #  Finished, pass back
+    #
+    return bless \%r, $class;
+
+}
+
+
+sub new0 {
 
 
     #  New PSGI request
@@ -309,7 +418,7 @@ sub headers_out {
 }    
 
 
-sub location {
+sub location0 {
 
 
     #  Equiv to Apache::RequestUtil->location;
@@ -319,14 +428,20 @@ sub location {
     my $location;
     my $constant_hr=$WEBDYNE_DIR_CONFIG;
     my $constant_server_hr;
-    if (my $server=$Dir_config_env{'WebDyneServer'} || $ENV{'SERVER_NAME'}) {
+    #if (my $server=$Dir_config_env{'WebDyneServer'} || $ENV{'SERVER_NAME'}) {
+    if (my $server=$ENV{'WebDyneServer'} || $ENV{'SERVER_NAME'}) {
         $constant_server_hr=$constant_hr->{$server} if exists($constant_hr->{$server})
     }
-    if ($Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'}) {
+    #if ($Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'}) {
+    if ($location=$r->{'location'}) {
+        return $location;
+    }
+    elsif ($ENV{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'}) {
 
         #  APPL_MD_PATH is IIS virtual dir. If that or a fixed location set use it.
         #
-        $location=$Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'};
+        #$location=$Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'};
+        $location=$ENV{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'};
     }
     elsif (my $uri_path=join('', grep {$_} @ENV{qw(SCRIPT_NAME PATH_INFO)})) {
         

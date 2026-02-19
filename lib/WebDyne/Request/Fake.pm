@@ -512,7 +512,7 @@ sub output_filters {
 }
 
 
-sub location {
+sub location0 {
 
     #  Get/set location
     my ($self, $location)=@_;
@@ -524,6 +524,63 @@ sub location {
     }
 
 }
+
+sub location {
+
+
+    #  Equiv to Apache::RequestUtil->location;
+    #
+    my $r=shift();
+    debug("r: $r, caller: %s", Dumper([caller(0)]));
+    my $location;
+    my $constant_hr=$WEBDYNE_DIR_CONFIG;
+    my $constant_server_hr;
+    #if (my $server=$Dir_config_env{'WebDyneServer'} || $ENV{'SERVER_NAME'}) {
+    if (my $server=$ENV{'WebDyneServer'} || $ENV{'SERVER_NAME'}) {
+        $constant_server_hr=$constant_hr->{$server} if exists($constant_hr->{$server})
+    }
+    #if ($Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'}) {
+    if ($location=$r->{'location'}) {
+        return $location;
+    }
+    elsif ($ENV{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'}) {
+
+        #  APPL_MD_PATH is IIS virtual dir. If that or a fixed location set use it.
+        #
+        #$location=$Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'};
+        $location=$ENV{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'};
+    }
+    elsif (my $uri_path=join('', grep {$_} @ENV{qw(SCRIPT_NAME PATH_INFO)})) {
+        
+        #  Strip file name
+        #
+        $uri_path=~s{[^/]+\Q@{[WEBDYNE_PSP_EXT]}\E$}{}x; #\
+        debug("uri_path: $uri_path");
+        my @location=('/', grep {$_} File::Spec::Unix->splitdir($uri_path));
+        
+        #  Start iterating through directories
+        #
+        while ($location=File::Spec::Unix->catdir(@location)) {
+            debug("location: $location");
+            last if exists($constant_hr->{$location}) || exists($constant_server_hr->{$location});
+            $location.='/' unless ($location eq '/');
+            last if exists($constant_hr->{$location}) || exists($constant_server_hr->{$location});
+            pop @location;
+        }
+    }
+    else {
+        
+        #  Actually mod_perl spec says location blank if not positively given - don't default to '/'
+        #
+        #$location=File::Spec::Unix->rootdir();
+    }
+    
+    #  
+    #
+    return $location;
+
+}
+
 
 
 sub header_only {
