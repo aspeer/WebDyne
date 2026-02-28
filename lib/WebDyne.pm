@@ -96,7 +96,7 @@ require WebDyne::Err;
 
 #  Var to hold package wide hash, for data shared across package
 #
-my %Package;
+our %Package;
 
 
 #  Do some class wide initialisation

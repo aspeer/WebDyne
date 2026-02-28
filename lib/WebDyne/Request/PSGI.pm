@@ -25,7 +25,7 @@ no warnings qw(uninitialized);
 #  External modules
 #
 use File::Spec::Unix;
-use HTTP::Status qw(status_message RC_OK RC_NOT_FOUND RC_FOUND);
+use HTTP::Status qw(status_message HTTP_OK HTTP_NOT_FOUND HTTP_FOUND);
 use URI;
 use Data::Dumper;
 use Plack::Request;
@@ -38,13 +38,13 @@ $Data::Dumper::Indent=1;
 use WebDyne::Util;
 use WebDyne::Constant;
 use WebDyne::PSGI::Constant;
+use WebDyne::Request::Common;
 
 
 #  Inheritance
 #
 use WebDyne::Request::Fake;
-@ISA=qw(Plack::Request WebDyne::Request::Fake);
-#@ISA=qw(WebDyne::Request::Fake);
+@ISA=qw(WebDyne::Request::Fake);
 
 
 #  Version information
@@ -57,20 +57,9 @@ $VERSION='2.075';
 debug("Loading %s version $VERSION", __PACKAGE__);
 
 
-#  Save local copy of environment for ref by Dir_config handler. ENV is reset for each request,
-#  so must use a snapshot for simulating r->dir_config
-#
-#my %Dir_config_env=%{$WEBDYNE_PSGI_ENV_SET}, (map { $_=>$ENV{$_} } (
-#    qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
-#    @{$WEBDYNE_PSGI_ENV_KEEP},
-#    grep {/WebDyne/i} keys %ENV
-#));
-my %Dir_config_env;
-
-
 #  Init
 #
-#&init();
+&init() unless defined(&method);
 
 
 #  All done. Positive return
@@ -80,48 +69,164 @@ my %Dir_config_env;
 
 #==================================================================================================
 
+
 sub init {
 
     #  Setup pass through methods
     #
     my %method=(
-        req => [qw(
-            env address remote_host method protocol request_uri path_info path query_string script_name scheme secure body input
-            session session_options logger cookies query_parameters body_parameters parameters content raw_body uri base user
-            headers uploads content_encoding content_length content_type header referer user_agent param upload new_response
-        )], 
-        res => [qw(
-           status headers body header content_type content_length content_encoding redirect location cookies finalize to_app
-        )],
+        req => {
+            #accept_encoding     => sub { shift()->headers_in('Acccept-Encoding') },
+            accept_encoding     => sub { shift()->headers_in('accept_encoding') },
+            accept_language     => sub { shift()->headers_in('accept_language') },
+            accept              => sub { shift()->headers_in('accept') },
+            authority           => sub { shift()->uri->authority },
+            args                => undef,
+            as_string           => undef,
+            authorizarion       => sub { shift()->headers_in('authorization') },
+            auth_type           => sub { shift()->env->{'AUTH_TYPE'} },
+            base_url            => 'base',
+            body                => sub { my $r=shift(); if (my $input_or=$r->input) { my $body; $input_or->read($body, $r->content_length()); return $body } },
+            body_handle         => 'input',
+            cache_control       => sub { shift()->headers_in('cache_control') },
+            charset             => sub { ()=(shift()->content_type=~/charset=(.*?)/)[0] },
+            client_address      => 'address',
+            content_encoding    => 'content_encoding',
+            content_length      => 'content_length',
+            content_type        => 'content_type',
+            cookies             => 'cookies',
+            cookie              => sub { shift()->cookies(@_) },
+            content             => 'body',
+            input               => sub { shift()->env->{'psgi.input'} },
+            custom_response     => undef,
+            cwd                 => undef,
+            dir_config          => undef,
+            document_root       => undef,
+            env                 => 'env',
+            etag                => sub { shift()->if_none_match },
+            filename            => undef,
+            finalize            => undef,
+            finfo               => undef,
+            form_parameters     => 'body_parameters',
+            forwarded_for       => sub { shift()->headers_in('x_forwarded_for') },
+            fragment            => sub { shift()->uri->fragment },
+            handler             => undef,
+            headers_in          => undef,
+            headers_out         => undef,
+            header_only         => undef,
+            host                => sub { shift()->uri->host },
+            hostname            => undef,
+            http_version        => 'protocol',
+            id                  => sub { shift()->env->{'psgi.request_id'} },
+            if_modified_since   => sub { shift()->headers_in('if_modified_since') },
+            if_none_match       => sub { shift()->headers_in('if_none_match') },
+            is_ajax             => sub { (shift()->headers_in('x_requested_with') eq 'XMLHttpRequest') },
+            is_main             => undef,
+            location            => undef,
+            log_error           => undef,
+            lookup_file         => undef,
+            lookup_uri          => undef,
+            main                => undef,
+            media_type          => sub { ()=(shift()->content_type=~/(.*?);/) },
+            method              => 'method',
+            mtime               => undef,
+            multipart_parameters=> 'body_parameters',
+            next                => undef,
+            notes               => undef,
+            origin              => sub { shift()->headers_in('origin') },
+            output_filters      => undef,
+            path_parameters     => undef,
+            path                => 'path_info',
+            path_info           => 'path_info',
+            #parsed_uri          => 'uri',
+            #port                => 'port',
+            pool                => undef,
+            preferred_language  => undef,
+            preferred_media_type=> undef,
+            prev                => undef,
+            print               => undef,
+            protocol            => 'protocol',
+            query_parameters    => 'query_parameters',
+            query_string        => 'query_string',
+            referer             => 'referer',
+            redirect            => undef,
+            remote_address      => 'address',
+            remote_host         => 'remote_host',
+            remote_port         => sub { shift()->env->{'REMOTE_PORT'} },
+            remote_user         => 'user',
+            request_time        => sub { shift()->env->{'psgi.start_time'} },
+            register_cleanup    => undef,
+            route               => undef,
+            run                 => undef,
+            scheme              => 'scheme',
+            script_name         => 'script_name',
+            secure              => 'secure',
+            sendfile            => undef,
+            session_id          => undef,
+            session             => undef,
+            server_name         => undef,
+            server_port         => undef,
+            stat                => undef,
+            status              => undef,
+            status_line         => undef,
+            uploads             => 'uploads',
+            uri                 => 'uri',
+            unparsed_uri        => 'uri',
+            url                 => 'uri',
+            user_agent          => 'user_agent',
+            write               => undef,
+        },
+        res => {(
+           #status headers body header content_typee content_length content_encoding redirect location cookies finalize to_app
+        )},
             
     );
-    my %method_req; @method_req{@{$method{'req'}}}=();
-    my %method_all=map {$_=>1} grep { exists $method_req{$_} } @{$method{'res'}};
+    my %method_all;
     foreach my $handler (qw(req res)) {
-        *{$handler}=sub {
-            return $_[0]->{$handler} ||= ({req => 'Plack::Request', res=> 'Plack::Response' }->{$handler}->new($_[0]->{'env'}));
-        };
-        foreach my $method (@{$method{$handler}}) {
-            my $method_psgi=$method;
-            if ($method_all{$method}) {
-                my $inout=($handler eq 'req') ? 'in' : 'out';
-                $method_psgi.="_${inout}";
+        while (my ($method, $dispatch)=each %{$method{$handler}}) {
+            debug("method: $method");
+            $method_all{$method}++;
+            if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
+                #  Do nothing, defined here
+                #
+                debug("skip $method, defined in this package");
+                next;
             }
-
-            #  Ignore inheritance - only this package
-            #unless (__PACKAGE__->can($method_psgi)) {
-            unless (defined(&{__PACKAGE__."::${method_psgi}"})) {
-                debug("setting method: $method_psgi to handler: $handler");
-                *{$method_psgi}=sub {
-                    debug("calling psgi $handler, method: $method_psgi");
-                    return $#_ ? shift()->{$handler}->$method(@_) : shift()->{$handler}->$method();
-                }
+            elsif (!defined($dispatch)) {
+                #  Do nothing, will fall through to Fake
+                #
+                debug("skip $method, will inherit from Fake");
+                next;
+            }
+            elsif (ref($dispatch) eq 'CODE') {
+                #  Turn into method
+                #
+                debug("setting method: $method to code ref: $dispatch");
+                *{$method}=$dispatch;
             }
             else {
-                debug("skip $method_psgi");
+                #  Plack method
+                #
+                debug("setting method: $method to $handler: $dispatch");
+                *{$method}=sub { shift()->{'req'}->$dispatch };
             }
         }
     }
+    
+    #  Check we haven't missed any methods
+    #
+    foreach my $method (sort @{&WebDyne::Request::Common::methods}) {
+        unless (delete $method_all{$method}) {
+            die "missing method definition: *$method*";
+        }
+        unless (__PACKAGE__->can($method)) {
+            warn "missing method function: $method";
+        }
+    }
+    if (my @method_all=keys(%method_all)) {
+        warn(sprintf('additional methods defined: %s', Dumper(\@method_all)));
+    }
+    
 }
 
 
@@ -223,7 +328,7 @@ sub new {
     #  Setup request and response handlers
     #
     $r{'req'}=Plack::Request->new($env_hr);
-    $r{'res'}=Plack::Response->new($env_hr);
+    #$r{'res'}=Plack::Response->new(HTTP_OK);
     
     
     #  Finished, pass back
@@ -233,118 +338,25 @@ sub new {
 }
 
 
-sub new0 {
+sub env0 {
 
-
-    #  New PSGI request
-    #
-    my ($class, %r)=@_;
-    debug("$class, r: %s, calller:%s", Dumper(\%r, [caller(0)]));
+    shift()->{'env'};
     
-    
-    #  Try to figure out filename user wants
-    #
-    unless ($r{'filename'}) {
-    
-    
-        #  Not supplied - need to work out
-        #
-        debug('filename not supplied, determining from request');
-
-    
-        #  Iterate through options. If *not* supplied by SCRIPT_FILENAME keep going.
-        #
-        my $fn;
-        unless (($fn=$ENV{'SCRIPT_FILENAME'}) && !$r{'uri'}) {
-        
-        
-            #  Need to calc from document root in PSGI environment
-            #
-            debug('not supplied in SCRIPT_FILENAME or r{uri}. calculating');
-            if (my $dn=($r{'document_root'} || $ENV{'DOCUMENT_ROOT'} || $Dir_config_env{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
-            
-                #  Get from URI and location
-                #
-                my $uri=$r{'uri'} || $ENV{'PATH_INFO'} || $ENV{'SCRIPT_NAME'};
-                debug("uri: $uri");
-                $fn=File::Spec->catfile($dn, split m{/+}, $uri); #/
-                debug("fn: $fn from dn: $dn, uri: $uri");
-                
-            }
-            
-            
-            #  IIS/FastCGI, not tested recently unsure if works
-            #
-            elsif ($fn=$ENV{'PATH_TRANSLATED'}) {
-
-                #  Feel free to let me know a better way under IIS/FastCGI ..
-                my $script_fn=(File::Spec::Unix->splitpath($ENV{'SCRIPT_NAME'}))[2];
-                $fn=~s/\Q$script_fn\E.*/$script_fn/;
-                debug("fn: $fn derived from PATH_TRANSLATED script_fn: $script_fn");
-            }
-            
-            
-            #  Need to add default psp file ?
-            #
-            #unless ($fn=~/\.psp$/) { # fastest
-            unless ($fn=~WEBDYNE_PSP_EXT_RE) { # fastest
-
-                #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
-                #  handle it
-                #
-                if  ((-d $fn) || !$fn) {
-                    
-            
-                    #  Append default doc to path, which appears at moment to be a directory ?
-                    #
-                    my $document_default=$r{'document_default'} || $Dir_config_env{'DOCUMENT_DEFAULT'} || $DOCUMENT_DEFAULT;
-                    debug("appending document default $document_default to fn:$fn");
-                    
-                    #  If absolute path just use it
-                    #
-                    if (File::Spec->file_name_is_absolute($document_default)) {
-                    
-                        #  Yep - absolute path
-                        #
-                        $fn=$document_default
-                    }
-                    else {
-                    
-                        #  Otherwise append to existing path
-                        #
-                        $fn=File::Spec->catfile($fn, split m{/+}, $document_default); #/
-                    }
-                }
-                else {
-                    
-                    #  Not .psp file, do not want
-                    #
-                    $fn=undef;
-                }
-            }
-        }
+}
 
 
-        #  Final sanity check
-        #
-        debug("final fn: $fn");
-        $r{'filename'}=$fn; 
-        
+sub headers_in {
+    my $r=shift();
+    if (@_) {
+        return $r->{'req'}->headers()->header(@_);
     }
-    
-    
-    #  Setup request and response handlers
-    #
-    $r{'req'}=Plack::Request->new($r{'env'});
-    $r{'res'}=Plack::Response->new($r{'env'});
-    
-    
-    #  Finished, pass back
-    #
-    return bless \%r, $class;
-
+    else {
+        return $r->{'req'}->headers();
+    }
 }
 
+
+__END__
 
 sub new_from_filename {
 
@@ -357,17 +369,39 @@ sub new_from_filename {
 }
 
 
-sub status {
+sub status1 {
 
     #  PSGI doesn't return the status code when setting, so code like
     #  return $r->status(500) doesn't work.
     #
+    #my ($r, $status)=@_;
+    #die $status;
+    #$#_ ? $r->{'res'}->status($status) : ($status=$r->{'res'}->status());
+    #@_ ? $r->res->status=
+    #$r->{'res'}->status($r->{'status'}=shift()) if @_;
+    #return $r->{'status'}
+    #return $shift
     my $r=shift();
-    $r->{'res'}->status($r->{'status'}=shift()) if @_;
-    return $r->{'status'}
+    return $r->{'res'}->status(@_);
     
 }
 
+sub status0 {
+
+    #  PSGI doesn't return the status code when setting, so code like
+    #  return $r->status(500) doesn't work.
+    #
+    #my ($r, $status)=@_;
+    my $r=shift();
+    #$#_ ? $r->{'res'}->status($status) : ($status=$r->{'res'}->status());
+    #@_ ? $r->res->status=
+    $r->{'res'}->status($r->{'status'}=shift()) if @_;
+    return $r->{'status'}
+    #return $status;
+    
+}
+
+__END__
 
 sub content_type {
 
@@ -541,7 +575,7 @@ sub run {
     }
     else {
         debug("file not found !");
-        $r->status(RC_NOT_FOUND);
+        $r->status(HTTP_NOT_FOUND);
         $r->send_error_message;
         return HTTP_NOT_FOUND;
     }
@@ -604,3 +638,38 @@ sub send_http_header {
     
 }
 
+
+#package My::Module;
+
+#use strict;
+#use warnings;
+use B ();
+
+if (0) {
+    no strict 'refs';
+    no warnings qw(redefine);
+    for my $symbol (keys %{"WebDyne::Request::PSGI::"}) {
+        next if $symbol=~/^WEBDYNE_/;
+        next if $symbol=~/^MOD_PERL/;
+        next if $symbol=~/^MP2/;
+        next if $symbol=~/^__/;
+        next if $symbol=~/^debug/;
+        next if $symbol=~/^Dumper/;
+        warn "$symbol\n";
+        #die $symbol;
+
+        my $fullname = "WebDyne::Request::PSGI::$symbol";
+
+        next unless defined &{$fullname};
+        next if $symbol =~ /^(BEGIN|import|can|DESTROY)$/;
+
+        my $orig = \&{$fullname};
+
+        *{$fullname} = sub {
+            print STDERR "Calling $symbol from WebDyne::Request::PSGI\n";
+            goto &$orig;
+        };
+    }
+}
+
+1;

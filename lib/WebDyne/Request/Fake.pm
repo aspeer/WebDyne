@@ -28,13 +28,15 @@ no warnings qw(uninitialized);
 use Cwd qw(fastcwd);
 use Data::Dumper;
 use HTTP::Status qw(status_message HTTP_OK HTTP_NOT_FOUND HTTP_FOUND);
+use HTTP::Headers::Fast;
 use WebDyne::Util;
 use WebDyne::Constant;
+use URI;
 
 
 #  Var to hold package wide hash, for data shared across package
 #
-my %Package;
+#my %Package;
 
 
 #  Snapshot environment for Dir_config
@@ -52,9 +54,38 @@ $VERSION='2.075';
 debug("Loading %s version $VERSION", __PACKAGE__);
 
 
-#  Run init code for utility accessors unless already done
+#  Do ENV filtering here
 #
-&_init unless defined(&method);
+%ENV=(
+    (map { $_=>$ENV{$_}  } (
+        grep { defined($ENV{$_}) } qw(
+            DOCUMENT_DEFAULT
+            DOCUMENT_ROOT
+            REQUEST_METHOD
+            REQUEST_URI
+            PATH_INFO
+            SCRIPT_NAME
+            QUERY_STRING
+            SERVER_PROTOCOL
+            SERVER_NAME
+            SERVER_PORT
+            REMOTE_ADDR
+            REMOTE_PORT
+            REMOTE_USER
+            AUTH_TYPE
+            HTTPS 
+            APPL_MD_PATH
+        ),
+        grep {/^WEBDYNE/i} keys %ENV,
+        grep {/^HTTP/i} keys %ENV,
+        grep {/^CONTENT/i} keys %ENV,
+    ))
+);
+
+
+#  Run init code for utility accessors unless already done. Picked method() as arbitrary test
+#
+&init() unless defined(&method);
 
 
 #  All done. Positive return
@@ -64,39 +95,229 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 
 #==================================================================================================
 
-sub _init {
+sub init0 { # no subsort
 
     #  Load quick and dirty mod_perl equivalent handler accessors that get info from
     #  environment vars if they exist
     #
     my %handler=(
-        method          => 'REQUEST_METHOD',
-        protocol        => 'SERVER_PROTOCOL',
-        args            => 'QUERY_STRING',
-        path_info       => 'PATH_INFO',
-        content_length  => 'CONTENT_LENGTH',
-        hostname        => 'SERVER_NAME',
-        get_server_name => 'SERVER_NAME',
-        get_server_port => 'SERVER_PORT',
-        get_remote_host => 'REMOTE_ADDR',
-        user            => 'REMOTE_USER',
-        ap_auth_type    => 'AUTH_TYPE',
-        unparsed_uri    => 'REQUEST_URI',
+        #method          => ['REQUEST_METHOD', 'GET'],
+        #protocol        => ['SERVER_PROTOCOL', 'HTTP/1.0'],
+        args            => ['QUERY_STRING'],
+        path_info       => ['PATH_INFO'],
+        content_length  => ['CONTENT_LENGTH'],
+        hostname        => ['SERVER_NAME'], # Should probably be actual server host name - Fix
+        get_server_name => ['SERVER_NAME'],
+        get_server_port => ['SERVER_PORT'],
+        get_remote_host => ['REMOTE_ADDR'],
+        user            => ['REMOTE_USER'],
+        ap_auth_type    => ['AUTH_TYPE'],
+        unparsed_uri    => ['REQUEST_URI'],
     );
     while (my ($k, $v)=each %handler) {
-        *{$k}=sub { return $ENV{$v} } unless defined &{$k}
+        *{$k}=sub { return $ENV{$v->[0]} || $v->[1] } unless defined &{$k}
     }
 
 }
 
+use CGI::Cookie;
 
-sub dir_config0 {
+sub init {
 
-    #  Old very simplistic dir_config
+    #  Setup pass through methods
     #
-    my ($r, $key)=@_;
-    return $ENV{$key};
+    require WebDyne::Request::Common;
+    my %method=(
+        req => {
+            accept_encoding     => sub { shift()->headers_in('Acccept-Encoding') },
+            accept_language     => sub { shift()->headers_in('Acccept-Language') },
+            accept              => sub { shift()->headers_in('Accept') },
+            authority           => sub { shift()->uri->authority },
+            args                => sub { shift()->env->{'QUERY_STRING'} },
+            as_string           => undef,
+            authorizarion       => sub { shift()->headers_in('Authorization') },
+            auth_type           => sub { shift()->{'env'}->{'AUTH_TYPE'} },
+            base_url            => sub { URI->new($_[0]->host . $_[0]->script_name()) },
+            base                => 'base_url',
+            body                => sub { my $r=shift(); $r->{'body'} ? $r->{'body'} : do { if(my $fh=$r->{'input'}) { local $/; <$fh> } } },
+            body_handle         => sub { shift->{'input'} },
+            cache_control       => sub { shift()->headers_in('Cache-Control') },
+            charset             => sub { ()=(shift()->content_type=~/charset=(.*?)/)[0] },
+            client_address      => sub { shift()->env->{'REMOTE_ADDR'} },
+            content_encoding    => sub { shift()->headers_in('Content-Encoding') },
+            #content_length      => sub { shift()->headers_in('Content-Length') },
+            content_length      => undef,
+            #content_type        => sub { shift()->headers_in('Content-Type') },
+            content_type        => undef,
+            content             => 'body',
+            cookies             => undef,
+            cookie              => sub { shift()->cookies(@_) },
+            custom_response     => undef,
+            cwd                 => undef,
+            dir_config          => undef,
+            document_root       => undef,
+            env                 => sub { \%ENV },
+            etag                => sub { shift()->headers_in('If-None-Match') },
+            filename            => undef,
+            finalize            => undef,
+            finfo               => undef,
+            form_parameters     => undef,
+            forwarded_for       => sub { shift()->headers_in('X-Forwarded-For') },
+            fragment            => sub { shift()->uri->fragment },
+            handler             => undef,
+            headers_in          => undef,
+            headers_out         => undef,
+            header_only         => undef,
+            host                => sub { shift()->uri->host if $_[0]->uri->authority },
+            hostname            => sub { shift()->env->{'SERVER_NAME'} }, # Prob should be local host name
+            http_version        => 'protocol',
+            https               => sub { shift()->env->{'HTTPS'} },
+            #id                  => sub { shift()->env->{'psgi.request_id'} },
+            id                  => undef,
+            if_modified_since   => sub { shift()->headers_in('If-Modified-Since') },
+            if_none_match       => sub { shift()->headers_in('If-None_Match') },
+            is_ajax             => sub { (shift()->headers_in('X-Requested-With') eq 'XMLHttpRequest') },
+            input               => sub { shift()->{'input'} },
+            is_main             => undef,
+            location            => undef,
+            log_error           => undef,
+            lookup_file         => undef,
+            lookup_uri          => undef,
+            main                => undef,
+            media_type          => sub { ()=(shift()->content_type=~/(.*?);/) },
+            method              => sub { shift->env->{'REQUEST_METHOD'} },
+            mtime               => undef,
+            multipart_parameters=> undef,
+            next                => undef,
+            notes               => undef,
+            origin              => sub { shift()->headers_in('Origin') },
+            output_filters      => undef,
+            path_parameters     => undef,
+            path                => 'path_info',
+            path_info           => sub { shift->env->{'PATH_INFO'} },
+            #parsed_uri          => 'uri',
+            #parsed_uri          => undef,
+            #port                => sub { shift()->env->{'SERVER_PORT'} },
+            pool                => undef,
+            preferred_language  => undef,
+            preferred_media_type=> undef,
+            prev                => undef,
+            print               => undef,
+            #protocol            => 'protocol',
+            protocol            => sub { shift()->env->{'SERVER_PROTOCOL'} },
+            query_parameters    => undef,
+            query_string        => 'args',
+            referer             => sub { shift()->headers_in('Referer') },
+            redirect            => undef,
+            remote_address      => 'client_address',
+            remote_host         => 'client_address',
+            remote_port         => sub { shift()->env->{'REMOTE_PORT'} },
+            remote_user         => 'user',
+            request_time        => undef,
+            register_cleanup    => undef,
+            route               => undef,
+            run                 => undef,
+            scheme              => undef,
+            script_name         => sub { shift()->env->{'SCRIPT_NAME'} },
+            secure              => sub { (shift()->https eq 'on') },
+            server_name         => sub { shift()->env->{'SERVER_NAME'} },
+            server_port         => sub { shift()->env->{'SERVER_PORT'} },
+            sendfile            => undef,
+            session_id          => undef,
+            session             => undef,
+            stat                => undef,
+            status              => undef,
+            status_line         => undef,
+            uploads             => undef,
+            uri                 => sub { URI->new(shift()->filename()) },
+            #uri                 => undef,
+            unparsed_uri        => sub { shift()->filename() },
+            url                 => 'uri',
+            user_agent          => sub { shift()->headers_in('User-Agent') },
+            user                => sub { shift()->env->{'REMOTE_USER'} },
+            write               => undef,
+        },
+        res => {(
+           #status headers body header content_typee content_length content_encoding redirect location cookies finalize to_app
+        )},
+            
+    );
+    my %method_all;
+    foreach my $handler (qw(req res)) {
+        while (my ($method, $dispatch)=each %{$method{$handler}}) {
+            $method_all{$method}++;
+            if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
+                #  Do nothing, defined here
+                #
+                die("duplicate method for $method") if $dispatch;
+                debug("skip $method, defined in this package");
+                
+            }
+            elsif (!defined($dispatch)) {
+                #  Do nothing, will fall through to Fake
+                #
+                debug("skip $method, will inherit from Fake");
+                next;
+            }
+            elsif (ref($dispatch) eq 'CODE') {
+                #  Turn into method
+                #
+                debug("setting method: $method to code ref: $dispatch");
+                *{$method}=$dispatch;
+            }
+            else {
+                #  Existing method
+                #
+                debug("setting method: $method to $handler: $dispatch");
+                *{$method}=sub { shift()->$dispatch };
+            }
+        }
+    }
+    
+    #  Make sure we don't have more methods defined here than we need
+    #
+    my @method_package=grep { $_ eq lc($_) } grep { defined *{sprintf('%s::%s', __PACKAGE__, $_)}{'CODE'} } keys %{sprintf('%s::', __PACKAGE__)};
+    my %method_package=map { $_=>1 } @method_package;
+    map { delete $method_package{$_} } keys %method_all;
+    my @method_orphan;
+    use B ();
+    foreach my $method (keys %method_package) {
+        if (my $cr=*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'}) {
+            if (my $gv=B::svref_2object($cr)->GV) {
+                if ($gv->STASH->NAME eq __PACKAGE__) {
+                    push @method_orphan, $method;
+                }
+            }
+        }
+    }
+    #die Dumper(\@method_orphan) if @method_orphan;
+        
+    #  Check we haven't missed any methods
+    #
+    foreach my $method (sort @{&WebDyne::Request::Common::methods}) {
+        unless ($method_all{$method}) {
+            warn "missing method definition: $method";
+            sleep 1;
+        }
+        unless (__PACKAGE__->can($method)) {
+            warn "missing method function: $method";
+            sleep 1;
+        }
+    }
+    
+}
 
+
+sub cookies {
+
+    my $r=shift();
+    my %cookies=CGI::Cookie->parse(
+        $r->headers_in->{'Cookie'});
+    if (@_) {
+        %cookies=(%cookies, @_);
+        $r->headers_out('Cookie', CGI::Cookie->new(%cookies)->as_string());
+    }
+    return \%cookies;
 }
 
 
@@ -123,7 +344,7 @@ sub dir_config {
         #  Yes, wanted. Get cwd, skip if already processed
         #
         my $cwd_dn=$r->cwd();
-        my $dir_config_hr=($Package{'_dir_config'}{$cwd_dn} ||= do {
+        my $dir_config_hr=($_{'_dir_config'}{$cwd_dn} ||= do {
             my $webdyne_conf_fn=File::Spec->catfile($cwd_dn, sprintf('.%s', $WEBDYNE_CONF_FN));
             debug("fn: $webdyne_conf_fn");
             if (-f $webdyne_conf_fn) {
@@ -264,52 +485,30 @@ sub filename {
     my $r=shift();
 
     #  Store cwd as takes a fair bit of processing time.
-    File::Spec->rel2abs($r->{'filename'}, ($Package{'_cwd'} ||= fastcwd()));
+    File::Spec->rel2abs($r->{'filename'}, ($_{'_cwd'} ||= fastcwd()));
 
-}
-
-
-sub headers {
-
-    #  Set/get header. r=request, d=direction(in/out), k=key, v=value
-    #
-    my ($r, $d, $h, $v, %param)=@_;
-    
-    if (@_ >= 4) {
-        #return $r->{$d}{$h}=$v;
-        $r->{$d}{$h}=$v;
-        while (my($key,$val)=each %param) {
-            $r->{$d}{$key}=$val;
-        }
-        #die Dumper($r->{$d});
-        return $v;
-    }
-    elsif (@_ == 3) {
-        return $r->{$d}{$h}
-    }
-    elsif (@_ == 2) {
-        return ($r->{$d} ||= {});
-    }
-    else {
-        return err("incorrect usage of $r object, direction:%s, header: %s, value: %s", $d, $h, $v);
-    }
-
-}
-
-
-sub headers_out {
-
-    my $r=shift();
-    return $r->headers('headers_out', @_);
-    
 }
 
 
 sub headers_in {
-
     my $r=shift();
-    return $r->headers('headers_in', @_);
-    
+    if (@_) {
+        return ($r->{'headers_in'} ||= HTTP::Headers::Fast->new())->header(@_);
+    }
+    else {
+        return ($r->{'headers_in'} ||= HTTP::Headers::Fast->new());
+    }
+}
+
+
+sub headers_out {
+    my $r=shift();
+    if (@_) {
+        return ($r->{'headers_out'} ||= HTTP::Headers::Fast->new())->header(@_);
+    }
+    else {
+        return ($r->{'headers_out'} ||= HTTP::Headers::Fast->new());
+    }
 }
 
 
@@ -328,15 +527,6 @@ sub log_error {
 
 }
 
-
-sub lookup_file0 {
-
-    #  Old, simplistic version
-    #
-    my ($r, $fn)=@_;
-    my $r_child=ref($r)->new(filename => $fn, main=>$r) || return err();
-
-}
 
 
 sub lookup_file {
@@ -391,7 +581,30 @@ sub new {
 
     my ($class, %r)=@_;
     debug("$class, r:%s", Dumper(\%r));
-    return bless \%r, $class;
+    my $r=bless(\%r, $class);
+    foreach my $env ((grep {/^HTTP_/} keys %ENV), qw(CONTENT_TYPE CONTENT_LENGTH)) {
+        my $header=$env;
+        exists $ENV{$header} || next;
+        my $value=$ENV{$header};
+        $header=~s/^HTTP_//;
+        $header=~s/_/-/g;
+        debug("setting header: $header, value: $value");
+        $r->headers_in($header, $value);
+    }
+        
+    #$r->headers_in(
+    #    'Content-Type'      => $ENV{'CONTENT_TYPE'},
+    #    'Content-Length'    => $ENV{'CONTENT_LENGTH'},
+    #    'Host'              => $ENV{'HTTP_HOST'},
+    #    'User-Agent'        => $ENV{'HTTP_USER_AGENT'},
+    #    'Accept'            => $ENV{'HTTP_ACCEPT'},
+    #    'Accept-Encoding'   => $ENV{'HTTP_ACCEPT_ENCODING'},
+    #    'Cookie'            => $ENV{'HTTP_COOKIE'},
+    #    'Referer'           => $ENV{'HTTP_REFERER'},
+    #    'Authorization'     => $ENV{'HTTP_AUTHORIZATION'},
+    #);    
+    return $r;
+    #return bless \%r, $class;
 
 }
 
@@ -415,7 +628,7 @@ sub notes {
 }
 
 
-sub parsed_uri {
+sub parsed_uri0 {
 
     my $r=shift();
     require URI;
@@ -489,7 +702,7 @@ sub status {
 }
 
 
-sub uri {
+sub uri0 {
 
 
     #  Probably should subtract root_dn/DOCUMENT_ROOT
@@ -512,18 +725,7 @@ sub output_filters {
 }
 
 
-sub location0 {
 
-    #  Get/set location
-    my ($self, $location)=@_;
-    if ($location) {
-        return $self->{'location'}=$location;
-    }
-    else {
-        return $self->{'location'} || $ENV{'WebDyneLocation'}
-    }
-
-}
 
 sub location {
 
@@ -609,7 +811,8 @@ sub send_http_header {
     return unless $r->{'header'};
     my $fh=$r->{'select'} || \*STDOUT;
     CORE::printf $fh ("Status: %s\n", $r->status());
-    while (my ($header, $value)=each(%{$r->{'headers_out'}})) {
+    #while (my ($header, $value)=each(%{$r->{'headers_out'}})) {
+    while (my ($header, $value)=each(%{$r->headers_out()})) {
         CORE::print $fh ("$header: $value\n");
     }
     CORE::print $fh "\n";
@@ -620,7 +823,19 @@ sub send_http_header {
 sub content_type {
 
     my ($r, $content_type)=@_;
-    return ($content_type ? $r->{'headers_out'}{'Content-Type'}=$content_type : $ENV{'CONTENT_TYPE'});
+    #return ($content_type ? $r->{'headers_out'}{'Content-Type'}=$content_type : $ENV{'CONTENT_TYPE'});
+    #return ($content_type ? $r->headers_out('Content-Type', $content_type) : $ENV{'CONTENT_TYPE'});
+    return ($content_type ? $r->headers_out('Content-Type', $content_type) : $r->headers_in('Content-Type'));
+    #CORE::print("Content-Type: $content_type\n");
+
+}
+
+
+sub content_length {
+
+    my ($r, $content_length)=@_;
+    #return ($content_type ? $r->{'headers_out'}{'Content-Type'}=$content_type : $ENV{'CONTENT_TYPE'});
+    return ($content_length ? $r->headers_out('Content-Length', $content_length) : $r->headers_in('Content-Length'));
     #CORE::print("Content-Type: $content_type\n");
 
 }
@@ -636,17 +851,6 @@ sub handler {
 }
 
 
-sub custom_response0 {
-
-    my ($r, $status, @param)=@_;
-    debug("r: $r, status: $status, %s", \@param);
-    $r->status($status);
-    $r->send_http_header();
-    $r->print(@param);
-
-}
-
-
 sub custom_response {
 
     my ($r, $status)=(shift(), shift());
@@ -658,11 +862,6 @@ sub custom_response {
 
 
 
-sub args {
-
-    return $ENV{'QUERY_STRING'};
-    
-}
 
 
 sub cwd {
@@ -691,6 +890,153 @@ sub cwd {
 }
 
 
+# TO DO
+#
+sub status_line {
+
+    my $r=shift();
+    return sprintf('%s %s',$r->status, status_message($r->status));
+    #@_ ? $r->{'header'}=shift() : $r->{'header'};
+    
+}
+
+
+sub content_encoding0 {
+
+}
+
+
+
+sub write {
+
+    #  Just print for Fake, other handlers can map to native
+    #
+    return &print(@_);
+    
+}
+
+
+sub finalize {
+
+    #  No op
+    
+}
+
+
+sub redirect {
+
+    #  No op
+    
+
+}
+
+
+sub env0 {
+
+    return \%ENV;
+
+}
+
+
+sub subprocess_env {
+
+    return &env(@_)
+    
+}
+
+sub as_string {
+
+}
+
+sub set_etag0 {
+
+}
+
+sub mtime {
+
+}
+
+sub next {
+
+}
+
+sub preferred_language {
+
+}
+
+
+sub preferred_media_type {
+
+}
+
+
+sub session {
+
+}
+
+sub session_id {
+
+}
+
+sub route {
+
+}
+
+sub path_parameters {
+
+}
+
+
+sub sendfile {
+
+}
+
+
+sub finfo {
+
+    use File::stat;
+    return stat(shift->filename());
+    
+}
+
+sub form_parameters {
+
+}
+
+sub id {
+
+}
+
+sub multipart_parameters {
+
+}
+
+sub query_parameters {
+
+}
+
+sub request_time {
+
+}
+
+sub scheme {
+
+    'http',
+    
+}
+
+sub script_name0 {
+
+}
+
+sub uploads {
+
+}
+
+
+# Error handling, autoload
+
+
 sub err_html {
 
     #  Very basic HTML error messages for file not found and similar
@@ -715,7 +1061,7 @@ sub err_html {
 }
 
 
-sub AUTOLOAD {
+sub AUTOLOAD { #no subsort
 
     my ($r, $v)=@_;
     debug("$r AUTOLOAD: $AUTOLOAD, v: $v");
@@ -727,7 +1073,7 @@ sub AUTOLOAD {
 }
 
 
-sub DESTROY {
+sub DESTROY { #no subsort
 
     my $r=shift();
     debug("$r DESTROY");
@@ -737,4 +1083,119 @@ sub DESTROY {
         }
     }
 
+}
+
+__END__
+
+sub method0 {
+
+    return $ENV{'REQUEST_METHOD'} || 'GET';
+    
+}
+
+
+sub protocol0 {
+
+    return $ENV{'SERVER_PROTOCOL'} || 'HTTP/1.0';
+    
+}
+
+
+sub dir_config0 {
+
+    #  Old very simplistic dir_config
+    #
+    my ($r, $key)=@_;
+    return $ENV{$key};
+
+}
+
+sub headers0 {
+
+    #  Set/get header. r=request, d=direction(in/out), k=key, v=value
+    #
+    my ($r, $d, $h, $v, %param)=@_;
+    
+    if (@_ >= 4) {
+        #return $r->{$d}{$h}=$v;
+        $r->{$d}{$h}=$v;
+        while (my($key,$val)=each %param) {
+            $r->{$d}{$key}=$val;
+        }
+        #die Dumper($r->{$d});
+        return $v;
+    }
+    elsif (@_ == 3) {
+        return $r->{$d}{$h}
+    }
+    elsif (@_ == 2) {
+        return ($r->{$d} ||= {});
+    }
+    else {
+        return err("incorrect usage of $r object, direction:%s, header: %s, value: %s", $d, $h, $v);
+    }
+
+}
+
+
+sub headers_out0 {
+
+    my $r=shift();
+    return $r->headers('headers_out', @_);
+    
+}
+
+
+sub headers_in0 {
+
+    my $r=shift();
+    return $r->headers('headers_in', @_);
+    
+}
+
+sub lookup_file0 {
+
+    #  Old, simplistic version
+    #
+    my ($r, $fn)=@_;
+    my $r_child=ref($r)->new(filename => $fn, main=>$r) || return err();
+
+}
+
+sub location0 {
+
+    #  Get/set location
+    my ($self, $location)=@_;
+    if ($location) {
+        return $self->{'location'}=$location;
+    }
+    else {
+        return $self->{'location'} || $ENV{'WebDyneLocation'}
+    }
+
+}
+
+sub custom_response0 {
+
+    my ($r, $status, @param)=@_;
+    debug("r: $r, status: $status, %s", \@param);
+    $r->status($status);
+    $r->send_http_header();
+    $r->print(@param);
+
+}
+
+
+sub args0 {
+
+    return $ENV{'QUERY_STRING'};
+    
+}
+
+sub scheme0 {
+
+    #  Always http for Fake requests, other handlers return appropriate
+    #
+    return 'http';
+    
 }

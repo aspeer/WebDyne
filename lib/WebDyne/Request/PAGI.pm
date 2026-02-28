@@ -17,7 +17,7 @@ package WebDyne::Request::PAGI;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION @ISA);
+use vars   qw($VERSION @ISA $AUTOLOAD);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -130,6 +130,33 @@ foreach my $handler (qw(req res sse ws)) {
 
 #==================================================================================================
 
+
+#package My::Module;
+
+#use strict;
+#use warnings;
+use B ();
+
+BEGIN {
+    no strict 'refs';
+
+    for my $symbol (keys %{"My::Module::"}) {
+
+        my $fullname = "My::Module::$symbol";
+
+        next unless defined &{$fullname};
+        next if $symbol =~ /^(BEGIN|import|can|DESTROY)$/;
+
+        my $orig = \&{$fullname};
+
+        *{$fullname} = sub {
+            warn "Calling $symbol from My::Module\n";
+            goto &$orig;
+        };
+    }
+}
+
+
 sub new {
 
     my ($class, %r)=@_;
@@ -192,7 +219,7 @@ sub new {
         
     }
     
-    
+
     #  Finished, pass back
     #
     return bless \%r, $class;
@@ -210,6 +237,11 @@ sub status {
     
 }
 
+sub AUTOLOAD {
+
+    warn $AUTOLOAD
+    
+}
 
 sub path_info {
     shift()->path()
@@ -270,6 +302,7 @@ sub content_type {
     return @_ ? $r->{'res'}->content_type(@_) : $r->{'res'}->content_type();
 
 }
+__END__
 
 sub header {
 

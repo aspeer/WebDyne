@@ -117,7 +117,7 @@ sub main {
         'help|?',
         'handler=s',
         'status=s',
-        'header!',
+        'header|headers!',
         'header_only|header-only|headers_only|headers-only|headersonly',
         'warn!',
         'error=s',
@@ -136,6 +136,7 @@ sub main {
         'theme=s',
         'tidy!',
         'psgi',
+        'psgi_server',
         'pagi',
         'fake',
         'all',
@@ -183,10 +184,11 @@ sub main {
 
     #  Consolidate backend request handler options into one multiplexer option
     #
-    $opt{'request'}=(grep {$opt{$_}} qw(fake psgi pagi mod_perl))[0] || $opt{'request'};
-    my @request_type=qw(fake psgi pagi mod_perl);
+    my @request_type=qw(fake psgi psgi_server pagi mod_perl);
+    $opt{'request'}=(grep {$opt{$_}} @request_type)[0] || $opt{'request'};
     unless ($opt{'all'}) {
-        @request_type=grep {$opt{$_}} qw(fake psgi pagi mod_perl);
+        #@request_type=grep {$opt{$_}} qw(fake psgi pagi mod_perl);
+        @request_type=grep {$opt{$_}} @request_type;
         @request_type || (@request_type=$opt{'request'});
     }
     
@@ -218,7 +220,7 @@ sub main {
     if (my $query_opt_ar=$opt{$method}) {
         my @query_opt=map { split(/[;&]/) } @{$query_opt_ar};
         foreach my $query_opt (@query_opt) {
-            my ($key, $value)=split(/=/, $query_opt);
+            my ($key, $value)=split(/[:=]/, $query_opt);
             push @query_string, $key, $value
         }
     };
@@ -354,6 +356,7 @@ sub main {
             }
 
         }
+        undef %WebDyne::Package;
         }
         
         last LOOP unless $opt{'loop'};
@@ -381,13 +384,18 @@ sub request_psgi {
     #  Use PSGI mock handler. Get filename we want to render
     #
     my ($req_or, $opt_hr)=@_;
-    
+
 
     #  Load modules we need
     #
     require WebDyne::PSGI;
     require Plack::Test;
-    
+    if ($opt_hr->{'psgi_server'}) {
+        #  Want to use real server
+        #
+        no warnings qw(once);
+        $Plack::Test::Impl='Server';
+    }
 
     #  Create new instance of WebDyne PSGI handler
     #
@@ -402,6 +410,56 @@ sub request_psgi {
         Plack::Test->create($app_cr));
     my $res_or=$test_or->request($req_or);
     $req_or->uri($uri_or);
+    
+    
+    #  Return results
+    #
+    return $res_or;
+    
+}
+
+
+sub request_psgi_server {
+
+    return &request_psgi(@_);
+    
+}
+
+sub request_psgi_server0 {
+
+
+    #  Use PSGI mock handler. Get filename we want to render
+    #
+    my ($req_or, $opt_hr)=@_;
+
+
+    #  Load modules we need
+    #
+    require WebDyne::PSGI;
+    require Plack::Test::Server;
+    require LWP::UserAgent;
+    
+
+    #  Create new instance of WebDyne PSGI handler
+    #
+    my $app_cr=($_{'psgi_app_cr'} ||= 
+        (my $psgi_or=WebDyne::PSGI->new(root=>$opt_hr->{'root'}))->to_app());
+        
+        
+    #  Start the server
+    #
+    my $server_or=Plack::Test::Server->new($app_cr);
+    die Dumper($server_or);
+    my $ua_or=LWP::UserAgent->new();
+    $req_or->uri($server_or->uri . $req_or->uri);
+
+
+    #  Now run. For some reason PSGI manipulates request object so clone first and restore
+    #
+    my $uri_or=$req_or->uri->clone();
+    $uri_or->uri($server_or->uri . $uri_or->uri);
+    die Duper($uri_or->as_string());
+    my $res_or=$ua_or->request($uri_or);
     
     
     #  Return results
@@ -645,8 +703,9 @@ sub request_fake {
     #
     my $r=WebDyne::Request::Fake->new(
 
-        filename => $req_or->uri->path(),
-        select   =>  $html_fh,
+        filename        => $req_or->uri->path(),
+        select          => $html_fh,
+        input           => $io_fh,
 
     ) || return err();
     

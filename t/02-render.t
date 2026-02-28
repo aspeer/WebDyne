@@ -91,6 +91,11 @@ sub main {
     #
     for (1 .. ($ENV{'WEBDYNE_TEST_REPEAT'} || 1)) {
         FILE: foreach my $test_fn (sort {$a cmp $b } @test_fn) {
+        
+        
+            #  Skip files with numer prefix, specific to a single tes
+            #
+            next if ($test_fn=~/\/\d+\-.*\.psp/);
 
 
             #  Create WebDyne render of PSP file and capture to file

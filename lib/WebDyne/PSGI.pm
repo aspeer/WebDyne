@@ -67,7 +67,9 @@ our (%API_fn);
         grep { defined($ENV{$_}) }
         qw(DOCUMENT_DEFAULT DOCUMENT_ROOT SERVER_NAME APPL_MD_PATH),
         @{$WEBDYNE_PSGI_ENV_KEEP},
-        grep {/^WEBDYNE/i} keys %ENV
+        grep {/^WEBDYNE/i} keys %ENV,
+        grep {/^HTTP/i} keys %ENV,
+        grep {/^CONTENT/i} keys %ENV
     ))
 );
 #die Dumper(\%ENV);
@@ -132,8 +134,6 @@ sub to_app {
     
 }
 
-our $FOO;
-1;
 
 #  Actual Plack handler
 #
@@ -152,6 +152,12 @@ sub handler {
     #%ENV=(%ENV, %{$env_hr});
     
     debug('in handler, env: %s, param:%s', Dumper(\%ENV, \@param));
+
+    #  Setup request and response handlers
+    #
+    my $req_or=Plack::Request->new($env_hr);
+    my $res_or=Plack::Response->new(HTTP_OK);
+    
     
     
     #  Create new PSGI Request object, will pull filename from
@@ -159,7 +165,7 @@ sub handler {
     #
     my $html;
     my $html_fh=IO::String->new($html);
-    my $r=WebDyne::Request::PSGI->new(select => $html_fh, document_root => $self->{'root'}, document_default => $self->{'index'}, uri=>$ENV{'PATH_INFO'}, env=>$env_hr, @param) ||
+    my $r=WebDyne::Request::PSGI->new(select => $html_fh, document_root => $self->{'root'}, document_default => $self->{'index'}, uri=>$ENV{'PATH_INFO'}, env=>$env_hr, req=>$req_or, res=>$res_or, @param) ||
         return err('unable to create new WebDyne::Request::PSGI object: %s', 
     			$@ || errclr() || 'unknown error');
     debug("r: $r");
