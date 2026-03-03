@@ -64,8 +64,9 @@ use Cwd qw(fastcwd);
 
 #  Error handling and environment
 #
-use Carp;
-local $SIG{__DIE__}=\&Carp::confess;
+#use Carp;
+#local $SIG{__DIE__}=\&Carp::confess;
+#sub err { croak(@_) }
 
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
@@ -79,8 +80,6 @@ exit ${&main(\@ARGV) || die errdump()};
 
 #===================================================================================================
 
-use Carp;
-sub err { croak(@_) }
 
 sub main {
 
@@ -105,6 +104,7 @@ sub main {
         request => 'fake',
         method  => 'GET',
         root    => fastcwd(),
+        tmp_cleanup => 1,
         %{do(glob(sprintf('~/.%s.opt', basename(__FILE__))))}
 
     );
@@ -148,6 +148,7 @@ sub main {
         'lineno!',
         'htmx',
         'sse',
+        'tmp_cleanup',
         'compare',
         'man',
         'version'
@@ -196,12 +197,25 @@ sub main {
     #  Get request method wanted
     #
     my $method=lc((grep{exists $opt{$_}} qw(get post patch put options head))[0] || $opt{'method'});
+    
+    
+        
 
 
     #  Convert any headers into a HTTP::Header object
     #
     my @headers_in=map { split(/[:=]/, $_) } @{$opt{'headers_in'}};
     my $headers_in_or=HTTP::Headers->new(@headers_in);
+    
+
+    #  Get any headers from environment vars
+    #
+    foreach my $env (qw(CONTENT_TYPE CONTENT_LENGTH), grep {/^HTTP_/} keys %ENV) {
+        my $value=$ENV{$env};
+        (my $header=$env)=~s/^HTTP_//;
+        $header=~s/\-/_/;
+        $headers_in_or->header(lc($header), $value);
+    }
     
     
     #  If htmx option add hx-request header
@@ -264,7 +278,7 @@ sub main {
             my $res_or=&{sprintf('request_%s', $request_type)}($req_or, \%opt);
             my $html=$res_or->decoded_content;
             
-            
+
             #  If headers wanted strip them out
             #
             my $header;
@@ -298,16 +312,22 @@ sub main {
             }
 
 
+
             #  Send to syntax higlighter
             #
-            if ($opt{'colour'}) {
+            if ($opt{'colour'} && ($res_or->content_type eq 'text/html')) {
                 $html=&html_colour($html, $header, \%opt);
             }
             
             
+            #  Defensive revert select in case very weird/bad error
+            #
+            select STDOUT if defined(fileno(STDOUT));
+            
+            
             #  Print it
             #
-            print $html, $/;
+            CORE::print $html, $/;
             
             #next;
 
@@ -357,6 +377,7 @@ sub main {
 
         }
         undef %WebDyne::Package;
+        WebDyne->init_class();
         }
         
         last LOOP unless $opt{'loop'};
@@ -390,12 +411,12 @@ sub request_psgi {
     #
     require WebDyne::PSGI;
     require Plack::Test;
-    if ($opt_hr->{'psgi_server'}) {
-        #  Want to use real server
-        #
-        no warnings qw(once);
-        $Plack::Test::Impl='Server';
-    }
+    #if ($opt_hr->{'psgi_server'}) {
+    #    #  Want to use real server
+    #    #
+    #    no warnings qw(once);
+    #    $Plack::Test::Impl='Server';
+    #}
 
     #  Create new instance of WebDyne PSGI handler
     #
@@ -421,6 +442,8 @@ sub request_psgi {
 
 sub request_psgi_server {
 
+    no warnings qw(once);
+    local $Plack::Test::Impl='Server';
     return &request_psgi(@_);
     
 }
@@ -467,7 +490,6 @@ sub request_psgi_server0 {
     return $res_or;
     
 }
-
 
 sub request_pagi {
 
@@ -591,7 +613,7 @@ sub request_mod_perl_startup {
     my $svr_root_dn=tempdir(
         'webdyne_apache_XXXXXXXX',
         TMPDIR  => 1,
-        CLEANUP => 1,   # we’ll stop httpd first, then remove manually
+        CLEANUP => $opt_hr->{'tmp_cleanup'},   # we’ll stop httpd first, then remove manually
     );
 
 
@@ -645,10 +667,14 @@ sub request_mod_perl_postamble {
     #  Get all WEBDYNE_CONF env vars
     #
     my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
+    #die Dumper(\@PerlSetEnv);
     push (@PerlSetEnv, "PerlSetEnv WEBDYNE_ERROR_TEXT 1") unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
     return <<"END"
 $PerlSetEnv
+ErrorLog /dev/stderr
+LogLevel debug
+CustomLog /dev/stdout combined
 PerlSwitches -I/home/aspeer/Development/pm-WebDyne/lib
 <Perl>
     use lib '/home/aspeer/Development/pm-WebDyne/lib';

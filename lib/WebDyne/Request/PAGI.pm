@@ -17,29 +17,28 @@ package WebDyne::Request::PAGI;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION @ISA $AUTOLOAD);
+use vars   qw($VERSION @ISA);
 use warnings;
 no warnings qw(uninitialized);
 
 
 #  External modules
 #
+use File::Spec;
 use File::Spec::Unix;
 use HTTP::Status qw(status_message HTTP_OK HTTP_NOT_FOUND HTTP_FOUND);
 use URI;
 use Data::Dumper;
-use PAGI::Request;
-$Data::Dumper::Indent=1;
-use Cwd qw(fastcwd);
 use HTTP::Headers::Fast;
+use PAGI::Request;
 
 
 #  WebDyne modules
 #
-use WebDyne::Request::PSGI::Constant;
-use WebDyne::PAGI::Constant;
 use WebDyne::Util;
 use WebDyne::Constant;
+use WebDyne::PAGI::Constant;
+use WebDyne::Request::Common qw(handler_methods_all handler_methods_check);
 
 
 #  Inheritance
@@ -58,70 +57,10 @@ $VERSION='2.075';
 debug("Loading %s version $VERSION", __PACKAGE__);
 
 
-#  Save local copy of environment for ref by Dir_config handler. ENV is reset for each request,
-#  so must use a snapshot for simulating r->dir_config
+#  Init
 #
-my %Dir_config_env=%{$WEBDYNE_PAGI_ENV_SET}, (map { $_=>$ENV{$_} } (
-    qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
-    @{$WEBDYNE_PAGI_ENV_KEEP},
-    grep {/WEBDYNE/i} keys %ENV
-));
+&init() unless defined(&method);
 
-
-#  Setup pass through methods
-#
-my %method=(
-    req => [qw(
-        method path raw_path query_string scheme host http_version client content_type content_length raw 
-        header header_all headers
-        query_params query_param raw_query_param
-        path_params path_param
-        cookies cookie
-        body_stream body text json form_params form_param raw_form_params raw_form_param
-        uploads upload upload_all
-        is_get is_post_is_put is_patch is_delete is_head is_options is_json is_form is_multipart accepts preferred_type
-        connection is_connection is_disconnected disconnect_reason on_disconnect disconnect_future
-        bearer_token basic_auth
-        stash state
-   )], 
-   res => [qw(
-        status status_try header headers header_try content_type content_type_try cookie delete_cookie stash is_sent has_status has_header has_content_type cors
-        text html json redirect empty send send_raw stream send_file
-   )],
-   sse => [
-   ],
-   ws  => [
-   ]
-        
-);
-my %method_req; @method_req{@{$method{'req'}}}=();
-my %method_all=map {$_=>1} grep { exists $method_req{$_} } @{$method{'res'}};
-foreach my $handler (qw(req res sse ws)) {
-    *{$handler}=sub {
-        return shift()->{$handler}
-    };
-    foreach my $method (@{$method{$handler}}) {
-        my $method_pagi=$method;
-        if ($method_all{$method}) {
-            my $inout=($handler eq 'req') ? 'in' : 'out';
-            $method_pagi.="_${inout}";
-        }
-
-        #  Ignore inheritance - only this package
-        #unless (__PACKAGE__->can($method_pagi)) {
-        unless (defined(&{__PACKAGE__."::${method_pagi}"})) {
-            #debug("setting method: $method_pagi to handler: $handler");
-            *{$method_pagi}=sub {
-                #debug("calling PAGI $handler, method: $method_pagi");
-                return $#_ ? shift()->{$handler}->$method(@_) : shift()->{$handler}->$method();
-            }
-        }
-        else {
-            debug("skip $method_pagi");
-        }
-    }
-}
-            
 
 #  All done. Positive return
 #
@@ -131,49 +70,448 @@ foreach my $handler (qw(req res sse ws)) {
 #==================================================================================================
 
 
-#package My::Module;
+sub init {
 
-#use strict;
-#use warnings;
-use B ();
-
-BEGIN {
-    no strict 'refs';
-
-    for my $symbol (keys %{"My::Module::"}) {
-
-        my $fullname = "My::Module::$symbol";
-
-        next unless defined &{$fullname};
-        next if $symbol =~ /^(BEGIN|import|can|DESTROY)$/;
-
-        my $orig = \&{$fullname};
-
-        *{$fullname} = sub {
-            warn "Calling $symbol from My::Module\n";
-            goto &$orig;
-        };
+    #  Setup pass through methods
+    #
+    my %method=(
+        req => {
+            accept              => undef,
+            accept_encoding     => undef,
+            accept_language     => undef,
+            args                => undef,
+            as_string           => undef,
+            authority           => undef,
+            authorization       => undef,
+            auth_type           => undef,
+            base                => 'base_url',
+            base_url            => 'base_url',
+            body_handle         => 'input',
+            body                => sub { shift()->body() },
+            cache_control       => undef,
+            charset             => undef,
+            cleanup_register    => undef,
+            client_address      => 'client_address',
+            content             => 'body',
+            content_encoding    => undef,
+            content_length      => 'content_length',
+            content_type        => 'content_type',
+            cookies             => 'cookies',
+            cookie              => sub { shift()->cookies(@_) },
+            custom_response     => undef,
+            cwd                 => undef,
+            dir_config          => undef,
+            document_root       => undef,
+            env                 => 'env',
+            etag                => undef,
+            filename            => undef,
+            finalize            => undef,
+            finfo               => undef,
+            form_parameters     => 'form_parameters',
+            forwarded_for       => undef,
+            fragment            => undef,
+            handler             => undef,
+            header              => 'headers_in',
+            header_only         => undef,
+            headers_in          => undef,
+            headers_out         => undef,
+            hostname            => 'hostname',
+            host                => 'host',
+            https               => 'https',
+            http_version        => 'http_version',
+            id                  => 'id',
+            if_modified_since   => undef,
+            if_none_match       => undef,
+            input               => 'input',
+            is_ajax             => undef,
+            is_main             => undef,
+            location            => undef,
+            log_error           => undef,
+            lookup_file         => undef,
+            lookup_uri          => undef,
+            main                => undef,
+            media_type          => undef,
+            method              => 'method',
+            mtime               => undef,
+            multipart_parameters=> 'multipart_parameters',
+            next                => undef,
+            notes               => undef,
+            origin              => undef,
+            output_filters      => undef,
+            path_info           => 'path_info',
+            path_parameters     => undef,
+            path                => 'path',
+            pool                => undef,
+            preferred_charset   => undef,
+            preferred_encoding  => undef,
+            preferred_language  => undef,
+            preferred_media_type=> undef,
+            prev                => undef,
+            print               => undef,
+            protocol            => 'protocol',
+            query_parameters    => 'query_parameters',
+            query_string        => 'query_string',
+            redirect            => 'redirect',
+            referer             => undef,
+            register_cleanup    => undef,
+            remote_address      => 'remote_address',
+            remote_host         => 'remote_host',
+            remote_port         => undef,
+            remote_user         => undef,
+            request_time        => 'request_time',
+            route               => undef,
+            run                 => undef,
+            scheme              => 'scheme',
+            script_name         => undef,
+            secure              => 'secure',
+            sendfile            => undef,
+            send_http_header    => undef,
+            server_name         => 'server_name',
+            server_port         => 'server_port',
+            session_id          => undef,
+            session             => undef,
+            set_handlers        => undef,
+            status_line         => undef,
+            status              => 'status',
+            unparsed_uri        => 'uri',
+            uploads             => 'uploads',
+            uri                 => 'uri',
+            url                 => 'uri',
+            user_agent          => undef,
+            user                => undef,
+            write               => undef,
+        },
+        res => {(
+           #status headers body header content_type content_length content_encoding redirect location cookies finalize to_app
+        )},
+        sse => {},
+        ws  => {}
+            
+    );
+    my %method_check;
+    foreach my $handler (qw(req res)) {
+        while (my ($method, $dispatch)=each %{$method{$handler}}) {
+            $method_check{$method}++;
+            if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
+                #  Do nothing, defined here
+                #
+                debug("skip $method, defined in this package");
+            }
+            elsif (!defined($dispatch)) {
+                #  Do nothing, will fall through to Fake
+                #
+                debug("skip $method, will inherit from Fake");
+            }
+            elsif (ref($dispatch) eq 'CODE') {
+                #  Turn into method
+                #
+                debug("setting method: $method to code ref: $dispatch");
+                *{$method}=$dispatch;
+            }
+            else {
+                #  PAGI method
+                #
+                debug("setting method: $method to $handler: $dispatch");
+                *{$method}=sub { shift()->{$handler}->$dispatch(@_) };
+            }
+        }
     }
+
+
+    #  Done, do runtime check and return, will warn if we have missed anything
+    #
+    return handler_methods_check(__PACKAGE__, \%method_check);
+    
+}
+
+
+sub req {
+    return shift()->{'req'};
+}
+
+sub res {
+    return shift()->{'res'};
+}
+
+sub sse {
+    return shift()->{'sse'};
+}
+
+sub ws {
+    return shift()->{'ws'};
+}
+
+
+sub env {
+    return shift()->{'scope'};
+}
+
+
+sub id {
+    return shift()->{'scope'}{'request_id'};
+}
+
+
+sub scheme {
+    return shift()->req->scheme();
+}
+
+
+sub https {
+    return (shift()->scheme() || '') eq 'https';
+}
+
+
+sub secure {
+    return (shift()->scheme() || '') eq 'https';
+}
+
+
+sub host {
+    return shift()->req->host();
+}
+
+
+sub hostname {
+    return shift()->host();
+}
+
+
+sub server_name {
+    return shift()->host();
+}
+
+
+sub server_port {
+    my $r=shift();
+    if (my $server_ar=$r->{'scope'}{'server'}) {
+        return $server_ar->[1];
+    }
+    return undef;
+}
+
+
+sub client_address {
+    return shift()->req->client();
+}
+
+
+sub remote_address {
+    return shift()->req->client();
+}
+
+
+sub remote_host {
+    return shift()->req->client();
+}
+
+
+sub method {
+    return shift()->req->method();
+}
+
+
+sub path_info {
+    return shift()->req->path();
+}
+
+
+sub path {
+    return shift()->req->path();
+}
+
+
+sub query_string {
+    return shift()->req->query_string();
+}
+
+
+sub query_parameters {
+    return shift()->req->query_params();
+}
+
+
+sub form_parameters {
+    return shift()->req->form_params();
+}
+
+
+sub multipart_parameters {
+    return shift()->req->form_params();
+}
+
+
+sub uploads {
+    return shift()->req->uploads();
+}
+
+
+sub input {
+    return shift()->req->body_stream();
+}
+
+
+sub body {
+    my $r=shift();
+    return $r->{'body'} if exists $r->{'body'};
+    if (my $req=$r->{'req'}) {
+        if ($req->can('body')) {
+            return $r->{'body'}=$req->body();
+        }
+        if (my $stream=$req->can('body_stream') ? $req->body_stream() : undef) {
+            if ($stream->can('slurp')) {
+                return $r->{'body'}=$stream->slurp();
+            }
+            if ($stream->can('read')) {
+                my $buf='';
+                while ($stream->read(my $chunk, 8192)) {
+                    $buf.=$chunk;
+                }
+                return $r->{'body'}=$buf;
+            }
+        }
+    }
+    return undef;
+}
+
+
+sub content_type {
+    my $r=shift();
+    return @_ ? $r->{'res'}->content_type(@_) : $r->{'req'}->content_type();
+}
+
+
+sub content_length {
+    my $r=shift();
+    return @_ ? $r->{'res'}->content_length(@_) : $r->{'req'}->content_length();
+}
+
+
+sub protocol {
+    return shift()->req->http_version();
+}
+
+
+sub http_version {
+    return shift()->req->http_version();
+}
+
+
+sub status {
+    my $r=shift();
+    return @_ ? do { $r->{'res'}->status(@_); shift() } : $r->{'res'}->status();
+}
+
+
+sub redirect {
+    my $r=shift();
+    return $r->{'res'}->redirect(@_);
+}
+
+
+sub headers_in {
+    my $r=shift();
+    if (@_) {
+        return $r->{'req'}->header(@_);
+    }
+    my $headers_or=$r->{'req'}->headers();
+    return HTTP::Headers::Fast->new($headers_or->flatten());
+}
+
+
+sub headers_out {
+    my $r=shift();
+    my $headers_or=$r->{'headers_out'}
+        ||= HTTP::Headers::Fast->new(map { @{$_} } @{$r->{'res'}->headers()});
+    if (@_) {
+        $r->{'res'}->header(@_);
+        return $headers_or->header(@_);
+    }
+    return $headers_or;
+}
+
+
+sub header_only {
+    return (shift()->method() eq 'HEAD');
+}
+
+
+sub request_time {
+    return shift()->{'scope'}{'start_time'};
+}
+
+
+sub base {
+    return URI->new(shift()->_uri_base())->canonical();
+}
+
+
+sub base_url {
+    return URI->new(shift()->_uri_base())->canonical();
+}
+
+
+sub uri {
+    my $r=shift();
+    return $r->{'_uri'} ||= do {
+        my $base=$r->_uri_base();
+        my $path=$r->path_info() || '';
+        my $qs=$r->query_string();
+        $base=~s!/$!! if $path =~ m!^/!;
+        my $uri=$base . $path;
+        $uri.='?' . $qs if (defined($qs) && length($qs));
+        URI->new($uri)->canonical();
+    };
+}
+
+
+sub _uri_base {
+    my $r=shift();
+    my $scheme=$r->scheme() || 'http';
+    if (my $host=$r->host()) {
+        return sprintf('%s://%s', $scheme, $host);
+    }
+    if (my $server_ar=$r->{'scope'}{'server'}) {
+        return sprintf('%s://%s:%s', $scheme, @{$server_ar});
+    }
+    return sprintf('%s://localhost', $scheme);
 }
 
 
 sub new {
 
+
+    #  New PAGI request
+    #
     my ($class, %r)=@_;
+    debug("$class, r: %s, calller:%s", Dumper(\%r, [caller(0)]));
+
+
+    #  Require scope
+    #
+    $r{'scope'} || return err('no PAGI scope supplied');
+
+
+    #  Try to figure out filename user wants
+    #
     unless ($r{'filename'}) {
 
+        #  Not supplied - need to work out
+        #
+        debug('filename not supplied, determining from request');
+
         my $fn;
-        if (my $dn=($r{'document_root'} || $ENV{'DOCUMENT_ROOT'} || $Dir_config_env{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT || fastcwd())) {
-        
+        if (my $dn=($r{'document_root'} || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
+
             #  Get from URI and location
             #
             my $uri=$r{'req'}->path();
             debug("uri: $uri");
-            $fn=File::Spec->catfile($dn, split m{/+}, $uri); #/
+            $fn=File::Spec->catfile($dn, split(m{/+}, $uri));
             debug("fn: $fn from dn: $dn, uri: $uri");
-            
+
         }
-            
+
         #  Need to add default psp file ?
         #
         unless ($fn=~WEBDYNE_PSP_EXT_RE) { # fastest
@@ -181,767 +519,47 @@ sub new {
             #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
             #  handle it
             #
-            if  ((-d $fn) || !$fn) {
-        
+            if  (($fn=~/\/$/) || ((-d $fn) || !$fn)) {
+
                 #  Append default doc to path, which appears at moment to be a directory ?
                 #
-                my $document_default=$r{'document_default'} || $Dir_config_env{'DOCUMENT_DEFAULT'} || $DOCUMENT_DEFAULT;
+                my $document_default=$r{'document_default'} || $DOCUMENT_DEFAULT;
                 debug("appending document default $document_default to fn:$fn");
-                
+
                 #  If absolute path just use it
                 #
                 if (File::Spec->file_name_is_absolute($document_default)) {
-                
+
                     #  Yep - absolute path
                     #
                     $fn=$document_default
                 }
                 else {
-                
+
                     #  Otherwise append to existing path
                     #
-                    $fn=File::Spec->catfile($fn, split m{/+}, $document_default); #/
+                    $fn=File::Spec->catfile($fn, split m{/+}, $document_default);
                 }
             }
             else {
-                
+
                 #  Not .psp file, do not want
                 #
+                debug("fn: $fn does not end with /, leaving undef");
                 $fn=undef;
             }
         }
 
-
         #  Final sanity check
         #
         debug("final fn: $fn");
-        $r{'filename'}=$fn; 
-        
+        $r{'filename'}=$fn;
+
     }
-    
 
-    #  Finished, pass back
-    #
-    return bless \%r, $class;
-        
-}
 
-
-sub status {
-
-    #  PAGI doesn't return the status code when setting, so code like
-    #  return $r->status(500) doesn't work.
-    #
-    my $r=shift();
-    return @_ ? do { $r->{'res'}->status(@_); shift() } : $r->{'res'}->status()
-    
-}
-
-sub AUTOLOAD {
-
-    warn $AUTOLOAD
-    
-}
-
-sub path_info {
-    shift()->path()
-}
-
-
-sub protocol {
-    shift()->http_version()
-}
-
-
-sub user {
-    #  Stub
-}
-
-
-sub content_encoding {
-    #  Stub
-}
-
-
-sub header_only {
-    return (shift()->method eq 'HEAD')
-}
-
-
-sub headers_in {
-    my $r=shift();
-    my $headers_hr=$r->{'req'}->headers();
-    return HTTP::Headers::Fast->new($headers_hr->flatten());
-}
-
-sub headers_out {
-    my $r=shift();
-    my $headers_or=$r->{'headers_out'} 
-        ||= HTTP::Headers::Fast->new(map { @{$_} } @{$r->{'res'}->headers()});
-    debug("headers_or: $headers_or, %s", Dumper(\@_));
-    if (@_) {
-        $r->{'res'}->header(@_);
-        return $headers_or->header(@_);
-    }
-    else {
-        return $headers_or;
-    }
-    #my $headers_or=$r->{'headers_out'} 
-    #    ||= HTTP::Headers::Fast->new(map { @{$_} } @{$r->{'res'}->headers()});
-    #    return HTTP::Headers::Fast->new(map { @{$_} } @{$r->{'res'}->headers()});
-    #}    
-    #$headers_or->header(@_);
-    #debug('headers_out: %s, %s', Dumper(\@_, $headers_or));
-    #return @_ ? $headers_or->header(@_) : $headers_or;
-}
-
-sub content_type {
-
-    my $r=shift();
-    debug("$r content_type, existing: %s, param: %s", $r->{'res'}->content_type(), Dumper(\@_));
-    return @_ ? $r->{'res'}->content_type(@_) : $r->{'res'}->content_type();
-
-}
-__END__
-
-sub header {
-
-    my ($r, $header, @value)=@_;
-    debug("$r header: $header: %s", Dumper(\@value));
-    return @value ? $r->{'res'}->header($header, @value) : $r->{'req'}->header($header);
-
-}
-
-
-__END__
-
-sub headers_out0 {
-    my $r=shift();
-    return $r->{'res'}->headers();
-}
-
-sub send_http_header0 {
-    
-}
-
-sub status0 {
-
-    my $r=shift();
-    debug("$r status: %s", Dumper(\@_));
-    return @_ ? $r->{'res'}->status(@_) : $r->{'res'}->status();
-
-}
-
-#no warnings qw(once);
-#*status=\&res;
-#*content_type=\&res;
-
-sub res0 {
-
-    my $r=shift();
-    my $method=(caller(0))[3];
-    if ($method eq 'res') {
-        return $r->{'res'}
-    }
-    else {
-        return @_ ? $r->{'res'}->$method(@_) : $r->{'res'}->$method();
-    }
-    
-}
-
-sub send0 {
-
-    my $r=shift();
-    debug("$r send: %s", Dumper(\@_));
-    return @_ ? $r->{'res'}->send(@_) : $r->{'res'}->send();
-
-}
-
-
-sub location0 {
-    return shift()->WebDyne::Request::Fake::location(@_);
-}
-
-sub dir_config0 {
-    return shift()->WebDyne::Request::Fake::dir_config(@_);
-}
-
-sub cwd0 {
-    return shift()->WebDyne::Request::Fake::cwd(@_);
-}
-
-sub filename0 {
-    return shift()->{'filename'};
-}
-
-sub content_type0 {
-    return shift()->{'res'}->content_type(@_);
-}
-
-sub send0 {
-    my ($r, $self)=@_;
-    $r->{'res'}->send(@_);
-}
-
-sub send0 {
-    my $r=shift();
-    $r->{'res'}->send(@_);
-}
-
-sub uri0 {
-    my $self = shift;
-    #return Dumper($self);
-
-    my $base = $self->_uri_base($self->{'scope'});
-
-    # We have to escape back PATH_INFO in case they include stuff like
-    # ? or # so that the URI parser won't be tricked. However we should
-    # preserve '/' since encoding them into %2f doesn't make sense.
-    # This means when a request like /foo%2fbar comes in, we recognize
-    # it as /foo/bar which is not ideal, but that's how the PSGI PATH_INFO
-    # spec goes and we can't do anything about it. See PSGI::FAQ for details.
-
-    # See RFC 3986 before modifying.
-    my $path_escape_class = q{^/;:@&=A-Za-z0-9\$_.+!*'(),-};
-
-    my $path = URI::Escape::uri_escape($self->path_info || '', $path_escape_class);
-    $path .= '?' . $self->query_string()
-        if defined $self->query_string() && $self->query_string() ne '';
-
-    $base =~ s!/$!! if $path =~ m!^/!;
-
-    return URI->new($base . $path)->canonical;
-}
-
-sub base {
-    my $self = shift;
-    URI->new($self->_uri_base)->canonical;
-}
-
-use Data::Dumper;
-sub _uri_base0 {
-    my $self = shift;
-    debug("self: $self, %s", Dumper($self));
-    my $server_ar=$self->{'server'};
-    my $scheme=$self->scheme() || 'http';
-    my $uri=sprintf('%s://%s:%s', $scheme, @{$server_ar});
-    return $uri;
-}
-
-sub _uri_base {
-    my ($self, $scope_hr) = @_;
-    debug("self: $self, scope: $scope_hr %s", Dumper($scope_hr));
-    my $server_ar=$scope_hr->{'server'};
-    my $scheme=$scope_hr->{'scheme'} || 'http';
-    debug("server_ar: %s, scheme: $scheme", Dumper($server_ar));
-    my $uri=sprintf('%s://%s:%s', $scheme, @{$server_ar});
-    return $uri;
-}
-
-__END__
-
-use Future::AsyncAwait;
-use Future::IO;
-
-
-
-async sub watch_sse_disconnect {
-    my ($receive) = @_;
-
-    while (1) {
-        my $event = await $receive->();
-        return $event if $event->{type} eq 'sse.disconnect';
-    }
-}
-
-
-
-sub  send1 {
-
-    my ($self)=@_;
-
-    #my ($scope, $receive, $send) = @_;
-    my $send=$self->{'send'};
-    my $receive=$self->{'receive'};
-    debug("$self send: $send");
-
-
-    $send->({
-        type    => 'sse.start',
-        status  => 200,
-        headers => [ [ 'content-type', 'text/event-stream' ] ],
-    });
-    
-    #my $disconnect = Future->wait_any(watch_sse_disconnect($receive));
-    while (1) {
-
-        #last if $disconnect->is_ready;
-        #await Future::IO->sleep(2);
-        sleep (2);
-        debug('send');
-        $send->({ type => 'sse.send', data => scalar localtime  });
-        #await $send->({ type => 'sse.send', data => Dumper($scope)  });
-    }
-    debug("send end");
-
-    #$disconnect->cancel if $disconnect->can('cancel') && !$disconnect->is_ready;
-
-}
-
-
-async sub  send2 {
-
-    my ($self)=@_;
-
-    #my ($scope, $receive, $send) = @_;
-    my $send=$self->{'send'};
-    my $receive=$self->{'receive'};
-    debug("$self send: $send");
-
-
-    await $send->({
-        type    => 'sse.start',
-        status  => 200,
-        headers => [ [ 'content-type', 'text/event-stream' ] ],
-    });
-    
-    #my $disconnect = Future->wait_any(watch_sse_disconnect($receive));
-    while (1) {
-
-        #last if $disconnect->is_ready;
-        await Future::IO->sleep(2);
-        await $send->({ type => 'sse.send', data => scalar localtime  });
-        #await $send->({ type => 'sse.send', data => Dumper($scope)  });
-    }
-    #debug("send end");
-
-    #$disconnect->cancel if $disconnect->can('cancel') && !$disconnect->is_ready;
-
-}
-
-async sub send0 {
-
-    my ($self)=@_;
-
-    #my ($scope, $receive, $send) = @_;
-    my $send=$self->{'send'};
-    my $receive=$self->{'receive'};
-    #debug("$self send: $send");
-
-
-    await $send->({
-        type    => 'sse.start',
-        status  => 200,
-        headers => [ [ 'content-type', 'text/event-stream' ] ],
-    });
-    
-    my $disconnect = Future->wait_any(watch_sse_disconnect($receive));
-    while (1) {
-
-        last if $disconnect->is_ready;
-        await Future::IO->sleep(2);
-        await $send->({ type => 'sse.send', data => scalar localtime  });
-        #await $send->({ type => 'sse.send', data => Dumper($scope)  });
-    }
-    #debug("send end");
-
-    $disconnect->cancel if $disconnect->can('cancel') && !$disconnect->is_ready;
-
-}
-
-
-#  Doesn't crash, doesn't work, closes connection
-sub send4 {
-
-
-    #  Send SSE response
-    #
-    my ($self, $event_hr, $cr)=@_;
-    debug("$self send: %s", Dumper($event_hr));
-    my $send=$self->{'send'};
-    
-    #await $send->({
-    $send->({
-        type    => 'sse.start',
-        status  => 200,
-        headers => [ [ 'content-type', 'text/event-stream' ] ],
-    });
-    #die "Bang !";
-
-    #  Turn event hash into text/event-stream format
-    #
-    my @data=map { sprintf('%s: %s', ($_ =>$event_hr->{$_})) } keys %{$event_hr};
-    my $data=join("\n", @data, undef);
-    debug("sse return: $data");
-    
-    
-
-    #my $disconnect = Future->wait_any(watch_sse_disconnect($receive));
-    #while (1) {
-
-    #last if $disconnect->is_ready;
-        #await Future::IO->sleep(2);
-        $send->({ type => 'sse.send', data => scalar localtime  });
-    #await $send->({ type => 'sse.send', data => Dumper($event_hr)  });
-    #$send->({ type => 'sse.send', data => 'Hello'  });
-    #}
-
-}
-
-sub DESTROY {
-
-    debug(shift().' destroy');
-    
-} 
-1;
-
-__END__
-
-
-sub new {
-
-
-    #  New PSGI request
-    #
-    my ($class, %r)=@_;
-    debug("$class, r: %s, calller:%s", Dumper(\%r, [caller(0)]));
-    
-    
-    #  Try to figure out filename user wants
-    #
-    unless ($r{'filename'}) {
-    
-    
-        #  Not supplied - need to work out
-        #
-        debug('filename not supplied, determining from request');
-
-    
-        #  Iterate through options. If *not* supplied by SCRIPT_FILENAME keep going.
-        #
-        my $fn;
-        unless (($fn=$ENV{'SCRIPT_FILENAME'}) && !$r{'uri'}) {
-        
-        
-            #  Need to calc from document root in PSGI environment
-            #
-            debug('not supplied in SCRIPT_FILENAME or r{uri}. calculating');
-            if (my $dn=($r{'document_root'} || $ENV{'DOCUMENT_ROOT'} || $Dir_config_env{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
-            
-                #  Get from URI and location
-                #
-                my $uri=$r{'uri'} || $ENV{'PATH_INFO'} || $ENV{'SCRIPT_NAME'};
-                debug("uri: $uri");
-                $fn=File::Spec->catfile($dn, split m{/+}, $uri); #/
-                debug("fn: $fn from dn: $dn, uri: $uri");
-                
-            }
-            
-            
-            #  IIS/FastCGI, not tested recently unsure if works
-            #
-            elsif ($fn=$ENV{'PATH_TRANSLATED'}) {
-
-                #  Feel free to let me know a better way under IIS/FastCGI ..
-                my $script_fn=(File::Spec::Unix->splitpath($ENV{'SCRIPT_NAME'}))[2];
-                $fn=~s/\Q$script_fn\E.*/$script_fn/;
-                debug("fn: $fn derived from PATH_TRANSLATED script_fn: $script_fn");
-            }
-            
-            
-            #  Need to add default psp file ?
-            #
-            #unless ($fn=~/\.psp$/) { # fastest
-            unless ($fn=~WEBDYNE_PSP_EXT_RE) { # fastest
-
-                #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
-                #  handle it
-                #
-                if  ((-d $fn) || !$fn) {
-                    
-            
-                    #  Append default doc to path, which appears at moment to be a directory ?
-                    #
-                    my $document_default=$r{'document_default'} || $Dir_config_env{'DOCUMENT_DEFAULT'} || $DOCUMENT_DEFAULT;
-                    debug("appending document default $document_default to fn:$fn");
-                    
-                    #  If absolute path just use it
-                    #
-                    if (File::Spec->file_name_is_absolute($document_default)) {
-                    
-                        #  Yep - absolute path
-                        #
-                        $fn=$document_default
-                    }
-                    else {
-                    
-                        #  Otherwise append to existing path
-                        #
-                        $fn=File::Spec->catfile($fn, split m{/+}, $document_default); #/
-                    }
-                }
-                else {
-                    
-                    #  Not .psp file, do not want
-                    #
-                    $fn=undef;
-                }
-            }
-        }
-
-
-        #  Final sanity check
-        #
-        debug("final fn: $fn");
-        $r{'filename'}=$fn; 
-        
-    }
-    
-    
     #  Finished, pass back
     #
     return bless \%r, $class;
 
 }
-
-
-sub new_from_filename {
-
-    #  Test method, not used
-    #
-    my ($class, $fn, $select_fh)=@_;
-    my %r=(filename=>$fn, select=>$select_fh, env=>\%ENV);
-    return bless(\%r, $class);
-    
-}
-
-
-sub content_type {
-
-    my $r=shift();
-    my $hr=$r->headers_out();
-    #@_ ? $r->headers_out()->{'Content-Type'}=shift() : $r->SUPER::content_type();
-    return @_ ? $r->headers_out()->{'Content-Type'}=shift() : ($r->headers_out()->{'Content-Type'} || $ENV{'CONTENT_TYPE'});
-
-}
-
-
-sub custom_response {
-
-    my ($r, $status)=(shift(), shift());
-    while ($r->prev) {$r=$r->prev}
-    debug("in custom response, status $status");
-    @_ ? $r->{'custom_response'}{$status}=shift() : $r->{'custom_response'}{$status};
-
-}
-
-
-sub filename {
-
-    my $r=shift();
-    @_ ? $r->{'filename'}=shift() : $r->{'filename'};
-
-}
-
-
-sub header_only {
-
-    (shift()->method() eq 'HEAD') ? 1 : 0 
-
-}
-
-
-sub headers_in {
-    my $r=shift();
-    return $r->headers();
-}
-
-
-sub headers_out {
-
-    my $r=shift();
-    return WebDyne::Request::Fake::headers($r, 'headers_out', @_);
-
-}    
-
-
-sub location {
-
-
-    #  Equiv to Apache::RequestUtil->location;
-    #
-    my $r=shift();
-    debug("r: $r, caller: %s", Dumper([caller(0)]));
-    my $location;
-    my $constant_hr=$WEBDYNE_DIR_CONFIG;
-    my $constant_server_hr;
-    if (my $server=$Dir_config_env{'WebDyneServer'} || $ENV{'SERVER_NAME'}) {
-        $constant_server_hr=$constant_hr->{$server} if exists($constant_hr->{$server})
-    }
-    if ($Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'}) {
-
-        #  APPL_MD_PATH is IIS virtual dir. If that or a fixed location set use it.
-        #
-        $location=$Dir_config_env{'WebDyneLocation'} || $ENV{'APPL_MD_PATH'};
-    }
-    elsif (my $uri_path=join('', grep {$_} @ENV{qw(SCRIPT_NAME PATH_INFO)})) {
-        
-        #  Strip file name
-        #
-        $uri_path=~s{[^/]+\Q@{[WEBDYNE_PSP_EXT]}\E$}{}x; #\
-        debug("uri_path: $uri_path");
-        my @location=('/', grep {$_} File::Spec::Unix->splitdir($uri_path));
-        
-        #  Start iterating through directories
-        #
-        while ($location=File::Spec::Unix->catdir(@location)) {
-            debug("location: $location");
-            last if exists($constant_hr->{$location}) || exists($constant_server_hr->{$location});
-            $location.='/' unless ($location eq '/');
-            last if exists($constant_hr->{$location}) || exists($constant_server_hr->{$location});
-            pop @location;
-        }
-    }
-    else {
-        
-        #  Actually mod_perl spec says location blank if not positively given - don't default to '/'
-        #
-        #$location=File::Spec::Unix->rootdir();
-    }
-    
-    #  
-    #
-    return $location;
-
-}
-
-
-sub log_error {
-
-    my $r=shift();
-    warn(@_) if $WEBDYNE_PSGI_WARN_ON_ERROR;
-
-}
-
-
-sub lookup_file {
-
-    my ($r, $fn)=@_;
-    my $r_child;
-    if ($fn!~WEBDYNE_PSP_EXT_RE) { # fastest
-
-
-        #  Static file
-        #
-        require WebDyne::Request::PSGI::Static;
-        $r_child=WebDyne::Request::PSGI::Static->new(filename => $fn, prev => $r) ||
-            return err();
-
-    }
-    else {
-
-
-        #  Subrequest
-        #
-        $r_child=ref($r)->new(filename => $fn, prev => $r) || return err();
-
-    }
-
-    #  Return child
-    #
-    return $r_child;
-
-}
-
-
-sub lookup_uri {
-
-    my ($r, $uri)=@_;
-    ref($r)->new(uri => $uri, prev => $r) || return err();
-
-}
-
-
-sub redirect {
-
-    my ($r, $location)=@_;
-    $r->status(HTTP_FOUND);
-    $r->headers_out('Location' => $location);
-    return HTTP_FOUND;
-
-}
-
-
-sub run {
-
-    my ($r, $self)=@_;
-    debug("self: $self, r:$r");
-    if (-f $r->{'filename'}) {
-        debug('file is %s', $r->{'filename'});
-        return ref($self)->handler($r);
-    }
-    else {
-        debug("file not found !");
-        $r->status(RC_NOT_FOUND);
-        $r->send_error_message;
-        return HTTP_NOT_FOUND;
-    }
-
-}
-
-
-sub send_error_response {
-
-    my $r=shift();
-    my $status=$r->status();
-    debug("in send error response, status $status");
-    if (my $message=$r->custom_response($status)) {
-
-        #  We have a custom response - send it
-        #
-        $r->print($message);
-
-    }
-    else {
-
-        #  Create an generic error message
-        #
-        $r->print(
-            $r->err_html(
-                $status,
-                status_message($status)
-            ));
-    }
-}
-
-
-sub err_html {
-
-    #  Very basic HTML error messages for file not found and similar
-    #
-    my ($r, $status, $message)=@_;
-    require WebDyne::HTML::Tiny;
-    my $html_or=WebDyne::HTML::Tiny->new( mode=>$WEBDYNE_HTML_TINY_MODE, r=>$r ) ||
-        return err();
-    my $error;
-    my @message=(
-        $html_or->start_html($error=sprintf("%s Error $status", __PACKAGE__)),
-        $html_or->h1($error),
-        $html_or->hr(),
-        $html_or->em(status_message($status) || 'Unknown Error'), $html_or->br(), $html_or->br(),
-        $html_or->pre(
-            sprintf("The requested URI '%s' generated error:\n\n$message", $r->uri)
-        ),
-        $html_or->end_html()
-    );
-    return join('', @message);
-
-}
-
-
-sub send_http_header {
-
-    #  Stub
-    
-}
-

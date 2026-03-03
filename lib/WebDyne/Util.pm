@@ -271,7 +271,7 @@ sub debug {
     
     #  Truncate ?
     #
-    if (length($debug) > $WEBDYNE_DEBUG_MAX_LENGTH) {
+    if ($WEBDYNE_DEBUG_MAX_LINES && (length($debug) > $WEBDYNE_DEBUG_MAX_LENGTH)) {
         $debug=substr($debug, 0, $WEBDYNE_DEBUG_MAX_LENGTH);
     }
     

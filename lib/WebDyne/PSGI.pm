@@ -52,27 +52,18 @@ our (%API_fn);
 
 #  Environment
 #
-#my %env_config=(
-#    %{$WEBDYNE_PSGI_ENV_SET}, 
-#    (map { $_=>$ENV{$_}  } (
-#        grep { defined($ENV{$_}) }
-#        qw(DOCUMENT_DEFAULT DOCUMENT_ROOT),
-#        @{$WEBDYNE_PSGI_ENV_KEEP},
-#        grep {/WEBDYNE/i} keys %ENV
-#    ))
-#);
-%ENV=(
+my %ENV_BASE=(
     %{$WEBDYNE_PSGI_ENV_SET}, 
     (map { $_=>$ENV{$_}  } (
         grep { defined($ENV{$_}) }
         qw(DOCUMENT_DEFAULT DOCUMENT_ROOT SERVER_NAME APPL_MD_PATH),
         @{$WEBDYNE_PSGI_ENV_KEEP},
-        grep {/^WEBDYNE/i} keys %ENV,
-        grep {/^HTTP/i} keys %ENV,
-        grep {/^CONTENT/i} keys %ENV
+        (grep {/^WEBDYNE/i} keys %ENV), # Note not WEBDYNE_, just /WEBDYNE/i to allow for DirConfig type entries such as WebDyneHandler
+        (grep {/^HTTP_/i} keys %ENV),
+        (grep {/^CONTENT_/i} keys %ENV)
     ))
 );
-#die Dumper(\%ENV);
+
 
 #  Version information
 #
@@ -143,15 +134,13 @@ sub handler {
     #  Get env
     #
     my ($self, $env_hr, @param)=@_;
-    #local %ENV=(%env_config, %{$env_hr});
-    #unless ($FOO++) {
-    #    %ENV=(%env_config, %{$env_hr}, map {$_=>$ENV{$_}} grep {/^WEBDYNE/} keys %ENV); # unless $FOO++;;
-    #}
-    #map {$ENV{$_}=$env_config{$_}} keys %env_config;
-    #map {$ENV{$_}=$env_hr->{$_}} keys %{$env_hr};
-    #%ENV=(%ENV, %{$env_hr});
+    debug('in handler, self: %s, env: %s, param:%s', Dumper($self, $env_hr, \@param));
     
-    debug('in handler, env: %s, param:%s', Dumper(\%ENV, \@param));
+    
+    #  Set up
+    #
+    local %ENV=(%ENV_BASE, %{$env_hr});
+
 
     #  Setup request and response handlers
     #
@@ -159,13 +148,12 @@ sub handler {
     my $res_or=Plack::Response->new(HTTP_OK);
     
     
-    
     #  Create new PSGI Request object, will pull filename from
     #  environment. 
     #
     my $html;
     my $html_fh=IO::String->new($html);
-    my $r=WebDyne::Request::PSGI->new(select => $html_fh, document_root => $self->{'root'}, document_default => $self->{'index'}, uri=>$ENV{'PATH_INFO'}, env=>$env_hr, req=>$req_or, res=>$res_or, @param) ||
+    my $r=WebDyne::Request::PSGI->new(select => $html_fh, document_root => $self->{'root'}, document_default => $self->{'index'}, uri0=>$ENV{'PATH_INFO'}, env=>$env_hr, req=>$req_or, res=>$res_or, @param) ||
         return err('unable to create new WebDyne::Request::PSGI object: %s', 
     			$@ || errclr() || 'unknown error');
     debug("r: $r");
@@ -192,8 +180,7 @@ sub handler {
 	#  common and quickest test, other 200 codes will fall through the if/else statements and still work
 	#
 	unless ($status == HTTP_OK) {
-	    
-	    
+	
 	    #  OK. Most common match didn't happen. Is it an error ?
 	    #
 	    debug('status: %s is not HTTP_OK, branching', $status);
@@ -226,7 +213,8 @@ sub handler {
                         if ($API_fn{$api_fn} || (-f $api_fn)) {
                             debug("found api file name: $api_fn, %s, dispatching", Dumper(\%API_fn));
                             $API_fn{$api_fn}++; # Cache so not stat()ing on file system
-                            return &handler($env_hr, filename=>$api_fn);
+                            #return &handler($env_hr, filename=>$api_fn);
+                            return $self->handler($env_hr, filename=>$api_fn);
                         }
                     }
                 }
@@ -236,8 +224,11 @@ sub handler {
                 #
                 debug("status: $status, fn:$fn, setting HTTP_NOT_FOUND");
                 $r->status(HTTP_NOT_FOUND);
-                my $error=errdump() || "File not found, status ($status)"; errclr();
-                $html=$r->err_html($status, $error)
+                my $error=errstr() || "File not found, status ($status)"; 
+                my $errdump=errdump();
+                errclr();
+                #$html=$r->err_html($status, $error)
+                return psgi_error($r, $status, $error, $errdump );
             }
             elsif (is_error($status)) {
             
@@ -245,21 +236,32 @@ sub handler {
                 #
                 debug("returning custom error: $status");
                 $r->status($status);
-                $html=$r->custom_response($status) || errstr() || do {
-                     $r->content_type($WEBDYNE_CONTENT_TYPE_TEXT);
-                    "Error $status with no content - try server error logs ?";
-                };
+                $html=$r->custom_response($status);
+                unless ($html=~/^<!DOCTYPE html>/) {
+                    #  Not a HTML error, revert to text
+                    my $error=$html || errstr() || $@ || 
+                        "Error $status with no content - try server error logs ?";
+                    my $errdump=errdump();
+                    errclr();
+                    return psgi_error($r, $status, $error, $errdump);
+                }
+                else {
+                    #  HTML error, keep going - will be displayed as-s
+                }
             }
             else {
             
                 #  Weird non HTTP status code, something has gone wrong along way
                 #
                 debug('undefined status returned, looking for error handler');
-                my $error=errdump() || $@; errclr();
+                my $error=errstr() || $@; 
+                my $errdump=errdump();
+                errclr();
                 $error ||=  "Unexpected return status ($status) from handler $handler";
                 debug("request handler status:$status, detected error: $error, calling err_html");
                 $r->status(HTTP_INTERNAL_SERVER_ERROR);
-                $html=$r->err_html($status, $error)
+                #$html=$r->err_html($status, $error)
+                return psgi_error($r, $status, $error, $errdump);
 
             }
                 
@@ -286,13 +288,9 @@ sub handler {
     #  Return structure
     #
     my @return=(
-    $r->status() || HTTP_INTERNAL_SERVER_ERROR,
-    [
-                    %{$r->headers_out()}
-            ],
-    [
-                    $html 
-            ]
+        $r->status() || HTTP_INTERNAL_SERVER_ERROR,
+        [ %{$r->headers_out()} ],
+        [ $html ]
     );
 
 
@@ -310,29 +308,40 @@ sub handler {
 }
 
 
-sub error {
+sub psgi_error {
 
-    #  Get and return error string as last resort. Test function not used 
-    #  in main handler.
+    #  Return HTML or text error
     #
-    my @error=@_;
-    my $error=sprintf(shift(), @error) ||
-            'Unknown error';
-
-    #  Basic error response
-    #
-    return [
-        HTTP_INTERNAL_SERVER_ERROR,
-        ['Content-Type' => 'text/plain'],
-        [join($/,
-	    'Internal Server Error:',
-	    undef, 
-	    $error
-        )]
-    ];
-
+    my ($r, $status, $error, $errdump)=@_;
+    debug("in PSGI error handler, r: $r, status: $status, error: $error");
+    unless (is_error($status)) {
+        $status=HTTP_INTERNAL_SERVER_ERROR;
+    }
+    my ($content_type, $body);
+    if ($WEBDYNE_ERROR_TEXT) {
+        $content_type=$WEBDYNE_CONTENT_TYPE_TEXT;
+        $body=$errdump || $error;
+    }
+    else {
+        if (eval {$body=$r->err_html($status, $error)}) {
+            $content_type=$WEBDYNE_CONTENT_TYPE_HTML;
+        }
+        else {
+            $body=$errdump || $error;
+            $content_type=$WEBDYNE_CONTENT_TYPE_TEXT;
+        }
+    }
+    my @return=(
+        $status,
+        ['Content-Type' => $content_type],
+        [$body]
+    );
+    $r->DESTROY();
+    debug('return: %s', Dumper(\@return));
+    return \@return;
+    
 }
-
+         
 
 
 __END__

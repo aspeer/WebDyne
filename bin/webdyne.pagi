@@ -75,7 +75,7 @@ else {
         root    => $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT || fastcwd(),
         index   => $ENV{'DOCUMENT_DEFAULT'} || $DOCUMENT_DEFAULT
     );
-    return &build(\%opt);;
+    return &build(\%opt);
     
 }
 
@@ -128,7 +128,7 @@ sub build {
 
     #  Read in local webdyne.conf.pl
     #
-    &local_constant_load($opt_hr->{'root'});
+    #&local_constant_load($opt_hr->{'root'});
 
 
     #  Finally return as app code ref
@@ -181,18 +181,6 @@ sub startup {
 }
 
 
-sub normalize_dn {
-
-    #  Normal dir, normally document_root
-    #
-    my $rel_dn=shift();
-    my $abs_dn=File::Spec->rel2abs($rel_dn);
-    $abs_dn =~ s{/$}{} unless $abs_dn eq '/';
-    return $abs_dn;
-    
-}
-
-
 sub local_constant_load {
 
 
@@ -209,4 +197,20 @@ sub local_constant_load {
     WebDyne::Constant->import(File::Spec->catfile($root_dn, sprintf('.%s', $WEBDYNE_CONF_FN)));
 
 }
+
+
+__END__
+
+
+sub normalize_dn {
+
+    #  Normal dir, normally document_root
+    #
+    my $rel_dn=shift();
+    my $abs_dn=File::Spec->rel2abs($rel_dn);
+    $abs_dn =~ s{/$}{} unless $abs_dn eq '/';
+    return $abs_dn;
+    
+}
+
 

@@ -208,6 +208,16 @@ sub handler : method {    # no subsort
     #
     my ($self, $r, $param_hr)=@_;
     debug("handler called with self: $self, r: $r, MP2: $MP2, param: %s", Dumper($param_hr));
+    
+    
+    #  Update r if needed
+    #
+    if (ref($r)=~/^Apache/) {
+        debug("converting r: $r to WebDyne::Request::Apache module");
+        require WebDyne::Request::Apache;
+        $r=WebDyne::Request::Apache->new($r);
+        debug("r now: $r");
+    }
 
 
     #  Start timer so we can optionally keep stats on how long handler takes to run

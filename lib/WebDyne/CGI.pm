@@ -60,6 +60,13 @@ sub new {
         #
         debug('detected Plack request handler');
         require WebDyne::CGI::PSGI;
+        my $cgi_or=WebDyne::CGI::PSGI->new($r, %param);
+        debug("about to get param: $cgi_or");
+        local $SIG{'__DIE__'}=sub { CORE::die @_ };
+        eval { $cgi_or->param() };
+        debug("eval: $@");
+        debug("cgi_or: $cgi_or, %s", $cgi_or->param());
+        return $cgi_or;
         return  WebDyne::CGI::PSGI->new($r, %param);
         *new=WebDyne::CGI::PSGI::new;
  
@@ -73,6 +80,17 @@ sub new {
         require WebDyne::CGI::PAGI;
         return  WebDyne::CGI::PAGI->new($r, %param);
         *new=WebDyne::CGI::PAGI::new;
+ 
+        
+    }
+    elsif (ref($r) eq 'WebDyne::Request::Apache') {
+    
+        # PAGI
+        #
+        debug('detected PAGI request handler');
+        require WebDyne::CGI::Simple;
+        return  WebDyne::CGI::Simple->new($r, %param);
+        *new=WebDyne::CGI::Simple::new;
  
         
     }

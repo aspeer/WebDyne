@@ -24,13 +24,13 @@ no warnings qw(uninitialized);
 
 #  External modules
 #
+use File::Spec;
 use File::Spec::Unix;
 use HTTP::Status qw(status_message HTTP_OK HTTP_NOT_FOUND HTTP_FOUND);
 use URI;
 use Data::Dumper;
 use Plack::Request;
 use Plack::Response;
-$Data::Dumper::Indent=1;
 
 
 #  WebDyne modules
@@ -38,7 +38,7 @@ $Data::Dumper::Indent=1;
 use WebDyne::Util;
 use WebDyne::Constant;
 use WebDyne::PSGI::Constant;
-use WebDyne::Request::Common;
+use WebDyne::Request::Common qw(handler_methods_all handler_methods_check);
 
 
 #  Inheritance
@@ -76,71 +76,77 @@ sub init {
     #
     my %method=(
         req => {
-            #accept_encoding     => sub { shift()->headers_in('Acccept-Encoding') },
-            accept_encoding     => sub { shift()->headers_in('accept_encoding') },
-            accept_language     => sub { shift()->headers_in('accept_language') },
-            accept              => sub { shift()->headers_in('accept') },
-            authority           => sub { shift()->uri->authority },
+            accept_encoding     => undef,
+            accept_language     => undef,
+            accept              => undef,
             args                => undef,
             as_string           => undef,
-            authorizarion       => sub { shift()->headers_in('authorization') },
-            auth_type           => sub { shift()->env->{'AUTH_TYPE'} },
+            authority           => undef,
+            authorization       => undef,
+            auth_type           => undef,
+            base                => 'base',
             base_url            => 'base',
-            body                => sub { my $r=shift(); if (my $input_or=$r->input) { my $body; $input_or->read($body, $r->content_length()); return $body } },
             body_handle         => 'input',
-            cache_control       => sub { shift()->headers_in('cache_control') },
-            charset             => sub { ()=(shift()->content_type=~/charset=(.*?)/)[0] },
+            #body                => sub { my $r=shift(); if (my $input_or=$r->input) { unless (exists $r->{'body'}) { $input_or->read($r->{'body'}, $r->content_length()) }; return $r->{'body'} } },
+            body                => undef,
+            cache_control       => undef,
+            charset             => undef,
+            cleanup_register    => undef,
             client_address      => 'address',
-            content_encoding    => 'content_encoding',
-            content_length      => 'content_length',
-            content_type        => 'content_type',
-            cookies             => 'cookies',
-            cookie              => sub { shift()->cookies(@_) },
             content             => 'body',
-            input               => sub { shift()->env->{'psgi.input'} },
+            content_encoding    => 'content_encoding',
+            #content_length      => 'content_length',
+            #content_type        => 'content_type',
+            content_length      => undef,
+            content_type        => undef,
+            cookies             => 'cookies',
+            cookie              => 'cookies',
             custom_response     => undef,
             cwd                 => undef,
             dir_config          => undef,
             document_root       => undef,
             env                 => 'env',
-            etag                => sub { shift()->if_none_match },
+            etag                => undef,
             filename            => undef,
             finalize            => undef,
             finfo               => undef,
             form_parameters     => 'body_parameters',
-            forwarded_for       => sub { shift()->headers_in('x_forwarded_for') },
-            fragment            => sub { shift()->uri->fragment },
+            forwarded_for       => undef,
+            fragment            => undef,
             handler             => undef,
+            header              => sub { shift()->{'req'}->headers->header(@_) },
+            header_only         => undef,
             headers_in          => undef,
             headers_out         => undef,
-            header_only         => undef,
-            host                => sub { shift()->uri->host },
             hostname            => undef,
+            host                => undef,
+            https               => undef,
             http_version        => 'protocol',
             id                  => sub { shift()->env->{'psgi.request_id'} },
-            if_modified_since   => sub { shift()->headers_in('if_modified_since') },
-            if_none_match       => sub { shift()->headers_in('if_none_match') },
-            is_ajax             => sub { (shift()->headers_in('x_requested_with') eq 'XMLHttpRequest') },
+            if_modified_since   => undef,
+            if_none_match       => undef,
+            input               => sub { shift()->env->{'psgi.input'} },
+            is_ajax             => undef,
             is_main             => undef,
             location            => undef,
             log_error           => undef,
             lookup_file         => undef,
             lookup_uri          => undef,
             main                => undef,
-            media_type          => sub { ()=(shift()->content_type=~/(.*?);/) },
+            media_type          => undef,
             method              => 'method',
             mtime               => undef,
             multipart_parameters=> 'body_parameters',
             next                => undef,
             notes               => undef,
-            origin              => sub { shift()->headers_in('origin') },
+            origin              => undef,
             output_filters      => undef,
+            path_info           => 'path_info',
             path_parameters     => undef,
             path                => 'path_info',
-            path_info           => 'path_info',
-            #parsed_uri          => 'uri',
-            #port                => 'port',
             pool                => undef,
+            preferred_charset   => undef,
+            preferred_encoding  => undef,
             preferred_language  => undef,
             preferred_media_type=> undef,
             prev                => undef,
@@ -148,32 +154,34 @@ sub init {
             protocol            => 'protocol',
             query_parameters    => 'query_parameters',
             query_string        => 'query_string',
-            referer             => 'referer',
             redirect            => undef,
+            referer             => 'referer',
+            register_cleanup    => undef,
             remote_address      => 'address',
             remote_host         => 'remote_host',
-            remote_port         => sub { shift()->env->{'REMOTE_PORT'} },
+            remote_port         => undef,
             remote_user         => 'user',
             request_time        => sub { shift()->env->{'psgi.start_time'} },
-            register_cleanup    => undef,
             route               => undef,
             run                 => undef,
             scheme              => 'scheme',
             script_name         => 'script_name',
             secure              => 'secure',
             sendfile            => undef,
-            session_id          => undef,
-            session             => undef,
+            send_http_header    => undef,
             server_name         => undef,
             server_port         => undef,
-            stat                => undef,
-            status              => undef,
+            session_id          => undef,
+            session             => undef,
+            set_handlers        => undef,
             status_line         => undef,
+            status              => undef,
+            unparsed_uri        => 'uri',
             uploads             => 'uploads',
             uri                 => 'uri',
-            unparsed_uri        => 'uri',
             url                 => 'uri',
             user_agent          => 'user_agent',
+            user                => undef,
             write               => undef,
         },
         res => {(
@@ -181,22 +189,20 @@ sub init {
         )},
             
     );
-    my %method_all;
+    my %method_check;
     foreach my $handler (qw(req res)) {
         while (my ($method, $dispatch)=each %{$method{$handler}}) {
             debug("method: $method");
-            $method_all{$method}++;
+            $method_check{$method}++;
             if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
                 #  Do nothing, defined here
                 #
                 debug("skip $method, defined in this package");
-                next;
             }
             elsif (!defined($dispatch)) {
                 #  Do nothing, will fall through to Fake
                 #
                 debug("skip $method, will inherit from Fake");
-                next;
             }
             elsif (ref($dispatch) eq 'CODE') {
                 #  Turn into method
@@ -208,24 +214,15 @@ sub init {
                 #  Plack method
                 #
                 debug("setting method: $method to $handler: $dispatch");
-                *{$method}=sub { shift()->{'req'}->$dispatch };
+                *{$method}=sub { shift()->{'req'}->$dispatch(@_) };
             }
         }
     }
-    
-    #  Check we haven't missed any methods
+
+
+    #  Done, do runtime check and return, will warn if we have missed anything
     #
-    foreach my $method (sort @{&WebDyne::Request::Common::methods}) {
-        unless (delete $method_all{$method}) {
-            die "missing method definition: *$method*";
-        }
-        unless (__PACKAGE__->can($method)) {
-            warn "missing method function: $method";
-        }
-    }
-    if (my @method_all=keys(%method_all)) {
-        warn(sprintf('additional methods defined: %s', Dumper(\@method_all)));
-    }
+    return handler_methods_check(__PACKAGE__, \%method_check);
     
 }
 
@@ -263,14 +260,15 @@ sub new {
         
             #  Need to calc from document root in PSGI environment
             #
-            debug('not supplied in SCRIPT_FILENAME or r{uri}. calculating');
+            debug('not supplied in SCRIPT_FILENAME or uri param. calculating');
             if (my $dn=($r{'document_root'} || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
             
                 #  Get from URI and location
                 #
                 my $uri=$r{'uri'} || $env_hr->{'PATH_INFO'};
-                debug("uri: $uri");
-                $fn=File::Spec->catfile($dn, split m{/+}, $uri); #/
+                my @split=split(m{/+}, $uri);
+                debug("uri: $uri, split: %s", Dumper(\@split));
+                $fn=File::Spec->catfile($dn, split(m{/+}, $uri)); #/
                 debug("fn: $fn from dn: $dn, uri: $uri");
                 
             }
@@ -284,7 +282,8 @@ sub new {
                 #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
                 #  handle it
                 #
-                if  (($fn=~/\/$/) && ((-d $fn) || !$fn)) {
+                debug("no .psp extenstion on fn: $fn, looking at options");
+                if  (($fn=~/\/$/) || ((-d $fn) || !$fn)) {
                     
             
                     #  Append default doc to path, which appears at moment to be a directory ?
@@ -311,6 +310,7 @@ sub new {
                     
                     #  Not .psp file, do not want
                     #
+                    debug("fn: $fn does not end with /, leaving undef");
                     $fn=undef;
                 }
             }
@@ -327,7 +327,7 @@ sub new {
     
     #  Setup request and response handlers
     #
-    $r{'req'}=Plack::Request->new($env_hr);
+    #$r{'req'}=Plack::Request->new($env_hr);
     #$r{'res'}=Plack::Response->new(HTTP_OK);
     
     
@@ -337,11 +337,15 @@ sub new {
 
 }
 
+sub body {
 
-sub env0 {
-
-    shift()->{'env'};
-    
+    my $r=shift(); 
+    if ((my $input_or=$r->input) && $r->content_length()) { 
+        unless (exists $r->{'body'}) {
+            $input_or->read($r->{'body'}, $r->content_length()) 
+        }
+        return $r->{'body'} 
+    } 
 }
 
 

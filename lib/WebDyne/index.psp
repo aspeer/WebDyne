@@ -21,7 +21,7 @@
 
 
 
-<perl handler="index" run="!{! !shift()->r->header('hx-request') !}">
+<perl handler="index" run="!{! !shift()->r->headers_in('hx-request') !}">
 <header>
   <h1>Index of <span id="current-path">${path_dn}</span></h1>
   <hr>

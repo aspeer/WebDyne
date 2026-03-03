@@ -1,0 +1,223 @@
+#!/usr/bin/env perl
+
+#
+#  This file is part of WebDyne.
+#
+#  This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
+#
+#  This is free software; you can redistribute it and/or modify it under
+#  the same terms as the Perl 5 programming language system itself.
+#
+#  Full license text is available at:
+#
+#  <http://dev.perl.org/licenses/>
+#
+
+
+#  Pragma
+#
+use strict;
+use warnings;
+
+
+#  External modules
+#
+use Cwd qw(fastcwd);
+use File::Basename;
+use File::Spec;
+use File::Temp qw(tempdir);
+use Getopt::Long;
+
+
+#  WebDyne modules
+#
+use WebDyne::Constant;
+use WebDyne::Util;
+
+
+#  Version information
+#
+our $VERSION='2.075';
+
+
+#  Run main
+#
+exit ${&main(\@ARGV) || die errdump()};
+
+
+#==================================================================================================
+
+
+sub main {
+
+
+    #  Get argv array ref
+    #
+    my $argv_ar=shift();
+
+
+    #  Defaults
+    #
+    my %opt=(
+        index       => 1,
+        root        => fastcwd(),
+        tmp_cleanup => 1,
+        port        => '5000',
+        %{do(glob(sprintf('~/.%s.opt', basename(__FILE__)))) || {}}
+    );
+
+
+    #  Process
+    #
+    Getopt::Long::Configure('pass_through');
+    GetOptions(
+        \%opt,
+        'index!',
+        'root|docroot|doc_root|document_root=s',
+        'port=s',
+        'tmp_cleanup!',
+        'argv=s',
+        'help|?'
+    ) || return err('bad options');
+
+
+    #  Last argument is root directory
+    #
+    if (@{$argv_ar} && $argv_ar->[-1] !~ /^--?/) {
+        $opt{'root'} = pop @{$argv_ar};
+    }
+    $opt{'root'} ||=($ENV{'DOCUMENT_ROOT'} || fastcwd());
+
+
+    #  Indexing. 1 for enable with internal, string for some other indexing file
+    #
+    if ($opt{'index'} eq '1') {
+        $opt{'index'}=$WEBDYNE_DEFAULT_INDEX_FN;
+    }
+
+
+    #  Startup server
+    #
+    my $runner=request_mod_perl_startup(\%opt) || return err();
+
+
+    #  Shutdown on signal
+    #
+    my $stop=sub { request_mod_perl_shutdown($runner); exit 0 };
+    $SIG{'INT'}=$stop;
+    $SIG{'TERM'}=$stop;
+
+
+    #  Block forever
+    #
+    while (1) {
+        sleep 1;
+    }
+
+}
+
+
+sub request_mod_perl_startup {
+
+
+    #  Startup Apache test instance
+    #
+    my $opt_hr=shift();
+
+
+    #  Server root tmpdir
+    #
+    my $svr_root_dn=tempdir(
+        'webdyne_apache_XXXXXXXX',
+        TMPDIR  => 1,
+        CLEANUP => $opt_hr->{'tmp_cleanup'},
+    );
+
+
+    #  Start Apache server. Mask warnings about duplicate options
+    #
+    local $SIG{__WARN__}=sub {
+        return if $_[0] =~ /Duplicate specification/;
+        CORE::warn @_;
+    };
+
+
+    #  Runner object init
+    #
+    require Apache::TestRunPerl;
+    my $runner = Apache::TestRunPerl->new() ||
+        return err('unable to create Apache::TestRunPerl instance');
+
+
+    #  Get postamble with WebDyne config
+    #
+    my $postamble=request_mod_perl_postamble($opt_hr->{'root'});
+
+
+    #  Start httpd in one-process mode
+    #
+    my @argv=(
+        '-port'         => $opt_hr->{'port'},
+        '-serverroot'   => $svr_root_dn,
+        '-documentroot' => $opt_hr->{'root'},
+        '-postamble'    => $postamble,
+        '-one-process',
+        '-start-httpd'
+    );
+
+
+    #  Now start. Will die if can't start
+    #
+    $runner->run(@argv);
+
+
+    #  Done
+    #
+    return $runner;
+
+}
+
+
+sub request_mod_perl_shutdown {
+
+
+    #  Shut down Apache server
+    #
+    my $runner=shift();
+    return unless $runner;
+
+
+    $runner->{'server'}->stop() if $runner->{'server'};
+
+}
+
+
+sub request_mod_perl_postamble {
+
+    #  Get all WEBDYNE_CONF env vars
+    #
+    my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
+    push (@PerlSetEnv, "PerlSetEnv WEBDYNE_ERROR_TEXT 1") unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
+    my $PerlSetEnv=join("\n", @PerlSetEnv);
+    my $root_dn=dirname($WEBDYNE_DEFAULT_INDEX_FN || fastcwd());
+    my $index=basename($WEBDYNE_DEFAULT_INDEX_FN || 'index.psp');
+    return <<"END"
+$PerlSetEnv
+ErrorLog /dev/stderr
+LogLevel debug
+CustomLog /dev/stdout combined
+DirectoryIndex /home/aspeer/Development/pm-WebDyne/lib/WebDyne/index.psp
+PerlSetEnv DOCUMENT_DEFAULT $WEBDYNE_DEFAULT_INDEX_FN
+<Directory "/home/aspeer/Development/pm-WebDyne/">
+    Require all granted
+</Directory>
+PerlSwitches -I/home/aspeer/Development/pm-WebDyne/lib
+<Perl>
+    use lib '/home/aspeer/Development/pm-WebDyne/lib';
+</Perl>
+PerlModule WebDyne
+AddHandler modperl .psp
+PerlResponseHandler WebDyne
+END
+
+}

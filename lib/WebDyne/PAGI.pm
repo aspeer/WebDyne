@@ -50,7 +50,7 @@ use WebDyne::Request::PAGI;
 
 #  Environment
 #
-my %env_config=(
+my %ENV_BASE=(
     %{$WEBDYNE_PAGI_ENV_SET}, 
     (map { $_=>$ENV{$_}  } (
         grep { defined($ENV{$_}) }
@@ -157,7 +157,7 @@ sub handler_sse {
 
     #  Setup %ENV
     #
-    local *ENV=\%env_config;
+    local *ENV=\%ENV_BASE;
 
 
     #  Create helper objects
@@ -244,7 +244,7 @@ sub handler_http {
 
         #  Restrict local env
         #
-        local *ENV=\%env_config;
+        local *ENV=\%ENV_BASE;
 
         
         #  Only need request and response helper objects
@@ -348,7 +348,7 @@ sub handler_http {
         debug('sending headers: %s', Dumper($headers_ar));
         for (my $i=0; $i<@{$headers_ar}; $i+=2) {
             my ($header, $value)=@{$headers_ar}[$i, $i+1];
-            $r->header_try($header => $value);
+            $r->res->header_try($header => $value);
         }
         
         
@@ -356,8 +356,8 @@ sub handler_http {
         #
         if ($html) {
             debug('sending html to client via await()');
-            $r->content_type_try($WEBDYNE_CONTENT_TYPE_HTML);
-            return await $r->send($html || err);
+            $r->res->content_type_try($WEBDYNE_CONTENT_TYPE_HTML);
+            return await $r->res->send($html || err);
         }
         
         

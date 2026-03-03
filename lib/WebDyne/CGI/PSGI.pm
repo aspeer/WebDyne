@@ -67,7 +67,12 @@ sub new {
 
 sub Vars {
 
-    my $hr=shift()->parameters();
+    my $self=shift();
+    debug($self);
+    #  Do in eval in case CGI::Simple throws an error, e.g. wrong content_length
+    my $hr=eval { $self->parameters() };
+    #my $hr=$self->parameters();
+    #debug('hr: %s', Dumper($hr));
     return wantarray ? %{$hr} : $hr
     
 }
@@ -107,7 +112,7 @@ sub param {
         #  Get all param names
         #
         debug('returning parameter names');
-        return keys %{$self->Vars()};
+        return keys %{$self->Vars() || {}};
         
     }
 

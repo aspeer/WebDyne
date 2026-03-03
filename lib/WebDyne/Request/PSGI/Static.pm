@@ -21,7 +21,7 @@ use vars   qw($VERSION $AUTOLOAD @ISA);
 
 #  External modules
 #
-use HTTP::Status (qw(RC_INTERNAL_SERVER_ERROR RC_NOT_FOUND));
+use HTTP::Status (qw(HTTP_INTERNAL_SERVER_ERROR HTTP_NOT_FOUND));
 use IO::File;
 use WebDyne::Util;
 use WebDyne::Constant;
@@ -59,7 +59,7 @@ sub run {
     debug("in WebDyne::Request::PSGI::Static, r: $r, fn: $fn");
     if (!-f $fn) {
         warn("file '$fn' not found");
-        return $r->status(RC_NOT_FOUND);
+        return $r->status(HTTP_NOT_FOUND);
     }
     elsif (my $fh=IO::File->new($fn, O_RDONLY)) {
         my $hr=$r->headers_out();
@@ -74,7 +74,7 @@ sub run {
     }
     else {
         warn("unable to open file '$fn', $!");
-        return $r->status(RC_INTERNAL_SERVER_ERROR);
+        return $r->status(HTTP_INTERNAL_SERVER_ERROR);
     }
 
 }
