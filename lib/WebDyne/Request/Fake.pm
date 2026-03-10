@@ -18,7 +18,7 @@ package WebDyne::Request::Fake;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION $AUTOLOAD);
+use vars   qw($VERSION $AUTOLOAD %Package);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -80,7 +80,8 @@ sub init {
             authorization       => sub { shift()->headers_in('authorization') },
             auth_type           => sub { shift()->{'env'}->{'AUTH_TYPE'} },
             base                => 'base_url',
-            base_url            => sub { URI->new($_[0]->host . $_[0]->script_name()) },
+            #base_url            => sub { URI->new($_[0]->host . $_[0]->script_name()) },
+            base_url            => sub { my $uri_or=shift()->uri->canonical->clone; $uri_or->path('/'), $uri_or->query(undef); $uri_or },
             body_handle         => sub { shift->{'input'} },
             body                => undef,
             cache_control       => sub { shift()->headers_in('cache-control') },
@@ -107,11 +108,13 @@ sub init {
             fragment            => sub { shift()->uri->fragment },
             handler             => undef,
             header              => 'headers_in',
+            headers             => 'headers_in',
             header_only         => undef,
             headers_in          => undef,
             headers_out         => undef,
             hostname            => sub { shift()->env->{'SERVER_NAME'} }, # Prob should be local host name
-            host                => sub { shift()->uri->host if $_[0]->uri->authority },
+            #host                => sub { shift()->uri->host if $_[0]->uri->authority },
+            host                => sub { shift()->headers_in('host') },
             https               => sub { shift()->env->{'HTTPS'} },
             http_version        => 'protocol',
             id                  => undef,
@@ -269,7 +272,7 @@ sub dir_config {
         #  Yes, wanted. Get cwd, skip if already processed
         #
         my $cwd_dn=$r->cwd();
-        my $dir_config_hr=($_{'_dir_config'}{$cwd_dn} ||= do {
+        my $dir_config_hr=($Package{'_dir_config'}{$cwd_dn} ||= do {
             my $webdyne_conf_fn=File::Spec->catfile($cwd_dn, sprintf('.%s', $WEBDYNE_CONF_FN));
             debug("fn: $webdyne_conf_fn");
             if (-f $webdyne_conf_fn) {
@@ -410,7 +413,7 @@ sub filename {
     my $r=shift();
 
     #  Store cwd as takes a fair bit of processing time.
-    File::Spec->rel2abs($r->{'filename'}, ($_{'_cwd'} ||= fastcwd()));
+    File::Spec->rel2abs($r->{'filename'}, ($Package{'_cwd'} ||= fastcwd()));
 
 }
 
@@ -742,11 +745,12 @@ sub send_http_header {
 }
 
 
-sub content_type {
+sub content_type { # Was bi-directional but now only reads from response headers.
 
     my ($r, $content_type)=@_;
     debug("r: $r, %s", Dumper(\@_));
-    return ($content_type ? $r->headers_out('content-type', $content_type) : $r->headers_in('content-type'));
+    #return ($content_type ? $r->headers_out('content-type', $content_type) : $r->headers_in('content-type'));
+    return ($content_type ? $r->headers_out('content-type', $content_type) : $r->headers_out('content-type'));
 
 }
 
@@ -944,6 +948,9 @@ sub multipart_parameters {
 }
 
 sub query_parameters {
+
+    use Hash::MultiValue;
+    return Hash::MultiValue->new(shift()->uri->query_form);
 
 }
 

@@ -94,7 +94,7 @@ __PERL__
 use strict;
 use File::stat;
 use File::Spec::Unix;
-use File::Basename qw(dirname fileparse);
+use File::Basename qw(dirname basename fileparse);
 use POSIX qw(strftime);
 use WebDyne::Constant;
 use WebDyne::Util;
@@ -335,7 +335,12 @@ sub full_dn {
     #
     $path_dn ||= $self->sanitize_path($cgi_or, ($r->path_info() || $ENV{'PATH_INFO'})) ||
         return err('unable to get path');
-    debug("path_dn: $path_dn");
+        
+    #  For Apache - if aliased to index.psp get rid of it from end of path
+    #
+    #my $index_fn=basename($WEBDYNE_DEFAULT_INDEX_FN);
+    #$path_dn=~s/\Q$index_fn\E$//;
+    #debug("path_dn after check: $path_dn");
         
     
     #  Now get real dn and check not higher than document root
@@ -347,12 +352,14 @@ sub full_dn {
         $full_dn=realpath($full_dn);
         if (!defined($full_dn) || (index($full_dn,$root_dn) !=0)) {
             # Bad person, trying to escape
+            debug("root escape detected on full_dn: $full_dn, setting full_dn to root_dn: $root_dn");
             $full_dn=$root_dn;
             next;
         }
         elsif(-f $full_dn) {
             #  Clicked on a file URL which isn't recognised. Go back to index
             #
+            debug("full_dn: $full_dn detected as file, getting dirname($path_dn)");
             $path_dn=dirname($path_dn);
             next;
         }
@@ -363,6 +370,7 @@ sub full_dn {
     #  Reset if things go bad
     #
     unless ($full_dn && (-d $full_dn)) {
+        debug("full_dn: $full_dn not defined or not directory, setting to root_dn: $root_dn");
         $full_dn=$root_dn;
     }
     
@@ -395,6 +403,7 @@ sub index {
     #
     my $path_dn=$self->sanitize_path($cgi_or, ($r->path_info() || $ENV{'PATH_INFO'})) ||
         return err('unable to get path');
+    debug("path_dn: $path_dn, path_info:%s, PATH_INFO:%s", $r->path_info(), $ENV{'PATH_INFO'});
         
     
     #  Now get real dn and check not higher than document root
@@ -402,6 +411,7 @@ sub index {
     my $root_dn=$r->document_root();
     my $full_dn=$self->full_dn() ||
         return err('no full_dn');
+    debug("root_dn: $root_dn, full_dn: $full_dn");
 
     
     #  Reset if things go bad
@@ -599,6 +609,8 @@ sub sanitize_path {
     $dn = File::Spec->canonpath($dn);
     $dn =~ s{[^A-Za-z0-9_\-.\s/]}{}g;
     $dn ='/' unless $dn =~ m{^/};
+    my $index_fn=basename($WEBDYNE_DEFAULT_INDEX_FN);
+    $dn=~s/\Q$index_fn\E$//;
     return $dn;
     
 }

@@ -1151,13 +1151,15 @@ sub init_class {
 
         #  Get CGI vars
         #
-        my $cgi_or=$self->{'_CGI'} || $self->CGI();
-        my $param_hr=(
-            $self->{'_eval_cgi_hr'} ||= do {
-                $cgi_or->Vars();
-
-            }
-        );
+        #my $cgi_or=$self->{'_CGI'} || $self->CGI();
+        #my $param_hr=(
+        #    $self->{'_eval_cgi_hr'} ||= do {
+        #        $cgi_or->Vars();
+        #
+        #    }
+        #);
+        my $cgi_or;
+        my $param_hr;
 
 
         #  Only eval subroutine if we have not done already, if need to eval store in
@@ -1217,7 +1219,7 @@ sub init_class {
 
             #  The following line puts all CGI params in %_ during the eval so they are easy to
             #  get to ..
-            local *_=$param_hr;
+            #local *_=$param_hr;
             debug("eval call starting, tag_fg: $tag_fg");
 
             #  Note change here. Now supplying request handler, CGI instanced as standard params to all code calls

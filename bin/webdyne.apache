@@ -23,9 +23,12 @@ use warnings;
 #  External modules
 #
 use Cwd qw(fastcwd);
+use Config;
 use File::Basename;
 use File::Spec;
 use File::Temp qw(tempdir);
+use IO::File;
+use Fcntl;
 use Getopt::Long;
 
 
@@ -61,7 +64,7 @@ sub main {
     my %opt=(
         index       => 1,
         root        => fastcwd(),
-        tmp_cleanup => 1,
+        keep_tmp    => 0,
         port        => '5000',
         %{do(glob(sprintf('~/.%s.opt', basename(__FILE__)))) || {}}
     );
@@ -75,7 +78,8 @@ sub main {
         'index!',
         'root|docroot|doc_root|document_root=s',
         'port=s',
-        'tmp_cleanup!',
+        'keep_tmp!',
+        'dump_postamble',
         'argv=s',
         'help|?'
     ) || return err('bad options');
@@ -130,8 +134,14 @@ sub request_mod_perl_startup {
     my $svr_root_dn=tempdir(
         'webdyne_apache_XXXXXXXX',
         TMPDIR  => 1,
-        CLEANUP => $opt_hr->{'tmp_cleanup'},
+        CLEANUP => !$opt_hr->{'keep_tmp'},
     );
+    
+    
+    #  Create webdyne cache there
+    #
+    mkdir (my $cache_dn=File::Spec->catdir($svr_root_dn, 'cache'));
+    $ENV{'WEBDYNE_CACHE_DN'}=$cache_dn;
 
 
     #  Start Apache server. Mask warnings about duplicate options
@@ -151,7 +161,7 @@ sub request_mod_perl_startup {
 
     #  Get postamble with WebDyne config
     #
-    my $postamble=request_mod_perl_postamble($opt_hr->{'root'});
+    my $postamble=request_mod_perl_postamble($opt_hr->{'root'}, $opt_hr);
 
 
     #  Start httpd in one-process mode
@@ -196,28 +206,94 @@ sub request_mod_perl_postamble {
 
     #  Get all WEBDYNE_CONF env vars
     #
+    my ($document_root, $opt_hr)=@_;
+    #my $document_root=||= fastcwd();
+    $document_root=File::Spec->rel2abs($document_root);
+    my $default_index_fn=File::Spec->rel2abs($WEBDYNE_DEFAULT_INDEX_FN || File::Spec->catfile($document_root, 'index.psp'));
+    my $default_index_dn=dirname($default_index_fn);
+    #my $default_index_url='/__webdyne_default_index__.psp';
     my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
     push (@PerlSetEnv, "PerlSetEnv WEBDYNE_ERROR_TEXT 1") unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
-    my $root_dn=dirname($WEBDYNE_DEFAULT_INDEX_FN || fastcwd());
-    my $index=basename($WEBDYNE_DEFAULT_INDEX_FN || 'index.psp');
-    return <<"END"
+    my $PerlSwitches=join("\n", map { sprintf('PerlSwitches -I%s', $_) } @{&perl_inc_dn()});
+    my $postamble= <<"END"
 $PerlSetEnv
-ErrorLog /dev/stderr
-LogLevel debug
-CustomLog /dev/stdout combined
-DirectoryIndex /home/aspeer/Development/pm-WebDyne/lib/WebDyne/index.psp
-PerlSetEnv DOCUMENT_DEFAULT $WEBDYNE_DEFAULT_INDEX_FN
-<Directory "/home/aspeer/Development/pm-WebDyne/">
-    Require all granted
-</Directory>
-PerlSwitches -I/home/aspeer/Development/pm-WebDyne/lib
-<Perl>
-    use lib '/home/aspeer/Development/pm-WebDyne/lib';
-</Perl>
+$PerlSwitches
 PerlModule WebDyne
 AddHandler modperl .psp
 PerlResponseHandler WebDyne
+PerlSetEnv DOCUMENT_DEFAULT $default_index_fn
+#PerlOptions +GlobalRequest
+
+ErrorLog /dev/stderr
+LogLevel debug
+CustomLog /dev/stdout combined
+
+DirectoryIndex index.psp
+Alias /index.psp $default_index_fn
+AliasMatch ^/(.+)/index\.psp\$ $default_index_fn
+
+
+<Directory "$default_index_dn">
+    Require all granted
+</Directory>
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^\Q/index.psp\E\$
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ /index.psp [L,PT]
+
+<Directory "$document_root">
+    Require all granted
+</Directory>
 END
+    ;
+    exit print $postamble if $opt_hr->{'dump_postamble'};
+    return $postamble;
+}
+
+use Data::Dumper;
+sub perl_inc_noncore_ar0 {
+
+    #  Return non-core @INC directories for PerlSwitches -I
+    #
+    my @core_root=grep { defined($_) && length($_) } map { _dir_norm($_) } (
+        @Config{qw(privlib archlib vendorlib vendorarch sitelib sitearch)}
+    );
+    die Dumper(\@core_root);
+    my @core_root_sorted=sort { length($b) <=> length($a) } @core_root;
+    my @inc_noncore;
+    INC:
+    foreach my $inc (grep {$_} @INC) {
+        next unless defined($inc) && length($inc);
+        my $inc_norm=_dir_norm($inc);
+        foreach my $core_root (@core_root_sorted) {
+            next unless length($core_root);
+            my $prefix_match=(index($inc_norm, $core_root) == 0);
+            my $boundary_ok=($inc_norm eq $core_root) ||
+                (substr($inc_norm, length($core_root), 1) eq File::Spec->catfile('',''));
+            next INC if ($prefix_match && $boundary_ok);
+        }
+        push @inc_noncore, $inc;
+    }
+    return \@inc_noncore;
 
 }
+
+
+sub perl_inc_dn {
+
+    my @lib;
+    if (($^O ne 'MSWin32') && (-r (my $proc_fn='/proc/self/cmdline'))) {
+        my $proc_fh=IO::File->new($proc_fn, O_RDONLY) || return;
+        my @arg;
+        local $/;
+        my $proc=<$proc_fh>;
+        $proc_fh->close();
+        if (defined($proc) && $proc) {
+            @arg=split(/\0/, $proc);
+        }
+        @lib=map { File::Spec->rel2abs(substr($_,2)) } (grep { /^-I/ } @arg);
+    }
+    return \@lib;
+}
+        

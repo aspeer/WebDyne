@@ -53,7 +53,7 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 
 #==============================================================================
 
-sub new {
+sub new0 {
 
 
     #  New instance of CGI::Common
@@ -61,6 +61,26 @@ sub new {
     my ($class, $r, %param)=@_;
     debug("class: $class, r: $r, param: %s, caller %s", Dumper(\%param, [caller(0)]));
     my $cgi_or=CGI::Simple->new($r) ||
+        return err('unable to get CGI::Simple objedt');
+    my $self=bless($cgi_or, __PACKAGE__);
+    map { $self->param($_, $param{$_}) } keys %param;
+    return $self;
+    
+}
+
+
+sub new {
+
+
+    #  New instance of CGI::Common
+    #
+    my ($class, $r, %param)=@_;
+    
+    
+    #  Read in just the param
+    #
+    debug("class: $class, r: $r, param: %s, caller %s", Dumper(\%param, [caller(0)]));
+    my $cgi_or=CGI::Simple->new($r->args) ||
         return err('unable to get CGI::Simple objedt');
     my $self=bless($cgi_or, __PACKAGE__);
     map { $self->param($_, $param{$_}) } keys %param;
@@ -91,8 +111,11 @@ sub Vars {
             my @values=$self->param($param);
             map { push @pairs, ( $param => $_ ) } @values;
         }
-        return Hash::MultiValue->new(@pairs)
+        #return Hash::MultiValue->new(@pairs)
+        $hr=Hash::MultiValue->new(@pairs)
     }
+
+    return wantarray ? %{$hr} : $hr
 
 }
 

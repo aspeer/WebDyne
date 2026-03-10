@@ -50,7 +50,16 @@ sub new {
     #
     my ($class, $r, %param)=@_;
     debug("class: $class, r:$r, caller: %s", Dumper([caller(0)]));
+
+
+    if (1) {
+        if (($r->headers_in('content-type') eq 'application/x-www-form-urlencoded') && $r->content-length()) {
+            die;
+        }
+    }
     
+    require WebDyne::CGI::Simple;
+    return  $r->{'_CGI'} ||= WebDyne::CGI::Simple->new($r, %param);
     
     #  Request handler ?
     #
@@ -85,11 +94,15 @@ sub new {
     }
     elsif (ref($r) eq 'WebDyne::Request::Apache') {
     
-        # PAGI
+        # Apache
         #
         debug('detected PAGI request handler');
+        die Dumper([caller(0)]);
         require WebDyne::CGI::Simple;
-        return  WebDyne::CGI::Simple->new($r, %param);
+        return  $r->{'_CGI'} ||= WebDyne::CGI::Simple->new($r, %param);
+        #return  $r->{'_CGI'} ||= WebDyne::CGI::Simple->new($r->{'req'}, %param);
+        #return  WebDyne::CGI::Simple->new($r->{'req'}, %param);
+        return  WebDyne::CGI::Simple->new();
         *new=WebDyne::CGI::Simple::new;
  
         

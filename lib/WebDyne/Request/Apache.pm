@@ -100,8 +100,9 @@ sub init {
             cache_control       => undef,
             charset             => undef,
             cleanup_register    => undef,
-            client_address      => undef,
-            content             => 'body',
+            client_address      => sub { &remote_address(@_) },
+            #content             => 'body',
+            content             => sub { &body(@_) },
             content_encoding    => undef,
             content_length      => undef,
             content_type        => undef,
@@ -121,6 +122,7 @@ sub init {
             fragment            => undef,
             handler             => 'handler',
             header              => 'headers_in',
+            headers             => 'headers_in',
             header_only         => 'header_only',
             headers_in          => undef,
             headers_out         => undef,
@@ -131,7 +133,7 @@ sub init {
             id                  => undef,
             if_modified_since   => undef,
             if_none_match       => undef,
-            input               => undef,
+            input               => sub { &body_handle(@_) },
             is_ajax             => undef,
             is_main             => undef,
             location            => undef,
@@ -147,9 +149,9 @@ sub init {
             notes               => 'notes',
             origin              => undef,
             output_filters      => undef,
-            path_info           => 'path_info',
+            path_info           => sub { shift()->uri->path },
             path_parameters     => undef,
-            path                => 'path_info',
+            path                => sub { &path_info(@_) },
             pool                => 'pool',
             preferred_charset   => undef,
             preferred_encoding  => undef,
@@ -185,7 +187,7 @@ sub init {
             unparsed_uri        => 'unparsed_uri',
             uploads             => undef,
             uri                 => undef,
-            url                 => 'uri',
+            url                 => undef,
             user_agent          => undef,
             user                => 'user',
             write               => undef,
@@ -258,30 +260,35 @@ sub req {
 }
 
 
-sub headers_in {
-    my $r=shift();
-    my $table=$r->{'req'}->headers_in();
-    if (@_) {
-        my ($k, $v)=@_;
-        return defined($v) ? $table->set($k => $v) : $table->get($k);
+sub _headers {
+
+    my ($r, $direction, @param)=@_;
+    my $table=$r->{'req'}->$direction;
+    if (@param == 1) {
+        return  $table->get($param[0]);
     }
-    my $headers_or=HTTP::Headers::Fast->new();
-    $table->do(sub { $headers_or->header($_[0] => $_[1]); return 1; });
-    return $headers_or;
+    elsif (@param > 1) {
+         while (my ($k, $v) = splice(@param, 0, 2)) {
+            $table->set($k => $v);
+        }
+        return $r;
+    }
+    else {
+        my $headers_or=HTTP::Headers::Fast->new();
+        $table->do(sub { $headers_or->header($_[0] => $_[1]); return 1; });
+        return $headers_or;
+    }
 }
+ 
+sub headers_in {
+    shift()->_headers('headers_in', @_);
+}   
 
 
 sub headers_out {
-    my $r=shift();
-    my $table=$r->{'req'}->headers_out();
-    if (@_) {
-        my ($k, $v)=@_;
-        return defined($v) ? $table->set($k => $v) : $table->get($k);
-    }
-    my $headers_or=HTTP::Headers::Fast->new();
-    $table->do(sub { $headers_or->header($_[0] => $_[1]); return 1; });
-    return $headers_or;
-}
+    shift()->_headers('headers_out', @_);
+}   
+
 
 
 sub content_type {
@@ -417,9 +424,10 @@ sub subprocess_env {
 }
 
 
-sub input {
-    return shift()->{'req'};
-}
+#sub input {
+#    #return shift()->{'req'};
+#    
+#}
 
 
 sub body {
@@ -440,6 +448,17 @@ sub body {
 }
 
 
+sub body_handle {
+
+    my $r=shift();
+    unless ($r->{'input'}) {
+        no warnings qw(once);
+        $r->{'input'}=tie *BODY, WebDyne::Request::Apache::Body_Handle, $r->{'req'};
+    }
+    return $r->{'input'};
+}
+
+
 sub header_only {
     my $r=shift();
     return $r->{'req'}->header_only() ? 1 : 0;
@@ -453,5 +472,97 @@ sub request_time {
 }
 
 sub uri {
-    return URI->new(shift()->{'req'}->uri);
+    #return URI->new(shift()->{'req'}->uri);
+    my $r=shift();
+    my $uri_or=URI->new();
+    $uri_or->scheme($r->scheme);
+    $uri_or->host($r->server_name);
+    $uri_or->port($r->server_port);
+    $uri_or->path($r->{'req'}->uri);
+    $uri_or->query($r->{'req'}->args);
+    return $uri_or->canonical;
+}
+
+
+sub DESTROY {
+
+    my $r=shift();
+    untie $r->{'input'} if $r->{'input'};
+    
+}
+
+package WebDyne::Request::Apache::Body_Handle;
+
+sub TIEHANDLE {
+    my ($class, $req) = @_;
+    bless { req => $req }, $class;
+}
+
+sub READ {
+    my ($self, undef, $len, $offset) = @_;
+    my $buf;
+    my $n = $self->{'req'}->read($buf, $len);
+    $_[1] = $buf;
+    return $n;
+}
+
+sub READLINE {
+    my ($self) = @_;
+    return $self->{'req'}->readline;
+}
+
+1;
+
+__END__
+
+sub _headers_in0 {
+    my $r=shift();
+    my $table=$r->{'req'}->headers_in();
+    if (@_ == 1) {
+        return  $table->get($_[0]);
+    }
+    elsif (@_>1) {
+         while (my ($k, $v) = splice(@_, 0, 2)) {
+            $table->set($k => $v);
+        }
+        return $r;
+    }
+    else {
+        my $headers_or=HTTP::Headers::Fast->new();
+        $table->do(sub { $headers_or->header($_[0] => $_[1]); return 1; });
+        return $headers_or;
+    }
+}
+
+
+sub _headers_out0 {
+    my $r=shift();
+    my $table=$r->{'req'}->headers_out();
+    if (@_ == 1) {
+        return  $table->get($_[0]);
+    }
+    elsif (@_>1) {
+         while (my ($k, $v) = splice(@_, 0, 2)) {
+            $table->set($k => $v);
+        }
+        return $r;
+    }
+    else {
+        my $headers_or=HTTP::Headers::Fast->new();
+        $table->do(sub { $headers_or->header($_[0] => $_[1]); return 1; });
+        return $headers_or;
+    }
+}
+
+
+sub _headers_out0 {
+    my $r=shift();
+    my $table=$r->{'req'}->headers_out();
+    if (@_) {
+        my ($k, $v)=@_;
+        return defined($v) ? $table->set($k => $v) : $table->get($k);
+    }
+    my $headers_or=HTTP::Headers::Fast->new();
+    $table->do(sub { $headers_or->header($_[0] => $_[1]); return 1; });
+    return $headers_or;
 }
