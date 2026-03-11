@@ -24,6 +24,7 @@ no warnings qw(uninitialized redefine);
 #  WebDyne Modules
 #
 use WebDyne::Util;
+use WebDyne::CGI::Simple;
 
 
 #  External modules
@@ -53,13 +54,31 @@ sub new {
 
 
     if (1) {
-        if (($r->headers_in('content-type') eq 'application/x-www-form-urlencoded') && $r->content-length()) {
-            die;
-        }
+        #
+        #return  $r->{'_CGI'} ||= WebDyne::CGI::Simple->new($r, %param);
+        my $cgi_or=($r->{'_CGI'} ||= do {
+            if (($r->headers_in('content-type') eq 'application/x-www-form-urlencoded') && $r->content_length()) {
+                my $body=$r->body();
+                WebDyne::CGI::Simple->new($r, $r->args, $body);
+            }
+            elsif ($r->content_length()) {
+                my $cgi_or=WebDyne::CGI::Simple->new($r, $r->args);
+                local $ENV{'CONTENT_LENGTH'} ||= $r->content_length();
+                local $ENV{'CONTENT_TYPE'} ||= $r->headers_in('Content-Type');
+
+                #die Dumper($r);
+                local *STDIN=$r->input();
+                $cgi_or->_parse_multipart($r->input());
+                $cgi_or;
+            }
+            else {
+                WebDyne::CGI::Simple->new($r, $r->args);
+            }
+        });
+        return $cgi_or;
+
     }
     
-    require WebDyne::CGI::Simple;
-    return  $r->{'_CGI'} ||= WebDyne::CGI::Simple->new($r, %param);
     
     #  Request handler ?
     #

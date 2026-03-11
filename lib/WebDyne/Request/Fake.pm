@@ -981,7 +981,8 @@ sub err_html {
     require WebDyne::HTML::Tiny;
     my $html_or=WebDyne::HTML::Tiny->new( mode=>$WEBDYNE_HTML_TINY_MODE, r=>$r ) ||
         return err();
-    my $heading=sprintf("%s error - $error", ref($r) || __PACKAGE__);
+    #my $heading=sprintf("%s error - $error", ref($r) || __PACKAGE__);
+    my $heading=sprintf("%s error.", ref($r) || __PACKAGE__);
     my @body=(
         $html_or->start_html(title=>"WebDyne Error: $status"),
         $html_or->h3($heading),

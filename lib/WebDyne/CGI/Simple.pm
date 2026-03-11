@@ -68,19 +68,23 @@ sub new0 {
     
 }
 
+use CGI::Simple;
+$CGI::Simple::MOD_PERL=0;
+no warnings qw(redefine);
+*CGI::Simple::_mod_perl=sub {};
 
 sub new {
 
 
     #  New instance of CGI::Common
     #
-    my ($class, $r, %param)=@_;
+    my ($class, $r, $query, $body, %param)=@_;
     
     
     #  Read in just the param
     #
     debug("class: $class, r: $r, param: %s, caller %s", Dumper(\%param, [caller(0)]));
-    my $cgi_or=CGI::Simple->new($r->args) ||
+    my $cgi_or=CGI::Simple->new(join('&', grep {$_} ($query , $body))) ||
         return err('unable to get CGI::Simple objedt');
     my $self=bless($cgi_or, __PACKAGE__);
     map { $self->param($_, $param{$_}) } keys %param;
@@ -127,6 +131,13 @@ sub env {
 }
 
 
+sub upload {
+
+    local $ENV{'CONTENT_TYPE'}='multipart/form-data';
+    return shift()->SUPER::upload(@_);
+    
+}
+
 sub uploads {
 
     #  Replicate Plack::Request::Uploads->uploads()
@@ -135,7 +146,8 @@ sub uploads {
     my @pairs;
     foreach my $param ($self->param()) {
         
-        my @fn = $self->upload_info();
+        #my @fn = $self->upload_info();
+        my @fn = $self->upload();
         next unless @fn;
 
         foreach my $fn (@fn) {

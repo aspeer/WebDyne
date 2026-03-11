@@ -263,9 +263,10 @@ sub req {
 sub _headers {
 
     my ($r, $direction, @param)=@_;
-    my $table=$r->{'req'}->$direction;
+    my $table=$r->{'req'}->$direction();
     if (@param == 1) {
-        return  $table->get($param[0]);
+        #return  $table->get($param[0]);
+        return $table->{$param[0]};
     }
     elsif (@param > 1) {
          while (my ($k, $v) = splice(@param, 0, 2)) {
@@ -453,7 +454,10 @@ sub body_handle {
     my $r=shift();
     unless ($r->{'input'}) {
         no warnings qw(once);
-        $r->{'input'}=tie *BODY, WebDyne::Request::Apache::Body_Handle, $r->{'req'};
+        #$r->{'input'}=tie *BODY, WebDyne::Request::Apache::Body_Handle, $r->{'req'};
+        tie *BODY, WebDyne::Request::Apache::Body_Handle, $r->{'req'};
+        $r->{'input'}=*BODY;
+        
     }
     return $r->{'input'};
 }
@@ -491,7 +495,7 @@ sub DESTROY {
     
 }
 
-package WebDyne::Request::Apache::Body_Handle;
+package WebDyne::Request::Apache::Body_Handle0;
 
 sub TIEHANDLE {
     my ($class, $req) = @_;
@@ -506,9 +510,94 @@ sub READ {
     return $n;
 }
 
-sub READLINE {
+sub READLINE0 {
     my ($self) = @_;
     return $self->{'req'}->readline;
+}
+
+sub READLINE {
+
+    my ($self) = @_;
+    my $r = $self->{req};
+
+    my $buf;
+    my $line = '';
+
+    while ($r->read($buf, 1024)) {
+        $line .= $buf;
+        if ($line =~ s/(.*?\n)//s) {
+            my $out = $1;
+            $self->{buffer} = $line;
+            return $out;
+        }
+    }
+
+    return undef;
+}
+
+
+package WebDyne::Request::Apache::Body_Handle;;
+
+sub TIEHANDLE {
+    my ($class, $r) = @_;
+
+    bless {
+        req    => $r,
+        buffer => '',
+        eof    => 0,
+    }, $class;
+}
+
+sub READ {
+    my ($self, undef, $len, $offset) = @_;
+
+    my $buf = '';
+    my $read = $self->{req}->read($buf, $len);
+
+    return 0 unless $read;
+
+    substr($_[1], $offset || 0) = $buf;
+
+    return $read;
+}
+
+sub READLINE {
+
+    my ($self) = @_;
+
+    return undef if $self->{eof};
+
+    my $line = '';
+
+    while (1) {
+
+        # check existing buffer
+        if ($self->{buffer} =~ s/(.*?\n)//s) {
+            return $1;
+        }
+
+        # read more data
+        my $chunk = '';
+        my $n = $self->{req}->read($chunk, 8192);
+
+        unless ($n) {
+            $self->{eof} = 1;
+            return length($self->{buffer})
+                ? delete $self->{buffer}
+                : undef;
+        }
+
+        $self->{buffer} .= $chunk;
+    }
+}
+
+sub EOF {
+    my ($self) = @_;
+    return $self->{eof} && $self->{buffer} eq '';
+}
+
+sub CLOSE {
+    return 1;
 }
 
 1;
