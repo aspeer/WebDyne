@@ -38,7 +38,7 @@ use HTML::Element;
 #
 use WebDyne::Constant;
 use WebDyne::Util;
-use WebDyne::CGI;
+use WebDyne::CGI::Simple;
 
 
 #  Constants
@@ -137,7 +137,7 @@ sub CGI {
     #
     my $self=shift();
     debug("$self CGI");
-    return ($self->{'_CGI'} ||= WebDyne::CGI->new($self->{'_r'}));
+    return ($self->{'_CGI'} ||= WebDyne::CGI::Simple->new($self->{'_r'}));
     
 }
 

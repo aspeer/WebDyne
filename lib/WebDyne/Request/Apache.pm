@@ -92,27 +92,26 @@ sub init {
             as_string           => undef,
             authority           => undef,
             authorization       => undef,
-            auth_type           => undef,
+            auth_type           => \&auth_type,
             base                => undef,
             base_url            => undef,
-            body_handle         => undef,
-            body                => undef,
+            body_handle         => \&body_handle,
+            body                => \&body,
             cache_control       => undef,
             charset             => undef,
             cleanup_register    => undef,
-            client_address      => sub { &remote_address(@_) },
-            #content             => 'body',
-            content             => sub { &body(@_) },
-            content_encoding    => undef,
-            content_length      => undef,
-            content_type        => undef,
+            client_address      => \&remote_address,
+            content             => \&body,
+            content_encoding    => \&content_encoding,
+            content_length      => \&content_length,
+            content_type        => \&content_type,
             cookies             => undef,
             cookie              => undef,
             custom_response     => undef,
             cwd                 => undef,
             dir_config          => undef,
             document_root       => 'document_root',
-            env                 => undef,
+            env                 => \&env,
             etag                => undef,
             filename            => 'filename',
             finalize            => undef,
@@ -121,19 +120,19 @@ sub init {
             forwarded_for       => undef,
             fragment            => undef,
             handler             => 'handler',
-            header              => 'headers_in',
-            headers             => 'headers_in',
+            header              => \&headers_in,
+            headers             => \&headers_in,
             header_only         => 'header_only',
-            headers_in          => undef,
-            headers_out         => undef,
+            headers_in          => \&headers_in,
+            headers_out         => \&headers_out,
             hostname            => 'hostname',
-            host                => undef,
-            https               => undef,
+            host                => \&host,
+            https               => \&https,
             http_version        => 'protocol',
-            id                  => undef,
+            id                  => \&id,
             if_modified_since   => undef,
             if_none_match       => undef,
-            input               => sub { &body_handle(@_) },
+            input               => \&body_handle,
             is_ajax             => undef,
             is_main             => undef,
             location            => undef,
@@ -151,7 +150,7 @@ sub init {
             output_filters      => undef,
             path_info           => sub { shift()->uri->path },
             path_parameters     => undef,
-            path                => sub { &path_info(@_) },
+            path                => \&path_info,
             pool                => 'pool',
             preferred_charset   => undef,
             preferred_encoding  => undef,
@@ -165,20 +164,20 @@ sub init {
             redirect            => undef,
             referer             => undef,
             register_cleanup    => undef,
-            remote_address      => undef,
-            remote_host         => undef,
-            remote_port         => undef,
+            remote_address      => \&remote_address,
+            remote_host         => \&remote_host,
+            remote_port         => \&remote_port,
             remote_user         => 'user',
-            request_time        => undef,
+            request_time        => 'request_time',
             route               => undef,
             run                 => undef,
-            scheme              => undef,
+            scheme              => \&scheme,
             script_name         => undef,
-            secure              => undef,
+            secure              => \&https,
             sendfile            => undef,
             send_http_header    => undef,
-            server_name         => undef,
-            server_port         => undef,
+            server_name         => \&server_name,
+            server_port         => \&server_port,
             session_id          => undef,
             session             => undef,
             set_handlers        => 'set_handlers',
@@ -186,8 +185,8 @@ sub init {
             status              => 'status',
             unparsed_uri        => 'unparsed_uri',
             uploads             => undef,
-            uri                 => undef,
-            url                 => undef,
+            uri                 => \&uri,
+            url                 => \&uri,
             user_agent          => undef,
             user                => 'user',
             write               => undef,
@@ -201,27 +200,44 @@ sub init {
     foreach my $handler (qw(req res)) {
         while (my ($method, $dispatch)=each %{$method{$handler}}) {
             $method_check{$method}++;
-            if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
-                #  Do nothing, defined here
-                #
-                debug("skip $method, defined in this package");
+            #if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
+            if (ref($dispatch) eq 'CODE') {
+            
+                if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
+                    #  Do nothing, defined here
+                    #
+                    debug("skip $method, defined in this package");
+                }
+                else {
+                    debug("setting method: $method to code ref: $dispatch");
+                    *{$method}=$dispatch;
+                }
+
             }
             elsif (!defined($dispatch)) {
                 #  Do nothing, will fall through to Fake
                 #
                 debug("skip $method, will inherit from Fake");
             }
-            elsif (ref($dispatch) eq 'CODE') {
-                #  Turn into method
-                #
-                debug("setting method: $method to code ref: $dispatch");
-                *{$method}=$dispatch;
-            }
+            #elsif (ref($dispatch) eq 'CODE') {
+            #    #  Turn into method
+            #    #
+            #    debug("setting method: $method to code ref: $dispatch");
+            #    *{$method}=$dispatch;
+            #}
             else {
                 #  Apache method
                 #
                 debug("setting method: $method to $handler: $dispatch");
-                *{$method}=sub { shift()->{'req'}->$dispatch(@_) };
+                if (Apache2::RequestRec->can($dispatch)) {
+                    *{$method}=sub { shift()->{'req'}->$dispatch(@_) };
+                }
+                else {
+                    die "unsupported request method: $dispatch";
+                }
+
+                #debug("setting method: $method to $handler: $dispatch");
+                #*{$method}=sub { shift()->{'req'}->$dispatch(@_) };
             }
         }
     }
@@ -255,14 +271,11 @@ sub new {
 }
 
 
-sub req {
-    return shift()->{'req'};
-}
-
 
 sub _headers {
 
     my ($r, $direction, @param)=@_;
+    debug("r: $r, direction: $direction: param: %s", Dumper(\@param));
     my $table=$r->{'req'}->$direction();
     if (@param == 1) {
         #return  $table->get($param[0]);
@@ -281,6 +294,7 @@ sub _headers {
     }
 }
  
+
 sub headers_in {
     shift()->_headers('headers_in', @_);
 }   
@@ -289,7 +303,6 @@ sub headers_in {
 sub headers_out {
     shift()->_headers('headers_out', @_);
 }   
-
 
 
 sub content_type {
@@ -346,7 +359,6 @@ sub remote_address {
         }
     }
     return $req->subprocess_env('REMOTE_ADDR') if $req->can('subprocess_env');
-    return undef;
 }
 
 
@@ -392,11 +404,6 @@ sub https {
 }
 
 
-sub secure {
-    return shift()->https();
-}
-
-
 sub scheme {
     my $r=shift();
     return $r->{'req'}->subprocess_env('REQUEST_SCHEME') ||
@@ -416,19 +423,6 @@ sub env {
     $table->do(sub { $env{$_[0]}=$_[1]; return 1; });
     return \%env;
 }
-
-
-sub subprocess_env {
-
-    return &env(@_);
-    
-}
-
-
-#sub input {
-#    #return shift()->{'req'};
-#    
-#}
 
 
 sub body {
@@ -455,7 +449,7 @@ sub body_handle {
     unless ($r->{'input'}) {
         no warnings qw(once);
         #$r->{'input'}=tie *BODY, WebDyne::Request::Apache::Body_Handle, $r->{'req'};
-        tie *BODY, WebDyne::Request::Apache::Body_Handle, $r->{'req'};
+        tie *BODY, WebDyne::Request::Apache::Body, $r->{'req'};
         $r->{'input'}=*BODY;
         
     }
@@ -463,17 +457,6 @@ sub body_handle {
 }
 
 
-sub header_only {
-    my $r=shift();
-    return $r->{'req'}->header_only() ? 1 : 0;
-}
-
-
-sub request_time {
-    my $r=shift();
-    return $r->{'req'}->request_time() if $r->{'req'}->can('request_time');
-    return time();
-}
 
 sub uri {
     #return URI->new(shift()->{'req'}->uri);
@@ -495,52 +478,14 @@ sub DESTROY {
     
 }
 
-package WebDyne::Request::Apache::Body_Handle0;
-
-sub TIEHANDLE {
-    my ($class, $req) = @_;
-    bless { req => $req }, $class;
-}
-
-sub READ {
-    my ($self, undef, $len, $offset) = @_;
-    my $buf;
-    my $n = $self->{'req'}->read($buf, $len);
-    $_[1] = $buf;
-    return $n;
-}
-
-sub READLINE0 {
-    my ($self) = @_;
-    return $self->{'req'}->readline;
-}
-
-sub READLINE {
-
-    my ($self) = @_;
-    my $r = $self->{req};
-
-    my $buf;
-    my $line = '';
-
-    while ($r->read($buf, 1024)) {
-        $line .= $buf;
-        if ($line =~ s/(.*?\n)//s) {
-            my $out = $1;
-            $self->{buffer} = $line;
-            return $out;
-        }
-    }
-
-    return undef;
-}
 
 
-package WebDyne::Request::Apache::Body_Handle;;
+#  TieHandle package to link mod_perl body to a handle
+#
+package WebDyne::Request::Apache::Body;
 
 sub TIEHANDLE {
     my ($class, $r) = @_;
-
     bless {
         req    => $r,
         buffer => '',
@@ -550,25 +495,17 @@ sub TIEHANDLE {
 
 sub READ {
     my ($self, undef, $len, $offset) = @_;
-
     my $buf = '';
     my $read = $self->{req}->read($buf, $len);
-
     return 0 unless $read;
-
     substr($_[1], $offset || 0) = $buf;
-
     return $read;
 }
 
 sub READLINE {
-
     my ($self) = @_;
-
     return undef if $self->{eof};
-
     my $line = '';
-
     while (1) {
 
         # check existing buffer
@@ -603,6 +540,42 @@ sub CLOSE {
 1;
 
 __END__
+
+
+sub _subprocess_env {
+
+    return &env(@_);
+    
+}
+
+
+#sub input {
+#    #return shift()->{'req'};
+#    
+#}
+
+sub _req0 {
+    return shift()->{'req'};
+}
+
+
+
+sub _header_only0 {
+    my $r=shift();
+    return $r->{'req'}->header_only() ? 1 : 0;
+}
+
+
+sub _request_time0 {
+    my $r=shift();
+    return $r->{'req'}->request_time() if $r->{'req'}->can('request_time');
+    return time();
+}
+
+sub _secure0 {
+    return shift()->https();
+}
+
 
 sub _headers_in0 {
     my $r=shift();

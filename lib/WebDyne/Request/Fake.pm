@@ -67,6 +67,36 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 
 sub init {
 
+
+    #  Do ENV filtering here
+    #
+    local %ENV=(
+        (map { $_=>$ENV{$_}  } (
+            grep { defined($ENV{$_}) } (qw(
+                DOCUMENT_DEFAULT
+                DOCUMENT_ROOT
+                REQUEST_METHOD
+                REQUEST_URI
+                PATH_INFO
+                SCRIPT_NAME
+                QUERY_STRING
+                SERVER_PROTOCOL
+                SERVER_NAME
+                SERVER_PORT
+                REMOTE_ADDR
+                REMOTE_PORT
+                REMOTE_USER
+                AUTH_TYPE
+                HTTPS 
+                APPL_MD_PATH
+            ),
+            (grep {/^WEBDYNE/i} keys %ENV), # Note not WEBDYNE_, just /WEBDYNE/i to allow for DirConfig type entries such as WebDyneHandler
+            (grep {/^HTTP_/i} keys %ENV),
+            (grep {/^CONTENT_/i} keys %ENV)
+        )))
+    );
+
+
     #  Setup pass through methods
     #
     my %method=(
@@ -505,6 +535,8 @@ sub main {
 }
 
 
+
+
 sub new {
 
 
@@ -513,35 +545,6 @@ sub new {
     my ($class, %r)=@_;
     debug("$class, r:%s", Dumper(\%r));
     my $r=bless(\%r, $class);
-
-
-    #  Do ENV filtering here
-    #
-    %ENV=(
-        (map { $_=>$ENV{$_}  } (
-            grep { defined($ENV{$_}) } (qw(
-                DOCUMENT_DEFAULT
-                DOCUMENT_ROOT
-                REQUEST_METHOD
-                REQUEST_URI
-                PATH_INFO
-                SCRIPT_NAME
-                QUERY_STRING
-                SERVER_PROTOCOL
-                SERVER_NAME
-                SERVER_PORT
-                REMOTE_ADDR
-                REMOTE_PORT
-                REMOTE_USER
-                AUTH_TYPE
-                HTTPS 
-                APPL_MD_PATH
-            ),
-            (grep {/^WEBDYNE/i} keys %ENV), # Note not WEBDYNE_, just /WEBDYNE/i to allow for DirConfig type entries such as WebDyneHandler
-            (grep {/^HTTP_/i} keys %ENV),
-            (grep {/^CONTENT_/i} keys %ENV)
-        )))
-    );
 
 
     #  Now move ENV into headers
@@ -782,9 +785,6 @@ sub custom_response {
     @_ ? $r->{'custom_response'}{$status}=shift() : $r->{'custom_response'}{$status};
 
 }
-
-
-
 
 
 sub cwd {

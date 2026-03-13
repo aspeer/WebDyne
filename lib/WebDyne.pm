@@ -25,7 +25,7 @@ use overload;
 #  WebDyne constants, base modules
 #
 use WebDyne::Util;
-use WebDyne::CGI;
+use WebDyne::CGI::Simple;
 use WebDyne::Constant;
 use WebDyne::HTML::Tiny;
 
@@ -1032,6 +1032,7 @@ sub handler_warn {
     #  Warn signal handler
     #
     debug('in __WARN__ sig handler, caller %s', join(',', (caller(0))[0..3]));
+    goto &handler_die(@_) if $WEBDYNE_WARNINGS_FATAL;
     return err(@_)
 
 }
@@ -4001,7 +4002,7 @@ sub delete_node {
 sub CGI {
 
 
-    #  Return WebDyne::CGI wrapper object
+    #  Return WebDyne::CGI::Simple wrapper object
     #
     my $self=shift();
     debug("$self get WebDyne::CGI object, caller: %s", Dumper([caller(0)]));
@@ -4021,7 +4022,7 @@ sub CGI {
         #  block and we don't want to trigger an error so be careful
         #
         local $SIG{'__DIE__'}=sub {};
-        my $cgi_or=WebDyne::CGI->new($self->{'_r'}) ||
+        my $cgi_or=WebDyne::CGI::Simple->new($self->{'_r'}) ||
            return err('unable to get WebDyne::CGI object');
         $self->CGI_param_expand($cgi_or);
         debug("cgi_or: $cgi_or");
@@ -4100,7 +4101,7 @@ sub dump {
 
         #  Always do CGI vars
         #
-        push @html, Data::Dumper->Dump([scalar $cgi_or->Vars()], ['WebDyne::CGI']);
+        push @html, Data::Dumper->Dump([scalar $cgi_or->Vars()], ['WebDyne::CGI::Simple']);
         
         
         #  Others are optional. Environment

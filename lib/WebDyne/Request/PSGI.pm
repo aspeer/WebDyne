@@ -88,7 +88,7 @@ sub init {
             base_url            => 'base',
             body_handle         => 'input',
             #body                => sub { my $r=shift(); if (my $input_or=$r->input) { unless (exists $r->{'body'}) { $input_or->read($r->{'body'}, $r->content_length()) }; return $r->{'body'} } },
-            body                => undef,
+            body                => \&body,
             cache_control       => undef,
             charset             => undef,
             cleanup_register    => undef,
@@ -117,7 +117,7 @@ sub init {
             header              => sub { shift()->{'req'}->headers->header(@_) },
             headers             => undef,
             header_only         => undef,
-            headers_in          => undef,
+            headers_in          => \&headers_in,
             headers_out         => undef,
             hostname            => undef,
             host                => undef,
@@ -195,27 +195,41 @@ sub init {
         while (my ($method, $dispatch)=each %{$method{$handler}}) {
             debug("method: $method");
             $method_check{$method}++;
-            if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
-                #  Do nothing, defined here
-                #
-                debug("skip $method, defined in this package");
+            #if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
+            if (ref($dispatch) eq 'CODE') {
+
+                if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
+                    #  Do nothing, defined here
+                    #
+                    debug("skip $method, defined in this package");
+                }
+                else {
+                    debug("setting method: $method to code ref: $dispatch");
+                    *{$method}=$dispatch;
+                }
+
             }
             elsif (!defined($dispatch)) {
                 #  Do nothing, will fall through to Fake
                 #
                 debug("skip $method, will inherit from Fake");
             }
-            elsif (ref($dispatch) eq 'CODE') {
-                #  Turn into method
-                #
-                debug("setting method: $method to code ref: $dispatch");
-                *{$method}=$dispatch;
-            }
+            #elsif (ref($dispatch) eq 'CODE') {
+            #    #  Turn into method
+            #    #
+            #    debug("setting method: $method to code ref: $dispatch");
+            #    *{$method}=$dispatch;
+            #}
             else {
                 #  Plack method
                 #
                 debug("setting method: $method to $handler: $dispatch");
-                *{$method}=sub { shift()->{'req'}->$dispatch(@_) };
+                if (Plack::Request->can($dispatch)) {
+                    *{$method}=sub { shift()->{'req'}->$dispatch(@_) };
+                }
+                else {
+                    die "unsupported request method: $dispatch";
+                }
             }
         }
     }

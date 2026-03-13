@@ -140,6 +140,7 @@ sub handler {
     #  Set up
     #
     local %ENV=(%ENV_BASE, %{$env_hr});
+    my @env_key=keys %ENV;
 
 
     #  Setup request and response handlers
@@ -297,6 +298,17 @@ sub handler {
     #  Finished with response handler now
     #
     $r->DESTROY();
+    
+    
+    #  Env changed ?
+    #
+    if (keys %ENV != @env_key) {
+        debug('ENV keys changed, checking');
+        my %env=%ENV;
+        delete @env{@env_key};
+        debug('keys to add into ENV_BASE: %s', Dumper(\%env));
+        map {$ENV_BASE{$_}=$ENV{$_}} keys %env;
+    }
 
 
     #  And return
