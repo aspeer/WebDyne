@@ -114,42 +114,43 @@ sub main {
     #
     GetOptions(
         \%opt,
-        'help|?',
+        'all',
+        'colour|color!',
+        'compare',
+        'delay|sleep=i',
+        'error=s',
+        'fake',
+        'get=s@',
         'handler=s',
-        'status=s',
+        'head',
         'header|headers!',
         'header_only|header-only|headers_only|headers-only|headersonly',
-        'warn!',
-        'error=s',
-        'headers_out|header_out=s@',
         'headers_in|header_in=s@',
-        'outfile=s',
-        'repeat|num|n=s',
+        'headers_out|header_out=s@',
+        'htmx',
+        'lineno!',
         'loop',
-        'get=s@',
-        'post=s@',
-        'patch=s@',
-        'put=s@',
-        'options=s@',
-        'head',
-        'delay|sleep=i',
-        'theme=s',
-        'tidy!',
-        'psgi',
-        'psgi_server',
-        'pagi',
-        'fake',
-        'all',
         'method=s',
         'mod_perl|apache',
-        'root|docroot|doc_root|document_root=s',
+        'options=s@',
+        'outfile=s',
+        'pagi',
+        'param=s@',
+        'patch=s@',
+        'post=s@',
+        'psgi',
+        'psgi_server',
+        'put=s@',
+        'repeat|num|n=s',
         'request|r=s',
-        'colour|color!',
-        'lineno!',
-        'htmx',
+        'root|docroot|doc_root|document_root=s',
         'sse',
+        'status=s',
+        'theme=s',
+        'tidy!',
         'tmp_cleanup',
-        'compare',
+        'help|?',
+        'warn!',
         'man',
         'version'
     ) || pod2usage(2);
@@ -239,6 +240,26 @@ sub main {
         }
     };
     $opt{'query_string'}=\@query_string;
+    
+    
+    #  And parameters we want to supply to the request object ?
+    #
+    my %param;
+    if (my $param_ar=$opt{'param'}) {
+        foreach my $param (@{$param_ar}) {
+            my ($key, $value)=split(/[:=]/, $param);
+            if (ref($param{$key})) {
+                push @{$param{$key}}, $value;
+            }
+            elsif (exists $param{$key}) {
+                $param{$key}=[$param{$key}, $value];
+            }
+            else {
+                $param{$key}=$value;
+            }
+        }
+    };
+    $opt{'param'}=\%param;
 
 
     #  Construct the HTTP::Request object
@@ -723,8 +744,8 @@ sub request_fake {
         $io_fh=IO::String->new($req_or->content());
     }
     local *STDIN=$io_fh if $io_fh;
-
-
+    
+    
     #  Get new request handler
     #
     my $r=WebDyne::Request::Fake->new(
@@ -767,7 +788,8 @@ sub request_fake {
 
     #  Run it and display results, or any error generated
     #
-    defined(my $status=$handler->handler($r, $opt_hr)) || return err();
+    #defined(my $status=$handler->handler(grep {$_} $r, $opt_hr)) || return err();
+    defined(my $status=$handler->handler(grep {$_} $r, $opt_hr->{'param'})) || return err();
     
     
     #  Close file handle

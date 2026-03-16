@@ -159,7 +159,7 @@ sub html_sr {
     require WebDyne::Request::Fake;
     my $r=$opt_hr->{'r'} || WebDyne::Request::Fake->new(%{$opt_hr}) ||
         return err();
-        
+
 
     #  Get handler
     #

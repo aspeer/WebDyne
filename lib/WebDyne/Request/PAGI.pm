@@ -241,6 +241,94 @@ sub init {
 }
 
 
+sub new {
+
+
+    #  New PAGI request
+    #
+    my ($class, %r)=@_;
+    debug("$class, r: %s, calller:%s", Dumper(\%r, [caller(0)]));
+
+
+    #  Require scope
+    #
+    #$r{'scope'} || return err('no PAGI scope object supplied');
+    #$r{'req'}   || return err('no PAGI::Request object supplied');
+
+
+    #  Try to figure out filename user wants
+    #
+    unless ($r{'filename'}) {
+
+        #  Not supplied - need to work out
+        #
+        debug('filename not supplied, determining from request');
+
+        my $fn;
+        if (my $dn=($r{'document_root'} || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
+
+            #  Get from URI and location
+            #
+            my $uri=$r{'uri'} || $r{'req'}->path();
+            debug("uri: $uri");
+            $fn=File::Spec->catfile($dn, split(m{/+}, $uri));
+            debug("fn: $fn from dn: $dn, uri: $uri");
+
+        }
+
+        #  Need to add default psp file ?
+        #
+        unless ($fn=~WEBDYNE_PSP_EXT_RE) { # fastest
+
+            #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
+            #  handle it
+            #
+            if  (($fn=~/\/$/) || ((-d $fn) || !$fn)) {
+
+                #  Append default doc to path, which appears at moment to be a directory ?
+                #
+                my $document_default=$r{'document_default'} || $DOCUMENT_DEFAULT;
+                debug("appending document default $document_default to fn:$fn");
+
+                #  If absolute path just use it
+                #
+                if (File::Spec->file_name_is_absolute($document_default)) {
+
+                    #  Yep - absolute path
+                    #
+                    $fn=$document_default
+                }
+                else {
+
+                    #  Otherwise append to existing path
+                    #
+                    $fn=File::Spec->catfile($fn, split m{/+}, $document_default); #/
+                }
+            }
+            else {
+
+                #  Not .psp file, do not want
+                #
+                debug("fn: $fn does not end with /, leaving undef");
+                $fn=undef;
+            }
+        }
+
+        #  Final sanity check
+        #
+        debug("final fn: $fn");
+        $r{'filename'}=$fn;
+
+    }
+
+
+    #  Finished, pass back
+    #
+    return bless \%r, $class;
+
+}
+
+
 sub env {
 
     return shift()->{'scope'}
@@ -374,92 +462,6 @@ sub uri {
 }
 
 
-sub new {
-
-
-    #  New PAGI request
-    #
-    my ($class, %r)=@_;
-    debug("$class, r: %s, calller:%s", Dumper(\%r, [caller(0)]));
-
-
-    #  Require scope
-    #
-    $r{'scope'} || return err('no PAGI scope object supplied');
-    $r{'req'}   || return err('no PAGI::Request object supplied');
-
-
-    #  Try to figure out filename user wants
-    #
-    unless ($r{'filename'}) {
-
-        #  Not supplied - need to work out
-        #
-        debug('filename not supplied, determining from request');
-
-        my $fn;
-        if (my $dn=($r{'document_root'} || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
-
-            #  Get from URI and location
-            #
-            my $uri=$r{'uri'} || $r{'req'}->path();
-            debug("uri: $uri");
-            $fn=File::Spec->catfile($dn, split(m{/+}, $uri));
-            debug("fn: $fn from dn: $dn, uri: $uri");
-
-        }
-
-        #  Need to add default psp file ?
-        #
-        unless ($fn=~WEBDYNE_PSP_EXT_RE) { # fastest
-
-            #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
-            #  handle it
-            #
-            if  (($fn=~/\/$/) || ((-d $fn) || !$fn)) {
-
-                #  Append default doc to path, which appears at moment to be a directory ?
-                #
-                my $document_default=$r{'document_default'} || $DOCUMENT_DEFAULT;
-                debug("appending document default $document_default to fn:$fn");
-
-                #  If absolute path just use it
-                #
-                if (File::Spec->file_name_is_absolute($document_default)) {
-
-                    #  Yep - absolute path
-                    #
-                    $fn=$document_default
-                }
-                else {
-
-                    #  Otherwise append to existing path
-                    #
-                    $fn=File::Spec->catfile($fn, split m{/+}, $document_default);
-                }
-            }
-            else {
-
-                #  Not .psp file, do not want
-                #
-                debug("fn: $fn does not end with /, leaving undef");
-                $fn=undef;
-            }
-        }
-
-        #  Final sanity check
-        #
-        debug("final fn: $fn");
-        $r{'filename'}=$fn;
-
-    }
-
-
-    #  Finished, pass back
-    #
-    return bless \%r, $class;
-
-}
 
 1;
 
