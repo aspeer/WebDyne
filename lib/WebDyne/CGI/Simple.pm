@@ -76,23 +76,33 @@ sub new {
         
             #  Normal form POST so can read body in 
             #
+            debug('detected application/x-www-form-urlencoded form submission, reading body');
             my $body=$r->body();
+            local $ENV{'REQUEST_METHOD'} ||= ($r->method() || 'POST');
+            debug("args: %s, body:$body", $r->args);
             $cgi_or=CGI::Simple->new(join('&', grep {$_} $r->args, $body));
         }
         elsif ($r->content_length()) {
         
-            #  Need to read in some other POST content, e.g. file upload
+            #  Need to read in some other POST content, e.g. file upload. Need to manipulate CGI::Simple internals here, pretty ugly.
             #
+            my $fh=$r->input();
+            debug('detected other POST submission, reading body from %s', $fh);
+            local $ENV{'REQUEST_METHOD'}='GET';
             $cgi_or=CGI::Simple->new($r->args);
             local $ENV{'CONTENT_LENGTH'} ||= $r->content_length();
-            local $ENV{'CONTENT_TYPE'} ||= $r->headers_in('Content-Type');
-            local *STDIN=$r->input();
-            $cgi_or->_parse_multipart($r->input());
+            local $ENV{'CONTENT_TYPE'} ||= ($r->headers_in('Content-Type') || 'multipart/form-data');
+            local $ENV{'REQUEST_METHOD'} ||= ($r->method() || 'POST');
+            debug('fh: %s, content_length: %s, content_type: %s, request_method: %s', $fh, @ENV{qw(CONTENT_LENGTH CONTENT_TYPE REQUEST_METHOD)});
+            local *STDIN=$fh;
+            $cgi_or->_parse_multipart($fh);
         }
         else {
         
             #  Don't need POST body, just get query param args
             #
+            debug('non POST submissions, just using args: %s', $r->args);
+            local $ENV{'REQUEST_METHOD'} ||= ($r->method() || 'GET');
             $cgi_or=CGI::Simple->new($r->args);
         }
 
@@ -165,7 +175,6 @@ sub uploads {
     my @pairs;
     foreach my $param ($self->param()) {
         
-        #my @fn = $self->upload_info();
         my @fn = $self->upload();
         debug('fn: %s', Dumper(\@fn));
         next unless @fn;
@@ -173,11 +182,10 @@ sub uploads {
         foreach my $fn (@fn) {
             next unless $fn;  # skip undef
             my $fh = $self->upload($fn);
-            my $size     = -s $fh;
             my $upload_or = WebDyne::CGI::Simple::Upload->new(
                 filename => $fn,
-                size     => $size,
-                mime	 => $self->upload_info($fn, 'mime'),
+                size     => $self->{'.tmpfiles'}{$fn}{'size'},
+                mime     => $self->{'.tmpfiles'}{$fn}{'mime'},
                 fh       => $fh,
             );
             push @pairs, ($param => $upload_or);

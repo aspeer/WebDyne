@@ -1032,7 +1032,7 @@ sub handler_warn {
     #  Warn signal handler
     #
     debug('in __WARN__ sig handler, caller %s', join(',', (caller(0))[0..3]));
-    goto &handler_die(@_) if $WEBDYNE_WARNINGS_FATAL;
+    goto &handler_die if $WEBDYNE_WARNINGS_FATAL;
     return err(@_)
 
 }

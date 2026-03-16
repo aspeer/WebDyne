@@ -93,7 +93,7 @@ sub init {
             charset             => undef,
             cleanup_register    => undef,
             client_address      => 'address',
-            content             => 'body',
+            content             => \&body,
             content_encoding    => 'content_encoding',
             #content_length      => 'content_length',
             #content_type        => 'content_type',
@@ -192,6 +192,7 @@ sub init {
     );
     my %method_check;
     foreach my $handler (qw(req res)) {
+        *{$handler}=sub { return shift()->{$handler} };
         while (my ($method, $dispatch)=each %{$method{$handler}}) {
             debug("method: $method");
             $method_check{$method}++;
@@ -281,8 +282,8 @@ sub new {
                 #  Get from URI and location
                 #
                 my $uri=$r{'uri'} || $env_hr->{'PATH_INFO'};
-                my @split=split(m{/+}, $uri);
-                debug("uri: $uri, split: %s", Dumper(\@split));
+                #my @split=split(m{/+}, $uri);
+                #debug("uri: $uri, split: %s", Dumper(\@split));
                 $fn=File::Spec->catfile($dn, split(m{/+}, $uri)); #/
                 debug("fn: $fn from dn: $dn, uri: $uri");
                 
@@ -338,12 +339,6 @@ sub new {
         $r{'filename'}=$fn; 
         
     }
-    
-    
-    #  Setup request and response handlers
-    #
-    #$r{'req'}=Plack::Request->new($env_hr);
-    #$r{'res'}=Plack::Response->new(HTTP_OK);
     
     
     #  Finished, pass back

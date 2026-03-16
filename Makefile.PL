@@ -87,7 +87,7 @@ my %WriteMakefile=(
         },
         x_authority => 'cpan:ASPEER'
     },
-    PM_FILTER => $ENV{'PM_DEBUG'} || $ENV{'WEBDYNE_DEBUG'} || do {
+    PM_FILTER => ($ENV{'PM_DEBUG'} || $ENV{'WEBDYNE_DEBUG'}) ? '' : do {
         use IO::File;
         my $fn='.pm_filter.pf';
         my $fh=IO::File->new($fn, O_WRONLY | O_CREAT | O_TRUNC) ||
