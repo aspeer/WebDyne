@@ -242,19 +242,23 @@ sub main {
     $opt{'query_string'}=\@query_string;
     
     
-    #  And parameters we want to supply to the request object ?
+    #  And parameters we want to supply to the handler for use in perl blocks ?
     #
     my %param;
-    if (my $param_ar=$opt{'param'}) {
-        foreach my $param (@{$param_ar}) {
+    if (my $param_opt_ar=$opt{'param'}) {
+        my @param_opt=map { split(/[;&]/) } @{$param_opt_ar};
+        foreach my $param (@param_opt) {
             my ($key, $value)=split(/[:=]/, $param);
-            if (ref($param{$key})) {
+            if (ref($param{$key}) eq 'ARRAY') {
+                #  Array already, push
                 push @{$param{$key}}, $value;
             }
             elsif (exists $param{$key}) {
+                #  Duplicate, create array
                 $param{$key}=[$param{$key}, $value];
             }
             else {
+                #  Vanilla
                 $param{$key}=$value;
             }
         }
@@ -397,8 +401,8 @@ sub main {
             }
 
         }
-        undef %WebDyne::Package;
-        WebDyne->init_class();
+        #undef %WebDyne::Package;
+        WebDyne->init();
         }
         
         last LOOP unless $opt{'loop'};

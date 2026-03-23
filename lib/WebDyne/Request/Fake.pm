@@ -159,7 +159,7 @@ sub init {
             lookup_uri          => undef,
             main                => undef,
             media_type             => sub { my $content_type=shift()->content_type || return; (my @split=split_header_words($content_type)) || return; return lc($split[0][0]) },
-            method              => sub { shift->env->{'REQUEST_METHOD'} },
+            method              => sub { shift->env->{'REQUEST_METHOD'} || 'GET' },
             mtime               => undef,
             multipart_parameters=> undef,
             next                => undef,
@@ -176,7 +176,7 @@ sub init {
             preferred_media_type=> undef,
             prev                => undef,
             print               => undef,
-            protocol            => sub { shift()->env->{'SERVER_PROTOCOL'} },
+            protocol            => sub { shift()->env->{'SERVER_PROTOCOL'} || 'HTTP/1.1' },
             query_parameters    => undef,
             query_string        => 'args',
             redirect            => undef,
@@ -240,7 +240,7 @@ sub init {
                 #  Existing method
                 #
                 debug("setting method: $method to $handler: $dispatch");
-                *{$method}=sub { shift()->$dispatch };
+                *{$method}=sub { shift()->$dispatch(@_) };
             }
         }
     }
@@ -490,14 +490,16 @@ sub log_error {
 sub lookup_file {
 
     my ($r, $fn)=@_;
+    debug("r: $r, fn: $fn");
     my $r_child;
     if ($fn!~WEBDYNE_PSP_EXT_RE) { # fastest
 
 
         #  Static file. Should migrate to this module but OK is PSGI for moment
         #
+        debug('non psp file, passing to WebDyne::Request::PSGI::Static');
         require WebDyne::Request::PSGI::Static;
-        $r_child=WebDyne::Request::PSGI::Static->new(filename => $fn, prev => $r) ||
+        $r_child=WebDyne::Request::PSGI::Static->new(filename => $fn, prev => $r, env=>$r->env()) ||
             return err();
 
     }
@@ -506,12 +508,14 @@ sub lookup_file {
 
         #  Subrequest
         #
+        debug('psp file, creating new request');
         $r_child=ref($r)->new(filename => $fn, prev => $r) || return err();
 
     }
 
     #  Return child
     #
+    debug("returning r_child: $r_child");
     return $r_child;
 
 }
@@ -535,8 +539,6 @@ sub main {
 }
 
 
-
-
 sub new {
 
 
@@ -558,7 +560,17 @@ sub new {
         debug("setting header: $header, value: $value");
         $r->headers_in(lc($header), $value);
     }
-        
+    
+    
+    #  If Headers in supplied as array or hash ref convert
+    #
+    if (ref($r{'headers_in'}) eq 'ARRAY') {
+        $r{'headers_in'}=HTTP::Headers::Fast->new(@{$r->{'headers_in'}})
+    }
+    elsif (ref($r{'headers_in'}) eq 'HASH') {
+        $r{'headers_in'}=HTTP::Headers::Fast->new(%{$r->{'headers_in'}})
+    }
+    
         
     #  Done
     #
@@ -1015,9 +1027,14 @@ sub DESTROY { #no subsort
     my $r=shift();
     debug("$r DESTROY");
     if (my $cr_ar=delete $r->{'register_cleanup'}) {
+        debug('found cleanup code refs: %s', Dumper($cr_ar));
         foreach my $cr (grep {ref($_) eq 'CODE'} @{$cr_ar}) {
+            debug("running code ref: $cr against r: $r");
             $cr->($r);
         }
+    }
+    else {
+        debug('no cleanup code registered');
     }
 
 }

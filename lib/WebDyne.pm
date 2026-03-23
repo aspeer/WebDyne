@@ -101,7 +101,7 @@ our %Package;
 
 #  Do some class wide initialisation
 #
-&init_class();
+&init();
 
 
 #  Eval safe not effective - die if turned on
@@ -352,6 +352,7 @@ sub handler : method {    # no subsort
     else {
         debug('no webdyne_cache_dn');
     }
+    #die if ($param_hr->{'count'}==2);
 
 
     #  Test if compile/reload needed
@@ -686,7 +687,7 @@ sub handler : method {    # no subsort
 
         #  We are the main request handler. So process
         #
-        debug('static flag detected, in main handler');
+        debug("static flag detected, in main handler, looking for cache_pn: $cache_pn");
         if ($cache_pn && (-f (my $fn="${cache_pn}.html")) && ((stat(_))[9] >= $srce_mtime) && !$self->{'_compile'}) {
 
             #  Cache file exists, and is not stale, and user/cache code does not want a recompile. Tell Apache or FCGI
@@ -700,7 +701,8 @@ sub handler : method {    # no subsort
                 #  Apache 2 seems to add junk characters at end of output
                 #
                 debug('using MP2 or FCGI_ROLE path');
-                my $r_child=$r->lookup_file($fn, $r->output_filters);
+                my $r_child=$r->lookup_file($fn, $r->output_filters) ||
+                    return err();
                 debug("r_child: $r_child");
                 $r_child->handler('default-handler');
                 $r_child->content_type(WEBDYNE_CONTENT_TYPE_HTML);
@@ -758,6 +760,7 @@ sub handler : method {    # no subsort
         debug('not static code, not saving to cache or serving');
         
     }
+    #die if ($param_hr->{'count'}==2);
 
 
     #  Debug
@@ -1038,7 +1041,12 @@ sub handler_warn {
 }
     
 
-sub init_class {
+sub init {
+
+
+    #  Clear Package cache and start from scratch
+    #
+    undef %Package;
 
 
     #  Try to load correct modules depending on Apache ver, taking special care

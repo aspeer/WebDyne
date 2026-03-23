@@ -151,7 +151,7 @@ sub init {
             preferred_media_type=> undef,
             prev                => undef,
             print               => undef,
-            protocol            => 'http_version',
+            protocol            => sub { 'HTTP/'. shift()->{'req'}->http_version() },
             query_parameters    => 'query_params',
             query_string        => 'query_string',
             redirect            => undef,
@@ -407,12 +407,39 @@ sub body_handle {
 
 
 sub headers_in {
+
     my $r=shift();
-    if (@_) {
-        return $r->{'req'}->header(@_);
-    }
-    my $headers_or=$r->{'req'}->headers();
-    return HTTP::Headers::Fast->new($headers_or->flatten());
+    debug("r: $r, param: %s", Dumper(\@_));
+    my $headers_in_or=$r->{'headers_in'} ||= do {
+        my $headers_pagi_or=$r->{'req'}->headers();
+        debug('headers_pagi_or: %s', Dumper($headers_pagi_or));
+        my @header;
+        foreach my $header ($headers_pagi_or->keys) {
+            my @value=$headers_pagi_or->get_all($header);
+            $header=~s{(^|-)([a-z])}{$1\u$2}g;
+            map { push @header, ($header, $_) } @value;
+        }
+        debug('header_fast: %s', Dumper(\@header));
+        HTTP::Headers::Fast->new(@header)
+    };
+    debug('headers_in now: %s', Dumper($headers_in_or));
+    
+    #  Now run
+    #
+    return $r->SUPER::headers_in(@_);
+    
+    #if (@_ == 1) {
+    #    return $r->{'req'}->header(@_);
+    #}
+    #elsif (@_==2) {
+    #    return $r->{'req'}->header(@_) || $_[1];
+    #}
+    #else {
+        
+    #use Data::Dumper;
+    #CORE::print STDERR Dumper($headers_or);
+    #exit 0;
+    #return HTTP::Headers::Fast->new($headers_or->flatten());
 }
 
 
