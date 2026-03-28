@@ -44,7 +44,7 @@ use WebDyne::Request::Common qw(handler_methods_all handler_methods_check);
 #  Inheritance
 #
 use WebDyne::Request::Fake;
-@ISA=qw(WebDyne::Request::Fake);
+#@ISA=qw(WebDyne::Request::Fake);
 
 
 #  Version information
@@ -184,6 +184,7 @@ sub init {
             user_agent          => 'user_agent',
             user                => undef,
             write               => undef,
+            DESTROY             => undef,
         },
         res => {(
            #status headers body header content_typee content_length content_encoding redirect location cookies finalize to_app
@@ -214,6 +215,7 @@ sub init {
                 #  Do nothing, will fall through to Fake
                 #
                 debug("skip $method, will inherit from Fake");
+                *{$method}=\&{"WebDyne::Request::Fake::${method}"};
             }
             #elsif (ref($dispatch) eq 'CODE') {
             #    #  Turn into method

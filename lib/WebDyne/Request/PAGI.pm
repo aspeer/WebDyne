@@ -178,8 +178,8 @@ sub init {
             status              => undef,
             unparsed_uri        => \&uri,
             uploads             => 'uploads',
-            uri                 => \&uri,
-            url                 => \&uri,
+            uri                 => undef,
+            url                 => undef,
             user_agent          => undef,
             user                => undef,
             write               => undef,
@@ -199,7 +199,9 @@ sub init {
     );
     foreach my $handler (qw(req res sse ws)) {
         *{$handler}=sub { return shift()->{$handler} };
-        while (my ($method, $dispatch)=each %{$method{$handler}}) {
+        #while (my ($method, $dispatch)=each %{$method{$handler}}) {
+        foreach my $method (sort keys %{$method{$handler}}) {
+            my $dispatch=$method{$handler}->{$method};
             $method_check{$method}++;
             if (ref($dispatch) eq 'CODE') {
 
@@ -476,7 +478,15 @@ sub base_url {
 
 
 sub uri {
+
+    shift()->SUPER::uri(@_);
+    
+}
+
+
+sub uri0 {
     my $r=shift();
+    debug("r: $r"),
     return $r->{'_uri'} ||= do {
         my $base=$r->_uri_base();
         my $path=$r->path_info() || '';

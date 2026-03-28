@@ -203,7 +203,8 @@ sub init {
             status              => undef,
             unparsed_uri        => sub { shift()->filename() },
             uploads             => undef,
-            uri                 => sub { $_[0]->{'uri'} ||= URI->new($_[0]->filename()) },
+            #uri                 => sub { $_[0]->{'uri'} ||= URI->new($_[0]->filename()) },
+            uri                 => undef,
             url                 => 'uri',
             user_agent          => sub { shift()->headers_in('user-agent') },
             user                => sub { shift()->env->{'REMOTE_USER'} },
@@ -249,6 +250,13 @@ sub init {
     #  Done, do runtime check and return, will warn if we have missed anything
     #
     return handler_methods_check(__PACKAGE__, \%method_check);
+    
+}
+
+
+sub uri {
+
+    $_[0]->{'uri'} ||= URI->new($_[0]->filename()) 
     
 }
 

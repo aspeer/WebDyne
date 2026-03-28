@@ -293,119 +293,130 @@ sub main {
     #  Run main routine to call appropriate handler
     #
     LOOP: while (1) {
+    
+
+        #  Request type is PSGI, PAGI, Fake etc.
+        #
         foreach my $request_type (@request_type) {
-        #print STDERR "request type: $request_type\n";
-        for (1..($opt{'repeat'} || 1)) {
         
-        
-            #  Send out to backend for render
-            #
-            my $res_or=&{sprintf('request_%s', $request_type)}($req_or, \%opt);
-            my $html=$res_or->decoded_content;
             
-
-            #  If headers wanted strip them out
+            #  Run as many repeats as nominated
             #
-            my $header;
-            if ($opt{'header'} || $opt{'header_only'}) {
-                $header=$res_or->status_line(). "\n";
-                $header.=$res_or->headers->as_string();
-            }
-            if ($opt{'header_only'}) {
-                print $header, "\n";
+            for (1..($opt{'repeat'} || 1)) {
+            
+            
+                #  Send out to backend for render
+                #
+                my $res_or=&{sprintf('request_%s', $request_type)}($req_or, \%opt);
+                my $html=$res_or->decoded_content;
+                
+
+                #  If headers wanted strip them out
+                #
+                my $header;
+                if ($opt{'header'} || $opt{'header_only'}) {
+                    $header=$res_or->status_line(). "\n";
+                    $header.=$res_or->headers->as_string();
+                }
+                if ($opt{'header_only'}) {
+                    print $header, "\n";
+                    next;
+                }
+                
+                if ($opt{'compare'}) {
+                    unless ($html eq ($_{'html'} ||= $html)) {
+                        eval { require Text::Diff } || do {
+                            die(sprintf("compare mismatch:\n\n$html\n\n%s",$_{'html'}));
+                        };
+                        my $diff=Text::Diff::diff(
+                            \Data::Dumper->Dump([\$html], ['$ACTUAL']),
+                            \Data::Dumper->Dump([\$_{'html'}], ['$EXPECT']),
+                            { STYLE => 'Unified' }
+                        );
+                        die("compare mismatch: $diff");
+                    }
+                }
+
+
+                #  Tidy ?
+                #
+                if ($opt{'tidy'} && ($res_or->content_type eq 'text/html') && !$opt{'htmx'} ) {
+                    $html=&html_tidy($html, \%opt);
+                }
+
+
+                #  Send to syntax higlighter ?
+                #
+                if ($opt{'colour'} && ($res_or->content_type eq 'text/html')) {
+                    $html=&html_colour($html, $header, \%opt);
+                }
+                
+                
+                #  Defensive revert select in case very weird/bad error
+                #
+                select STDOUT if defined(fileno(STDOUT));
+                
+                
+                #  Print it
+                #
+                CORE::print $html, $/;
+                
+                
+                #  If looking for leak
+                #
+                #my $gladiator_ar=Devel::Gladiator::walk_arena();
+
+
+                #  Manual cleanup
+                #
+                #my $r;
+                #$r->DESTROY();
+                
+                
+                #  Leak detection
+                #
+                #print("SV: ",  scalar @{$gladiator_ar}, "\n") if $opt{'leak'};
+                #@{$gladiator_ar} = ();
+                
+
+                #  Delay (presumably to test caching code)
+                #
+                if (my $delay=$opt{'delay'}) {
+                    sleep $delay
+                }
                 next;
-            }
-            
-            if ($opt{'compare'}) {
-                unless ($html eq ($_{'html'} ||= $html)) {
-                    eval { require Text::Diff } || do {
-                        die(sprintf("compare mismatch:\n\n$html\n\n%s",$_{'html'}));
-                    };
-                    my $diff=Text::Diff::diff(
-                        \Data::Dumper->Dump([\$html], ['$ACTUAL']),
-                        \Data::Dumper->Dump([\$_{'html'}], ['$EXPECT']),
-                        { STYLE => 'Unified' }
-                    );
-                    die("compare mismatch: $diff");
+                
+                
+                #  Do we expect all output in a repeat to be the same ? If
+                #  so check we're all the same
+                #  
+                if ($opt{'compare'}) {
+                    unless ($html eq ($_{'html'} ||= $html)) {
+                        eval { require Text::Diff } || do {
+                            die(sprintf("compare mismatch:\n\n$html\n\n%s",$_{'html'}));
+                        };
+                        my $diff=Text::Diff::diff(
+                            \Data::Dumper->Dump([\$html], ['$ACTUAL']),
+                            \Data::Dumper->Dump([\$_{'html'}], ['$EXPECT']),
+                            { STYLE => 'Unified' }
+                        );
+                        die("compare mismatch: $diff");
+                    }
                 }
-            }
 
-            #  Tidy ?
-            #
-            if ($opt{'tidy'} && ($res_or->content_type eq 'text/html') && !$opt{'htmx'} ) {
-                $html=&html_tidy($html, \%opt);
-            }
-
-
-
-            #  Send to syntax higlighter
-            #
-            if ($opt{'colour'} && ($res_or->content_type eq 'text/html')) {
-                $html=&html_colour($html, $header, \%opt);
             }
             
-            
-            #  Defensive revert select in case very weird/bad error
+            #  Reinit WebDyne for next run to clear cache etc
             #
-            select STDOUT if defined(fileno(STDOUT));
-            
-            
-            #  Print it
-            #
-            CORE::print $html, $/;
-            
-            #next;
+            WebDyne->init();
 
-
-            
-            #  Print it
-            #
-            #print $html, $/;
-
-            
-            #  If looking for leak
-            #
-            #my $gladiator_ar=Devel::Gladiator::walk_arena();
-
-
-            #  Manual cleanup
-            #
-            #my $r;
-            #$r->DESTROY();
-            
-            
-            #  Leak detection
-            #
-            #print("SV: ",  scalar @{$gladiator_ar}, "\n") if $opt{'leak'};
-            #@{$gladiator_ar} = ();
-            
-            #  Delay (presumably to test caching code)
-            #
-            if (my $delay=$opt{'delay'}) {
-                sleep $delay
-            }
-            next;
-
-            if ($opt{'compare'}) {
-                unless ($html eq ($_{'html'} ||= $html)) {
-                    eval { require Text::Diff } || do {
-                        die(sprintf("compare mismatch:\n\n$html\n\n%s",$_{'html'}));
-                    };
-                    my $diff=Text::Diff::diff(
-                        \Data::Dumper->Dump([\$html], ['$ACTUAL']),
-                        \Data::Dumper->Dump([\$_{'html'}], ['$EXPECT']),
-                        { STYLE => 'Unified' }
-                    );
-                    die("compare mismatch: $diff");
-                }
-            }
-
-        }
-        #undef %WebDyne::Package;
-        WebDyne->init();
         }
         
+        
+        #  Run again ?
+        #
         last LOOP unless $opt{'loop'};
+
     }
 
 
@@ -692,7 +703,6 @@ sub request_mod_perl_postamble {
     #  Get all WEBDYNE_CONF env vars
     #
     my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
-    #die Dumper(\@PerlSetEnv);
     push (@PerlSetEnv, "PerlSetEnv WEBDYNE_ERROR_TEXT 1") unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
     return <<"END"

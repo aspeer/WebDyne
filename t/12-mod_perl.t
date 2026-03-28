@@ -102,11 +102,21 @@ sub main {
                 return err("unable to find file: $test_fn");
             diag("processing: $test_fn");
             
+            #next if $test_cn=~/substitution\.psp$/;
+            next if $test_cn=~/api_bare\.psp$/;
+            next if $test_cn=~/api_perl_inline\.psp$/;
+            next if $test_cn=~/\/\d+-.*\.psp$/;
+
 
             #  Iterate twice to make sure no change over multiple iterations
             #
             foreach my $count (1..2) {
-            
+                
+                
+                #  Test nunber
+                #
+                #my $test_no=Test::More->builder->current_test;
+                #diag("test: $test_no");
             
                 
                 #  Now HTML
