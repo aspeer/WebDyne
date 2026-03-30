@@ -44,7 +44,7 @@ use WebDyne::Request::Common qw(handler_methods_all handler_methods_check);
 #  Inheritance
 #
 use WebDyne::Request::Fake;
-#@ISA=qw(WebDyne::Request::Fake);
+@ISA=qw(WebDyne::Request::Fake);
 
 
 #  Version information
@@ -194,10 +194,10 @@ sub init {
     my %method_check;
     foreach my $handler (qw(req res)) {
         *{$handler}=sub { return shift()->{$handler} };
-        while (my ($method, $dispatch)=each %{$method{$handler}}) {
-            debug("method: $method");
+        foreach my $method (sort keys %{$method{$handler}}) {
+            my $dispatch=$method{$handler}->{$method};
+            debug("method: $method, dispatch: $dispatch");
             $method_check{$method}++;
-            #if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
             if (ref($dispatch) eq 'CODE') {
 
                 if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
@@ -217,12 +217,6 @@ sub init {
                 debug("skip $method, will inherit from Fake");
                 *{$method}=\&{"WebDyne::Request::Fake::${method}"};
             }
-            #elsif (ref($dispatch) eq 'CODE') {
-            #    #  Turn into method
-            #    #
-            #    debug("setting method: $method to code ref: $dispatch");
-            #    *{$method}=$dispatch;
-            #}
             else {
                 #  Plack method
                 #

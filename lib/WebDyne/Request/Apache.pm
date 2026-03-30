@@ -190,6 +190,7 @@ sub init {
             user_agent          => undef,
             user                => 'user',
             write               => undef,
+            DESTROY             => \&DESTROY
         },
         res => {(
            #status headers body header content_type content_length content_encoding redirect location cookies finalize to_app

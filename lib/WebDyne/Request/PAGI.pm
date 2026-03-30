@@ -46,7 +46,7 @@ use WebDyne::Request::Common qw(handler_methods_all handler_methods_check);
 #  Inheritance
 #
 use WebDyne::Request::Fake;
-@ISA=qw(WebDyne::Request::Fake);
+#@ISA=qw(WebDyne::Request::Fake);
 
 
 #  Version information
@@ -183,6 +183,7 @@ sub init {
             user_agent          => undef,
             user                => undef,
             write               => undef,
+            DESTROY             => undef
         },
         res => {(
            #status headers body header content_type content_length content_encoding redirect location cookies finalize to_app
@@ -192,16 +193,16 @@ sub init {
             
     );
 
-    my %method_check;
     my %handler_class=(
         req => 'PAGI::Request',
         res => undef,
     );
+    my %method_check;
     foreach my $handler (qw(req res sse ws)) {
         *{$handler}=sub { return shift()->{$handler} };
-        #while (my ($method, $dispatch)=each %{$method{$handler}}) {
         foreach my $method (sort keys %{$method{$handler}}) {
             my $dispatch=$method{$handler}->{$method};
+            debug("method: $method, dispatch: $dispatch");
             $method_check{$method}++;
             if (ref($dispatch) eq 'CODE') {
 
@@ -220,6 +221,7 @@ sub init {
                 #  Do nothing, will fall through to Fake
                 #
                 debug("skip $method, will inherit from Fake");
+                *{$method}=\&{"WebDyne::Request::Fake::${method}"};
             }
             else {
                 #  PAGI method
@@ -242,6 +244,16 @@ sub init {
     
 }
 
+our $AUTOLOAD;
+
+#sub DESTROY {
+#}
+
+sub AUTOLOAD {
+
+    CORE::print STDERR "AUTOLOAD: $AUTOLOAD\n";
+    
+}
 
 sub new {
 
@@ -428,7 +440,8 @@ sub headers_in {
     
     #  Now run
     #
-    return $r->SUPER::headers_in(@_);
+    #return $r->SUPER::headers_in(@_);
+    return $r->WebDyne::Request::Fake::headers_in(@_);
     
     #if (@_ == 1) {
     #    return $r->{'req'}->header(@_);
@@ -477,11 +490,16 @@ sub base_url {
 }
 
 
-sub uri {
+sub uri0 {
 
     shift()->SUPER::uri(@_);
     
 }
+
+
+1;
+
+__END__
 
 
 sub uri0 {
@@ -497,12 +515,6 @@ sub uri0 {
         URI->new($uri)->canonical();
     };
 }
-
-
-
-1;
-
-__END__
 
 
 sub _uri_base {
