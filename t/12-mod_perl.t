@@ -13,13 +13,12 @@ use Test::More;
 #
 BEGIN {
     my @missing;
-    for my $m (qw(Apache::Test Apache::TestRunPerl Apache::TestRequest mod_perl2)) {
+    for my $m (qw(Apache::Test Apache::TestRunPerl Apache::TestRequest mod_perl2 Apache2::RequestRec)) {
         eval "require $m; 1" or push @missing, $m;
     }
     if (@missing) {
         plan skip_all => "Skipping mod_perl tests: missing " . join(", ", @missing);
     }
-    plan skip_all => "AUTHOR_TEST not set, omitting mod_perl test" unless $ENV{'AUTHOR_TEST'};
 }
 
 
@@ -53,11 +52,21 @@ $ENV{'WEBDYNE_TEST_FILE_PREFIX'} ||= '02';
 
 #  Startup the web server and run tests
 #
-my $runner=&startup();
+push @INC, dirname(__FILE__);
+require 't.pm';
+diag('');
+my $runner=&t::startup();
 ok(${&main(\@ARGV) || die err ()} || 0);    # || 0 stops warnings
-#print STDERR GET_BODY('version.psp');
+diag('');
+&t::shutdown($runner);
+
+
+#  Testing finished
+#
 done_testing();
-$runner->{'server'}->stop();
+
+
+#======================================================================================================================
 
 
 #  Main comparison routine
@@ -84,7 +93,7 @@ sub main {
 
     #  Iterate over files
     #
-    diag('');
+    note('');
     
     
     #  Repeat as required
@@ -100,7 +109,7 @@ sub main {
                 return err("unable to determine full path of $test_fn");
             (-f $test_cn) ||
                 return err("unable to find file: $test_fn");
-            diag("processing: $test_fn");
+            note("processing: $test_fn");
             
             #next if $test_cn=~/substitution\.psp$/;
             next if $test_cn=~/api_bare\.psp$/;
@@ -185,6 +194,8 @@ sub main {
     
 }
 
+__END__
+
 
 sub startup {
 
@@ -268,46 +279,3 @@ END
 }
 
 
-sub startup0 {
-
-
-    #  Start Apache server. Mask warnings about duplicate options
-    #
-    local $SIG{__WARN__}=sub { 
-        return if $_[0] =~ /Duplicate specification/;
-        CORE::warn @_;
-    };
-
-
-    #  Runner config.
-    my $runner = Apache::TestRunPerl->new();
-    diag('');
-
-
-    # Choose a random port the "Apache::Test" way: -port=select
-    # And tell it we intend to start httpd (so it generates config)
-    #
-    my @argv = ('-port=select', '-start-httpd');
-
-    # Minimal subset of what Apache::TestRun->run(@argv) does before start()
-    #
-    $runner->getopts(\@argv);              # parse options into $runner->{opts}
-    $runner->pre_configure();              # setup defaults, env
-    $runner->{test_config} = $runner->new_test_config();
-    $runner->{test_config}->{server}->{run} = $runner;
-    $runner->{server} = $runner->{test_config}->server;
-    $runner->{test_config}->httpd_config(); # locate httpd, probe modules, etc.
-    $runner->configure();                  # write t/conf/httpd.conf, pick port
-    
-    
-    #  Now start 
-    #
-    ok($runner->start(), 'httpd start');                      # start apache
-    
-    
-    #  Done
-    #
-    return $runner;
-
-
-}

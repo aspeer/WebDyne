@@ -490,16 +490,16 @@ sub base_url {
 }
 
 
+
+1;
+
+__END__
+
 sub uri0 {
 
     shift()->SUPER::uri(@_);
     
 }
-
-
-1;
-
-__END__
 
 
 sub uri0 {

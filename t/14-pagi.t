@@ -13,13 +13,13 @@ use Test::More;
 #
 BEGIN {
     my @missing;
-    for my $m (qw(Plack::Test)) {
+    for my $m (qw(PAGI::Test::Client)) {
         eval "require $m; 1" or push @missing, $m;
     }
     if (@missing) {
-        plan skip_all => "Skipping PSGI tests: missing " . join(", ", @missing);
+        plan skip_all => "Skipping PAGI tests: missing " . join(", ", @missing);
     }
-    #plan skip_all => "AUTHOR_TEST not set, omitting PSGI test" unless $ENV{'AUTHOR_TEST'};
+    #plan skip_all => "AUTHOR_TEST not set, omitting PAGI test" unless $ENV{'AUTHOR_TEST'};
     
 }
 
@@ -39,14 +39,14 @@ use File::Find qw(find);
 use File::Basename;
 use Data::Dumper;
 use IO::File;
-use Cwd qw(abs_path);
+use Cwd qw(abs_path fastcwd);
 use Plack::Test;
 use HTTP::Request::Common qw(GET);
 
 
 #  Load WebDyne modules we need
 #
-use WebDyne::PSGI;
+use WebDyne::PAGI;
 use WebDyne::Util;
 
 
@@ -84,7 +84,6 @@ sub main {
     }
     my $wanted_cr=sub { push (@test_fn, $File::Find::name) if /\.psp$/ };
     find($wanted_cr, $RealBin) unless @test_fn;
-    #note(sprintf('files: %s'), Dumper(\@test_fn));
 
 
     #  Data dir
@@ -94,16 +93,10 @@ sub main {
     
     #  Get app code
     #
-    use Cwd qw(fastcwd);
     note(fastcwd());
-    ok(my $app_cr=WebDyne::PSGI->new(root=>File::Spec->catdir(fastcwd(), 't'))->to_app());
-    ok(my $test_or=Plack::Test->create($app_cr));
+    ok(my $app_cr=WebDyne::PAGI->new(root=>File::Spec->catdir(fastcwd(), 't'))->to_app());
+    ok(my $test_or=PAGI::Test::Client->new(app => $app_cr));
 
-
-    #  Iterate over files
-    #
-    note('');
-    
     
     #  Repeat as required
     #
@@ -120,18 +113,18 @@ sub main {
                 return err("unable to find file: $test_fn");
             note("processing: $test_fn");
             
-            
-            #  Skip tests we don't want to run
+
+            #  Skip api tests and a few others
             #
+            next if $test_fn=~/htmx_compact/;
             next if $test_cn=~/api_bare\.psp$/;
             next if $test_cn=~/api_perl_inline\.psp$/;
             next if $test_cn=~/\/\d+-.*\.psp$/;
-
+            
 
             #  Iterate twice to make sure no change over multiple iterations
             #
             foreach my $count (1..2) {
-            
             
                 
                 #  Now HTML
@@ -140,19 +133,19 @@ sub main {
                 $data_fn=join('-', grep {$_} $ENV{'WEBDYNE_TEST_FILE_PREFIX'},  $data_fn);
                 my $data_cn=File::Spec->catfile($data_dn, $data_freeze_dn, $data_fn);
                 $data_cn=~s/\.psp$/\.html/;
-                #note($test_cn);
 
                 
                 #  Get results
                 #
-                ok(my $res=$test_or->request(GET (basename($test_cn) || $test_cn)));
-                my $html_live=$res->decoded_content();
+                ok(my $res=$test_or->get(basename($test_cn) || $test_cn));
+                my $html_live=$res->content();
+                #diag("live: $html_live");
                 
 
                 #  Check match
                 #
                 (-f $data_cn) || do {
-                    note("skipping $test_fn, no data file - run maketest.pl");
+                    diag("skipping $test_fn, no data file - run maketest.pl");
                     next;
                 };
                 my $html_thaw_fh=IO::File->new($data_cn, O_RDONLY) ||
@@ -160,8 +153,9 @@ sub main {
                 local $/;
                 my $html_thaw=<$html_thaw_fh>;
                 $html_thaw_fh->close();
-                #note("thaw: $html_thaw");
+                #diag("thaw: $html_thaw");
                 
+
                 #  Yes ?
                 #
                 if ($html_live eq $html_thaw) {
@@ -169,16 +163,15 @@ sub main {
                     #  OK
                     #
                     pass("$test_fn pass on stage: HTML render");
-                    #note("$test_fn .. [OK]");
+                    #diag("$test_fn .. [OK]");
                 }
                 else {
                 
                     #  Fail
                     #
-                    #die;
-                    fail(note("$test_fn fail on stage: HTML render"));
+                    fail(diag("$test_fn fail on stage: HTML render"));
                     eval { require Text::Diff } || do {
-                        note('unable to load Text::Diff module to show comparison');
+                        diag('unable to load Text::Diff module to show comparison');
                         next;
                     };
                     my $diff=Text::Diff::diff(

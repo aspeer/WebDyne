@@ -209,6 +209,7 @@ sub init {
             user_agent          => sub { shift()->headers_in('user-agent') },
             user                => sub { shift()->env->{'REMOTE_USER'} },
             write               => undef,
+            DESTROY             => undef
         },
         res => {(
            #status headers body header content_typee content_length content_encoding redirect location cookies finalize to_app

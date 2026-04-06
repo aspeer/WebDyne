@@ -84,7 +84,7 @@ sub main {
 
     #  Iterate over files
     #
-    diag('');
+    note('');
     
     
     #  Repeat as required
@@ -105,7 +105,7 @@ sub main {
                 return err("unable to determine full path of $test_fn");
             (-f $test_cn) ||
                 return err("unable to find file: $test_fn");
-            diag("processing: $test_fn");
+            note("processing: $test_fn");
             
 
             #  Create a new compile instance
