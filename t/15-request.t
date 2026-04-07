@@ -67,11 +67,11 @@ if (eval { require Apache2::RequestRec; 1 }) {
     note('WebDyne::Apache test starting');
     push @INC, dirname(__FILE__);
     require 't.pm';
-    use Apache::TestRequest qw(GET_BODY);
+    require Apache::TestRequest;
     diag('');
     my $runner=&t::startup;
     my $test_no=Test::Builder->new->current_test();
-    my $html_live=GET_BODY(basename('15-request.psp'), 'X-Test-No'=>$test_no, 'X-Test-Header-Req-Get'=>'OK' );
+    my $html_live=&Apache::TestRequest::GET_BODY(basename('15-request.psp'), 'X-Test-No'=>$test_no, 'X-Test-Header-Req-Get'=>'OK' );
     if ($html_live=~/Test No: (\d+)/) {
         Test::Builder->new->current_test($1);
     }
