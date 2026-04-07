@@ -1078,7 +1078,6 @@ t/07-dir_config.t
 t/webdyne_dir-config.conf.pl             
 favicon.ico                              
 lib/WebDyne/CGI.pm                       
-lib/WebDyne/CGI/PSGI.pm                  
 lib/WebDyne/CGI/Simple.pm                
 t.error/error_custom_401.psp             
 t.other/cgi_param_expand.psp             
@@ -1405,7 +1404,6 @@ t/start_html_heading.psp
 RELEASE.md                               
 bin/webdyne.apache                       
 bin/webdyne.pagi                         
-lib/WebDyne/CGI/PAGI.pm                  
 lib/WebDyne/PAGI.pm                      
 lib/WebDyne/PAGI/Constant.pm             
 lib/WebDyne/PSGI.pm                      
