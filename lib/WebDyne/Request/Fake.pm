@@ -1,4 +1,5 @@
 
+#
 #  This file is part of WebDyne.
 #
 #  This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
@@ -44,7 +45,7 @@ use URI;
 
 #  Version information
 #
-$VERSION='2.075';
+$VERSION='2.076_592';
 
 
 #  Debug load
@@ -100,150 +101,154 @@ sub init {
     #  Setup pass through methods
     #
     my %method=(
-        req => {
-            accept_encoding     => sub { shift()->headers_in('accept-encoding') },
-            accept_language     => sub { shift()->headers_in('accept-language') },
-            accept              => sub { shift()->headers_in('accept') },
-            args                => sub { shift()->env->{'QUERY_STRING'} },
-            as_string           => undef,
-            authority           => sub { shift()->uri->authority },
-            authorization       => sub { shift()->headers_in('authorization') },
-            auth_type           => sub { shift()->{'env'}->{'AUTH_TYPE'} },
-            base                => 'base_url',
-            #base_url            => sub { URI->new($_[0]->host . $_[0]->script_name()) },
-            base_url            => sub { my $uri_or=shift()->uri->canonical->clone; $uri_or->path('/'), $uri_or->query(undef); $uri_or },
-            body_handle         => sub { shift->{'input'} },
-            body                => undef,
-            cache_control       => sub { shift()->headers_in('cache-control') },
-            charset             => sub { my $content_type=shift()->content_type || return; (my @split=split_header_words($content_type)) || return; my %param=@{$split[0]}; return lc($param{'charset'}) },
-            cleanup_register    => undef,
-            client_address      => sub { shift()->env->{'REMOTE_ADDR'} },
-            content             => 'body',
-            content_encoding    => sub { shift()->headers_in('content-encoding') },
-            content_length      => undef,
-            content_type        => undef,
-            cookie              => 'cookies',
-            cookies             => undef,
-            custom_response     => undef,
-            cwd                 => undef,
-            dir_config          => undef,
-            document_root       => undef,
-            env                 => sub { \%ENV },
-            etag                => sub { shift()->headers_out('etag', @_) },
-            filename            => undef,
-            finalize            => undef,
-            finfo               => undef,
-            form_parameters     => undef,
-            forwarded_for       => sub { shift()->headers_in('x-forwarded-for') },
-            fragment            => sub { shift()->uri->fragment },
-            handler             => undef,
-            header              => 'headers_in',
-            headers             => 'headers_in',
-            header_only         => undef,
-            headers_in          => undef,
-            headers_out         => undef,
-            hostname            => sub { shift()->env->{'SERVER_NAME'} }, # Prob should be local host name
-            #host                => sub { shift()->uri->host if $_[0]->uri->authority },
-            host                => sub { shift()->headers_in('host') },
-            https               => sub { shift()->env->{'HTTPS'} },
-            http_version        => 'protocol',
-            id                  => undef,
-            if_modified_since   => sub { shift()->headers_in('if-modified-since') },
-            if_none_match       => sub { shift()->headers_in('if-none-match') },
-            input               => sub { shift()->{'input'} },
-            is_ajax             => sub { (shift()->headers_in('x-requested-with') eq 'XMLHttpRequest') },
-            is_main             => undef,
-            location            => undef,
-            log_error           => undef,
-            lookup_file         => undef,
-            lookup_uri          => undef,
-            main                => undef,
-            media_type             => sub { my $content_type=shift()->content_type || return; (my @split=split_header_words($content_type)) || return; return lc($split[0][0]) },
-            method              => sub { shift->env->{'REQUEST_METHOD'} || 'GET' },
-            mtime               => undef,
-            multipart_parameters=> undef,
-            next                => undef,
-            notes               => undef,
-            origin              => sub { shift()->headers_in('origin') },
-            output_filters      => undef,
-            path_info           => sub { shift->env->{'PATH_INFO'} },
-            path_parameters     => undef,
-            path                => 'path_info',
-            pool                => undef,
-            preferred_charset   => undef,
-            preferred_encoding  => undef,
-            preferred_language  => undef,
-            preferred_media_type=> undef,
-            prev                => undef,
-            print               => undef,
-            protocol            => sub { shift()->env->{'SERVER_PROTOCOL'} || 'HTTP/1.1' },
-            query_parameters    => undef,
-            query_string        => 'args',
-            redirect            => undef,
-            referer             => sub { shift()->headers_in('referer') },
-            register_cleanup    => 'cleanup_register',
-            remote_address      => 'client_address',
-            remote_host         => 'client_address',
-            remote_port         => sub { shift()->env->{'REMOTE_PORT'} },
-            remote_user         => 'user',
-            request_time        => undef,
-            route               => undef,
-            run                 => undef,
-            scheme              => undef,
-            script_name         => sub { shift()->env->{'SCRIPT_NAME'} },
-            secure              => sub { (shift()->https eq 'on') },
-            sendfile            => undef,
-            send_http_header    => undef,
-            server_name         => sub { shift()->env->{'SERVER_NAME'} },
-            server_port         => sub { shift()->env->{'SERVER_PORT'} },
-            session_id          => undef,
-            session             => undef,
-            set_handlers        => undef,
-            status_line         => undef,
-            status              => undef,
-            unparsed_uri        => sub { shift()->filename() },
-            uploads             => undef,
-            #uri                 => sub { $_[0]->{'uri'} ||= URI->new($_[0]->filename()) },
-            uri                 => undef,
-            url                 => 'uri',
-            user_agent          => sub { shift()->headers_in('user-agent') },
-            user                => sub { shift()->env->{'REMOTE_USER'} },
-            write               => undef,
-            DESTROY             => undef
-        },
-        res => {(
-           #status headers body header content_typee content_length content_encoding redirect location cookies finalize to_app
-        )},
+        accept_encoding     => sub { shift()->headers_in('accept-encoding') },
+        accept_language     => sub { shift()->headers_in('accept-language') },
+        accept              => sub { shift()->headers_in('accept') },
+        args                => sub { shift()->env->{'QUERY_STRING'} },
+        as_string           => undef,
+        authority           => sub { shift()->uri->authority },
+        authorization       => sub { shift()->headers_in('authorization') },
+        auth_type           => sub { shift()->{'env'}->{'AUTH_TYPE'} },
+        base                => 'base_url',
+        #base_url            => sub { URI->new($_[0]->host . $_[0]->script_name()) },
+        base_url            => sub { my $uri_or=shift()->uri->canonical->clone; $uri_or->path('/'), $uri_or->query(undef); $uri_or },
+        body_handle         => sub { shift->{'input'} },
+        body                => undef,
+        cache_control       => sub { shift()->headers_in('cache-control') },
+        charset             => sub { my $content_type=shift()->content_type || return; (my @split=split_header_words($content_type)) || return; my %param=@{$split[0]}; return lc($param{'charset'}) },
+        cleanup_register    => undef,
+        client_address      => sub { shift()->env->{'REMOTE_ADDR'} },
+        content             => 'body',
+        content_encoding    => sub { shift()->headers_in('content-encoding') },
+        content_length      => undef,
+        content_type        => undef,
+        cookie              => 'cookies',
+        cookies             => undef,
+        custom_response     => undef,
+        cwd                 => undef,
+        dir_config          => undef,
+        document_root       => undef,
+        env                 => sub { \%ENV },
+        etag                => sub { shift()->headers_out('etag', @_) },
+        filename            => undef,
+        finalize            => undef,
+        finfo               => undef,
+        form_parameters     => undef,
+        forwarded_for       => sub { shift()->headers_in('x-forwarded-for') },
+        fragment            => sub { shift()->uri->fragment },
+        handler             => undef,
+        header              => 'headers_in',
+        headers             => 'headers_in',
+        header_only         => undef,
+        headers_in          => undef,
+        headers_out         => undef,
+        hostname            => sub { shift()->env->{'SERVER_NAME'} }, # Prob should be local host name
+        #host                => sub { shift()->uri->host if $_[0]->uri->authority },
+        host                => sub { shift()->headers_in('host') },
+        https               => sub { shift()->env->{'HTTPS'} },
+        http_version        => 'protocol',
+        id                  => undef,
+        if_modified_since   => sub { shift()->headers_in('if-modified-since') },
+        if_none_match       => sub { shift()->headers_in('if-none-match') },
+        input               => sub { shift()->{'input'} },
+        is_ajax             => sub { (shift()->headers_in('x-requested-with') eq 'XMLHttpRequest') },
+        is_main             => undef,
+        location            => undef,
+        log_error           => undef,
+        lookup_file         => undef,
+        lookup_uri          => undef,
+        main                => undef,
+        media_type             => sub { my $content_type=shift()->content_type || return; (my @split=split_header_words($content_type)) || return; return lc($split[0][0]) },
+        method              => sub { shift->env->{'REQUEST_METHOD'} || 'GET' },
+        mtime               => undef,
+        multipart_parameters=> undef,
+        next                => undef,
+        notes               => undef,
+        origin              => sub { shift()->headers_in('origin') },
+        output_filters      => undef,
+        path_info           => sub { shift->env->{'PATH_INFO'} },
+        path_parameters     => undef,
+        path                => 'path_info',
+        pool                => undef,
+        preferred_charset   => undef,
+        preferred_encoding  => undef,
+        preferred_language  => undef,
+        preferred_media_type=> undef,
+        prev                => undef,
+        print               => undef,
+        protocol            => sub { shift()->env->{'SERVER_PROTOCOL'} || 'HTTP/1.1' },
+        query_parameters    => undef,
+        query_string        => 'args',
+        redirect            => undef,
+        referer             => sub { shift()->headers_in('referer') },
+        register_cleanup    => 'cleanup_register',
+        remote_address      => 'client_address',
+        remote_host         => 'client_address',
+        remote_port         => sub { shift()->env->{'REMOTE_PORT'} },
+        remote_user         => 'user',
+        request_time        => undef,
+        route               => undef,
+        run                 => undef,
+        scheme              => undef,
+        script_name         => sub { shift()->env->{'SCRIPT_NAME'} },
+        secure              => sub { (shift()->https eq 'on') },
+        sendfile            => undef,
+        send_http_header    => undef,
+        server_name         => sub { shift()->env->{'SERVER_NAME'} },
+        server_port         => sub { shift()->env->{'SERVER_PORT'} },
+        session_id          => undef,
+        session             => undef,
+        set_handlers        => undef,
+        status_line         => undef,
+        status              => undef,
+        unparsed_uri        => sub { shift()->filename() },
+        uploads             => undef,
+        #uri                 => sub { $_[0]->{'uri'} ||= URI->new($_[0]->filename()) },
+        uri                 => undef,
+        url                 => 'uri',
+        user_agent          => sub { shift()->headers_in('user-agent') },
+        user                => sub { shift()->env->{'REMOTE_USER'} },
+        write               => undef,
+        DESTROY             => undef
             
     );
-    my %method_check;
+
+
+    #   Not really valid here but setup anyway
+    #
     foreach my $handler (qw(req res)) {
-        while (my ($method, $dispatch)=each %{$method{$handler}}) {
-            $method_check{$method}++;
-            if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
-                #  Do nothing, defined here
-                #
-                warn("duplicate method for $method") if $dispatch;
-                debug("skip $method, defined in this package");
-                
-            }
-            elsif (!defined($dispatch)) {
-                #  Do nothing, will fall through to Fake
-                #
-                debug("skip $method, will inherit from Fake");
-            }
-            elsif (ref($dispatch) eq 'CODE') {
-                #  Turn into method
-                #
-                debug("setting method: $method to code ref: $dispatch");
-                *{$method}=$dispatch;
-            }
-            else {
-                #  Existing method
-                #
-                debug("setting method: $method to $handler: $dispatch");
-                *{$method}=sub { shift()->$dispatch(@_) };
-            }
+        *{$handler}=sub { return shift() };
+    }
+
+
+    #  Now setup abstraction methods. Slightly different than PSGI, PAGI, Apache so just do it here
+    #
+    my %method_check;
+    while (my ($method, $dispatch)=each %method) {
+        $method_check{$method}++;
+        if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
+            #  Do nothing, defined here
+            #
+            warn("duplicate method for $method") if $dispatch;
+            debug("skip $method, defined in this package");
+            
+        }
+        elsif (!defined($dispatch)) {
+            #  Do nothing, will fall through
+            #
+            debug("skip $method, will inherit from Fake");
+        }
+        elsif (ref($dispatch) eq 'CODE') {
+            #  Turn into method
+            #
+            debug("setting method: $method to code ref: $dispatch");
+            *{$method}=$dispatch;
+        }
+        else {
+            #  Existing method
+            #
+            debug("setting method: $method to dispatch: $dispatch");
+            *{$method}=sub { shift()->$dispatch(@_) };
         }
     }
     
@@ -1048,204 +1053,3 @@ sub DESTROY { #no subsort
 
 }
 
-__END__
-
-sub subprocess_env {
-
-    return &env(@_)
-    
-}
-
-
-
-
-sub content_encoding0 {
-
-}
-
-
-
-
-
-sub method0 {
-
-    return $ENV{'REQUEST_METHOD'} || 'GET';
-    
-}
-
-
-sub protocol0 {
-
-    return $ENV{'SERVER_PROTOCOL'} || 'HTTP/1.0';
-    
-}
-
-
-sub dir_config0 {
-
-    #  Old very simplistic dir_config
-    #
-    my ($r, $key)=@_;
-    return $ENV{$key};
-
-}
-
-sub headers0 {
-
-    #  Set/get header. r=request, d=direction(in/out), k=key, v=value
-    #
-    my ($r, $d, $h, $v, %param)=@_;
-    
-    if (@_ >= 4) {
-        #return $r->{$d}{$h}=$v;
-        $r->{$d}{$h}=$v;
-        while (my($key,$val)=each %param) {
-            $r->{$d}{$key}=$val;
-        }
-        #die Dumper($r->{$d});
-        return $v;
-    }
-    elsif (@_ == 3) {
-        return $r->{$d}{$h}
-    }
-    elsif (@_ == 2) {
-        return ($r->{$d} ||= {});
-    }
-    else {
-        return err("incorrect usage of $r object, direction:%s, header: %s, value: %s", $d, $h, $v);
-    }
-
-}
-
-
-sub headers_out0 {
-
-    my $r=shift();
-    return $r->headers('headers_out', @_);
-    
-}
-
-
-sub headers_in0 {
-
-    my $r=shift();
-    return $r->headers('headers_in', @_);
-    
-}
-
-sub lookup_file0 {
-
-    #  Old, simplistic version
-    #
-    my ($r, $fn)=@_;
-    my $r_child=ref($r)->new(filename => $fn, main=>$r) || return err();
-
-}
-
-sub location0 {
-
-    #  Get/set location
-    my ($self, $location)=@_;
-    if ($location) {
-        return $self->{'location'}=$location;
-    }
-    else {
-        return $self->{'location'} || $ENV{'WebDyneLocation'}
-    }
-
-}
-
-sub custom_response0 {
-
-    my ($r, $status, @param)=@_;
-    debug("r: $r, status: $status, %s", \@param);
-    $r->status($status);
-    $r->send_http_header();
-    $r->print(@param);
-
-}
-
-
-sub args0 {
-
-    return $ENV{'QUERY_STRING'};
-    
-}
-
-sub scheme0 {
-
-    #  Always http for Fake requests, other handlers return appropriate
-    #
-    return 'http';
-    
-}
-
-
-sub init0 { # no subsort
-
-    #  Load quick and dirty mod_perl equivalent handler accessors that get info from
-    #  environment vars if they exist
-    #
-    my %handler=(
-        #method          => ['REQUEST_METHOD', 'GET'],
-        #protocol        => ['SERVER_PROTOCOL', 'HTTP/1.0'],
-        args            => ['QUERY_STRING'],
-        path_info       => ['PATH_INFO'],
-        content_length  => ['CONTENT_LENGTH'],
-        hostname        => ['SERVER_NAME'], # Should probably be actual server host name - Fix
-        get_server_name => ['SERVER_NAME'],
-        get_server_port => ['SERVER_PORT'],
-        get_remote_host => ['REMOTE_ADDR'],
-        user            => ['REMOTE_USER'],
-        ap_auth_type    => ['AUTH_TYPE'],
-        unparsed_uri    => ['REQUEST_URI'],
-    );
-    while (my ($k, $v)=each %handler) {
-        *{$k}=sub { return $ENV{$v->[0]} || $v->[1] } unless defined &{$k}
-    }
-
-}
-
-sub parsed_uri0 {
-
-    my $r=shift();
-    require URI;
-    URI->new($r->uri());
-
-}
-
-sub uri0 {
-
-
-    #  Probably should subtract root_dn/DOCUMENT_ROOT
-    shift()->{'filename'}
-
-}
-
-
-sub env0 {
-
-    return \%ENV;
-
-}
-
-sub set_etag0 {
-
-}
-
-sub script_name0 {
-
-}
-
-sub noheader0 {
-
-    my $r=shift();
-    @_ ? $r->{'header'}=shift() : $r->{'header'};
-
-}
-
-sub cleanup_register0 {
-
-    &register_cleanup(@_);
-
-}

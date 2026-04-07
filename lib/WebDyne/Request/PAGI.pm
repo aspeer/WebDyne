@@ -40,18 +40,13 @@ use File::Temp qw(tempfile);
 use WebDyne::Util;
 use WebDyne::Constant;
 use WebDyne::PAGI::Constant;
-use WebDyne::Request::Common qw(handler_methods_all handler_methods_check);
-
-
-#  Inheritance
-#
+use WebDyne::Request::Common qw(handler_methods_init);
 use WebDyne::Request::Fake;
-#@ISA=qw(WebDyne::Request::Fake);
 
 
 #  Version information
 #
-$VERSION='2.075';
+$VERSION='2.076_592';
 
 
 #  Debug load
@@ -77,183 +72,125 @@ sub init {
     #  Setup pass through methods
     #
     my %method=(
-        req => {
-            accept              => undef,
-            accept_encoding     => undef,
-            accept_language     => undef,
-            args                => 'query_string',
-            as_string           => undef,
-            authority           => undef,
-            authorization       => undef,
-            auth_type           => undef,
-            base                => \&base,
-            base_url            => \&base_url,
-            body_handle         => \&body_handle,
-            body                => \&body,
-            cache_control       => undef,
-            charset             => undef,
-            cleanup_register    => undef,
-            client_address      => sub { shift()->{'req'}->client()->[0] },
-            content             => \&body,
-            content_encoding    => undef,
-            content_length      => undef,
-            content_type        => undef,,
-            cookies             => 'cookies',
-            cookie              => 'cookies',
-            custom_response     => undef,
-            cwd                 => undef,
-            dir_config          => undef,
-            document_root       => undef,
-            env                 => \&env,
-            etag                => undef,
-            filename            => undef,
-            finalize            => undef,
-            finfo               => undef,
-            form_parameters     => 'form_params',
-            forwarded_for       => undef,
-            fragment            => undef,
-            handler             => undef,
-            header              => \&headers_in,
-            headers             => \&headers_in,
-            header_only         => \&header_only,
-            headers_in          => \&headers_in,
-            headers_out         => \&headers_out,
-            hostname            => 'host',
-            host                => 'host',
-            https               => \&https,
-            http_version        => 'http_version',
-            id                  => \&id,
-            if_modified_since   => undef,
-            if_none_match       => undef,
-            input               => \&body_handle,
-            is_ajax             => undef,
-            is_main             => undef,
-            location            => undef,
-            log_error           => undef,
-            lookup_file         => undef,
-            lookup_uri          => undef,
-            main                => undef,
-            media_type          => undef,
-            method              => 'method',
-            mtime               => undef,
-            multipart_parameters=> 'form_params',
-            next                => undef,
-            notes               => undef,
-            origin              => undef,
-            output_filters      => undef,
-            path_info           => 'path',
-            path_parameters     => undef,
-            path                => 'path',
-            pool                => undef,
-            preferred_charset   => undef,
-            preferred_encoding  => undef,
-            preferred_language  => undef,
-            preferred_media_type=> undef,
-            prev                => undef,
-            print               => undef,
-            protocol            => sub { 'HTTP/'. shift()->{'req'}->http_version() },
-            query_parameters    => 'query_params',
-            query_string        => 'query_string',
-            redirect            => undef,
-            referer             => undef,
-            register_cleanup    => undef,
-            remote_address      => 'client',
-            remote_host         => 'client',
-            remote_port         => undef,
-            remote_user         => undef,
-            request_time        => \&request_time,
-            route               => undef,
-            run                 => undef,
-            scheme              => 'scheme',
-            script_name         => undef,
-            secure              => \&secure,
-            sendfile            => undef,
-            send_http_header    => undef,
-            server_name         => \&server_name,
-            server_port         => \&server_port,
-            session_id          => undef,
-            session             => undef,
-            set_handlers        => undef,
-            status_line         => undef,
-            status              => undef,
-            unparsed_uri        => \&uri,
-            uploads             => 'uploads',
-            uri                 => undef,
-            url                 => undef,
-            user_agent          => undef,
-            user                => undef,
-            write               => undef,
-            DESTROY             => undef
-        },
-        res => {(
-           #status headers body header content_type content_length content_encoding redirect location cookies finalize to_app
-        )},
-        sse => {},
-        ws  => {}
-            
+        accept              => undef,
+        accept_encoding     => undef,
+        accept_language     => undef,
+        args                => 'query_string',
+        as_string           => undef,
+        authority           => undef,
+        authorization       => undef,
+        auth_type           => undef,
+        base                => \&base,
+        base_url            => \&base_url,
+        body_handle         => \&body_handle,
+        body                => \&body,
+        cache_control       => undef,
+        charset             => undef,
+        cleanup_register    => undef,
+        client_address      => sub { shift()->{'req'}->client()->[0] },
+        content             => \&body,
+        content_encoding    => undef,
+        content_length      => undef,
+        content_type        => undef,,
+        cookies             => 'cookies',
+        cookie              => 'cookies',
+        custom_response     => undef,
+        cwd                 => undef,
+        dir_config          => undef,
+        document_root       => undef,
+        env                 => \&env,
+        etag                => undef,
+        filename            => undef,
+        finalize            => undef,
+        finfo               => undef,
+        form_parameters     => 'form_params',
+        forwarded_for       => undef,
+        fragment            => undef,
+        handler             => undef,
+        header              => \&headers_in,
+        headers             => \&headers_in,
+        header_only         => \&header_only,
+        headers_in          => \&headers_in,
+        headers_out         => \&headers_out,
+        hostname            => 'host',
+        host                => 'host',
+        https               => \&https,
+        http_version        => 'http_version',
+        id                  => \&id,
+        if_modified_since   => undef,
+        if_none_match       => undef,
+        input               => \&body_handle,
+        is_ajax             => undef,
+        is_main             => undef,
+        location            => undef,
+        log_error           => undef,
+        lookup_file         => undef,
+        lookup_uri          => undef,
+        main                => undef,
+        media_type          => undef,
+        method              => 'method',
+        mtime               => undef,
+        multipart_parameters=> 'form_params',
+        next                => undef,
+        notes               => undef,
+        origin              => undef,
+        output_filters      => undef,
+        path_info           => 'path',
+        path_parameters     => undef,
+        path                => 'path',
+        pool                => undef,
+        preferred_charset   => undef,
+        preferred_encoding  => undef,
+        preferred_language  => undef,
+        preferred_media_type=> undef,
+        prev                => undef,
+        print               => undef,
+        protocol            => sub { 'HTTP/'. shift()->{'req'}->http_version() },
+        query_parameters    => 'query_params',
+        query_string        => 'query_string',
+        redirect            => undef,
+        referer             => undef,
+        register_cleanup    => undef,
+        remote_address      => 'client',
+        remote_host         => 'client',
+        remote_port         => undef,
+        remote_user         => undef,
+        request_time        => \&request_time,
+        route               => undef,
+        run                 => undef,
+        scheme              => 'scheme',
+        script_name         => undef,
+        secure              => \&secure,
+        sendfile            => undef,
+        send_http_header    => undef,
+        server_name         => \&server_name,
+        server_port         => \&server_port,
+        session_id          => undef,
+        session             => undef,
+        set_handlers        => undef,
+        status_line         => undef,
+        status              => undef,
+        unparsed_uri        => \&uri,
+        uploads             => 'uploads',
+        uri                 => undef,
+        url                 => undef,
+        user_agent          => undef,
+        user                => undef,
+        write               => undef,
+        DESTROY             => undef
     );
-
-    my %handler_class=(
-        req => 'PAGI::Request',
-        res => undef,
-    );
-    my %method_check;
+    
+    
+    #  Implement and return
+    #
     foreach my $handler (qw(req res sse ws)) {
         *{$handler}=sub { return shift()->{$handler} };
-        foreach my $method (sort keys %{$method{$handler}}) {
-            my $dispatch=$method{$handler}->{$method};
-            debug("method: $method, dispatch: $dispatch");
-            $method_check{$method}++;
-            if (ref($dispatch) eq 'CODE') {
-
-                if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
-                    #  Do nothing, defined here
-                    #
-                    debug("skip $method, defined in this package");
-                }
-                else {
-                    debug("setting method: $method to code ref: $dispatch");
-                    *{$method}=$dispatch;
-                }
-
-            }
-            elsif (!defined($dispatch)) {
-                #  Do nothing, will fall through to Fake
-                #
-                debug("skip $method, will inherit from Fake");
-                *{$method}=\&{"WebDyne::Request::Fake::${method}"};
-            }
-            else {
-                #  PAGI method
-                #
-                debug("setting method: $method to $handler: $dispatch");
-                if (!$handler_class{$handler} || $handler_class{$handler}->can($dispatch)) {
-                    *{$method}=sub { shift()->{$handler}->$dispatch(@_) };
-                }
-                else {
-                    die "unsupported request method: $dispatch";
-                }
-            }
-        }
     }
+    return handler_methods_init(__PACKAGE__, 'PAGI::Request', \%method);
 
-
-    #  Done, do runtime check and return, will warn if we have missed anything
-    #
-    return handler_methods_check(__PACKAGE__, \%method_check);
     
 }
 
-our $AUTOLOAD;
-
-#sub DESTROY {
-#}
-
-sub AUTOLOAD {
-
-    CORE::print STDERR "AUTOLOAD: $AUTOLOAD\n";
-    
-}
 
 sub new {
 
@@ -443,18 +380,6 @@ sub headers_in {
     #return $r->SUPER::headers_in(@_);
     return $r->WebDyne::Request::Fake::headers_in(@_);
     
-    #if (@_ == 1) {
-    #    return $r->{'req'}->header(@_);
-    #}
-    #elsif (@_==2) {
-    #    return $r->{'req'}->header(@_) || $_[1];
-    #}
-    #else {
-        
-    #use Data::Dumper;
-    #CORE::print STDERR Dumper($headers_or);
-    #exit 0;
-    #return HTTP::Headers::Fast->new($headers_or->flatten());
 }
 
 
@@ -490,90 +415,5 @@ sub base_url {
 }
 
 
-
 1;
 
-__END__
-
-sub uri0 {
-
-    shift()->SUPER::uri(@_);
-    
-}
-
-
-sub uri0 {
-    my $r=shift();
-    debug("r: $r"),
-    return $r->{'_uri'} ||= do {
-        my $base=$r->_uri_base();
-        my $path=$r->path_info() || '';
-        my $qs=$r->query_string();
-        $base=~s!/$!! if $path =~ m!^/!;
-        my $uri=$base . $path;
-        $uri.='?' . $qs if (defined($qs) && length($qs));
-        URI->new($uri)->canonical();
-    };
-}
-
-
-sub _uri_base {
-    my $r=shift();
-    my $scheme=$r->scheme() || 'http';
-    if (my $host=$r->host()) {
-        return sprintf('%s://%s', $scheme, $host);
-    }
-    if (my $server_ar=$r->{'scope'}{'server'}) {
-        return sprintf('%s://%s:%s', $scheme, @{$server_ar});
-    }
-    return sprintf('%s://localhost', $scheme);
-}
-
-sub _body0 {
-    my $r=shift();
-    return $r->{'body'} if exists $r->{'body'};
-    if (my $req=$r->{'req'}) {
-        if ($req->can('body')) {
-            return $r->{'body'}=$req->body();
-        }
-        if (my $stream=$req->can('body_stream') ? $req->body_stream() : undef) {
-            if ($stream->can('slurp')) {
-                return $r->{'body'}=$stream->slurp();
-            }
-            if ($stream->can('read')) {
-                my $buf='';
-                while ($stream->read(my $chunk, 8192)) {
-                    $buf.=$chunk;
-                }
-                return $r->{'body'}=$buf;
-            }
-        }
-    }
-    return undef;
-}
-
-
-
-
-sub _content_type0 {
-    my $r=shift();
-    return @_ ? $r->{'res'}->content_type(@_) : $r->{'req'}->content_type();
-}
-
-
-sub _content_length0 {
-    my $r=shift();
-    return @_ ? $r->{'res'}->content_length(@_) : $r->{'req'}->content_length();
-}
-
-
-sub status0 {
-    my $r=shift();
-    return @_ ? do { $r->{'res'}->status(@_); shift() } : $r->{'res'}->status();
-}
-
-
-sub redirect0 {
-    my $r=shift();
-    return $r->{'res'}->redirect(@_);
-}

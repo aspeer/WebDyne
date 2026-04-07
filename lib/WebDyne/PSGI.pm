@@ -1,3 +1,4 @@
+#
 #  This file is part of WebDyne.
 #
 #  This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
@@ -67,7 +68,7 @@ my %ENV_BASE=(
 
 #  Version information
 #
-$VERSION='2.075';
+$VERSION='2.076_592';
 
 
 #==================================================================================================

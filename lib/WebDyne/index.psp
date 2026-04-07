@@ -403,7 +403,7 @@ sub index {
     #
     my $path_dn=$self->sanitize_path($cgi_or, ($r->path_info() || $ENV{'PATH_INFO'})) ||
         return err('unable to get path');
-    debug("path_dn: $path_dn, path_info:%s, PATH_INFO:%s", $r->path_info(), $ENV{'PATH_INFO'});
+    debug("path_dn: $path_dn, url:%s,  path_info:%s, PATH_INFO:%s", $r->url, $r->path_info(), $ENV{'PATH_INFO'});
         
     
     #  Now get real dn and check not higher than document root

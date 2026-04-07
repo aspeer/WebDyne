@@ -1,3 +1,4 @@
+#
 #  This file is part of WebDyne.
 #
 #  This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
@@ -17,7 +18,7 @@ package WebDyne::Request::Common;
 use strict qw(vars);
 use vars   qw($VERSION @ISA @EXPORT_OK);
 use warnings;
-no warnings qw(uninitialized);
+no warnings qw(uninitialized once);
 
 
 #  External modules
@@ -30,12 +31,12 @@ use Exporter qw(import);
 
 # Exports
 #
-@EXPORT_OK=qw(handler_methods_all handler_methods_check);
+@EXPORT_OK=qw(handler_methods_all handler_methods_check handler_methods_init);
 
 
 #  Version information
 #
-$VERSION='2.075';
+$VERSION='2.076_592';
 
 
 #  Debug load
@@ -227,6 +228,52 @@ sub handler_methods_check {
         #sleep 1;
     }
     1;
+    
+}
+
+
+sub handler_methods_init {
+
+    my ($class, $handler, $method_hr)=@_;
+    
+    my %method_check;
+    foreach my $method (sort keys %{$method_hr}) {
+        my $dispatch=$method_hr->{$method};
+        debug("method: $method, dispatch: $dispatch");
+        $method_check{$method}++;
+        if (ref($dispatch) eq 'CODE') {
+
+            if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
+                #  Do nothing, defined here
+                #
+                debug("skip $method, defined in this package");
+            }
+            else {
+                debug("setting method: $method to code ref: $dispatch");
+                *{"${class}::${method}"}=$dispatch;
+            }
+
+        }
+        elsif (!defined($dispatch)) {
+            #  Do nothing, will fall through to Fake
+            #
+            debug("skip $method, will inherit from Fake");
+            *{"${class}::${method}"}=\&{"WebDyne::Request::Fake::${method}"};
+        }
+        else {
+            #  Class request method
+            #
+            debug("setting method: $method to $handler: $dispatch");
+            if ($handler->can($dispatch)) {
+                *{"${class}::${method}"}=sub { shift()->{'req'}->$dispatch(@_) };
+            }
+            else {
+                die "unsupported request method: $dispatch";
+            }
+        }
+    }
+    
+    return handler_methods_check($class, \%method_check);
     
 }
     

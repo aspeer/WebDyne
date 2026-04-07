@@ -17,6 +17,7 @@
 #  Pragma
 #
 use strict;
+use vars   qw($VERSION);
 use warnings;
 
 
@@ -40,7 +41,7 @@ use WebDyne::Util;
 
 #  Version information
 #
-our $VERSION='2.075';
+$VERSION='2.075';
 
 
 #  Run main

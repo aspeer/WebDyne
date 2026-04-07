@@ -4,6 +4,9 @@
 #  Pragma
 #
 use strict;
+use vars   qw($VERSION);
+use warnings;
+no warnings qw(redefine once);
 
 
 #  External modules
@@ -20,6 +23,11 @@ use PAGI::Middleware::Builder;
 use WebDyne::PAGI;
 use WebDyne::Constant;
 use WebDyne::PAGI::Constant;
+
+
+#  Version Info, must be all one line for MakeMaker, CPAN.
+#
+$VERSION='2.076_592';
 
 
 #  Called from command line ?

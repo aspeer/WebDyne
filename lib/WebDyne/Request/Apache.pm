@@ -47,18 +47,13 @@ use APR::Table ();
 #
 use WebDyne::Util;
 use WebDyne::Constant;
-use WebDyne::Request::Common qw(handler_methods_all handler_methods_check);
-
-
-#  Inheritance
-#
+use WebDyne::Request::Common qw(handler_methods_init);
 use WebDyne::Request::Fake;
-@ISA=qw(WebDyne::Request::Fake);
 
 
 #  Version information
 #
-$VERSION='2.075';
+$VERSION='2.076_592';
 
 
 #  Debug load
@@ -81,172 +76,129 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 
 sub init {
 
-    #  Setup pass through methods
+    #  Setup request handler abstraction methods
     #
     my %method=(
-        req => {
-            accept_encoding     => undef,
-            accept_language     => undef,
-            accept              => undef,
-            args                => 'args',
-            as_string           => undef,
-            authority           => undef,
-            authorization       => undef,
-            auth_type           => \&auth_type,
-            base                => undef,
-            base_url            => undef,
-            body_handle         => \&body_handle,
-            body                => \&body,
-            cache_control       => undef,
-            charset             => undef,
-            cleanup_register    => undef,
-            client_address      => \&remote_address,
-            content             => \&body,
-            content_encoding    => \&content_encoding,
-            content_length      => \&content_length,
-            content_type        => \&content_type,
-            cookies             => undef,
-            cookie              => undef,
-            custom_response     => undef,
-            cwd                 => undef,
-            dir_config          => undef,
-            document_root       => 'document_root',
-            env                 => \&env,
-            etag                => undef,
-            filename            => 'filename',
-            finalize            => undef,
-            finfo               => undef,
-            form_parameters     => undef,
-            forwarded_for       => undef,
-            fragment            => undef,
-            handler             => 'handler',
-            header              => \&headers_in,
-            headers             => \&headers_in,
-            header_only         => 'header_only',
-            headers_in          => \&headers_in,
-            headers_out         => \&headers_out,
-            hostname            => 'hostname',
-            host                => \&host,
-            https               => \&https,
-            http_version        => 'protocol',
-            id                  => \&id,
-            if_modified_since   => undef,
-            if_none_match       => undef,
-            input               => \&body_handle,
-            is_ajax             => undef,
-            is_main             => undef,
-            location            => undef,
-            log_error           => undef,
-            lookup_file         => 'lookup_file',
-            lookup_uri          => 'lookup_uri',
-            main                => undef,
-            media_type          => undef,
-            method              => 'method',
-            mtime               => undef,
-            multipart_parameters=> undef,
-            next                => undef,
-            notes               => 'notes',
-            origin              => undef,
-            output_filters      => undef,
-            path_info           => sub { shift()->uri->path },
-            path_parameters     => undef,
-            path                => \&path_info,
-            pool                => 'pool',
-            preferred_charset   => undef,
-            preferred_encoding  => undef,
-            preferred_language  => undef,
-            preferred_media_type=> undef,
-            prev                => undef,
-            print               => 'print',
-            protocol            => 'protocol',
-            query_parameters    => undef,
-            query_string        => 'args',
-            redirect            => undef,
-            referer             => undef,
-            register_cleanup    => undef,
-            remote_address      => \&remote_address,
-            remote_host         => \&remote_host,
-            remote_port         => \&remote_port,
-            remote_user         => 'user',
-            request_time        => 'request_time',
-            route               => undef,
-            run                 => undef,
-            scheme              => \&scheme,
-            script_name         => undef,
-            secure              => \&https,
-            sendfile            => undef,
-            send_http_header    => undef,
-            server_name         => \&server_name,
-            server_port         => \&server_port,
-            session_id          => undef,
-            session             => undef,
-            set_handlers        => 'set_handlers',
-            status_line         => 'status_line',
-            status              => 'status',
-            unparsed_uri        => 'unparsed_uri',
-            uploads             => undef,
-            uri                 => \&uri,
-            url                 => \&uri,
-            user_agent          => undef,
-            user                => 'user',
-            write               => undef,
-            DESTROY             => \&DESTROY
-        },
-        res => {(
-           #status headers body header content_type content_length content_encoding redirect location cookies finalize to_app
-        )},
-            
+        accept_encoding     => undef,
+        accept_language     => undef,
+        accept              => undef,
+        args                => 'args',
+        as_string           => undef,
+        authority           => undef,
+        authorization       => undef,
+        auth_type           => \&auth_type,
+        base                => undef,
+        base_url            => undef,
+        body_handle         => \&body_handle,
+        body                => \&body,
+        cache_control       => undef,
+        charset             => undef,
+        cleanup_register    => undef,
+        client_address      => \&remote_address,
+        content             => \&body,
+        content_encoding    => \&content_encoding,
+        content_length      => \&content_length,
+        content_type        => \&content_type,
+        cookies             => undef,
+        cookie              => undef,
+        custom_response     => undef,
+        cwd                 => undef,
+        dir_config          => undef,
+        document_root       => 'document_root',
+        env                 => \&env,
+        etag                => undef,
+        filename            => 'filename',
+        finalize            => undef,
+        finfo               => undef,
+        form_parameters     => undef,
+        forwarded_for       => undef,
+        fragment            => undef,
+        handler             => 'handler',
+        header              => \&headers_in,
+        headers             => \&headers_in,
+        header_only         => 'header_only',
+        headers_in          => \&headers_in,
+        headers_out         => \&headers_out,
+        hostname            => 'hostname',
+        host                => \&host,
+        https               => \&https,
+        http_version        => 'protocol',
+        id                  => \&id,
+        if_modified_since   => undef,
+        if_none_match       => undef,
+        input               => \&body_handle,
+        is_ajax             => undef,
+        is_main             => undef,
+        location            => undef,
+        log_error           => undef,
+        lookup_file         => 'lookup_file',
+        lookup_uri          => 'lookup_uri',
+        main                => undef,
+        media_type          => undef,
+        method              => 'method',
+        mtime               => undef,
+        multipart_parameters=> undef,
+        next                => undef,
+        notes               => 'notes',
+        origin              => undef,
+        output_filters      => undef,
+        path_info           => sub { shift()->uri->path },
+        #path_info           => 'path_info',
+        path_parameters     => undef,
+        path                => \&path_info,
+        pool                => 'pool',
+        preferred_charset   => undef,
+        preferred_encoding  => undef,
+        preferred_language  => undef,
+        preferred_media_type=> undef,
+        prev                => undef,
+        print               => 'print',
+        protocol            => 'protocol',
+        query_parameters    => undef,
+        query_string        => 'args',
+        redirect            => undef,
+        referer             => undef,
+        register_cleanup    => undef,
+        remote_address      => \&remote_address,
+        remote_host         => \&remote_host,
+        remote_port         => \&remote_port,
+        remote_user         => 'user',
+        request_time        => 'request_time',
+        route               => undef,
+        run                 => undef,
+        scheme              => \&scheme,
+        script_name         => undef,
+        secure              => \&https,
+        sendfile            => undef,
+        send_http_header    => undef,
+        server_name         => \&server_name,
+        server_port         => \&server_port,
+        session_id          => undef,
+        session             => undef,
+        set_handlers        => 'set_handlers',
+        status_line         => 'status_line',
+        status              => 'status',
+        unparsed_uri        => 'unparsed_uri',
+        uploads             => undef,
+        uri                 => \&uri,
+        url                 => \&uri,
+        user_agent          => undef,
+        user                => 'user',
+        write               => undef,
+        DESTROY             => \&DESTROY
     );
-    my %method_check;
-    foreach my $handler (qw(req res)) {
-        while (my ($method, $dispatch)=each %{$method{$handler}}) {
-            $method_check{$method}++;
-            #if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
-            if (ref($dispatch) eq 'CODE') {
-            
-                if (defined(*{sprintf('%s::%s', __PACKAGE__, $method)}{'CODE'})) {
-                    #  Do nothing, defined here
-                    #
-                    debug("skip $method, defined in this package");
-                }
-                else {
-                    debug("setting method: $method to code ref: $dispatch");
-                    *{$method}=$dispatch;
-                }
-
-            }
-            elsif (!defined($dispatch)) {
-                #  Do nothing, will fall through to Fake
-                #
-                debug("skip $method, will inherit from Fake");
-            }
-            #elsif (ref($dispatch) eq 'CODE') {
-            #    #  Turn into method
-            #    #
-            #    debug("setting method: $method to code ref: $dispatch");
-            #    *{$method}=$dispatch;
-            #}
-            else {
-                #  Apache method
-                #
-                debug("setting method: $method to $handler: $dispatch");
-                if (Apache2::RequestRec->can($dispatch)) {
-                    *{$method}=sub { shift()->{'req'}->$dispatch(@_) };
-                }
-                else {
-                    die "unsupported request method: $dispatch";
-                }
-
-                #debug("setting method: $method to $handler: $dispatch");
-                #*{$method}=sub { shift()->{'req'}->$dispatch(@_) };
-            }
-        }
-    }
 
 
-    #  Done, do runtime check and return, will warn if we have missed anything
+    #  Make handler methods
     #
-    return handler_methods_check(__PACKAGE__, \%method_check);
+    foreach my $handler (qw(req res)) {
+        *{$handler}=sub { return shift()->{$handler} };
+    }
+    
+    
+    #  Now create everything and check
+    #
+    return handler_methods_init(__PACKAGE__, 'Apache2::RequestRec', \%method);
     
 }
 
@@ -479,6 +431,7 @@ sub DESTROY {
     
 }
 
+1;
 
 
 #  TieHandle package to link mod_perl body to a handle
@@ -540,92 +493,3 @@ sub CLOSE {
 
 1;
 
-__END__
-
-
-sub _subprocess_env {
-
-    return &env(@_);
-    
-}
-
-
-#sub input {
-#    #return shift()->{'req'};
-#    
-#}
-
-sub _req0 {
-    return shift()->{'req'};
-}
-
-
-
-sub _header_only0 {
-    my $r=shift();
-    return $r->{'req'}->header_only() ? 1 : 0;
-}
-
-
-sub _request_time0 {
-    my $r=shift();
-    return $r->{'req'}->request_time() if $r->{'req'}->can('request_time');
-    return time();
-}
-
-sub _secure0 {
-    return shift()->https();
-}
-
-
-sub _headers_in0 {
-    my $r=shift();
-    my $table=$r->{'req'}->headers_in();
-    if (@_ == 1) {
-        return  $table->get($_[0]);
-    }
-    elsif (@_>1) {
-         while (my ($k, $v) = splice(@_, 0, 2)) {
-            $table->set($k => $v);
-        }
-        return $r;
-    }
-    else {
-        my $headers_or=HTTP::Headers::Fast->new();
-        $table->do(sub { $headers_or->header($_[0] => $_[1]); return 1; });
-        return $headers_or;
-    }
-}
-
-
-sub _headers_out0 {
-    my $r=shift();
-    my $table=$r->{'req'}->headers_out();
-    if (@_ == 1) {
-        return  $table->get($_[0]);
-    }
-    elsif (@_>1) {
-         while (my ($k, $v) = splice(@_, 0, 2)) {
-            $table->set($k => $v);
-        }
-        return $r;
-    }
-    else {
-        my $headers_or=HTTP::Headers::Fast->new();
-        $table->do(sub { $headers_or->header($_[0] => $_[1]); return 1; });
-        return $headers_or;
-    }
-}
-
-
-sub _headers_out0 {
-    my $r=shift();
-    my $table=$r->{'req'}->headers_out();
-    if (@_) {
-        my ($k, $v)=@_;
-        return defined($v) ? $table->set($k => $v) : $table->get($k);
-    }
-    my $headers_or=HTTP::Headers::Fast->new();
-    $table->do(sub { $headers_or->header($_[0] => $_[1]); return 1; });
-    return $headers_or;
-}

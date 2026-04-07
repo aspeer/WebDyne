@@ -16,9 +16,9 @@ if ($test_no) {
     Test::Builder->new->current_test($test_no);
 }
 
-ok($self);
+ok($self, 'self');
 foreach my $method (qw(status headers_in method protocol uri)) {
-    ok(&{$method}($self));
+    ok(&{$method}($self), "$method (all)");
 }
 
 
@@ -27,9 +27,9 @@ sub status {
     my $self=shift();
     #diag("status: $self, caller: %s", Dumper([caller()]));
     my $r=$self->r();
-    is($r->status, HTTP_OK);
-    is($r->status(HTTP_OK), HTTP_OK);
-    is($r->status(), HTTP_OK);
+    is($r->status, HTTP_OK, 'status');
+    is($r->status(HTTP_OK), HTTP_OK, 'status');
+    is($r->status(), HTTP_OK, 'status');
     return $r->status();
 
 }
@@ -48,23 +48,30 @@ sub headers_in {
 
 sub method {
 
-    is(shift()->r->method(), 'GET');
+    is(shift()->r->method(), 'GET', 'method');
     
 }
 
 sub protocol {
 
-    like(shift()->r->protocol(), qr{^HTTP});
+    like(shift()->r->protocol(), qr{^HTTP}, 'protocol');
     
 }
 
 sub uri {
 
     my $r=shift()->r();
-    like(ref($r->uri), qr(^URI));
+    like(ref($r->uri), qr(^URI), 'uri');
     
 }
 
+sub path_info {
+
+    my $r=shift()->r();
+    diag($r->path_info);
+    like($r->path_info, qr{15-request\.psp$});
+    
+}
 
 __PERL__
 __END__
