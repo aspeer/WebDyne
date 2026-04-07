@@ -35,7 +35,7 @@ use WebDyne::Request::PSGI;
 
 #  Version information
 #
-$VERSION='2.077_597';
+$VERSION='2.078_599';
 
 
 #  Debug load
