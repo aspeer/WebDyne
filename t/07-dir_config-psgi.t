@@ -7,6 +7,17 @@ $Data::Dumper::Sortkeys=1;
 $Data::Dumper::Indent=1;
 
 
+BEGIN {
+    my @missing;
+    for my $m (qw(Plack::Request)) {
+        eval "require $m; 1" or push @missing, $m;
+    }
+    if (@missing) {
+        plan skip_all => "Skipping PAGI tests: missing " . join(", ", @missing);
+    }
+}
+
+
 #  Use specific webdyne.conf setup ENV vars for using different meta file
 #
 $ENV{'WEBDYNE_CONF'}='t/webdyne_dir-config.conf.pl';
@@ -23,13 +34,8 @@ my $r=WebDyne::Request::PSGI->new(
     location => '/examples/',
     env => \%ENV
 );
-#diag Dumper($r);
-#die;
 ok(ref($r) eq 'WebDyne::Request::PSGI');
-#diag($r->location());
-#die;
 ok($r->location() eq '/examples/');
-#diag($r->dir_config('a'));
 ok($r->dir_config('a')==1);
 
 
@@ -37,8 +43,6 @@ ok($r->dir_config('a')==1);
 #
 my $hr;
 { local $/; $hr=eval(<DATA>) }
-#diag(Dumper($hr));
-#diag(Dumper($r->dir_config()));
 ok(eq_deeply($hr, $r->dir_config())); 
 
 

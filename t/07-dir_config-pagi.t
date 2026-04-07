@@ -6,6 +6,15 @@ use Data::Dumper;
 $Data::Dumper::Sortkeys=1;
 $Data::Dumper::Indent=1;
 
+BEGIN {
+    my @missing;
+    for my $m (qw(PAGI::Request)) {
+        eval "require $m; 1" or push @missing, $m;
+    }
+    if (@missing) {
+        plan skip_all => "Skipping PAGI tests: missing " . join(", ", @missing);
+    }
+}
 
 #  Use specific webdyne.conf setup ENV vars for using different meta file
 #
@@ -23,15 +32,9 @@ my $r=WebDyne::Request::PAGI->new(
     location => '/examples/',
     filename => '.',
     scope    => {},
-    #req      => {}
 );
-#diag Dumper($r);
-#die;
 ok(ref($r) eq 'WebDyne::Request::PAGI');
-#diag($r->location());
-#die;
 ok($r->location() eq '/examples/');
-#diag($r->dir_config('a'));
 ok($r->dir_config('a')==1);
 
 
@@ -39,8 +42,6 @@ ok($r->dir_config('a')==1);
 #
 my $hr;
 { local $/; $hr=eval(<DATA>) }
-#diag(Dumper($hr));
-#diag(Dumper($r->dir_config()));
 ok(eq_deeply($hr, $r->dir_config())); 
 
 
