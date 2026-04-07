@@ -47,128 +47,36 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 sub new {
 
     
-    #  Need to work out if supplying Plack::Request or CGI::Simple object
+    #  Setup universal CGI object for return
     #
     my ($class, $r, %param)=@_;
     debug("class: $class, r:$r, caller: %s", Dumper([caller(0)]));
 
 
-    if (1) {
-        #
-        #return  $r->{'_CGI'} ||= WebDyne::CGI::Simple->new($r, %param);
-        my $cgi_or=($r->{'_CGI'} ||= do {
-            if (($r->headers_in('content-type') eq 'application/x-www-form-urlencoded') && $r->content_length()) {
-                my $body=$r->body();
-                WebDyne::CGI::Simple->new($r, $r->args, $body);
-            }
-            elsif ($r->content_length()) {
-                my $cgi_or=WebDyne::CGI::Simple->new($r, $r->args);
-                local $ENV{'CONTENT_LENGTH'} ||= $r->content_length();
-                local $ENV{'CONTENT_TYPE'} ||= $r->headers_in('Content-Type');
-
-                #die Dumper($r);
-                local *STDIN=$r->input();
-                $cgi_or->_parse_multipart($r->input());
-                $cgi_or;
-            }
-            else {
-                WebDyne::CGI::Simple->new($r, $r->args);
-            }
-        });
-        return $cgi_or;
-
-    }
-    
-    
-    #  Request handler ?
+    #  Only generate if not already done
     #
-    if (ref($r) eq 'WebDyne::Request::PSGI') {
+    my $cgi_or=($r->{'_CGI'} ||= do {
     
-        # Plack
+        #  Take forms and STDIN content into account
         #
-        debug('detected Plack request handler');
-        require WebDyne::CGI::PSGI;
-        my $cgi_or=WebDyne::CGI::PSGI->new($r, %param);
-        debug("about to get param: $cgi_or");
-        local $SIG{'__DIE__'}=sub { CORE::die @_ };
-        eval { $cgi_or->param() };
-        debug("eval: $@");
-        debug("cgi_or: $cgi_or, %s", $cgi_or->param());
-        return $cgi_or;
-        return  WebDyne::CGI::PSGI->new($r, %param);
-        *new=WebDyne::CGI::PSGI::new;
- 
-        
-    }
-    elsif (ref($r) eq 'WebDyne::Request::PAGI') {
-    
-        # PAGI
-        #
-        debug('detected PAGI request handler');
-        require WebDyne::CGI::PAGI;
-        return  WebDyne::CGI::PAGI->new($r, %param);
-        *new=WebDyne::CGI::PAGI::new;
- 
-        
-    }
-    elsif (ref($r) eq 'WebDyne::Request::Apache') {
-    
-        # Apache
-        #
-        debug('detected PAGI request handler');
-        die Dumper([caller(0)]);
-        require WebDyne::CGI::Simple;
-        return  $r->{'_CGI'} ||= WebDyne::CGI::Simple->new($r, %param);
-        #return  $r->{'_CGI'} ||= WebDyne::CGI::Simple->new($r->{'req'}, %param);
-        #return  WebDyne::CGI::Simple->new($r->{'req'}, %param);
-        return  WebDyne::CGI::Simple->new();
-        *new=WebDyne::CGI::Simple::new;
- 
-        
-    }
-    elsif (ref($r)=~/^Apache2(?:::Request)?/) {
-    
-        #  Apache 2
-        #
-        debug('detected Apache MP2 request handler');
-        require WebDyne::CGI::Simple;
-        return  WebDyne::CGI::Simple->new($r, %param);
-        *new=WebDyne::CGI::Simple::new;
+        if (($r->headers_in('content-type') eq 'application/x-www-form-urlencoded') && $r->content_length()) {
+            my $body=$r->body();
+            WebDyne::CGI::Simple->new($r, $r->args, $body);
+        }
+        elsif ($r->content_length()) {
+            my $cgi_or=WebDyne::CGI::Simple->new($r, $r->args);
+            local $ENV{'CONTENT_LENGTH'} ||= $r->content_length();
+            local $ENV{'CONTENT_TYPE'} ||= $r->headers_in('Content-Type');
+            local *STDIN=$r->input();
+            $cgi_or->_parse_multipart($r->input());
+            $cgi_or;
+        }
+        else {
+            WebDyne::CGI::Simple->new($r, $r->args);
+        }
+    });
+    return $cgi_or;
 
-
-    }
-    elsif (ref($r)=~/^Apache(?:::Request)?$/) {
-    
-        # Ugh. Apache 1
-        #
-        debug('detected Apache MP1 request handler');
-        require WebDyne::CGI::Simple;
-        return  WebDyne::CGI::Simple->new($r, %param);
-        *new=WebDyne::CGI::Simple::new;
-        
-
-    }
-    else {
-    
-        #  Command line or everything else is CGI::Simple;
-        #
-        debug('defaulting to CGI::Simple handler, r:%s', Dumper($r));
-        require WebDyne::CGI::Simple;
-        
-        #  Note closure - we *don't* want to pass $r or param to CGI::Simple if 
-        #  not in mod_perl
-        #die Dumper(\@_);
-        return  WebDyne::CGI::Simple->new();
-        *new=sub { &WebDyne::CGI::Simple::new() };
-        
-    }
-    
-
-    #  Done
-    #
-    return $class->new($r, %param);
-    
 }
 
 1;
-
