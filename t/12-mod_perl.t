@@ -17,7 +17,10 @@ BEGIN {
         eval "require $m; 1" or push @missing, $m;
     }
     if (@missing) {
-        plan skip_all => "Skipping mod_perl tests: missing " . join(", ", @missing);
+        plan skip_all => 'mod_perl tests - missing ' . join(', ', @missing);
+    }
+    if ($> == 0) {
+        plan skip_all => 'mod_perl tests - cannot run tests as root user ';
     }
 }
 
