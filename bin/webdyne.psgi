@@ -82,7 +82,7 @@ if (!caller || exists $ENV{PAR_TEMP}) {
     
     #  Startup
     #
-    exit &startup(\%opt, split(/\s+/, $opt{'argv'}), @ARGV);
+    exit &startup(\%opt, split(/\s+/, $opt{'argv'} || ''), @ARGV);
 
 }
 else {

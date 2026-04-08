@@ -108,9 +108,9 @@ sub main {
 
     #  Shutdown on signal
     #
-    my $stop=sub { request_mod_perl_shutdown($runner); exit 0 };
-    $SIG{'INT'}=$stop;
-    $SIG{'TERM'}=$stop;
+    my $shutdown_cr=sub { request_mod_perl_shutdown($runner); exit 0 };
+    $SIG{'INT'}=$shutdown_cr;
+    $SIG{'TERM'}=$shutdown_cr;
 
 
     #  Block forever
