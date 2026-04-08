@@ -63,7 +63,7 @@ if (eval { require WebDyne::PAGI; 1 }) {
 
 #  Apache
 #
-if (eval { require Apache2::RequestRec; 1 }) {
+if (eval { require Apache2::RequestRec; 1 } && !($> ==0)) {
     note('WebDyne::Apache test starting');
     push @INC, dirname(__FILE__);
     require 't.pm';
