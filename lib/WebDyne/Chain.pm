@@ -37,7 +37,7 @@ use Data::Dumper;
 #  Version information in a formate suitable for CPAN etc. Must be
 #  all on one line
 #
-$VERSION='2.079_601';
+$VERSION='2.080_604';
 
 
 #  Debug using WebDyne debug handler

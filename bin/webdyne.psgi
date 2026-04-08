@@ -38,7 +38,7 @@ use WebDyne::PSGI::Constant;
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='2.079_601';
+$VERSION='2.080_604';
 
 
 #  Called from command line ?
