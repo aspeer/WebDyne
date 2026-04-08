@@ -205,14 +205,43 @@ sub request_mod_perl_shutdown {
 
 sub request_mod_perl_postamble {
 
-    #  Get all WEBDYNE_CONF env vars
+
+    #  Get all WEBDYNE_CONF env vars and setup config file
     #
     my ($document_root, $opt_hr)=@_;
-    #my $document_root=||= fastcwd();
     $document_root=File::Spec->rel2abs($document_root);
+    
+    
+    #  Need to work out if stderr writable. If not need to use alternate log file (prob running in container)
+    #
+    my $stderr_fn='/dev/stderr';
+    my $stdout_fn='/dev/stdout';
+    if (! open(my $fh, '>>', $stderr_fn)) {
+    
+        #  Not writable, probably running under docker, revert to traditional
+        #
+        print STDERR "unable to write to stderr,stdout - reverting to log files\n";
+        $stderr_fn='logs/error.log';
+        $stdout_fn='logs/access.log';
+    }
+    
+    
+    #  Same for ulimit - if not available probably running in container
+    #
+    if (my $out = qx{bash -c 'ulimit -c unlimited 2>&1'}) {
+        my $rc  = $? >> 8;
+        if ($rc != 0) {
+            print STDERR "unable alter ulimit, stubbing Apache::TestRun::ulimit\n";
+            no warnings qw(once redefine);
+            *Apache::TestRun::set_ulimit=sub {};
+        }
+    }
+    
+    
+    #  Ok - proceed
+    #
     my $default_index_fn=File::Spec->rel2abs($WEBDYNE_DEFAULT_INDEX_FN || File::Spec->catfile($document_root, 'index.psp'));
     my $default_index_dn=dirname($default_index_fn);
-    #my $default_index_url='/__webdyne_default_index__.psp';
     my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
     push (@PerlSetEnv, "PerlSetEnv WEBDYNE_ERROR_TEXT 1") unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
@@ -226,9 +255,9 @@ PerlResponseHandler WebDyne
 PerlSetEnv DOCUMENT_DEFAULT $default_index_fn
 #PerlOptions +GlobalRequest
 
-ErrorLog /dev/stderr
+ErrorLog $stderr_fn
 LogLevel debug
-CustomLog /dev/stdout combined
+CustomLog $stdout_fn combined
 
 DirectoryIndex index.psp
 Alias /index.psp $default_index_fn
@@ -250,34 +279,6 @@ END
     ;
     exit print $postamble if $opt_hr->{'dump_postamble'};
     return $postamble;
-}
-
-use Data::Dumper;
-sub perl_inc_noncore_ar0 {
-
-    #  Return non-core @INC directories for PerlSwitches -I
-    #
-    my @core_root=grep { defined($_) && length($_) } map { _dir_norm($_) } (
-        @Config{qw(privlib archlib vendorlib vendorarch sitelib sitearch)}
-    );
-    die Dumper(\@core_root);
-    my @core_root_sorted=sort { length($b) <=> length($a) } @core_root;
-    my @inc_noncore;
-    INC:
-    foreach my $inc (grep {$_} @INC) {
-        next unless defined($inc) && length($inc);
-        my $inc_norm=_dir_norm($inc);
-        foreach my $core_root (@core_root_sorted) {
-            next unless length($core_root);
-            my $prefix_match=(index($inc_norm, $core_root) == 0);
-            my $boundary_ok=($inc_norm eq $core_root) ||
-                (substr($inc_norm, length($core_root), 1) eq File::Spec->catfile('',''));
-            next INC if ($prefix_match && $boundary_ok);
-        }
-        push @inc_noncore, $inc;
-    }
-    return \@inc_noncore;
-
 }
 
 
