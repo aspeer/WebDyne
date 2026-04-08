@@ -44,6 +44,21 @@ use WebDyne::Util;
 $VERSION='2.079_601';
 
 
+#  Check for supporting modules
+#
+BEGIN {
+    my @missing;
+    for my $module (qw(Apache2::Build Apache::Test Module::CoreList)) {
+        eval "require $module; 1" or push @missing, $module;
+    }
+    if (@missing) {
+        printf STDERR ("Please install missing CPAN modules (you may need mod_perl-devel packages also): %s \n", join(',', @missing));
+        exit 1;
+    }
+    
+}
+
+
 #  Run main
 #
 exit ${&main(\@ARGV) || die errdump()};
