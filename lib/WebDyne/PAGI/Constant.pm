@@ -37,7 +37,7 @@ require WebDyne::Constant;
 
 #  Version information
 #
-$VERSION='2.082_608';
+$VERSION='2.083_610';
 
 
 #  Hash of constants
