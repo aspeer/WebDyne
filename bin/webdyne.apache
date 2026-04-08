@@ -166,6 +166,12 @@ sub request_mod_perl_startup {
         return if $_[0] =~ /Duplicate specification/;
         CORE::warn @_;
     };
+    
+    
+    #  Don't need index.html generated
+    #
+    no warnings qw(once redefine);
+    *Apache::TestConfig::generate_index_html=sub {};
 
 
     #  Runner object init
