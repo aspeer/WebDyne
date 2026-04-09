@@ -459,7 +459,7 @@ my %constant_temp;
     
     #  Webdyne PSGI serves static files ?
     #
-    WEBDYNE_PSGI_STATIC => 1,
+    #WEBDYNE_PSGI_STATIC => 1,
     
     
     #  WebDyne default extension and length, used in susbtr as faster than regex. Update - too slow, retiring and going to fixed

@@ -42,6 +42,21 @@ use WebDyne::PAGI::Constant;
 $VERSION='2.083_610';
 
 
+#  Check for supporting modules
+#
+BEGIN {
+    my @missing;
+    for my $module (qw(PAGI)) {
+        eval "require $module; 1" or push @missing, $module;
+    }
+    if (@missing) {
+        printf STDERR ("Please install missing CPAN modules: %s \n", join(', ', @missing));
+        exit 1;
+    }
+    
+}
+
+
 #  Called from command line ?
 #
 if (!caller || exists $ENV{PAR_TEMP}) {
@@ -171,6 +186,11 @@ sub startup {
     #
     require PAGI::Runner;
     my $pagi_or=PAGI::Runner->new();
+    
+    
+    #  Add host 0.0.0.0 option unless already spec'd as option
+    #
+    push (@argv, ('--host', '0.0.0.0')) unless grep { /--host/ } @argv;
     
 
     #  Mac conflicts with Plack default port of 5000 - choose 5001

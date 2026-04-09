@@ -109,7 +109,7 @@ $VERSION='2.083_610';
     #
     WEBDYNE_PAGI_EVAL_PREPEND => << 'END'
 use Future::AsyncAwait;
-use Future::IO;
+#use Future::IO;
 END
 ,
 

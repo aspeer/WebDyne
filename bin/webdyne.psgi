@@ -41,6 +41,21 @@ use WebDyne::PSGI::Constant;
 $VERSION='2.083_610';
 
 
+#  Check for supporting modules
+#
+BEGIN {
+    my @missing;
+    for my $module (qw(Plack)) {
+        eval "require $module; 1" or push @missing, $module;
+    }
+    if (@missing) {
+        printf STDERR ("Please install missing CPAN modules: %s \n", join(', ', @missing));
+        exit 1;
+    }
+    
+}
+
+
 #  Called from command line ?
 #
 if (!caller || exists $ENV{PAR_TEMP}) {

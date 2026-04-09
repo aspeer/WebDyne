@@ -47,12 +47,18 @@ $VERSION='2.083_610';
 #  Check for supporting modules
 #
 BEGIN {
+    eval ("require Apache2::Build; 1") || do {
+        if ($@=~/Module::CoreList/i) {
+            print STDERR ("Apache2::Build found but needs rebuild/reinstall of Module::CoreList. Please install/upgrade Module::CoreList\n");
+            exit 1;
+        }
+    };
     my @missing;
     for my $module (qw(Apache2::Build Apache::Test Module::CoreList)) {
         eval "require $module; 1" or push @missing, $module;
     }
     if (@missing) {
-        printf STDERR ("Please install missing CPAN modules (you may need mod_perl-devel packages also): %s \n", join(',', @missing));
+        printf STDERR ("Please install missing CPAN modules (you may need mod_perl-devel packages also): %s \n", join(', ', @missing));
         exit 1;
     }
     
