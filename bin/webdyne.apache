@@ -178,6 +178,11 @@ sub request_mod_perl_startup {
     #
     no warnings qw(once redefine);
     *Apache::TestConfig::generate_index_html=sub {};
+    
+    
+    #  Don't want include libraries changes, stuf this out
+    #
+    *Apache::TestConfig::configure_startup_pl=sub {};
 
 
     #  Runner object init
