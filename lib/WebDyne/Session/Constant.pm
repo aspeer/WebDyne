@@ -32,7 +32,7 @@ require WebDyne::Constant;
 
 #  Version information. Must be all on one line
 #
-$VERSION='2.084_612';
+$VERSION='2.085_614';
 
 
 #  The guts
