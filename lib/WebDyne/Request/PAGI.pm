@@ -177,6 +177,7 @@ sub init {
         user_agent          => undef,
         user                => undef,
         write               => undef,
+        err_html            => undef,
         DESTROY             => undef
     );
     

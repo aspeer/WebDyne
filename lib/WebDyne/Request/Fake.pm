@@ -209,6 +209,7 @@ sub init {
         user_agent          => sub { shift()->headers_in('user-agent') },
         user                => sub { shift()->env->{'REMOTE_USER'} },
         write               => undef,
+        err_html            => undef,
         DESTROY             => undef
             
     );

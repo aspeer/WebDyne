@@ -167,6 +167,7 @@ sub handler_methods_all {
         user
         user_agent
         write
+        err_html
         DESTROY
     ));
 
