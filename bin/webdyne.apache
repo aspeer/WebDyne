@@ -101,6 +101,7 @@ sub main {
         'root|docroot|doc_root|document_root=s',
         'port=s',
         'keep_tmp!',
+        'test!',
         'dump_postamble',
         'argv=s',
         'help|?'
@@ -121,6 +122,9 @@ sub main {
     if (-f ($opt{'root'}=File::Spec->rel2abs($opt{'root'}))) {
         $opt{'root_pn'}=$opt{'root'};
         $opt{'root'}=dirname($opt{'root'});
+    }
+    elsif($opt{'test'}) {
+        $opt{'root_pn'}=$WEBDYNE_DEFAULT_TEST_FN;
     }
 
 
