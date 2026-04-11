@@ -39,7 +39,7 @@ $CGI::Simple::MOD_PERL=0;
 
 #  Version information
 #
-$VERSION='2.085_614';
+$VERSION='2.086_617';
 
 
 #  CGI upload vars
