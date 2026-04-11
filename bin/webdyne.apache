@@ -113,6 +113,15 @@ sub main {
         $opt{'root'} = pop @{$argv_ar};
     }
     $opt{'root'} ||=($ENV{'DOCUMENT_ROOT'} || fastcwd());
+    
+    
+    #  File or dir ? If file Apache won't like as DOCUMENT_ROOT so need to set
+    #  as Perl environment var in httpd.conf (later) and handle differently
+    #
+    if (-f ($opt{'root'}=File::Spec->rel2abs($opt{'root'}))) {
+        $opt{'root_pn'}=$opt{'root'};
+        $opt{'root'}=dirname($opt{'root'});
+    }
 
 
     #  Indexing. 1 for enable with internal, string for some other indexing file
@@ -275,6 +284,7 @@ sub request_mod_perl_postamble {
     my $default_index_fn=File::Spec->rel2abs($WEBDYNE_DEFAULT_INDEX_FN || File::Spec->catfile($document_root, 'index.psp'));
     my $default_index_dn=dirname($default_index_fn);
     my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
+    push (@PerlSetEnv, sprintf('PerlSetEnv DOCUMENT_ROOT %s', $opt_hr->{'root_pn'})) if  $opt_hr->{'root_pn'};
     push (@PerlSetEnv, "PerlSetEnv WEBDYNE_ERROR_TEXT 1") unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
     my $PerlSwitches=join("\n", map { sprintf('PerlSwitches -I%s', $_) } @{&perl_inc_dn()});

@@ -107,7 +107,8 @@ sub init {
         document_root       => 'document_root',
         env                 => \&env,
         etag                => undef,
-        filename            => 'filename',
+        #filename            => 'filename',
+        filename            => \&filename,
         finalize            => undef,
         finfo               => undef,
         form_parameters     => undef,
@@ -224,6 +225,14 @@ sub new {
 
 }
 
+
+sub filename {
+
+    #  Can be overridden by DOCUMENT_ROOT environment var
+    #
+    return $ENV{'DOCUMENT_ROOT'} || shift()->{'req'}->filename();
+    
+}
 
 
 sub _headers {
