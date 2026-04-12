@@ -23,7 +23,6 @@ use warnings;
 #  External modules
 #
 use Cwd qw(fastcwd);
-use Data::Dumper;
 use File::Basename;
 use File::Spec;
 

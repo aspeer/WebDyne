@@ -38,6 +38,7 @@ use File::Spec;
 use PAGI::Request;
 use PAGI::Response;
 use PAGI::SSE;
+use PAGI::WebSocket;
 
 
 #  WebDyne Modules
@@ -117,6 +118,7 @@ sub to_app {
         http        => sub { shift()->handler_http(@_) },
         sse         => sub { shift()->handler_sse(@_) },
         ws          => sub { shift()->handler_ws(@_) },
+        websocket   => sub { shift()->handler_ws(@_) },
         lifespan    => sub { shift()->handler_lifespan(@_) }
     );
         
@@ -153,7 +155,7 @@ sub handler_sse {
     #  Get request
     #
     my ($self, $scope, $receive, $send)=@_;
-    debug('in handler, scope:%s receive:%s, send:%s', Dumper($scope, $receive, $send));
+    debug('in handler_sse, scope:%s receive:%s, send:%s', Dumper($scope, $receive, $send));
 
 
     #  Setup %ENV
@@ -205,7 +207,7 @@ sub handler_sse_error {
         #  Get request
         #
         my ($scope, $receive, $send)=@_;
-        debug('in handler, scope:%s receive:%s, send:%s', Dumper($scope, $receive, $send));
+        debug('in handler_sse_error, scope:%s receive:%s, send:%s', Dumper($scope, $receive, $send));
 
 
         #  Create helper objects
@@ -223,6 +225,55 @@ sub handler_sse_error {
     
 }
 
+
+sub handler_ws {
+
+
+    #  Get request
+    #
+    my ($self, $scope, $receive, $send)=@_;
+    debug('in handler_ws, scope:%s receive:%s, send:%s', Dumper($scope, $receive, $send));
+
+
+    #  Setup %ENV
+    #
+    local *ENV=\%ENV_BASE;
+
+
+    #  Create helper objects
+    #
+    my $req_or=PAGI::Request->new($scope, $receive) ||
+        return err('unable to get PAGI::Request object');
+    my $res_or=PAGI::Response->new($scope, $send) ||
+        return err('unable to get PAGI::Response object');
+    my $ws_or=PAGI::WebSocket->new($scope, $receive, $send) ||
+        return err('unable to get PAGI::WebSocket object');
+    debug("req_or: $req_or, res_or: $res_or, ws_or: $ws_or");
+
+
+    #  Get main WebDyne handler request object
+    #
+    my $r=WebDyne::Request::PAGI->new( document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, res=>$res_or, ws=>$ws_or,
+        receive => $receive, send=> $send) ||
+            return err('unable to create new WebDyne::Request::PAGI object: %s', 
+                $@ || errclr() || 'unknown error');
+    debug("r: $r");
+    
+    
+    #  Call handler. No point error checking but log errors
+    #
+    debug('calling WebDyne handler');
+    my $status=WebDyne->handler($r);
+    debug("status: $status");
+    if ($status eq HTTP_CONTINUE) {
+        my $ws_cr=$r->custom_response($status);
+        return $ws_cr;
+    }
+    else {
+        return err();
+    }
+
+}
 
 sub handler_http {
 

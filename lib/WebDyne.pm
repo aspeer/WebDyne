@@ -579,6 +579,19 @@ sub handler : method {    # no subsort
     }
 
 
+    #  WebSockets under PAGI ?
+    #
+    if (
+        WEBDYNE_PAGI
+        && ($r->{'scope'}->{'type'} =~ /^(?:ws|websocket)$/)
+        && (my $ws=($self->{'_ws'} || $meta_hr->{'ws'}))
+    ) {
+        my $ws_cr=&eval_cr($srce_inode, \"&${ws}");
+        $r->custom_response(HTTP_CONTINUE, sub { $ws_cr->($self) });
+        return HTTP_CONTINUE
+    }
+
+
     #  Contain cache code ?
     #
     if ((my $cache=($self->{'_cache'} || $meta_hr->{'cache'})) && !$self->{'_cache_run_fg'}++) {

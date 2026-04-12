@@ -31,6 +31,7 @@ use File::Temp qw(tempdir);
 use IO::File;
 use Fcntl;
 use Getopt::Long;
+use POSIX qw(pause);
 
 
 #  WebDyne modules
@@ -150,7 +151,7 @@ sub main {
     #  Block forever
     #
     while (1) {
-        sleep 1;
+        pause();
     }
 
 }
