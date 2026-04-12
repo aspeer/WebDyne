@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         version="5.0"
+         xml:id="wdlint">
+  <info>
+    <title>wdlint(1)</title>
+  </info>
+
+  <section xml:id="wdlint-name">
+    <title>NAME</title>
+    <para>
+      wdlint - check Perl syntax in the <literal>__PERL__</literal>
+      section of a WebDyne file
+    </para>
+  </section>
+
+  <section xml:id="wdlint-synopsis">
+    <title>SYNOPSIS</title>
+    <para>
+      <literal>wdlint [PERL_OPTIONS] FILE</literal>
+    </para>
+  </section>
+
+  <section xml:id="wdlint-description">
+    <title>Description</title>
+    <para>
+      The <literal>wdlint</literal> command checks the Perl syntax
+      embedded in a WebDyne <literal>.psp</literal> file.
+    </para>
+    <para>
+      It does this by copying the source file to a temporary file,
+      scanning until it finds the <literal>__PERL__</literal> marker, then
+      inserting a Perl shebang, <literal>use strict;</literal>, and a
+      <literal>#line</literal> directive so any syntax errors reported by
+      Perl refer back to the original source file and line numbers as
+      closely as possible.
+    </para>
+    <para>
+      It then runs:
+    </para>
+    <programlisting language="bash">perl -c -w -x</programlisting>
+    <para>
+      against the temporary file and prints any warnings or syntax errors
+      returned by Perl.
+    </para>
+    <para>
+      This utility is primarily useful for checking server-side Perl code
+      in the <literal>__PERL__</literal> section of a WebDyne page. It is
+      not a full WebDyne page validator and it does not check the HTML
+      structure, WebDyne compilation stages, or runtime behaviour of the
+      page.
+    </para>
+  </section>
+
+  <section xml:id="wdlint-options">
+    <title>Options</title>
+    <para>
+      <literal>wdlint</literal> does not implement its own option parser.
+      The last argument is treated as the source file to check. Any
+      earlier arguments are passed directly through to Perl when running
+      the syntax check.
+    </para>
+    <para>
+      In practice this means:
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          Perl warnings are enabled by default via <literal>-w</literal>.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Perl syntax checking is enabled by default via
+          <literal>-c</literal>.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Perl <literal>-x</literal> processing is enabled so Perl starts
+          reading from the injected Perl section.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Any additional arguments before the file name are passed
+          directly to Perl, for example <literal>-I</literal> include
+          paths or other Perl switches.
+        </para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section xml:id="wdlint-examples">
+    <title>Examples</title>
+    <programlisting language="html">&lt;start_html&gt;
+Hello World &lt;? server_time() ?&gt;
+__PERL__
+
+sub server_time {
+    my 2==1; # Error here
+}
+</programlisting>
+    <programlisting language="bash"># Check the embedded Perl syntax in a WebDyne page
+#
+$ wdlint check.psp
+syntax error at check.psp line 6, near "my 2"
+check.psp had compilation errors.
+</programlisting>
+    <programlisting language="bash"># Pass an include path through to Perl while checking syntax
+#
+$ wdlint -Ilib page.psp
+</programlisting>
+  </section>
+
+  <section xml:id="wdlint-notes">
+    <title>Notes</title>
+    <para>
+      Only the Perl code after the <literal>__PERL__</literal> marker is
+      linted. If a file contains no <literal>__PERL__</literal> section,
+      the command still constructs a temporary file and runs Perl against
+      it, but there may be little or nothing useful to validate.
+    </para>
+    <para>
+      <literal>wdlint</literal> adds <literal>use strict;</literal> to the
+      temporary file during checking, so code that only compiles without
+      strict mode may fail under <literal>wdlint</literal>.
+    </para>
+    <para>
+      Because the command relies on Perl's own parser, it is a good tool
+      for catching syntax mistakes early, but it will not detect
+      WebDyne-specific logic errors, bad HTML, or problems that only
+      appear when the page is compiled or rendered in a real request
+      context.
+    </para>
+  </section>
+
+  <section xml:id="wdlint-author">
+    <title>Author</title>
+    <para>
+      Written by Andrew Speer, <email>andrew@webdyne.org</email>
+    </para>
+  </section>
+
+  <section xml:id="wdlint-license-and-copyright">
+    <title>LICENSE and COPYRIGHT</title>
+    <para>
+      This file is part of WebDyne.
+    </para>
+    <para>
+      This software is copyright (c) 2026 by Andrew Speer
+      &lt;andrew.speer@isolutions.com.au&gt;.
+    </para>
+    <para>
+      This is free software; you can redistribute it and/or modify it
+      under the same terms as the Perl 5 programming language system
+      itself.
+    </para>
+    <para>
+      Full license text is available at:
+    </para>
+    <para>
+      &lt;http://dev.perl.org/licenses/&gt;
+    </para>
+  </section>
+</article>
