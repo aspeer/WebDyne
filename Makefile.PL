@@ -50,11 +50,17 @@ my %WriteMakefile=(
         'Time::HiRes'       => 0,
         'Sub::Util'         => 0,
         'Term::ANSIColor'   => 0,
+        'Crypt::URandom'    => 0,
         
-        #  Plack recommended but not mandatory
+        #  Plack
         #
         #'Plack'             => 0,
-        #'Plack::Middleware::ForceEnv => 0,
+        
+        
+        #  PAGI
+        #
+        #'PAGI'             => 0,
+        
 
         #  Needed for installer - can be ignored if not using installer
         'Text::Template' => 0,

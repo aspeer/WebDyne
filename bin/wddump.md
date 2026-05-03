@@ -10,7 +10,7 @@ wddump - dump the data structure of a WebDyne page in the cache directory
 
 # Description #
 
-The  `wddump`  command displays internal the data structure of a compiled WebDyne psp file from the WebDyne cache directory. The  `wddump`  utility is of limited diagnostic use \- the  `wdcompile`  tool is more suitable for troubleshooting HTML tree errors.
+The  `wddump`  command displays the internal data structure of a compiled WebDyne psp file from the WebDyne cache directory. The  `wddump`  utility is of limited diagnostic use \- the  `wdcompile`  tool is more suitable for troubleshooting HTML tree errors.
 
 `wddump`  can be useful to see a picture of the final data structure looks like on complex pages built via many filters, combining static and dynamic blocks etc.
 
@@ -23,10 +23,10 @@ The  `wddump`  command displays internal the data structure of a compiled WebDyn
 # Examples #
 
 ```sh
-# Display the data structure from a compiled, cached webdyne time.psp file. File name and location
-# will vary depending on your configuration 
+# Display the data structure from a compiled, cached webdyne time.psp file. 
+# File name and location will vary depending on your configuration 
 #
-$ wdrender /var/webdyne/cache/26f2c4edc8bfd52fbde915290db96779
+$ wddump /var/webdyne/cache/26f2c4edc8bfd52fbde915290db96779
 
 $VAR1 = [
   '<!DOCTYPE html><html lang="en"><head><title>Untitled Document</title><meta charset="UTF-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"></head>
@@ -56,9 +56,9 @@ Written by Andrew Speer,  <andrew@webdyne.org>
 
 This file is part of WebDyne.
 
-This software is copyright \(c) 2025 by Andrew Speer &lt;andrew.speer@isolutions.com.au&gt;.
+This software is copyright \(c) 2026 by Andrew Speer &lt;andrew.speer@isolutions.com.au&gt;.
 
-This is free software; you can redistribute it and/or modify it underthe same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.
 
 Full license text is available at:
 

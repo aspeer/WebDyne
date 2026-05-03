@@ -14,8 +14,7 @@ wddebug - enable or disable debugging in the WebDyne packages
 
 # Description #
 
-By default debugging is optimized out of the WebDyne modules to increase performance. This script can be used to enable or disable debugging for troubleshooting purposes. Debugging can be turned on or off in the WebDyne modules by running this script with the appropriate option. With no options the script will return the current status of debugging in the WebDyne
- modules.
+By default debugging is optimized out of the WebDyne modules to increase performance. This script can be used to enable or disable debugging for troubleshooting purposes. Debugging can be turned on or off in the WebDyne modules by running this script with the appropriate option. With no options the script will return the current status of debugging in the WebDyne modules.
 
 # Options #
 
@@ -78,9 +77,7 @@ $ make install
 
 # Notes #
 
-Debugging is enabled in all source modules in the form of debug(&#39;message&#39;) calls. These calls are optimized out of the code during installation via a PM_FILTER in MakeMaker unless the WEBDYNE_DEBUG environment variable is set. Once optimised out the debug calls are not available for use as they are converted in the code to the form \` `0 &&
-    debug('message')` , which is optimised away by the Perl compiler. This script will enable or disable the debug calls in already installed modules by adding or removing the  `0
-    &&`  prefix from the code.  **As this edits installed modules it is not recommended for use in a production environment** . If debugging is necessary it is better to install WebDyne on a test system with the command:
+Debugging is enabled in all source modules in the form of debug(&#39;message&#39;) calls. These calls are optimized out of the code during installation via a PM_FILTER in MakeMaker unless the WEBDYNE_DEBUG environment variable is set. Once optimised out the debug calls are not available for use as they are converted in the code to the form \` `0 && debug('message')` , which is optimised away by the Perl compiler. This script will enable or disable the debug calls in already installed modules by adding or removing the  `0 &&`  prefix from the code.  **As this edits installed modules it is not recommended for use in a production environment** . If debugging is necessary it is better to install WebDyne on a test system with the command:
 
 ```
 $ WEBDYNE_DEBUG=1 perl Makefile.PL && make install
@@ -118,10 +115,10 @@ Written by Andrew Speer,  <andrew@webdyne.org>
 
 This file is part of WebDyne.
 
-This software is copyright \(c) 2025 by Andrew Speer &lt;andrew.speer@isolutions.com.au&gt;.
+This software is copyright \(c) 2026 by Andrew Speer &lt;andrew.speer@isolutions.com.au&gt;.
 
 This is free software; you can redistribute it and/or modify it underthe same terms as the Perl 5 programming language system itself.
 
 Full license text is available at:
 
-&lt;http://dev.perl.org/licenses/&gt;
+&lt;http://dev.perl.org/licenses/>;

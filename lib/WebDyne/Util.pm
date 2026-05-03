@@ -31,7 +31,8 @@ our (
     $WEBDYNE_DEBUG_MAX_LINES,
     $WEBDYNE_DEBUG_MAX_LENGTH,
     $WEBDYNE_DEBUG_NO_COLOUR,
-    $WEBDYNE_ERROR_TEXT_SHOW_ALL
+    $WEBDYNE_ERROR_TEXT_SHOW_ALL,
+    $WEBDYNE_ERROR_TEXT_CHAR_MAX
 );
 
 
@@ -81,6 +82,7 @@ BEGIN {
         WEBDYNE_DEBUG_MAX_LENGTH    => 1024,
         WEBDYNE_DEBUG_NO_COLOUR     => $ENV{'WEBDYNE_DEBUG_NO_COLOR'},
         WEBDYNE_ERROR_TEXT_SHOW_ALL => '',
+        WEBDYNE_ERROR_TEXT_CHAR_MAX => $ENV{'WEBDYNE_ERROR_TEXT_CHAR_MAX'} || 72,
     );
     while (my($name, $value)=each(%config)) {
         ${__PACKAGE__."::${name}"}=defined($ENV{$name}) ? $ENV{$name} : $value;
@@ -555,12 +557,14 @@ sub errdump {
     #
     my @format=(
 
-        '+' . ('-' x 78) . "+\n",
-        "| @<<<<< | ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< |\n",
-        "|        | ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<~~ |\n"
+        #'+' . ('-' x 78) . "+\n",
+        #"| @<<<<< | ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< |\n",
+        #"|        | ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<~~ |\n"
+        '+' . ('-' x ($WEBDYNE_ERROR_TEXT_CHAR_MAX + 12)) . "+\n",
+        sprintf('| @<<<<< | ^%s |'."\n", ('<' x $WEBDYNE_ERROR_TEXT_CHAR_MAX)),
+        sprintf('|        | ^%s~~ |'."\n", ('<' x ($WEBDYNE_ERROR_TEXT_CHAR_MAX-2) ))
 
     );
-
 
     #  Go through the message stack on error at a time in reverse order
     #

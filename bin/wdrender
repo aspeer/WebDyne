@@ -33,18 +33,20 @@ package main;
 use strict qw(vars);
 use vars   qw($VERSION);
 use warnings;
+no warnings qw(once);
 
 
-#  Use the base module
+#  Use the base module for err()
 #
-#use WebDyne::Util;
+use WebDyne::Util;
 
 
 #  Other external modules
 #
-use WebDyne;
-use WebDyne::Constant;
-use WebDyne::Request::Fake;
+#use WebDyne;
+#use WebDyne::Util;
+#use WebDyne::Constant;
+#use WebDyne::Request::Fake;
 use Getopt::Long;
 use Pod::Usage;
 use IO::File;
@@ -97,14 +99,15 @@ sub main {
         error   => 'text',
         header  => 0,
         warn    => 0,
-        tidy    => 0,
+        tidy    => 1,
         colour  => 1,
-        lineno  => 0,
+        lineno  => 1,
         theme   => 'light',
         request => 'fake',
         method  => 'GET',
         root    => fastcwd(),
-        tmp_cleanup => 1,
+        keep_tmp => 0,
+        warn    => 1,
         %{do(glob(sprintf('~/.%s.opt', basename(__FILE__)))) || {}}
 
     );
@@ -117,8 +120,10 @@ sub main {
         'all',
         'colour|color!',
         'compare',
+        'conf|config=s',
+        'noconf|noconfig|no_conf|no_config|no-conf|no-config',
         'delay|sleep=i',
-        'error=s',
+        # 'error=s', # Not applied
         'fake',
         'get=s@',
         'handler=s',
@@ -126,7 +131,6 @@ sub main {
         'header|headers!',
         'header_only|header-only|headers_only|headers-only|headersonly',
         'headers_in|header_in=s@',
-        'headers_out|header_out=s@',
         'htmx',
         'lineno!',
         'loop',
@@ -141,26 +145,38 @@ sub main {
         'psgi',
         'psgi_server',
         'put=s@',
+        'raw',
         'repeat|num|n=s',
         'request|r=s',
         'root|docroot|doc_root|document_root=s',
         'sse',
-        'status=s',
+        #'status=s', # Not applied
         'theme=s',
-        'tidy!',
-        'tmp_cleanup',
+        'tidy|pretty!',
+        'keep_tmp!',
         'help|?',
-        'warn!',
+        'warn!', 
         'man',
         'version'
     ) || pod2usage(2);
     pod2usage(-verbose => 99, -sections => 'SYNOPSIS|OPTIONS', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {
+        require WebDyne;
         print "$Script version: $VERSION\n";
         print "WebDyne version: $WebDyne::VERSION ($WebDyne::VERSION_GIT_SHA)\n";
         exit 0
     };
+    
+    
+    #  Special config ?
+    #
+    if (my $conf_fn=$opt{'conf'}) {
+        $ENV{'WEBDYNE_CONF'}=$opt{'conf'};
+    }
+    elsif($opt{'noconf'} || $opt{'raw'}) {
+        $ENV{'WEBDYNE_CONF'}='.';
+    }
 
     
     #  Is dest file set ? If so open
@@ -170,10 +186,10 @@ sub main {
         $html_fh=IO::File->new($dest_fn, O_CREAT | O_TRUNC | O_WRONLY) ||
             return err("unable to open file $dest_fn for output, $!");
     }
-    else {
-        $html_fh=IO::String->new($html);
-    }
-    $opt{'select'}=$html_fh;
+    #else {
+    #    $html_fh=IO::String->new($html);
+    #}
+    #$opt{'select'}=$html_fh;
 
 
     #  Get srce file, add to options
@@ -199,9 +215,6 @@ sub main {
     #
     my $method=lc((grep{exists $opt{$_}} qw(get post patch put options head))[0] || $opt{'method'});
     
-    
-        
-
 
     #  Convert any headers into a HTTP::Header object
     #
@@ -323,32 +336,26 @@ sub main {
                     next;
                 }
                 
-                if ($opt{'compare'}) {
-                    unless ($html eq ($_{'html'} ||= $html)) {
-                        eval { require Text::Diff } || do {
-                            die(sprintf("compare mismatch:\n\n$html\n\n%s",$_{'html'}));
-                        };
-                        my $diff=Text::Diff::diff(
-                            \Data::Dumper->Dump([\$html], ['$ACTUAL']),
-                            \Data::Dumper->Dump([\$_{'html'}], ['$EXPECT']),
-                            { STYLE => 'Unified' }
-                        );
-                        die("compare mismatch: $diff");
+                #  Don't colourise or format if --raw optoion given
+                #
+                unless ($opt{'raw'}) {
+
+
+                    #  Tidy ?
+                    #
+                    if ($opt{'tidy'} && ($res_or->content_type eq 'text/html') && !$opt{'htmx'} ) {
+                        $html=&html_tidy($html, \%opt);
                     }
-                }
 
 
-                #  Tidy ?
-                #
-                if ($opt{'tidy'} && ($res_or->content_type eq 'text/html') && !$opt{'htmx'} ) {
-                    $html=&html_tidy($html, \%opt);
-                }
-
-
-                #  Send to syntax higlighter ?
-                #
-                if ($opt{'colour'} && ($res_or->content_type eq 'text/html')) {
-                    $html=&html_colour($html, $header, \%opt);
+                    #  Send to syntax higlighter ?
+                    #
+                    unless ($opt{'outfile'}) {
+                        if ($opt{'colour'} && ($res_or->content_type eq 'text/html')) {
+                            $html=&html_colour($html, $header, \%opt);
+                        }
+                    }
+                
                 }
                 
                 
@@ -359,7 +366,25 @@ sub main {
                 
                 #  Print it
                 #
-                CORE::print $html, $/;
+                $html_fh ? CORE::print $html_fh $html, $/ : CORE::print $html, $/;
+                
+                
+                if ($opt{'compare'}) {
+                    unless ($html eq ($_{'html'} ||= $html)) {
+                        eval { require Text::Diff } || do {
+                            die(sprintf("compare mismatch:\n\n$html\n\n%s",$_{'html'}));
+                        };
+                        my $diff=Text::Diff::diff(
+                            #\Data::Dumper->Dump([\$html], ['$ACTUAL']),
+                            #\Data::Dumper->Dump([\$_{'html'}], ['$EXPECT']),
+                            \$_{'html'},
+                            \$html,
+                            { STYLE => 'Unified', FILENAME_A=>'EXPECT', FILENAME_B=>'ACTUAL' }
+                        );
+                        local $SIG{'__DIE__'};
+                        CORE::die("compare mismatch:\n$diff");
+                    }
+                }
                 
                 
                 #  If looking for leak
@@ -384,31 +409,12 @@ sub main {
                 if (my $delay=$opt{'delay'}) {
                     sleep $delay
                 }
-                next;
-                
-                
-                #  Do we expect all output in a repeat to be the same ? If
-                #  so check we're all the same
-                #  
-                if ($opt{'compare'}) {
-                    unless ($html eq ($_{'html'} ||= $html)) {
-                        eval { require Text::Diff } || do {
-                            die(sprintf("compare mismatch:\n\n$html\n\n%s",$_{'html'}));
-                        };
-                        my $diff=Text::Diff::diff(
-                            \Data::Dumper->Dump([\$html], ['$ACTUAL']),
-                            \Data::Dumper->Dump([\$_{'html'}], ['$EXPECT']),
-                            { STYLE => 'Unified' }
-                        );
-                        die("compare mismatch: $diff");
-                    }
-                }
 
             }
             
             #  Reinit WebDyne for next run to clear cache etc
             #
-            WebDyne->init();
+            WebDyne->init() if defined(&WebDyne::init);
 
         }
         
@@ -447,12 +453,6 @@ sub request_psgi {
     #
     require WebDyne::PSGI;
     require Plack::Test;
-    #if ($opt_hr->{'psgi_server'}) {
-    #    #  Want to use real server
-    #    #
-    #    no warnings qw(once);
-    #    $Plack::Test::Impl='Server';
-    #}
 
     #  Create new instance of WebDyne PSGI handler
     #
@@ -649,7 +649,7 @@ sub request_mod_perl_startup {
     my $svr_root_dn=tempdir(
         'webdyne_apache_XXXXXXXX',
         TMPDIR  => 1,
-        CLEANUP => $opt_hr->{'tmp_cleanup'},   # we’ll stop httpd first, then remove manually
+        CLEANUP => !$opt_hr->{'keep_tmp'},   # we’ll stop httpd first, then remove manually
     );
 
 
@@ -762,6 +762,7 @@ sub request_fake {
     
     #  Get new request handler
     #
+    require WebDyne::Request::Fake;
     my $r=WebDyne::Request::Fake->new(
 
         filename        => $req_or->uri->path(),
@@ -839,7 +840,7 @@ sub html_colour {
     #  Try to load colour module
     #
     eval { require Syntax::Highlight::Engine::Kate } ||
-        return err('unable to load Syntax::Highlight::Engine::Kate module - is it installed ?');
+        return do { warn("install Syntax::Highlight::Engine::Kate to colourise output.\n") if $opt_hr->{'warn'}; $html };
 
     
     #  Var to hold output
@@ -968,11 +969,10 @@ sub html_colour {
 
 sub html_tidy {
 
-    my $html=shift();
-    eval {
-        require HTML::Tidy5;
-        $html=HTML::Tidy5->new($WEBDYNE_HTML_TIDY_CONFIG_HR)->clean($html);
-    };
+    my ($html, $opt_hr)=@_;
+    eval { require HTML::Tidy5 } ||
+        return do { warn("install system libtidy-devel package and HTML::Tidy5 to tidy output.\n") if $opt_hr->{'warn'}; $html };
+    $html=HTML::Tidy5->new($WebDyne::WEBDYNE_HTML_TIDY_CONFIG_HR)->clean($html);
     return $html;
 
 }
@@ -1092,13 +1092,12 @@ Written by Andrew Speer,  <andrew@webdyne.org>
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it underthe same terms as the Perl 5 programming language system itself.
 
 Full license text is available at:
 
-L<http://dev.perl.org/licenses/>
+<http://dev.perl.org/licenses/>
 
 =cut

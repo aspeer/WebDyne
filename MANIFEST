@@ -1419,3 +1419,6 @@ t/14-pagi.t
 t/15-request.psp                         
 t/15-request.t                           
 t/t.pm                                   
+bin/wdlint.md                            
+bin/wdlint.xml                           
+bin/webdyne.apache.md                    

@@ -29,7 +29,8 @@ use WebDyne::Util;
 
 #  External modules
 #
-use Digest::MD5 qw(md5_hex);
+#use Digest::MD5 qw(md5_hex);
+use Crypt::URandom qw( urandom );
 use CGI::Simple;
 
 
@@ -115,9 +116,12 @@ sub handler : method {
         debug('session cookie not found, generating new session_id');
 
 
-        #  Generate a new session id based on an MD5 checksum
+        #  Generate a new session id based on an MD5 checksum. UPDATE deprectaed, CVE-2026-5084 
         #
-        $session_id=&Digest::MD5::md5_hex(rand($$ . time() . ($self =~ /(\d+)/)[0]));
+        #$session_id=&Digest::MD5::md5_hex(rand($$ . time() . ($self =~ /(\d+)/)[0]));
+        
+        #  Use urandom for session now
+        $session_id = unpack("H*", urandom(16));
         debug("generated new session_id $session_id");
 
 

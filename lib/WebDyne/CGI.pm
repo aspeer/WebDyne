@@ -80,3 +80,125 @@ sub new {
 }
 
 1;
+__END__
+
+
+=pod
+
+=head1 WebDyne::CGI(3pm)
+
+=head1 NAME
+
+WebDyne::CGI - Provides abstracted access to GET and POST parameters and file upload objects.
+
+=head1 SYNOPSIS
+
+    #  Get form responses
+    #
+    <start_html>
+    <start_form>
+    ...
+    <perl handler>
+    ...
+    __PERL__
+    sub handler {
+    
+        #  WebDyne object ref passed as first option
+        #
+        my $self=shift();
+    
+        #  Get abstracted CGI object
+        #
+        my $cgi_or=$self->CGI();
+    
+        #  All parameter names
+        #
+        my @param=$cgi_or->param();
+    
+        #  Single param value, same as $_{'name'}
+        #
+        my $name=$cgi_or->param('name');
+    
+        #  Multiple param values, if supplied
+        #
+        my @name=$cgi_or->param('name');
+    
+        #  Hash::MultiValue reference of files uploaded
+        # 
+        my $uploads_hr=$cgi_or->uploads();
+    
+        #  Hash::MultiValue reference of all parameter name/value(s) pairs
+        #
+        my $param_hr=$cgi_or->Vars();
+
+=head1 DESCRIPTION
+
+The  C<<<< WebDyne::CGI >>>>  module provides an abstracted object reference to CGI style form parameters supplied as GET or POST responses to a form or other methodology. It is so named (and takes some method names) from the original CGI.pm module by Lincoln Stein (but does not use the CGI.pm module).
+
+It attempts to abstract the different ways of getting parameter values from different request handlers (Apache mod_perl, Plack PSGI and legacy FastGCGI) into a uniform object.
+
+It makes use of the CGI::Simple module and many of the method calls are identical.
+
+=head1 METHODS
+
+The following notable methods are made available from the WebDyne::CGI module:
+
+=over
+
+=item * B<<< Vars() >>>
+
+Return a Hash::MultiValue reference of all name/value pairs.
+
+=item * B<<< env() >>>
+
+Returns a hash reference of the current Environment.
+
+=item * B<<< uploads() >>>
+
+Return an object reference to uploaded file data that mimics as Plack::Request::Upload object
+
+=item * B<<< param(<name>) >>>
+
+When called in a scalar context return a single value of a names parameter. When called in an array context return all values if a multi-value parameter item.
+
+=item * B<<< param(name, value, <value> ..) >>>
+
+Set the parameter value (or values) for a named parameter.
+
+=item * B<<< delete(name) >>>
+
+Delete the entire parameter (and all values) from the CGI object
+
+=item * B<<< delete_all() >>>
+
+Delete all parameters from the CGI object
+
+=item * B<<< uploads() >>>
+
+Return a Hash::MultiValue reference consisting of name/value pairs of file upload objects that mimic Plack::Request::Upload references.
+
+=back
+
+Most other methods from CGI::Simple are also supported, including utility methods such as url_encode(), url_decode() etc.
+
+=head1 OPTIONS
+
+The  C<<<< WebDyne::CGI >>>>  module allows setting allow/block of file uploads and maximum POST size via the following  C<<<< WebDyne::Constant >>>>  values:
+
+=over
+
+=item * C<<<< $WEBDYNE_CGI_DISABLE_UPLOADS >>>>
+
+=item * C<<<< $WEBDYNE_CGI_POST_MAX >>>>
+
+=back
+
+=head1 AUTHOR
+
+Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself. See  L<https://dev.perl.org/licenses/|https://dev.perl.org/licenses/> .
+
+=cut

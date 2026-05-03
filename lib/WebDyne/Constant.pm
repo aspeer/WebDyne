@@ -610,7 +610,7 @@ sub local_constant_fn {
     my $local_constant_fn=$Constant{'WEBDYNE_CONF_FN'};
     if ($^O=~/MSWin[32|64]/) {
         my $dn=$ENV{'WEBDYNE_HOME'} || $ENV{'WEBDYNE'} || $ENV{'WINDIR'};
-        push @local_constant_fn, ($ENV{'WEBDYNE_CONF'} || 
+        push @local_constant_fn, (exists $ENV{'WEBDYNE_CONF'} ? $ENV{'WEBDYNE_CONF'} : 
             File::Spec->catfile($dn, $local_constant_fn))
     }
     else {
