@@ -241,7 +241,6 @@ sub local_constant_load {
 
 __END__
 
-
 sub normalize_dn {
 
     #  Normal dir, normally document_root
@@ -254,3 +253,128 @@ sub normalize_dn {
 }
 
 
+
+
+=head1 NAME
+
+WebDyne - PAGI application for handling web requests
+
+
+=head1 SYNOPSIS
+
+C<<< webdyne.pagi [--option] <document_root> >>>
+
+C<webdyne.pagi --port 8080 /var/www/html>
+
+C<webdyne.pagi --test>
+
+
+=head1 DESCRIPTION
+
+C<webdyne.pagi> is a PAGI application script that handles web requests using the WebDyne framework. It builds a C<WebDyne::PAGI> application, loads any configured PAGI middleware, and starts it through C<PAGI::Runner>.
+
+The underlying C<WebDyne::PAGI> application can dispatch PAGI scope types for normal HTTP requests, server-sent events, WebSocket connections, and lifespan startup or shutdown events.
+
+
+=head1 OPTIONS
+
+C<webdyne.pagi> parses a small set of wrapper options itself and passes remaining command line options through to C<PAGI::Runner>.
+
+Wrapper options handled by C<webdyne.pagi> itself:
+
+B<--test> Use WebDyne's internal test page as the root.
+
+B<--static / --nostatic> Enable or disable PAGI static-file middleware.
+
+B<--index / --noindex> Enable or disable index handling. With the default enabled setting, the wrapper maps the index document to WebDyne's internal default index page.
+
+B<--root> Set the document root.
+
+B<--argv> Supply additional arguments that the wrapper will prepend before invoking C<PAGI::Runner>.
+
+Remaining command line options are handled by C<PAGI::Runner>. Some common options are:
+
+B<-o, --host> Which host interface to bind to. When launched through C<webdyne.pagi>, the wrapper adds C<--host 0.0.0.0> unless you specify a host explicitly.
+
+B<-p, --port> Which port to bind to.
+
+B<-s, --server> Which PAGI server class to use. The runner default is C<PAGI::Server>.
+
+B<-E, --env> Environment mode, for example C<development>, C<production>, or C<none>.
+
+B<-l, --loop> Event loop backend.
+
+B<-I, --lib> Add a library path to C<@INC>.
+
+B<-M> Load a module before the app starts.
+
+B<--default-middleware / --no-default-middleware> Enable or disable runner default middleware.
+
+B<-D, --daemonize> Run as a background daemon.
+
+B<--access-log / --no-access-log> Configure access logging.
+
+B<--pid, --user, --group, -q, --quiet, -v, --version, --help> Standard runner process and output controls.
+
+
+=head1 EXAMPLES
+
+To run the script for basic functionality and serve files from C</var/www/html>, use:
+
+C<webdyne.pagi /var/www/html>
+
+Disable wrapper-managed index handling and rely on the PAGI request layer's default document behaviour instead:
+
+C<webdyne.pagi --noindex /var/www/html>
+
+Start on another port:
+
+C<webdyne.pagi --port 8080 /var/www/html>
+
+Start with a specific host:
+
+C<webdyne.pagi --host 127.0.0.1 --port 8080 /var/www/html>
+
+Start with the internal test page:
+
+C<webdyne.pagi --test>
+
+Start with a different event loop backend:
+
+C<webdyne.pagi --loop EV /home/aspeer/public_html>
+
+
+=head1 ENVIRONMENT VARIABLES
+
+This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configuration and environment handling, including C<DOCUMENT_ROOT>, C<DOCUMENT_DEFAULT>, and the relevant C<WEBDYNE_*> settings used by the PAGI modules.
+
+When launched from the command line, the wrapper also reads local WebDyne configuration from C<DOCUMENT_ROOT/.webdyne.conf.pl> before starting the PAGI runner.
+
+Relevant PAGI-specific settings from C<WebDyne::PAGI::Constant> include:
+
+B<WEBDYNE_PAGI_STATIC> Enable or disable static-file serving middleware.
+
+B<WEBDYNE_PAGI_MIDDLEWARE_STATIC> Regular expression used to decide which static files are served directly.
+
+B<WEBDYNE_PAGI_MIDDLEWARE> Middleware stack applied around the WebDyne PAGI app.
+
+B<WEBDYNE_PAGI_ENV_KEEP / WEBDYNE_PAGI_ENV_SET> Environment variables preserved or injected for request handling.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

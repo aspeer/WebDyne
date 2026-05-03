@@ -12,6 +12,8 @@ wddebug - enable or disable debugging in the WebDyne packages
 
 `wddebug --enable --directory /opt/perl5`
 
+`wddebug [--OPTION] [MODULE_OR_FILE]`
+
 # Description #
 
 By default debugging is optimized out of the WebDyne modules to increase performance. This script can be used to enable or disable debugging for troubleshooting purposes. Debugging can be turned on or off in the WebDyne modules by running this script with the appropriate option. With no options the script will return the current status of debugging in the WebDyne modules.
@@ -50,6 +52,10 @@ By default debugging is optimized out of the WebDyne modules to increase perform
 
     Display the script version and exit.
 
+* **MODULE_OR_FILE**
+
+    Optional trailing positional filter. If supplied, `wddebug` only reports or toggles the matching installed module file, for example `WebDyne.pm` or `WebDyne/Handler.pm`.
+
 # Examples #
 
 ```sh
@@ -68,6 +74,11 @@ $ wddebug --enable
 # Turn off debugging
 #
 $ wddebug --disable
+
+# Show or toggle just one installed module file
+#
+$ wddebug WebDyne/Handler.pm
+$ wddebug --enable WebDyne/Handler.pm
 
 # Install modules from source with debugging enabled
 #

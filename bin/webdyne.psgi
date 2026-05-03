@@ -231,9 +231,7 @@ sub local_constant_load {
 
 }
 
-__END__
-
-sub normalize_dn {
+__END__sub normalize_dn {
 
     #  Normal dir, normally document_root
     #
@@ -245,3 +243,108 @@ sub normalize_dn {
 }
 
 
+
+
+
+
+__END__
+
+
+
+
+
+
+
+
+
+=head1 NAME
+
+WebDyne - PSGI application for handling web requests
+
+
+=head1 SYNOPSIS
+
+C<<< webdyne.psgi [--option] <document_root> >>>
+
+C<webdyne.psgi --port 8080 /var/www/html> 
+
+C<webdyne.psgi --test>
+
+
+=head1 DESCRIPTION
+
+C<webdyne.psgi> is a PSGI application script that handles web requests using the WebDyne framework. It initializes the environment, creates a new PSGI request object, determines the appropriate handler, and processes the request to generate a response.
+
+
+=head1 OPTIONS
+
+C<webdyne.psgi> parses a small set of wrapper options itself and passes remaining command line options through to C<Plack::Runner>.
+
+Wrapper options handled by C<webdyne.psgi> itself:
+
+B<--test> Use WebDyne's internal test page as the root.
+
+B<--static / --nostatic> Enable or disable PSGI static-file middleware.
+
+B<--index / --noindex> Enable or disable index handling. With the default enabled setting, the wrapper maps the index document to WebDyne's internal default index page.
+
+B<--root> Set the document root.
+
+B<--argv> Supply additional arguments that the wrapper will prepend before invoking C<Plack::Runner>.
+
+Remaining command line options are handled by C<Plack::Runner> and are the same as described in the L<plackup(1)|man:plackup(1)> man page. Refer to that page for full options but some common options are:
+
+B<--host> Which host interface to bind to
+
+B<--port> Which port to bind to
+
+B<--server> Which server to use, e.g. Starman
+
+B<--reload> Reload if libraries or other files change
+
+B<-I> Same as perl -I for library include paths
+
+B<-M> Same as perl -M for loading modules before the script starts
+
+
+=head1 EXAMPLES
+
+To run the script, use the following command for basic functionality and serving files from the /var/www/html directory. With default settings, index handling is enabled and the wrapper uses WebDyne's internal default index page.
+
+C<webdyne.psgi /var/www/html>
+
+Disable wrapper-managed index handling and rely on the PSGI request layer's default document behaviour instead
+
+C<webdyne.psgi --noindex /var/www/html>
+
+Start with the Starman server
+
+C<webdyne.psgi --no-default-middleware --server Starman /home/aspeer/public_html>
+
+Start with the internal test page
+
+C<webdyne.psgi --test>
+
+
+=head1 ENVIRONMENT VARIABLES
+
+This script is a frontend to the WebDyne PSGI stack. In addition to C<Plack::Runner> options, it uses WebDyne configuration and environment handling, including C<DOCUMENT_ROOT>, C<DOCUMENT_DEFAULT>, and the relevant C<WEBDYNE_*> settings used by the PSGI modules.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

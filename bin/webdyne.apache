@@ -346,3 +346,305 @@ sub perl_inc_dn {
     return \@lib;
 }
         
+__END__
+
+
+
+
+
+
+
+
+
+
+
+
+=head1 NAME
+
+webdyne.apache - start a temporary Apache mod_perl instance for serving WebDyne pages
+
+
+=head1 SYNOPSIS
+
+C<webdyne.apache [--option] [document_root]>
+
+C<webdyne.apache --port 8080 /var/www/html>
+
+C<webdyne.apache --test>
+
+C<webdyne.apache /var/www/html/time.psp>
+
+
+=head1 DESCRIPTION
+
+C<webdyne.apache> starts a temporary Apache instance using C<Apache::TestRunPerl> and configures it to handle C<.psp> files with the WebDyne response handler. It is intended as a quick way to run WebDyne pages under Apache for local development, prototyping, and troubleshooting without doing a full Apache installation or system-wide configuration step first.
+
+By default the script:
+
+=over
+
+=item -
+
+uses the current working directory as the document root
+
+
+=item -
+
+enables WebDyne index handling
+
+
+=item -
+
+listens on port C<5000>
+
+
+=item -
+
+creates a temporary Apache server root
+
+
+=item -
+
+creates a temporary WebDyne cache directory under that server root
+
+
+=item -
+
+starts Apache in one-process mode and then waits until interrupted
+
+
+=back
+
+If the supplied root is a file rather than a directory, the parent directory becomes Apache C<DocumentRoot> and the selected file is passed through to WebDyne as C<DOCUMENT_ROOT> so that a single-page application can be served.
+
+This utility is primarily designed for quick prototyping and development under Apache. For a fuller Apache installation intended for ongoing or production-style deployment, use C<bin/wdapacheinit> instead.
+
+
+=head1 OPTIONS
+
+=over
+
+=item *
+
+B<--index>
+
+Enable index handling. This is on by default. If enabled with the default value, WebDyne uses its internal default index page.
+
+
+
+=item *
+
+B<--noindex>
+
+Disable index handling.
+
+
+
+=item *
+
+B<--root | --docroot | --doc_root | --document_root>
+
+Specify the document root directory or a single C<.psp> file to serve.
+
+
+
+=item *
+
+B<--port>
+
+Specify the Apache listen port. The default is C<5000>.
+
+
+
+=item *
+
+B<--keep_tmp>
+
+Keep the temporary Apache server root instead of cleaning it up automatically on exit.
+
+
+
+=item *
+
+B<--test>
+
+Use the internal WebDyne test page as the root page.
+
+
+
+=item *
+
+B<--dump_postamble>
+
+Print the generated Apache configuration postamble and exit instead of starting the server.
+
+
+
+=item *
+
+B<--argv>
+
+Accepted by the script option parser, but not otherwise used by the current code.
+
+
+
+=item *
+
+B<--help | -?>
+
+Display a brief help message and exit.
+
+
+
+=back
+
+
+=head1 BEHAVIOUR
+
+The generated Apache configuration currently does the following:
+
+=over
+
+=item -
+
+loads the C<WebDyne> Perl module
+
+
+=item -
+
+installs C<mod_perl> handling for C<.psp> files with C<PerlResponseHandler WebDyne>
+
+
+=item -
+
+sets C<DOCUMENT_DEFAULT> to the resolved WebDyne default index page
+
+
+=item -
+
+passes through any current C<WEBDYNE_*> environment variables as C<PerlSetEnv>
+
+
+=item -
+
+sets C<WEBDYNE_ERROR_TEXT=1> unless already defined
+
+
+=item -
+
+grants access to both the resolved default index directory and the selected document root
+
+
+=item -
+
+sets C<DirectoryIndex index.psp>
+
+
+=item -
+
+aliases C</index.psp> to the resolved default index file
+
+
+=item -
+
+rewrites directory requests to C</index.psp>
+
+
+=item -
+
+logs to C</dev/stderr> and C</dev/stdout> where possible, otherwise falls back to Apache log files
+
+
+=back
+
+The script also reads defaults from C<~/.webdyne.apache.opt> if that file exists.
+
+
+=head1 EXAMPLES
+
+Start Apache in the current directory on the default port:
+
+
+ webdyne.apache
+Serve files from a specific directory:
+
+
+ webdyne.apache /var/www/html
+Serve a single WebDyne page:
+
+
+ webdyne.apache /var/www/html/time.psp
+Run on another port and keep the temporary Apache tree for inspection:
+
+
+ webdyne.apache --port 8080 --keep_tmp /var/www/html
+Show the generated Apache configuration instead of starting the server:
+
+
+ webdyne.apache --dump_postamble /var/www/html
+Start using the internal test page:
+
+
+ webdyne.apache --test
+
+=head1 NOTES
+
+This script is a development helper, not a full Apache installation tool. It starts Apache using C<Apache::Test> infrastructure in one-process mode, which is convenient for local testing but is not a substitute for a proper Apache deployment.
+
+For production or more complete Apache setup, prefer C<bin/wdapacheinit>, which is intended for installing Apache configuration more formally.
+
+If you want to use C<webdyne.apache>, additional system and CPAN tooling may need to be installed first. These components are not nominated by default in the WebDyne module:
+
+=over
+
+=item -
+
+system packages for Apache HTTP Server
+
+
+=item -
+
+C<mod_perl>
+
+
+=item -
+
+C<mod_perl-dev> or the equivalent development package on your platform
+
+
+=item -
+
+Perl CPAN modules C<Apache::Test>
+
+
+=item -
+
+Perl CPAN modules C<Module::CoreList>
+
+
+=back
+
+The script also checks for C<Apache2::Build> at startup. If C<Module::CoreList> is broken or outdated relative to the installed C<Apache2::Build>, startup can fail with a message requesting rebuild or upgrade of C<Module::CoreList>.
+
+The Apache configuration generated by this script is assembled dynamically. Use C<--dump_postamble> if you need to inspect the exact config fragment before startup.
+
+The process stays in the foreground and exits on C<INT> or C<TERM>, at which point it attempts to stop the temporary Apache server cleanly.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

@@ -1,5 +1,3 @@
-# wdrender(1) #
-
 # NAME #
 
 wdrender - parse and render WebDyne files
@@ -252,10 +250,10 @@ Written by Andrew Speer, <andrew@webdyne.org>
 
 This file is part of WebDyne.
 
-This software is copyright \(c) 2026 by Andrew Speer &lt;andrew.speer@isolutions.com.au&gt;.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
 This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.
 
 Full license text is available at:
 
-&lt;http://dev.perl.org/licenses/&gt;
+<http://dev.perl.org/licenses/>

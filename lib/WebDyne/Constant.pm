@@ -1004,24 +1004,33 @@ sub import {
 
 __END__
 
-=pod
+
+
+
+
+
+
+
 
 =head1 WebDyne::Constant(3pm)
+
 
 =head1 NAME
 
 WebDyne::Constant - WebDyne module that sets constants and defaults for WebDyne processing
 
+
 =head1 SYNOPSIS
 
-    #!/usr/bin/env perl
-    #
-    use WebDyne::Constant;
-    print $WEBDYNE_DTD
 
+ #!/usr/bin/env perl
+ #
+ use WebDyne::Constant;
+ print $WEBDYNE_DTD
     # Dump all constant settings for review
     #
     $ perl -MWebDyne::Constant=dump
+
 
 =head1 Description
 
@@ -1032,11 +1041,23 @@ Common uses for modifying constant values allow for:
 
 =over
 
-=item * Changing default language from en-US to something else.
+=item *
 
-=item * Modifying or adding new meta-data or default headers to output
+Changing default language from en-US to something else.
 
-=item * Adding default style-sheets or other inclusions to all output files
+
+
+=item *
+
+Modifying or adding new meta-data or default headers to output
+
+
+
+=item *
+
+Adding default style-sheets or other inclusions to all output files
+
+
 
 =back
 
@@ -1044,71 +1065,90 @@ Default values for these configuration constants can be updated the following lo
 
 =over
 
-=item 1. /etc/webdyne.conf.pl
+=item 1.
 
-=item 2. $HOME/.webdyne.conf.pl
+/etc/webdyne.conf.pl
 
-=item 3. $DOCUMENT_ROOT/.webdyne.conf.pl
+
+
+=item 2.
+
+$HOME/.webdyne.conf.pl
+
+
+
+=item 3.
+
+$DOCUMENT_ROOT/.webdyne.conf.pl
+
+
 
 =back
 
 As a special case when running under PSGI environments, if WEBDYNE_DIR_CONFIG_CWD_LOAD is true (which it is by default) then each directory that a .psp file is run from is checked for the .webdyne.conf.pl file - but only WEBDYNE_DIR_CONFIG entries from the file are loaded. This allows for configuration of settings such a WebDyneChain modules to load, WebDyneTemplate
  configuration etc. on a per directory basis
 
-The WebDyne::Constant module is sub-classed by other WebDyne modules, and the values for any constants in the WebDyne::<Module>::Constant family of modules can be overridden by creating/updating one of the above two files. Here is a sample configuration file:
+The WebDyne::Constant module is sub-classed by other WebDyne modules, and the values for any constants in the WebDyne::E<lt>ModuleE<gt>::Constant family of modules can be overridden by creating/updating one of the above two files. Here is a sample configuration file:
 
-    $_={
-    
-        #  Update config constants for WebDyne::Constant module
-        #
-        'WebDyne::Constant' => {
-    
-            #  Where the cache directory will live
-            #
-            WEBDYNE_CACHE_DN            => '/tmp',
-     
-            #  The attributes below will be added to any <start_html> tag, effectively
-            #  adding two stylesheets to every page
-            #
-            WEBDYNE_START_HTML_PARAM    => {
-              style => [qw(
-                https://cdn.jsssdelivr.net/npm/@picocss/pico@2/css/pico.classless.m
-                /style.css
-              )]
-            },
-    
-            #  Enable extended error display
-            #
-            WEBDYNE_ERROR_SHOW_EXTENDED => 1,
-    
-            #  Update CGI upload capacity to 2GB
-            #
-            WEBDYNE_CGI_POST_MAX        => (2048*1024),
-    
-            #  Handle examples directory differently
-            #
-            WEBDYNE_DIR_CONFIG => {
-                '/examples' => {
-                    'WebDyneHandler'    => 'WebDyne::Chain',
-                    'WebDyneChain'      => 'WebDyne::Session',
-                },
-            },
-    
-      },
-    
-      #  And for WebDyne::Session module
-      #
-      'WebDyne::Session::Constant' => {
-          WEBDYNE_SESSION_ID_COOKIE_NAME => 'mysession'  
-      },
-    };
 
-B<<< WARNING >>>: Ensure the configuration file has the correct syntax by checking the Perl interpreter doesn't throw any errors. Use  C<<<< perl -c -w >>>>  to check syntax:
+ $_={
+ 
+     #  Update config constants for WebDyne::Constant module
+     #
+     'WebDyne::Constant' => {
+ 
+         #  Where the cache directory will live
+         #
+         WEBDYNE_CACHE_DN            => '/tmp',
+  
+         #  The attributes below will be added to any <start_html> tag, effectively
+         #  adding two stylesheets to every page
+         #
+         WEBDYNE_START_HTML_PARAM    => {
+           style => [qw(
+             https://cdn.jsssdelivr.net/npm/@picocss/pico@2/css/pico.classless.m
+             /style.css
+           )]
+         },
+ 
+         #  Enable extended error display
+         #
+         WEBDYNE_ERROR_SHOW_EXTENDED => 1,
+ 
+         #  Update CGI upload capacity to 2GB
+         #
+         WEBDYNE_CGI_POST_MAX        => (2048*1024),
+ 
+         #  Handle examples directory differently
+         #
+         WEBDYNE_DIR_CONFIG => {
+             '/examples' => {
+                 'WebDyneHandler'    => 'WebDyne::Chain',
+                 'WebDyneChain'      => 'WebDyne::Session',
+             },
+         },
+ 
+   },
+ 
+   #  And for WebDyne::Session module
+   #
+   'WebDyne::Session::Constant' => {
+       WEBDYNE_SESSION_ID_COOKIE_NAME => 'mysession'  
+   },
+ };
+=over 2
+
+B<WARNING>
+
+Ensure the configuration file has the correct syntax by checking the Perl interpreter doesnE<#39>t throw any errors. Use  C<perl -c -w>  to check syntax:
 
     # perl -c -w /etc/webdyne.conf.pl
     /etc/webdyne.conf.pl syntax OK
     # perl -c -w ~/.webdyne.conf.pl
     /home/<user>/.webdyne.conf.pl OK
+
+=back
+
 
 =head1 CONSTANTS
 
@@ -1116,309 +1156,611 @@ The following configuration constants are defined. The default value of the conf
 
 =over
 
-=item * B<<< WEBDYNE_CACHE_DN () >>>
+=item *
+
+B<WEBDYNE_CACHE_DN ()>
 
 Directory where compiled pages are stored. Unset by default on command line, usually set to temporary directory by installer or PSGI handler. Pages that are compiled from .psp source into an intermediate data structure in Storable format are stored in this location.
 
-=item * B<<< WEBDYNE_STARTUP_CACHE_FLUSH (1) >>>
+
+
+=item *
+
+B<WEBDYNE_STARTUP_CACHE_FLUSH (1)>
 
 Flush cache files at startup. If set will delete all cache files and force re-read and recompile of all source .psp files at startup. Recommended to leave at (1)
 
-=item * B<<< WEBDYNE_CACHE_CHECK_FREQ (256) >>>
+
+
+=item *
+
+B<WEBDYNE_CACHE_CHECK_FREQ (256)>
 
 Perl process frequency (number of runs) to check cache for excess entries and clean any that exceed the cache high water mark.
 
-=item * B<<< WEBDYNE_CACHE_HIGH_WATER (64) >>>
+
+
+=item *
+
+B<WEBDYNE_CACHE_HIGH_WATER (64)>
 
 High water mark for cache entries. Once this limit is reaped cache entries will be deleted down to the low water mark level.
 
-=item * B<<< WEBDYNE_CACHE_LOW_WATER (32) >>>
+
+
+=item *
+
+B<WEBDYNE_CACHE_LOW_WATER (32)>
 
 Low water mark for cache entries. Once high water mark is reached cached entries will be deleted down to this level.
 
-=item * B<<< WEBDYNE_CACHE_CLEAN_METHOD (1) >>>
+
+
+=item *
+
+B<WEBDYNE_CACHE_CLEAN_METHOD (1)>
 
 Method to clean cache (0: last used time, 1: frequency of use).
 
-=item * B<<< WEBDYNE_EVAL_SAFE (0) >>>
+
+
+=item *
+
+B<WEBDYNE_EVAL_SAFE (0)>
 
 Type of eval code to run (0: Direct, 1: Safe). All dynamic components of a .psp page are run in an eval block. Running using eval via the Safe module is experimental.
 
-=item * B<<< WEBDYNE_EVAL_SAFE_OPCODE_AR => [':default'] >>>
+
+
+=item *
+
+B<WEBDYNE_EVAL_SAFE_OPCODE_AR => [':default']>
 
 Opcode set to allow when running in Safe mode.
 
-=item * B<<< WEBDYNE_EVAL_USE_STRICT ('use strict qw(vars)') >>>
+
+
+=item *
+
+B<WEBDYNE_EVAL_USE_STRICT ('use strict qw(vars)')>
 
 Prefix eval code with strict pragma via this string
 
-=item * B<<< WEBDYNE_STRICT_VARS (1) >>>
 
-Use strict variable checking. If any variables are referenced which are not populated in a render(variable=><value>) call an error will thrown.
 
-=item * B<<< WEBDYNE_AUTOLOAD_POLLUTE (0) >>>
+=item *
+
+B<WEBDYNE_STRICT_VARS (1)>
+
+Use strict variable checking. If any variables are referenced which are not populated in a render(variable=E<gt>E<lt>valueE<gt>) call an error will thrown.
+
+
+
+=item *
+
+B<WEBDYNE_AUTOLOAD_POLLUTE (0)>
 
 Pollute WebDyne class with method references for minor speedup. Saves AUTOLOAD trying to find method in call stack but at the price of potentially clashing with an inbuilt method. Use with care.
 
-=item * B<<< WEBDYNE_DUMP_FLAG (0) >>>
 
-Flag to display current CGI value and other information if <dump> tag is used.
 
-=item * B<<< WEBDYNE_CONTENT_TYPE_HTML ('text/html') >>>
+=item *
+
+B<WEBDYNE_DUMP_FLAG (0)>
+
+Flag to display current CGI value and other information if E<lt>dumpE<gt> tag is used.
+
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_HTML ('text/html')>
 
 Content-type header for text/html.
 
-=item * B<<< WEBDYNE_CONTENT_TYPE_PLAIN ('text/plain') >>>
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_PLAIN ('text/plain')>
 
 Content-type header for text/plain.
 
-=item * B<<< WEBDYNE_CONTENT_TYPE_JSON ('application/json') >>>
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_JSON ('application/json')>
 
 Content-type header for text/json
 
-=item * B<<< WEBDYNE_SCRIPT_TYPE_EXECUTABLE_HR >>>
 
-Script types which are executable on the browser and won't have substitution imposed on variables that match WebDyne syntax (e.g. ${foo}). includes:
 
-=over
+=item *
 
-=item * text/javascript
+B<WEBDYNE_SCRIPT_TYPE_EXECUTABLE_HR>
 
-=item * application/javascript
+Script types which are executable on the browser and wonE<#39>t have substitution imposed on variables that match WebDyne syntax (e.g. ${foo}). includes:
 
-=item * module
 
-=back
 
-=item * B<<< WEBDYNE_HTML_CHARSET ('UTF-8') >>>
+=item *
+
+text/javascript
+
+
+
+=item *
+
+application/javascript
+
+
+
+=item *
+
+module
+
+
+
+=item *
+
+B<WEBDYNE_HTML_CHARSET ('UTF-8')>
 
 Character set for HTML.
 
-=item * B<<< WEBDYNE_DTD ('<!DOCTYPE html>') >>>
+
+
+=item *
+
+B<WEBDYNE_DTD ('')>
 
 DTD to use when generating HTML.
 
-=item * B<<< WEBDYNE_META ({charset => 'UTF-8', viewport' => 'width=device-width, initial-scale=1.0'}) >>>
+
+
+=item *
+
+B<WEBDYNE_META ({charset => 'UTF-8', viewport' => 'width=device-width, initial-scale=1.0'})>
 
 Meta information for HTML
 
-=item * B<<< WEBDYNE_CONTENT_TYPE_HTML_META (0) >>>
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_HTML_META (0)>
 
 Include a Content-Type meta tag.
 
-=item * B<<< WEBDYNE_HTML_PARAM ({lang => 'en'}) >>>
 
-Default <html> tag parameter attributes
 
-=item * B<<< WEBDYNE_START_HTML_PARAM () >>>
+=item *
 
-Default attributes for any <start_html> tags, e.g. include_style=>['foo.css', 'bar.css']. These will be inserted automatically into any start_html tag seen in any .psp page.
+B<WEBDYNE_HTML_PARAM ({lang => 'en'})>
 
-=item * B<<< WEBDYNE_START_HTML_PARAM_STATIC (1) >>>
+Default E<lt>htmlE<gt> tag parameter attributes
+
+
+
+=item *
+
+B<WEBDYNE_START_HTML_PARAM ()>
+
+Default attributes for any E<lt>start_htmlE<gt> tags, e.g. include_style=E<gt>[E<#39>foo.cssE<#39>, E<#39>bar.cssE<#39>]. These will be inserted automatically into any start_html tag seen in any .psp page.
+
+
+
+=item *
+
+B<WEBDYNE_START_HTML_PARAM_STATIC (1)>
 
 Make include/other sections in start_html tag static, i.e. load them at compile time and they never change. Make undef to force re-include every page load
 
-=item * B<<< WEBDYNE_HEAD_INSERT () >>>
 
-Anything that should be added in <head> section. Will be inserted verbatim before </head>. No interpolation or variables, simple text string only. Useful for setting global stylesheet, e.g. <link href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" rel="stylesheet">. Will be added to all <head> sections
+
+=item *
+
+B<WEBDYNE_HEAD_INSERT ()>
+
+Anything that should be added in E<lt>headE<gt> section. Will be inserted verbatim before E<lt>/headE<gt>. No interpolation or variables, simple text string only. Useful for setting global stylesheet, e.g. E<lt>link href=E<quot>L<https://cdn.jsdelivr.net/npm/water.css@2/out/water.css&quot;> rel=E<quot>stylesheetE<quot>E<gt>. Will be added to all E<lt>headE<gt> sections
  universally.
 
-=item * B<<< WEBDYNE_COMPILE_IGNORE_WHITESPACE (1) >>>
+
+
+=item *
+
+B<WEBDYNE_COMPILE_IGNORE_WHITESPACE (1)>
 
 Ignore ignorable whitespace in compile.
 
-=item * B<<< WEBDYNE_COMPILE_NO_SPACE_COMPACTING (0) >>>
+
+
+=item *
+
+B<WEBDYNE_COMPILE_NO_SPACE_COMPACTING (0)>
 
 Disable space compacting in compile.
 
-=item * B<<< WEBDYNE_COMPILE_P_STRICT (1) >>>
+
+
+=item *
+
+B<WEBDYNE_COMPILE_P_STRICT (1)>
 
 Use strict parsing in compile.
 
-=item * B<<< WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG (1) >>>
 
-Implicitly add <body> and <p> tags in compile
 
-=item * B<<< WEBDYNE_STORE_COMMENTS (1) >>>
+=item *
+
+B<WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG (1)>
+
+Implicitly add E<lt>bodyE<gt> and E<lt>pE<gt> tags in compile
+
+
+
+=item *
+
+B<WEBDYNE_STORE_COMMENTS (1)>
 
 Store and render comments.
 
-=item * B<<< WEBDYNE_NO_CACHE (1) >>>
+
+
+=item *
+
+B<WEBDYNE_NO_CACHE (1)>
 
 Send no-cache headers.
 
-=item * B<<< WEBDYNE_WARNINGS_FATAL (0) >>>
+
+
+=item *
+
+B<WEBDYNE_WARNINGS_FATAL (0)>
 
 Treat any warnings as fatal errors.
 
-=item * B<<< WEBDYNE_CGI_DISABLE_UPLOADS (0) >>>
+
+
+=item *
+
+B<WEBDYNE_CGI_DISABLE_UPLOADS (0)>
 
 Disable CGI uploads. They are enabled by defaults
 
-=item * B<<< WEBDYNE_CGI_POST_MAX (524288) >>>
+
+
+=item *
+
+B<WEBDYNE_CGI_POST_MAX (524288)>
 
 Max post size for CGI (512KB).
 
-=item * B<<< WEBDYNE_CGI_PARAM_EXPAND (1) >>>
+
+
+=item *
+
+B<WEBDYNE_CGI_PARAM_EXPAND (1)>
 
 Expand CGI parameters found in CGI names.
 
-=item * B<<< WEBDYNE_CGI_AUTOESCAPE (0) >>>
+
+
+=item *
+
+B<WEBDYNE_CGI_AUTOESCAPE (0)>
 
 Disable CGI autoescape of form fields.
 
-=item * B<<< WEBDYNE_ERROR_TEXT (0) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_TEXT (0)>
 
 Use text errors rather than HTML.
 
-=item * B<<< WEBDYNE_ERROR_SHOW (1) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_SHOW (1)>
 
 Show errors.
 
-=item * B<<< WEBDYNE_ERROR_SHOW_EXTENDED (0) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_SHOW_EXTENDED (0)>
 
 Show extended error information, including backtraces and source code
 
-=item * B<<< WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW (1) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW (1)>
 
 Show error source file context.
 
-=item * B<<< WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_PRE (4) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_PRE (4)>
 
 Number of lines to show before error context.
 
-=item * B<<< WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_POST (4) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_POST (4)>
 
 Number of lines to show after error context.
 
-=item * B<<< WEBDYNE_ERROR_SOURCE_CONTEXT_LINE_FRAGMENT_MAX (80) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_SOURCE_CONTEXT_LINE_FRAGMENT_MAX (80)>
 
 Max length of source line to show in output.
 
-=item * B<<< WEBDYNE_ERROR_SOURCE_FILENAME_SHOW (1) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_SOURCE_FILENAME_SHOW (1)>
 
 Show filename in error output.
 
-=item * B<<< WEBDYNE_ERROR_BACKTRACE_SHOW (1) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_BACKTRACE_SHOW (1)>
 
 Show backtrace in error output.
 
-=item * B<<< WEBDYNE_ERROR_BACKTRACE_SHORT (0) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_BACKTRACE_SHORT (0)>
 
 Show brief backtrace.
 
-=item * B<<< WEBDYNE_ERROR_EVAL_CONTEXT_SHOW (1) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_EVAL_CONTEXT_SHOW (1)>
 
 Show eval trace in error output.
 
-=item * B<<< WEBDYNE_ERROR_CGI_PARAM_SHOW (1) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_CGI_PARAM_SHOW (1)>
 
 Show CGI parameters in error output.
 
-=item * B<<< WEBDYNE_ERROR_ENV_SHOW (1) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_ENV_SHOW (1)>
 
 Show environment variables in error output.
 
-=item * B<<< WEBDYNE_ERROR_WEBDYNE_CONSTANT_SHOW (1) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_WEBDYNE_CONSTANT_SHOW (1)>
 
 Show WebDyne constants in error output.
 
-=item * B<<< WEBDYNE_ERROR_URI_SHOW (1) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_URI_SHOW (1)>
 
 Show URI in error output.
 
-=item * B<<< WEBDYNE_ERROR_VERSION_SHOW (1) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_VERSION_SHOW (1)>
 
 Show version in error output.
 
-=item * B<<< WEBDYNE_ERROR_EVAL_TEXT_IX (0) >>>
+
+
+=item *
+
+B<WEBDYNE_ERROR_EVAL_TEXT_IX (0)>
 
 Index for error eval text.
 
-=item * B<<< WEBDYNE_ERROR_SHOW_ALTERNATE` ('error display disabled - enable WEBDYNE_ERROR_SHOW to show errors, or review web server error log.') >>>
+
+
+=item *
+
+**WEBDYNE_ERROR_SHOW_ALTERNATE`('error display disabled - enable WEBDYNE_ERROR_SHOW to show errors, or review web server error log.')**
 
 Alternate error message if error display is disabled.
 
-=item * B<<< WEBDYNE_HTML_DEFAULT_TITLE ('Untitled Document') >>>
+
+
+=item *
+
+B<WEBDYNE_HTML_DEFAULT_TITLE ('Untitled Document')>
 
 Default title for HTML documents.
 
-=item * B<<< WEBDYNE_HTML_TINY_MODE ('html') >>>
+
+
+=item *
+
+B<WEBDYNE_HTML_TINY_MODE ('html')>
 
 Mode for HTML::Tiny object used for generating output (XML or HTML).
 
-=item * B<<< WEBDYNE_RELOAD (0) >>>
+
+
+=item *
+
+B<WEBDYNE_RELOAD (0)>
 
 Development mode - recompile loaded modules.
 
-=item * B<<< WEBDYNE_JSON_CANONICAL (1) >>>
+
+
+=item *
+
+B<WEBDYNE_JSON_CANONICAL (1)>
 
 Use JSON canonical mode.
 
-=item * B<<< WEBDYNE_HTTP_HEADER (<HashRef>) >>>
+
+
+=item *
+
+B<WEBDYNE_HTTP_HEADER ()>
 
 Default HTTP response headers to send. Includes:
 
-=over
 
-=item * Content-type: text/html; charset=UTF-8
 
-=item * Cache-Control: no-cache, no-store, must-revalidate
+=item *
 
-=item * Pragma: no-cache
+Content-type: text/html; charset=UTF-8
 
-=item * Expires: 0
 
-=item * X-Content-Type-Options: nosniff
 
-=item * X-Frame-Options: SAMEORIGIN
+=item *
 
-=back
+Cache-Control: no-cache, no-store, must-revalidate
 
-=item * B<<< WEBDYNE_API_ENABLE (1) >>>
 
-Enable support for the <api> tag. Will cause slight slow-down as routes are converted to .psp file names. Enabled by default.
 
-=item * B<<< WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE ('x-on') >>>
+=item *
 
-Converts @click="dosomething()" attributes to x-on:click="dosomething()" in tags as HTML::Parser does not support the '@' character in tag attributes.
+Pragma: no-cache
 
-=item * B<<< WEBDYNE_HTTP_HEADER_AJAX_HR ({ hx-request=>1, x-alpine-request=>1 }) >>>
+
+
+=item *
+
+Expires: 0
+
+
+
+=item *
+
+X-Content-Type-Options: nosniff
+
+
+
+=item *
+
+X-Frame-Options: SAMEORIGIN
+
+
+
+=item *
+
+B<WEBDYNE_API_ENABLE (1)>
+
+Enable support for the E<lt>apiE<gt> tag. Will cause slight slow-down as routes are converted to .psp file names. Enabled by default.
+
+
+
+=item *
+
+B<WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE ('x-on')>
+
+Converts @click=E<quot>dosomething()E<quot> attributes to x-on:click=E<quot>dosomething()E<quot> in tags as HTML::Parser does not support the E<#39>@E<#39> character in tag attributes.
+
+
+
+=item *
+
+B<WEBDYNE_HTTP_HEADER_AJAX_HR ({ hx-request=>1, x-alpine-request=>1 })>
 
 List of HTTP request headers that denote the request is part of an AJAX (e.g. HTMX) request and only partial HTML response is required.
 
-=item * B<<< WEBDYNE_PSGI_STATIC (1) >>>
+
+
+=item *
+
+B<WEBDYNE_PSGI_STATIC (1)>
 
 Allow the PSGI module to serve static content (css files etc.)
 
-=item * B<<< WEBDYNE_PSP_EXT (.psp) >>>
+
+
+=item *
+
+B<WEBDYNE_PSP_EXT (.psp)>
 
 Extension for .psp pages. Do not change unless you know what you are doing.
 
-=item * B<<< WEBDYNE_MIME_TYPE_HR (<HashRef>) >>>
+
+
+=item *
+
+B<WEBDYNE_MIME_TYPE_HR ()>
 
 Very minimal MIME type hash used by lookup_file function. See file for default content, usual definitions for text, images, style-sheets, PDF etc.
 
-=item * B<<< WEBDYNE_DIR_CONFIG () >>>
+
+
+=item *
+
+B<WEBDYNE_DIR_CONFIG ()>
 
 Hash ref that contains location based hierarchy of configuration variables similar to that returned by Apache mod_perl dir_config module. See test (t) directory in source for example.
 
-=item * B<<< WEBDYNE_DIR_CONFIG_CWD_LOAD (1) >>>
+
+
+=item *
+
+B<WEBDYNE_DIR_CONFIG_CWD_LOAD (1)>
 
 Enable loading of WEBDYNE_DIR_CONFIG hash ref from the current .psp file working directory if a .webdyne.conf.pl file is present.
 
-=item * B<<< WEBDYNE_CONF_HR (<HashRef>) >>>
+
+
+=item *
+
+B<WEBDYNE_CONF_HR ()>
 
 Read-only value as hash reference showing location of files used to create the values for constants in this module.
 
-=item * B<<< MP2 (mod_perl version) >>>
+
+
+=item *
+
+B<MP2 (mod_perl version)>
 
 Mod_perl level. Auto-detected, do not change unless you know what you are doing.
 
-=item * B<<< MOD_PERL (mod_perl version) >>>
+
+
+=item *
+
+B<MOD_PERL (mod_perl version)>
 
 Mod_perl environment runtime detected. Do not change unless you know what you are doing
 
-=back
 
-=cut
+
+=back

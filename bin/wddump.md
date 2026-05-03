@@ -20,6 +20,14 @@ The  `wddump`  command displays the internal data structure of a compiled WebDyn
 
     Show brief help message.
 
+* **--man**
+
+    Display the full manual.
+
+* **--version**
+
+    Display the script version and exit.
+
 # Examples #
 
 ```sh

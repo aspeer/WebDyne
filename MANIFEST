@@ -2,15 +2,12 @@ bin/wdapacheinit
 bin/wdapacheinit.md                      
 bin/wdcompile
 bin/wdcompile.md                         
-bin/wdcompile.xml                        
 bin/wddebug
 bin/wddebug.md                           
 bin/wddump
 bin/wddump.md                            
-bin/wddump.xml
 bin/wdrender
 bin/wdrender.md                          
-bin/wdrender.xml                         
 bin/webdyne.psgi
 bin/webdyne.psgi.md
 bin/wdlint
@@ -1116,7 +1113,6 @@ t/data/08-cgi_param_expand.dat.final
 t/data/08-cgi_param_expand.html          
 t/data/08-cgi_param_expand.tree          
 INSTALL.xml                              
-bin/wddebug.xml                          
 lib/WebDyne/Chain.pm.xml                 
 lib/WebDyne/Filter/Constant.pm           
 INSTALL.md                               
@@ -1420,5 +1416,5 @@ t/15-request.psp
 t/15-request.t                           
 t/t.pm                                   
 bin/wdlint.md                            
-bin/wdlint.xml                           
-bin/webdyne.apache.md                    
+bin/webdyne.apache.md
+bin/webdyne.pagi.md

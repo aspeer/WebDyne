@@ -490,25 +490,32 @@ sub UNIVERSAL::AUTOLOAD {
 
 __END__
 
-=pod
+
+
+
+
+
+
 
 =head1 WebDyne::Chain.pm(3pm)
+
 
 =head1 NAME
 
 WebDyne::Chain - WebDyne chaining module, allows extension of base WebDyne handler pipeline with additional modules.
 
+
 =head1 SYNOPSIS
 
 SYNOPSIS
 
-    #  Basic usage. Save as file named chain.psp:
-    #
-    <start_html>
-    Server local time is: <? localtime ?>
-    __PERL__
-    use WebDyne::Chain qw(WebDyne::Session)
 
+ #  Basic usage. Save as file named chain.psp:
+ #
+ <start_html>
+ Server local time is: <? localtime ?>
+ __PERL__
+ use WebDyne::Chain qw(WebDyne::Session)
     #  Render with wdrender. Note the session variable
     #
     $ wdrender --header ./chain.psp
@@ -524,11 +531,12 @@ SYNOPSIS
     
     <!DOCTYPE html><html lang="en"><head><title>Untitled Document</title><meta charset="UTF-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"></head>
     <body><p>Server local time is: Sun Dec  7 21:56:17 2025</p></body></html>
-
+    
     # Or extend manually from command line for testing. Does not require use of WebDyne::Chain
     # in page.
     #
     $ WebDyneChain=WebDyne::Session wdrender --header --handler WebDyne::Chain time.psp 
+
 
 =head1 DESCRIPTION
 
@@ -536,13 +544,29 @@ WebDyne::Chain allows chaining of modules within the WebDyne pipeline. This allo
 
 =over
 
-=item * Setting or getting session tracking data
+=item *
 
-=item * Checking for authentication status and redirecting if not valid
+Setting or getting session tracking data
 
-=item * Rewriting input URL's or parameters, or rewriting output HTML
 
-=item * Tracking user state from a database connection
+
+=item *
+
+Checking for authentication status and redirecting if not valid
+
+
+
+=item *
+
+Rewriting input URLE<#39>s or parameters, or rewriting output HTML
+
+
+
+=item *
+
+Tracking user state from a database connection
+
+
 
 =back
 
@@ -550,58 +574,69 @@ WebDyne includes two example Chain modules in the base package:
 
 =over
 
-=item * B<<< WebDyne::Session >>>
+=item *
+
+B<WebDyne::Session>
 
 Sets/gets a session cookie in the headers
 
-=item * B<<< WebDyne::Filter >>>
+
+
+=item *
+
+B<WebDyne::Filter>
 
 Rewrite Request or Response headers, HTML content
 
+
+
 =back
+
 
 =head1 USAGE
 
-WebDyne::Chain allows nomination of modules to chain in a psp page via the import method when using the module. At it's simplest you can import just the modules you want.
+WebDyne::Chain allows nomination of modules to chain in a psp page via the import method when using the module. At itE<#39>s simplest you can import just the modules you want.
 
-    <start_html>
-    Server local time is <? localtime ?>
-    __PERL__
-    use WebDyne::Chain qw(WebDyne::Session WebDyne::State);
-    1;
 
+ <start_html>
+ Server local time is <? localtime ?>
+ __PERL__
+ use WebDyne::Chain qw(WebDyne::Session WebDyne::State);
+ 1;
 WebDyne::Chain will automatically add any methods made available by the chained modules into the page, e.g.
 
-    <start_html>
-    Session ID is: <? shift()->session_id() ?>
-    __PERL__
-    #  WebDyne::Session exposes the session_id() method used above
-    #
-    use WebDyne::Chain qw(WebDyne::Session);
 
+ <start_html>
+ Session ID is: <? shift()->session_id() ?>
+ __PERL__
+ #  WebDyne::Session exposes the session_id() method used above
+ #
+ use WebDyne::Chain qw(WebDyne::Session);
 In reality most modules that can be loaded by WebDyne::Chain will work when loaded standalone, e.g. the code below is the equivalent to loading WebDyne::Session via WebDyne::Chain:
 
-    <start_html>
-    Session ID is: <? shift()->session_id() ?>
-    __PERL__
-    #  Will autoload WebDyne::Chain and add itself into the handler pipeline
-    #
-    use WebDyne::Session;
+
+ <start_html>
+ Session ID is: <? shift()->session_id() ?>
+ __PERL__
+ #  Will autoload WebDyne::Chain and add itself into the handler pipeline
+ #
+ use WebDyne::Session;
 
 =head1 METHODS
 
 WebDyne::Chain does not expose any public methods
 
+
 =head1 OPTIONS
 
 WebDyne::Chain does not expose any options other than the names of modules to add to the handler chain via the import() method on module use - as seen in the Usage section above.
 
+
 =head1 AUTHOR
 
-Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
+Andrew Speer E<lt>andrew.speer@isolutions.com.auE<gt> and contributors.
+
 
 =head1 LICENSE
 
 This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself. See  L<http://dev.perl.org/licenses/|http://dev.perl.org/licenses/> .
-
-=cut
