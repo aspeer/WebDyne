@@ -230,3 +230,86 @@ sub cache_dn {
     return $cache_dn;
 
 }
+__END__
+
+
+
+=head1 WebDyne::Install(3pm)
+
+
+=head1 NAME
+
+WebDyne::Install - base installation helper for WebDyne cache setup
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Install qw(message);
+ 
+ WebDyne::Install->install($prefix);
+ WebDyne::Install->uninstall($prefix);
+
+=head1 DESCRIPTION
+
+C<WebDyne::Install> provides the base installation and uninstall routines used by the WebDyne installer scripts and higher-level installer modules.
+
+Its main job is to determine the appropriate cache directory, create it during installation, and remove WebDyne-managed cache artifacts during uninstall.
+
+
+=head1 METHODS
+
+=over
+
+=item *
+
+B<install($prefix)>
+
+Create the cache directory if required and report progress through C<message()>.
+
+
+
+=item *
+
+B<uninstall($prefix)>
+
+Remove cached compile artifacts from the resolved cache directory and attempt to remove the directory if appropriate.
+
+
+
+=item *
+
+B<cache_dn($prefix)>
+
+Resolve the cache directory path from C<WEBDYNE_CACHE_DN>, an installation prefix, or C<DIR_CACHE_DEFAULT>.
+
+
+
+=item *
+
+B<message(@args)>
+
+Print installer progress messages unless C<SILENT> is set in the environment.
+
+
+
+=back
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

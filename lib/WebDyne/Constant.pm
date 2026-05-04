@@ -1012,6 +1012,7 @@ __END__
 
 
 
+
 =head1 WebDyne::Constant(3pm)
 
 
@@ -1034,7 +1035,7 @@ WebDyne::Constant - WebDyne module that sets constants and defaults for WebDyne 
 
 =head1 Description
 
-This module provides a list of configuration constantDs used in the WebDyne code. These constants are used to configure the behavior of the WebDyne module and can be accessed by importing the module and referencing the constants by name. Constants can be configured to different values by overriding values in local configuration files, setting environment
+This module provides a list of configuration constants used in the WebDyne code. These constants are used to configure the behavior of the WebDyne module and can be accessed by importing the module and referencing the constants by name. Constants can be configured to different values by overriding values in local configuration files, setting environment
  variables, command line options, or Apache directives.
 
 Common uses for modifying constant values allow for:
@@ -1088,7 +1089,7 @@ $DOCUMENT_ROOT/.webdyne.conf.pl
 As a special case when running under PSGI environments, if WEBDYNE_DIR_CONFIG_CWD_LOAD is true (which it is by default) then each directory that a .psp file is run from is checked for the .webdyne.conf.pl file - but only WEBDYNE_DIR_CONFIG entries from the file are loaded. This allows for configuration of settings such a WebDyneChain modules to load, WebDyneTemplate
  configuration etc. on a per directory basis
 
-The WebDyne::Constant module is sub-classed by other WebDyne modules, and the values for any constants in the WebDyne::E<lt>ModuleE<gt>::Constant family of modules can be overridden by creating/updating one of the above two files. Here is a sample configuration file:
+The WebDyne::Constant module is sub-classed by other WebDyne modules, and the values for any constants in the WebDyne::E<lt>ModuleE<gt>::Constant family of modules can be overridden by creating or updating one of the above configuration files. Here is a sample configuration file:
 
 
  $_={
@@ -1152,7 +1153,7 @@ Ensure the configuration file has the correct syntax by checking the Perl interp
 
 =head1 CONSTANTS
 
-The following configuration constants are defined. The default value of the configuration item is provided after the constant name. Most can be overridden or adjusted however where they are read-only this is noted.
+The following commonly adjusted configuration constants are defined. The default value of the configuration item is provided after the constant name. Most can be overridden or adjusted; where they are read-only this is noted.
 
 =over
 
@@ -1262,9 +1263,33 @@ Content-type header for text/html.
 
 =item *
 
-B<WEBDYNE_CONTENT_TYPE_PLAIN ('text/plain')>
+B<WEBDYNE_CONTENT_TYPE_TEXT ('text/plain')>
 
 Content-type header for text/plain.
+
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_HTML_ENCODED ('text/html; charset=UTF-8')>
+
+Fully encoded Content-type header for HTML responses.
+
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_TEXT_ENCODED ('text/plain; charset=UTF-8')>
+
+Fully encoded Content-type header for plain text responses.
+
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_JSON_ENCODED ('application/json; charset=UTF-8')>
+
+Fully encoded Content-type header for JSON responses.
 
 
 
@@ -1355,6 +1380,14 @@ Default attributes for any E<lt>start_htmlE<gt> tags, e.g. include_style=E<gt>[E
 B<WEBDYNE_START_HTML_PARAM_STATIC (1)>
 
 Make include/other sections in start_html tag static, i.e. load them at compile time and they never change. Make undef to force re-include every page load
+
+
+
+=item *
+
+B<WEBDYNE_START_HTML_SHORTCUT_HR (E<lt>HashRefE<gt>)>
+
+Shortcut attribute mappings for C<start_html>, including built-in helpers such as C<pico>, C<htmx>, and C<alpine>.
 
 
 
@@ -1521,6 +1554,14 @@ Show filename in error output.
 
 =item *
 
+B<WEBDYNE_ERROR_SOURCE_FILENAME_FULL (0)>
+
+Show full source filename rather than the shortened display form.
+
+
+
+=item *
+
 B<WEBDYNE_ERROR_BACKTRACE_SHOW (1)>
 
 Show backtrace in error output.
@@ -1532,6 +1573,14 @@ Show backtrace in error output.
 B<WEBDYNE_ERROR_BACKTRACE_SHORT (0)>
 
 Show brief backtrace.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_BACKTRACE_FULL (0)>
+
+Show a fuller backtrace in error output.
 
 
 
@@ -1585,9 +1634,9 @@ Show version in error output.
 
 =item *
 
-B<WEBDYNE_ERROR_EVAL_TEXT_IX (0)>
+B<WEBDYNE_ERROR_INTERNAL_SHOW (0)>
 
-Index for error eval text.
+Show internal WebDyne error details intended mainly for debugging.
 
 
 
@@ -1628,6 +1677,14 @@ Development mode - recompile loaded modules.
 B<WEBDYNE_JSON_CANONICAL (1)>
 
 Use JSON canonical mode.
+
+
+
+=item *
+
+B<WEBDYNE_JSON_PRETTY (0)>
+
+Enable pretty-printed JSON output by default.
 
 
 
@@ -1701,9 +1758,17 @@ List of HTTP request headers that denote the request is part of an AJAX (e.g. HT
 
 =item *
 
-B<WEBDYNE_PSGI_STATIC (1)>
+B<WEBDYNE_HTTP_HEADER_AJAX_AR (E<lt>ArrayRefE<gt>)>
 
-Allow the PSGI module to serve static content (css files etc.)
+Array form of the AJAX request header names derived from C<WEBDYNE_HTTP_HEADER_AJAX_HR>.
+
+
+
+=item *
+
+B<WEBDYNE_HTMX_FORCE (0)>
+
+Force HTMX-oriented partial rendering behaviour even without an HTMX request header.
 
 
 
@@ -1744,6 +1809,62 @@ Enable loading of WEBDYNE_DIR_CONFIG hash ref from the current .psp file working
 B<WEBDYNE_CONF_HR ()>
 
 Read-only value as hash reference showing location of files used to create the values for constants in this module.
+
+
+
+=item *
+
+B<WEBDYNE_CONF_FN ('webdyne.conf.pl')>
+
+Basename of the standard WebDyne local configuration file.
+
+
+
+=item *
+
+B<WEBDYNE_HTML_TIDY (0)>
+
+Enable HTML tidy post-processing by default.
+
+
+
+=item *
+
+B<WEBDYNE_HTML_NEWLINE (0)>
+
+Control whether WebDyne adds extra newlines to output.
+
+
+
+=item *
+
+B<WEBDYNE_PAGI (auto-detected)>
+
+Indicates whether the PAGI support module is currently loaded.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI (auto-detected)>
+
+Indicates whether the PSGI support module is currently loaded.
+
+
+
+=item *
+
+B<WEBDYNE_DEFAULT_TEST_FN>
+
+Absolute path to the built-in WebDyne test page.
+
+
+
+=item *
+
+B<WEBDYNE_DEFAULT_INDEX_FN>
+
+Absolute path to the built-in WebDyne index page.
 
 
 

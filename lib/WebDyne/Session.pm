@@ -189,10 +189,75 @@ sub session_id {
 
 __END__
 
-=begin markdown
+
+=head1 WebDyne::Session(3pm)
 
 
-=end markdown
+=head1 NAME
+
+WebDyne::Session - simple session-cookie module for the WebDyne handler chain
 
 
-=cut
+=head1 SYNOPSIS
+
+
+ __PERL__
+ use WebDyne::Session;
+
+=head1 DESCRIPTION
+
+C<WebDyne::Session> is a chaining module that ensures each request has a session identifier stored in a browser cookie.
+
+When imported from a page C<__PERL__> block, it switches the page to C<WebDyne::Chain> handling and adds itself to the active chain. At runtime it reads the configured session cookie, generates a new identifier when one is missing, and exposes the identifier through the page object.
+
+
+=head1 METHODS
+
+=over
+
+=item *
+
+B<handler($self, $r, $param_hr)>
+
+Read or create the session cookie and then pass control to the next handler in the chain.
+
+
+
+=item *
+
+B<session_id()>
+
+Return the current session identifier for the active page/request object.
+
+
+
+=back
+
+
+=head1 CONSTANTS
+
+Cookie naming is controlled by C<WEBDYNE_SESSION_ID_COOKIE_NAME> from C<WebDyne::Session::Constant>.
+
+
+=head1 NOTES
+
+The current implementation uses C<Crypt::URandom> to generate new session IDs.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

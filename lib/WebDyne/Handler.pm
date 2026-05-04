@@ -59,10 +59,103 @@ sub import {
 __END__
 
 
-=begin markdown
+
+=head1 WebDyne::Handler(3pm)
 
 
-=end markdown
+=head1 NAME
+
+WebDyne::Handler - WebDyne handler module, forces use non-chained WebDyne handler. 
 
 
-=cut
+=head1 SYNOPSIS
+
+SYNOPSIS
+
+
+ #  Basic usage in a simple file in a directory which forces WebDyne::Chain usage
+ #
+ <start_html>
+ Server local time is: <? localtime ?>
+ __PERL__
+ use WebDyne::Handler;
+
+
+=head1 DESCRIPTION
+
+WebDyne::Handler module forces plain (non-chained) processing of a page. This can be useful in an environment where WebDyne::Chain has been configured to process all pages in a directory via alternate configuration options (e.g. Dir_config or other settings).
+
+Using this module will ensure there is no pre or post processing of results by any WebDyne::Chain modules. 
+
+C<use WebDyne::Handler;> is intended to be called from within a WebDyne page C<__PERL__> block. The import routine updates the current page instance so that subsequent handling uses the nominated handler class directly.
+
+=over 2
+
+B<WARNING>
+
+If you use WebDyne::Chain to load an authentication or session tracking module they will not be run on any pages that use this module, which may result in inadvertently allowing unauthenticated access to pages.
+
+=back
+
+
+=head1 USAGE
+
+WebDyne::Handler is used as per the synopsis.
+
+You can also nominate a specific handler class explicitly:
+
+
+ __PERL__
+ use WebDyne::Handler handler => 'WebDyne';
+or with the single-argument shorthand:
+
+
+ __PERL__
+ use WebDyne::Handler 'WebDyne';
+
+=head1 METHODS
+
+WebDyne::Handler does not expose any public methods.
+
+
+=head1 OPTIONS
+
+WebDyne::Handler accepts an optional handler class name at import time. The following forms are supported:
+
+=over
+
+=item *
+
+C<use WebDyne::Handler;>
+
+Reset the page to the plain C<WebDyne> handler flow.
+
+
+
+=item *
+
+C<use WebDyne::Handler 'Some::Handler';>
+
+Use the nominated handler class.
+
+
+
+=item *
+
+C<<< use WebDyne::Handler handler => 'Some::Handler'; >>>
+
+Named form of the same option.
+
+
+
+=back
+
+
+=head1 AUTHOR
+
+Andrew Speer E<lt>andrew.speer@isolutions.com.auE<gt> and contributors.
+
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself. See  L<http://dev.perl.org/licenses/|http://dev.perl.org/licenses/> .

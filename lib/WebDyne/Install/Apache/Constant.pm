@@ -573,3 +573,196 @@ sub mp2_installed {
 #  Done
 #
 1;
+__END__
+
+
+
+=head1 WebDyne::Install::Apache::Constant(3pm)
+
+
+=head1 NAME
+
+WebDyne::Install::Apache::Constant - Apache-install discovery and template constants for WebDyne
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Install::Apache::Constant;
+
+=head1 DESCRIPTION
+
+C<WebDyne::Install::Apache::Constant> discovers Apache-related paths and defaults used by the Apache installer. It resolves the Apache binary, configuration directories, module directories, mod_perl library path, Apache runtime user/group, SELinux helpers, and template filenames used by C<WebDyne::Install::Apache>.
+
+
+=head1 CONSTANTS
+
+Commonly used constants include:
+
+=over
+
+=item *
+
+B<MP2_INSTALLED>
+
+Boolean indicating whether mod_perl 2 appears to be installed.
+
+
+
+=item *
+
+B<HTTPD_BIN>
+
+Resolved path to the Apache C<httpd> binary.
+
+
+
+=item *
+
+B<DIR_APACHE_CONF>
+
+Resolved Apache configuration directory.
+
+
+
+=item *
+
+B<DIR_APACHE_MODULES>
+
+Resolved Apache modules directory.
+
+
+
+=item *
+
+B<FILE_MOD_PERL_LIB>
+
+Resolved mod_perl shared library path.
+
+
+
+=item *
+
+B<APACHE_UNAME / APACHE_GNAME>
+
+Detected Apache user and group names.
+
+
+
+=item *
+
+B<APACHE_UID / APACHE_GID>
+
+Detected Apache user and group numeric identifiers.
+
+
+
+=item *
+
+B<FILE_WEBDYNE_CONF_TEMPLATE / FILE_WEBDYNE_CONF>
+
+Input template filename and rendered Apache config filename.
+
+
+
+=item *
+
+B<FILE_WEBDYNE_CONF_PL_TEMPLATE / FILE_WEBDYNE_CONF_PL>
+
+Input template filename and rendered WebDyne Perl config filename.
+
+
+
+=item *
+
+B<SELINUX_CONTEXT_HTTPD / SELINUX_CONTEXT_LIB>
+
+SELinux context names used during installation checks and setup.
+
+
+
+=item *
+
+B<SELINUX_ENABLED_BIN / SELINUX_CHCON_BIN / SELINUX_SEMANAGE_BIN>
+
+Discovered helper binaries used for SELinux detection and context changes.
+
+
+
+=back
+
+
+=head1 METHODS
+
+This module also exposes helper routines used internally by the installer:
+
+=over
+
+=item *
+
+B<httpd_bin()>
+
+Locate the Apache executable.
+
+
+
+=item *
+
+B<httpd_config()>
+
+Inspect Apache configuration and derive path details.
+
+
+
+=item *
+
+B<dir_apache_conf()>
+
+Resolve the Apache configuration directory.
+
+
+
+=item *
+
+B<dir_apache_modules()>
+
+Resolve the Apache modules directory.
+
+
+
+=item *
+
+B<file_mod_perl_lib()>
+
+Locate the mod_perl shared library.
+
+
+
+=item *
+
+B<mp2_installed()>
+
+Determine whether mod_perl 2 support is available.
+
+
+
+=back
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

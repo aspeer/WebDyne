@@ -418,3 +418,142 @@ sub base_url {
 
 1;
 
+__END__
+
+
+
+=head1 WebDyne::Request::PAGI(3pm)
+
+
+=head1 NAME
+
+WebDyne::Request::PAGI - PAGI request adapter for WebDyne
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Request::PAGI;
+ 
+ my $wr = WebDyne::Request::PAGI->new(
+     scope => $scope,
+     req   => $pagi_request,
+     res   => $pagi_response,
+ );
+
+=head1 DESCRIPTION
+
+C<WebDyne::Request::PAGI> adapts PAGI request state to the normalized request API expected by WebDyne.
+
+Like the PSGI adapter, it can derive a target filename from the request path, configured document root, and default document settings. It also exposes PAGI-specific request information such as scope-based protocol details, body access, form/query parameters, and request timing through the common WebDyne request surface.
+
+
+=head1 METHODS
+
+=over
+
+=item *
+
+B<new(%options)>
+
+Construct a PAGI-backed request adapter.
+
+
+
+=item *
+
+B<env()>
+
+Return the normalized environment view used by the adapter.
+
+
+
+=item *
+
+B<id()>
+
+Return the request identifier if present.
+
+
+
+=item *
+
+B<https() / secure()>
+
+Return HTTPS/security state derived from the PAGI request.
+
+
+
+=item *
+
+B<server_name() / server_port()>
+
+Return server identity details.
+
+
+
+=item *
+
+B<body() / body_handle()>
+
+Read or stream the request body.
+
+
+
+=item *
+
+B<headers_in() / headers_out()>
+
+Access request and response headers.
+
+
+
+=item *
+
+B<header_only()>
+
+Return whether the current request should emit headers only.
+
+
+
+=item *
+
+B<request_time()>
+
+Return request start timing metadata when available.
+
+
+
+=item *
+
+B<base() / base_url()>
+
+Return URI base information for the current request.
+
+
+
+=back
+
+
+=head1 NOTES
+
+This adapter also supports WebDyne’s SSE and WebSocket-aware PAGI flows because the parent PAGI runtime passes through C<sse> and C<ws> helper objects when present.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

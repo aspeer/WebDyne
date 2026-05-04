@@ -223,3 +223,144 @@ sub content_type { $_[0]->{'mime'} }
 sub basename { basename($_[0]->{'filename'}) }
 
 1;
+__END__
+
+
+
+=head1 WebDyne::CGI::Simple(3pm)
+
+
+=head1 NAME
+
+WebDyne::CGI::Simple - CGI-style parameter wrapper used by WebDyne request handling
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::CGI::Simple;
+ 
+ my $cgi = WebDyne::CGI::Simple->new($request);
+ my $name = $cgi->param('name');
+ my $uploads = $cgi->uploads();
+
+=head1 DESCRIPTION
+
+C<WebDyne::CGI::Simple> is the concrete CGI-style parameter object used by WebDyne. It subclasses C<CGI::Simple>, adapts request-body parsing to WebDyne request objects, and adds a few compatibility helpers so the result behaves more like modern PSGI request parameter and upload APIs.
+
+It is normally created indirectly through C<<< $self->CGI() >>> or C<WebDyne::CGI>.
+
+
+=head1 METHODS
+
+=over
+
+=item *
+
+B<new($request, %param)>
+
+Construct a CGI-style parameter object from a WebDyne request object.
+
+
+
+=item *
+
+B<Vars()>
+
+Return a C<Hash::MultiValue> object of all current parameters. When called with an argument, replace the current parameter set from the supplied multivalue object.
+
+
+
+=item *
+
+B<env()>
+
+Return the current C<%ENV> as a hash reference.
+
+
+
+=item *
+
+B<upload()>
+
+Delegate file-upload access to C<CGI::Simple> with multipart handling forced on.
+
+
+
+=item *
+
+B<uploads()>
+
+Return a C<Hash::MultiValue> mapping parameter names to upload wrapper objects.
+
+
+
+=back
+
+
+=head1 UPLOAD OBJECTS
+
+The module also provides C<WebDyne::CGI::Simple::Upload>, a lightweight upload wrapper with methods:
+
+=over
+
+=item *
+
+B<filename()>
+
+
+=item *
+
+B<basename()>
+
+
+=item *
+
+B<size()>
+
+
+=item *
+
+B<content_type()>
+
+
+=item *
+
+B<content()>
+
+
+=item *
+
+B<fh()>
+
+
+=item *
+
+B<path()>
+
+
+=back
+
+
+=head1 NOTES
+
+Upload allowance and maximum POST size are controlled by C<WEBDYNE_CGI_DISABLE_UPLOADS> and C<WEBDYNE_CGI_POST_MAX>.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

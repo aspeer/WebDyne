@@ -359,7 +359,6 @@ sub psgi_error {
 
 __END__
 
-
     
 sub to_app {
 
@@ -593,3 +592,90 @@ sub normalize_dn {
 }
 
 1;
+
+=head1 WebDyne::PSGI(3pm)
+
+
+=head1 NAME
+
+WebDyne::PSGI - PSGI application wrapper for WebDyne
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::PSGI;
+ 
+ my $app = WebDyne::PSGI->new(
+     root  => '.',
+     index => 1,
+ )->to_app;
+
+=head1 DESCRIPTION
+
+C<WebDyne::PSGI> wraps the core WebDyne handler in a PSGI application. It translates PSGI environment data into a C<WebDyne::Request::PSGI> object, dispatches to the main WebDyne handler, and converts the result back into a PSGI response.
+
+The module also contains special handling for API-style fallback resolution when a C<.psp> file is not found directly from the incoming path.
+
+
+=head1 METHODS
+
+=over
+
+=item *
+
+B<new(%options)>
+
+Construct a PSGI application wrapper. Options include C<root>, C<index>, C<test>, and related runtime settings.
+
+
+
+=item *
+
+B<to_app()>
+
+Return the PSGI application code reference.
+
+
+
+=item *
+
+B<handler($env, @param)>
+
+Main PSGI entry point. Builds request and response objects, dispatches to WebDyne, and returns the PSGI response.
+
+
+
+=item *
+
+B<psgi_error(...)>
+
+Helper for PSGI-side error handling and conversion.
+
+
+
+=back
+
+
+=head1 NOTES
+
+The module relies on C<WebDyne::Request::PSGI> for normalized request handling and on C<WebDyne::PSGI::Constant> for middleware and environment defaults.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

@@ -497,6 +497,7 @@ __END__
 
 
 
+
 =head1 WebDyne::Chain.pm(3pm)
 
 
@@ -592,6 +593,8 @@ Rewrite Request or Response headers, HTML content
 
 =back
 
+When used inside a page, C<use WebDyne::Chain ...> is intended for the page C<__PERL__> block. The import routine stores the nominated module list in page metadata and switches the page handler to C<WebDyne::Chain>.
+
 
 =head1 USAGE
 
@@ -601,7 +604,7 @@ WebDyne::Chain allows nomination of modules to chain in a psp page via the impor
  <start_html>
  Server local time is <? localtime ?>
  __PERL__
- use WebDyne::Chain qw(WebDyne::Session WebDyne::State);
+ use WebDyne::Chain qw(WebDyne::Session WebDyne::Filter);
  1;
 WebDyne::Chain will automatically add any methods made available by the chained modules into the page, e.g.
 
@@ -624,7 +627,7 @@ In reality most modules that can be loaded by WebDyne::Chain will work when load
 
 =head1 METHODS
 
-WebDyne::Chain does not expose any public methods
+WebDyne::Chain does not expose any public methods intended for page code. Its C<handler()> implementation is internal and is used to construct and dispatch the nominated handler chain.
 
 
 =head1 OPTIONS

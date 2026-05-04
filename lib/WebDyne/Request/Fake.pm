@@ -1054,3 +1054,143 @@ sub DESTROY { #no subsort
 
 }
 
+__END__
+
+
+
+=head1 WebDyne::Request::Fake(3pm)
+
+
+=head1 NAME
+
+WebDyne::Request::Fake - synthetic request/response object used for direct WebDyne rendering
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Request::Fake;
+ 
+ my $r = WebDyne::Request::Fake->new(
+     filename => 'page.psp',
+     method   => 'GET',
+ );
+
+=head1 DESCRIPTION
+
+C<WebDyne::Request::Fake> is the baseline WebDyne request adapter. It is used when rendering pages outside a real web server environment, for example through C<WebDyne::html>, C<WebDyne::html_sr>, C<wdrender>, and related command-line tooling.
+
+The module provides a normalized request/response API and also acts as the fallback implementation for methods not implemented by more specific request adapters.
+
+
+=head1 METHODS
+
+Notable methods implemented directly by this class include:
+
+=over
+
+=item *
+
+B<new(%options)>
+
+Construct a synthetic request object.
+
+
+
+=item *
+
+B<filename()>
+
+Get or derive the current source filename being requested.
+
+
+
+=item *
+
+B<uri()>
+
+Return a C<URI> object for the current request.
+
+
+
+=item *
+
+B<headers_in() / headers_out()>
+
+Access request and response headers.
+
+
+
+=item *
+
+B<status() / status_line()>
+
+Access or update response status information.
+
+
+
+=item *
+
+B<print() / write()>
+
+Append response body output.
+
+
+
+=item *
+
+B<finalize()>
+
+Finalize the synthetic response for downstream consumers.
+
+
+
+=item *
+
+B<redirect($url)>
+
+Set redirect-style response headers and status.
+
+
+
+=item *
+
+B<dir_config($name)>
+
+Look up directory-style configuration, including values sourced from C<WEBDYNE_DIR_CONFIG> and optional local C<.webdyne.conf.pl> loading.
+
+
+
+=item *
+
+B<err_html()>
+
+Generate an error response using WebDyne’s HTML error facilities.
+
+
+
+=back
+
+
+=head1 NOTES
+
+C<WebDyne::Request::Fake> intentionally carries both request and response responsibilities. More specialized adapters such as C<WebDyne::Request::Apache>, C<WebDyne::Request::PSGI>, and C<WebDyne::Request::PAGI> inherit from it for missing behavior.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

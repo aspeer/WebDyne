@@ -240,7 +240,6 @@ sub local_constant_load {
 
 
 __END__
-
 sub normalize_dn {
 
     #  Normal dir, normally document_root
@@ -251,6 +250,8 @@ sub normalize_dn {
     return $abs_dn;
     
 }
+
+
 
 
 

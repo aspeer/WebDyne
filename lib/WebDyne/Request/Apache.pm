@@ -503,3 +503,122 @@ sub CLOSE {
 
 1;
 
+__END__
+
+
+
+=head1 WebDyne::Request::Apache(3pm)
+
+
+=head1 NAME
+
+WebDyne::Request::Apache - Apache mod_perl request adapter for WebDyne
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Request::Apache;
+ 
+ my $wr = WebDyne::Request::Apache->new($apache_request_rec);
+
+=head1 DESCRIPTION
+
+C<WebDyne::Request::Apache> adapts an C<Apache2::RequestRec> object to the normalized request interface expected by the main WebDyne handler.
+
+It maps Apache request data into WebDyne-style methods and provides body-handle support, environment access, header accessors, URI handling, and selected convenience wrappers over mod_perl request record methods.
+
+
+=head1 METHODS
+
+=over
+
+=item *
+
+B<new($r, %options)>
+
+Wrap an Apache request record.
+
+
+
+=item *
+
+B<filename()>
+
+Return the effective filename for the request. This honors the C<DOCUMENT_ROOT> environment override used by some WebDyne flows.
+
+
+
+=item *
+
+B<headers_in() / headers_out()>
+
+Access request and response headers through the adapter.
+
+
+
+=item *
+
+B<content_type() / content_length() / content_encoding()>
+
+Access common content metadata.
+
+
+
+=item *
+
+B<host() / server_name() / server_port()>
+
+Access host and server details.
+
+
+
+=item *
+
+B<remote_address() / remote_host() / remote_port()>
+
+Access client network details.
+
+
+
+=item *
+
+B<body() / body_handle()>
+
+Read request body content or return a handle-like interface for streaming reads.
+
+
+
+=item *
+
+B<uri()>
+
+Return a C<URI> object for the current request.
+
+
+
+=back
+
+
+=head1 NOTES
+
+The module initializes many additional normalized methods by delegating through C<WebDyne::Request::Common>. Methods not implemented directly are filled by adapter dispatch or inherited fallback behavior.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

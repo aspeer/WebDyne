@@ -550,3 +550,75 @@ sub install {
 
 
 }
+__END__
+
+
+
+=head1 WebDyne::Install::Apache(3pm)
+
+
+=head1 NAME
+
+WebDyne::Install::Apache - Apache configuration installer for WebDyne
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Install::Apache;
+ 
+ WebDyne::Install::Apache->install($prefix, $installbin_dn, \%options);
+ WebDyne::Install::Apache->uninstall($prefix, $installbin_dn, \%options);
+
+=head1 DESCRIPTION
+
+C<WebDyne::Install::Apache> installs or removes Apache-side configuration files required for serving WebDyne pages under Apache/mod_perl.
+
+The module builds rendered configuration files from bundled templates, merges values from C<WebDyne::Constant>, C<WebDyne::Install::Constant>, and C<WebDyne::Install::Apache::Constant>, ensures the base WebDyne installation step has run, and writes or removes the generated Apache config and WebDyne Perl config files.
+
+
+=head1 METHODS
+
+=over
+
+=item *
+
+B<install($prefix, $installbin_dn, \%options)>
+
+Run the Apache installer. This writes rendered configuration files derived from the bundled templates. If C<text> is true in the options hash, the generated Apache config is printed instead of written to disk.
+
+
+
+=item *
+
+B<uninstall($prefix, $installbin_dn, \%options)>
+
+Run the uninstall path, removing generated Apache-side configuration files and delegating cache-directory cleanup to the base installer layer.
+
+
+
+=back
+
+
+=head1 NOTES
+
+The module depends on the discovery logic in C<WebDyne::Install::Apache::Constant> for Apache binary detection, config directory selection, mod_perl library discovery, and SELinux-related helpers.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

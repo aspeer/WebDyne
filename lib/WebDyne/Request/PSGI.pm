@@ -321,3 +321,88 @@ sub headers_in {
 
 1;
 
+__END__
+
+
+
+=head1 WebDyne::Request::PSGI(3pm)
+
+
+=head1 NAME
+
+WebDyne::Request::PSGI - PSGI request adapter for WebDyne
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Request::PSGI;
+ 
+ my $wr = WebDyne::Request::PSGI->new(
+     env => $env,
+     req => Plack::Request->new($env),
+     res => Plack::Response->new(200),
+ );
+
+=head1 DESCRIPTION
+
+C<WebDyne::Request::PSGI> adapts PSGI request state to the normalized request API expected by WebDyne.
+
+When no filename is supplied, the constructor derives one from the PSGI environment, document root, request path, and configured default document rules. The adapter also exposes query/body parameters, uploads, headers, and PSGI request metadata through WebDyne-friendly method names.
+
+
+=head1 METHODS
+
+=over
+
+=item *
+
+B<new(%options)>
+
+Construct a PSGI-backed request adapter. The C<env> hashref is required.
+
+
+
+=item *
+
+B<body()>
+
+Read and cache request body content from C<psgi.input>.
+
+
+
+=item *
+
+B<headers_in()>
+
+Access request headers.
+
+
+
+=back
+
+In addition, the adapter provides the normalized request surface expected by WebDyne, including methods such as C<query_parameters>, C<form_parameters>, C<uploads>, C<uri>, C<scheme>, C<script_name>, C<request_time>, and related accessors.
+
+
+=head1 NOTES
+
+Most normalized methods are installed dynamically in C<init()> via C<WebDyne::Request::Common>. Methods not implemented locally fall back to the fake-request adapter where appropriate.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

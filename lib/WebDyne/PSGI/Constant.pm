@@ -121,3 +121,110 @@ $VERSION='2.087_619';
 1;
 __END__
 
+
+=head1 WebDyne::PSGI::Constant(3pm)
+
+
+=head1 NAME
+
+WebDyne::PSGI::Constant - PSGI runtime constants for WebDyne
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::PSGI::Constant;
+
+=head1 DESCRIPTION
+
+C<WebDyne::PSGI::Constant> defines defaults used by the WebDyne PSGI stack. These constants control default document selection, static-file middleware behavior, and which environment variables are preserved into PSGI request handling.
+
+
+=head1 CONSTANTS
+
+=over
+
+=item *
+
+B<DOCUMENT_ROOT>
+
+Optional default document root for PSGI execution.
+
+
+
+=item *
+
+B<DOCUMENT_DEFAULT ('app.psp')>
+
+Default WebDyne page served when a request resolves to a directory and no explicit C<.psp> file is selected.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI_INDEX ('index.psp')>
+
+Default index filename used by the wrapper layer.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI_MIDDLEWARE_STATIC>
+
+Regular expression used by the default static middleware to decide which non-C<.psp> assets may be served directly.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI_STATIC (1)>
+
+Enable static-file middleware by default.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI_MIDDLEWARE>
+
+Default PSGI middleware stack wrapped around the WebDyne PSGI application.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI_ENV_KEEP / WEBDYNE_PSGI_ENV_SET>
+
+Environment variables preserved from or injected into the PSGI runtime.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI_WARN_ON_ERROR>
+
+Optional flag controlling warning behavior on PSGI-side errors.
+
+
+
+=back
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

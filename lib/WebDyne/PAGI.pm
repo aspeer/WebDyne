@@ -460,3 +460,115 @@ sub normalize_dn {
 }
 
 1;
+__END__
+
+
+
+=head1 WebDyne::PAGI(3pm)
+
+
+=head1 NAME
+
+WebDyne::PAGI - PAGI application wrapper for WebDyne
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::PAGI;
+ 
+ my $app = WebDyne::PAGI->new(
+     root  => '.',
+     index => 1,
+ )->to_app;
+
+=head1 DESCRIPTION
+
+C<WebDyne::PAGI> wraps the core WebDyne handler in a PAGI application. It supports multiple PAGI scope types, including normal HTTP requests, server-sent events, WebSocket connections, and lifespan startup or shutdown events.
+
+
+=head1 METHODS
+
+=over
+
+=item *
+
+B<new(%options)>
+
+Construct a PAGI application wrapper. Options include C<root>, C<index>, C<test>, and related runtime settings.
+
+
+
+=item *
+
+B<to_app()>
+
+Return the PAGI application code reference.
+
+
+
+=item *
+
+B<handler_http()>
+
+Handle normal HTTP requests.
+
+
+
+=item *
+
+B<handler_sse()>
+
+Handle server-sent event requests.
+
+
+
+=item *
+
+B<handler_ws()>
+
+Handle WebSocket requests.
+
+
+
+=item *
+
+B<handler_lifespan()>
+
+Handle PAGI lifespan startup and shutdown events.
+
+
+
+=item *
+
+B<handler_sse_error()>
+
+Helper for reporting SSE-side failures.
+
+
+
+=back
+
+
+=head1 NOTES
+
+The module relies on C<WebDyne::Request::PAGI> for normalized request handling and on C<WebDyne::PAGI::Constant> for middleware and environment defaults.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

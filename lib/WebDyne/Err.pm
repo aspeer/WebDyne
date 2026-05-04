@@ -354,3 +354,96 @@ sub err_eval {
 
 }
 
+__END__
+
+
+
+=head1 WebDyne::Err(3pm)
+
+
+=head1 NAME
+
+WebDyne::Err - error rendering and eval-error support for WebDyne
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Err;
+ 
+ my $status = $self->err_html('something went wrong');
+
+=head1 DESCRIPTION
+
+C<WebDyne::Err> provides the runtime error handlers used by the WebDyne framework. It can render errors either as plain text or through the bundled WebDyne HTML error template, log them against the active request object, and translate eval failures into user-facing error output.
+
+
+=head1 METHODS
+
+=over
+
+=item *
+
+B<err_html($self, $message, @args)>
+
+Main error-rendering routine. Logs the error, ensures an error HTTP status is set, and emits either text or HTML error output depending on configuration and runtime conditions.
+
+
+
+=item *
+
+B<err_eval(...)>
+
+Helper used for formatting and presenting eval-related failures.
+
+
+
+=back
+
+
+=head1 NOTES
+
+Behavior is influenced by constants in C<WebDyne::Constant> and C<WebDyne::Err::Constant>, especially:
+
+=over
+
+=item *
+
+C<WEBDYNE_ERROR_TEXT>
+
+
+=item *
+
+C<WEBDYNE_ERROR_EXIT>
+
+
+=item *
+
+C<WEBDYNE_ERR_TEMPLATE>
+
+
+=item *
+
+the various C<WEBDYNE_ERROR_*> display controls
+
+
+=back
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

@@ -1324,3 +1324,128 @@ sub parse {
 }
 
 
+__END__
+
+
+
+=head1 WebDyne::Compile(3pm)
+
+
+=head1 NAME
+
+WebDyne::Compile - compiler for WebDyne C<.psp> source files
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Compile;
+ 
+ my $compiler = WebDyne::Compile->new(
+     srce => 'page.psp',
+ );
+ 
+ my $container = $compiler->compile({
+     srce => 'page.psp',
+ });
+
+=head1 DESCRIPTION
+
+C<WebDyne::Compile> turns WebDyne source files into the internal container structure used by the runtime. It coordinates C<WebDyne::HTML::TreeBuilder>, compile-time Perl and filter stages, optimization passes, metadata extraction, and optional C<Storable> output to a cache destination.
+
+The compiler is usually driven indirectly through C<WebDyne>, but it can also be used directly for diagnostics and tooling such as C<wdcompile>.
+
+
+=head1 METHODS
+
+=over
+
+=item *
+
+B<new(%options)>
+
+Construct a compiler-oriented WebDyne object suitable for out-of-request compilation work.
+
+
+
+=item *
+
+B<compile(\%options)>
+
+Compile the source file named by C<srce>. Optional keys such as C<dest>, stage controls, whitespace controls, and other compile flags influence the result.
+
+
+
+=item *
+
+B<compile_init()>
+
+Initialize compile-time parser state and shared structures.
+
+
+
+=item *
+
+B<optimise_one()>
+
+Run the first optimization pass over the parsed data tree.
+
+
+
+=item *
+
+B<optimise_two()>
+
+Run the second optimization pass over the parsed data tree.
+
+
+
+=item *
+
+B<parse()>
+
+Parse the source into the container form used by later compile stages.
+
+
+
+=back
+
+
+=head1 OUTPUT
+
+The compiler returns a two-element container:
+
+=over
+
+=item *
+
+metadata hashref
+
+
+=item *
+
+compiled page data structure
+
+
+=back
+
+When a C<dest> filename is supplied, the container may also be written to disk in C<Storable> form.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

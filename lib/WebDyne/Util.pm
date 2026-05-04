@@ -665,4 +665,124 @@ sub errstack {
 
 }
 
-1;
+1;__END__
+
+
+
+=head1 WebDyne::Util(3pm)
+
+
+=head1 NAME
+
+WebDyne::Util - debugging and error-stack utility functions for WebDyne
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Util;
+ 
+ debug('message: %s', $value);
+ err('something failed');
+ my $msg = errstr();
+
+=head1 DESCRIPTION
+
+C<WebDyne::Util> provides the common debugging, error-stack, and error-formatting functions used throughout the WebDyne codebase.
+
+It exports the standard utility functions by default and uses environment variables such as C<WEBDYNE_DEBUG>, C<WEBDYNE_DEBUG_FILE>, C<WEBDYNE_DEBUG_FILTER>, and related settings to control runtime debug output.
+
+
+=head1 FUNCTIONS
+
+=over
+
+=item *
+
+B<debug($message, @args)>
+
+Emit a formatted debug message if debugging is enabled for the calling package or environment.
+
+
+
+=item *
+
+B<err($message, @args)>
+
+Push an error message onto the WebDyne error stack.
+
+
+
+=item *
+
+B<errstr()>
+
+Return the current error string.
+
+
+
+=item *
+
+B<errclr()>
+
+Clear the current error state.
+
+
+
+=item *
+
+B<errsubst(...)>
+
+Apply error-text substitutions and formatting helpers.
+
+
+
+=item *
+
+B<errdump(...)>
+
+Produce a formatted dump of the current error stack and related diagnostics.
+
+
+
+=item *
+
+B<errstack()>
+
+Return the current error stack.
+
+
+
+=item *
+
+B<errnofatal($bool)>
+
+Control whether errors are treated as fatal by the utility layer.
+
+
+
+=back
+
+
+=head1 NOTES
+
+This module is foundational to the rest of WebDyne. Most other modules import it for debug and error handling.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

@@ -1275,3 +1275,136 @@ map { eval("sub $_ { &_get_set($_, \@_) }") }  qw(_text_block_tag _line_no _line
 #  Done
 #
 1;
+__END__
+
+
+
+=head1 WebDyne::HTML::TreeBuilder(3pm)
+
+
+=head1 NAME
+
+WebDyne::HTML::TreeBuilder - HTML::TreeBuilder subclass used by the WebDyne compiler
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::HTML::TreeBuilder;
+ 
+ my $tree = WebDyne::HTML::TreeBuilder->new();
+ $tree->parse_fh($fh);
+
+=head1 DESCRIPTION
+
+C<WebDyne::HTML::TreeBuilder> is the parser front end used by the WebDyne compiler. It subclasses C<HTML::TreeBuilder>, teaches the parser about WebDyne-specific tags and CGI-style shortcut tags, preserves line-number context, and transforms parsed HTML into the internal tree structures used by the rest of the framework.
+
+It also coordinates with C<WebDyne::HTML::Tiny> for generated markup fragments and shortcut expansion.
+
+
+=head1 METHODS
+
+Notable methods include:
+
+=over
+
+=item *
+
+B<new(%options)>
+
+Construct a parser instance. An existing C<WebDyne::HTML::Tiny> object may be supplied as C<html_tiny_or>.
+
+
+
+=item *
+
+B<parse_fh($fh)>
+
+Parse a source file handle while tracking line numbers and WebDyne-specific syntax.
+
+
+
+=item *
+
+B<tag_parse(...)>
+
+Internal tag parser for WebDyne-specific or specially handled elements.
+
+
+
+=item *
+
+B<process() / start() / end() / text() / comment()>
+
+Core parser event handlers.
+
+
+
+=item *
+
+B<start_html() / end_html()>
+
+
+=item *
+
+B<start_form() / end_form()>
+
+
+=item *
+
+B<start_multipart_form() / end_multipart_form()>
+
+
+=item *
+
+B<include()>
+
+
+=item *
+
+B<perl()>
+
+
+=item *
+
+B<json()>
+
+
+=item *
+
+B<htmx()>
+
+
+=item *
+
+B<api()>
+
+Special handlers for WebDyne tags or compile-time shortcut tags.
+
+
+
+=back
+
+
+=head1 NOTES
+
+The module extends C<HTML::Tagset> behavior at load time so WebDyne tags participate correctly in parsing, list handling, table handling, and paragraph-closing rules.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

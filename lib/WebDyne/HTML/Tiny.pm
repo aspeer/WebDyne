@@ -1344,3 +1344,109 @@ sub AUTOLOAD {
         return &{$AUTOLOAD}(@_);
     }
 }
+__END__
+
+
+
+=head1 WebDyne::HTML::Tiny(3pm)
+
+
+=head1 NAME
+
+WebDyne::HTML::Tiny - HTML::Tiny subclass with WebDyne page and form helpers
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::HTML::Tiny;
+ 
+ my $html = WebDyne::HTML::Tiny->new();
+ print $html->start_html({ title => 'Demo' });
+
+=head1 DESCRIPTION
+
+C<WebDyne::HTML::Tiny> extends C<HTML::Tiny> with helpers used by the WebDyne compiler and runtime. It adds C<start_html>-style shortcuts, CGI-like form tag helpers, request-aware value persistence, global default meta and header insertion, and a number of convenience methods for common form controls.
+
+The module is used both directly and through C<WebDyne::HTML::TreeBuilder>.
+
+
+=head1 METHODS
+
+Notable methods include:
+
+=over
+
+=item *
+
+B<new(%options)>
+
+Construct a C<WebDyne::HTML::Tiny> object. The current request may be supplied as C<<< r => $request >>>.
+
+
+
+=item *
+
+B<Vars()>
+
+Return cached form parameters from the current request’s CGI wrapper.
+
+
+
+=item *
+
+B<CGI()>
+
+Return the C<WebDyne::CGI::Simple> object associated with the current request.
+
+
+
+=item *
+
+B<shortcut() / shortcut_enable() / shortcut_disable()>
+
+Control support for WebDyne shortcut tags such as C<start_html>, C<start_form>, and related aliases.
+
+
+
+=item *
+
+B<html() / head() / meta() / script() / link()>
+
+Override or extend the corresponding C<HTML::Tiny> output helpers to honor WebDyne defaults and metadata rules.
+
+
+
+=item *
+
+B<popup_menu() / scrolling_list() / textarea() / checkbox() / checkbox_group() / radio_group()>
+
+CGI-style form helpers with value persistence behavior derived from the current request.
+
+
+
+=back
+
+
+=head1 NOTES
+
+Global behavior is influenced by constants such as C<WEBDYNE_DTD>, C<WEBDYNE_META>, C<WEBDYNE_HTML_PARAM>, C<WEBDYNE_START_HTML_PARAM>, C<WEBDYNE_START_HTML_SHORTCUT_HR>, and C<WEBDYNE_HEAD_INSERT>.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

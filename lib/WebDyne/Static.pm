@@ -81,6 +81,7 @@ __END__
 
 
 
+
 =head1 WebDyne::Static(3pm)
 
 
@@ -104,7 +105,9 @@ WebDyne::Static - WebDyne module to flag pages as static and compile once to HTM
 
 The WebDyne::Static module will flag that all dynamic components of a page should be run at compile time, and the resulting HTML saved as a static file which will be served on subsequent requests.
 
-The WebDyne framework will monitor for changes in the source file and recompile to a new HTML if the source .psp file is updated.
+The WebDyne framework will monitor for changes in the source file and recompile the page to regenerate the static HTML output if the source .psp file is updated.
+
+C<use WebDyne::Static;> is intended to be called from within a WebDyne page C<__PERL__> block. In code, the module import routine only acts when a current WebDyne page object is available, so using it outside normal WebDyne page execution has no effect.
 
 
 =head1 METHODS
@@ -115,7 +118,15 @@ The WebDyne framework will monitor for changes in the source file and recompile 
 
 B<static()>
 
-Get or set the static attribute for this page. When setting the static attribute for a page it is only set for that instance of the page. To set a page as permanently static (except on source file update) use the WebDyne::Static module as per synopsis, or update the meta data via $self-E<gt>meta-E<gt>{E<#39>staticE<#39>}=1;
+Get or set the static attribute for this page. This method is inherited from the main C<WebDyne> class. When setting the static attribute for a page it is only set for that instance of the page. To set a page as permanently static (except on source file update) use the WebDyne::Static module as per synopsis, or update the meta data via C<<< $self->meta->{&#39;static&#39;}=1 >>>.
+
+
+
+=item *
+
+B<handler()>
+
+Internal chaining handler used by the module. It marks the current page instance as static and then passes control back to the normal WebDyne handler flow. It is not typically called directly.
 
 
 
@@ -138,7 +149,7 @@ This file is part of WebDyne.
 
 This software is copyright (c) 2026 by Andrew Speer E<lt>andrew.speer@isolutions.com.auE<gt>.
 
-This is free software; you can redistribute it and/or modify it underthe same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.
 
 Full license text is available at:
 

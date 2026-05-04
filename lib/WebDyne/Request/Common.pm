@@ -279,3 +279,84 @@ sub handler_methods_init {
 }
     
 1;
+__END__
+
+
+
+=head1 WebDyne::Request::Common(3pm)
+
+
+=head1 NAME
+
+WebDyne::Request::Common - helper functions for building normalized WebDyne request adapters
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Request::Common qw(
+     handler_methods_all
+     handler_methods_check
+     handler_methods_init
+ );
+
+=head1 DESCRIPTION
+
+C<WebDyne::Request::Common> is an internal support module used by the request adapter classes such as C<WebDyne::Request::Fake>, C<WebDyne::Request::Apache>, C<WebDyne::Request::PSGI>, and C<WebDyne::Request::PAGI>.
+
+It defines the canonical method set expected of a WebDyne request object and provides helpers for wiring adapter methods onto concrete request classes.
+
+
+=head1 FUNCTIONS
+
+=over
+
+=item *
+
+B<handler_methods_all()>
+
+Return an array reference containing the full normalized request-method set expected by WebDyne.
+
+
+
+=item *
+
+B<handler_methods_check($class, \%methods)>
+
+Verify that the supplied request-adapter class defines or inherits the required normalized methods. It also warns about locally defined adapter methods that are not part of the canonical surface.
+
+
+
+=item *
+
+B<handler_methods_init($class, $backend_class, \%dispatch)>
+
+Install adapter methods into C<$class> using a dispatch table. Dispatch values may be backend method names, code references, or C<undef> to fall back to C<WebDyne::Request::Fake>.
+
+
+
+=back
+
+
+=head1 NOTES
+
+This is an internal integration module rather than a page-facing API. It is primarily useful when adding a new WebDyne request backend.
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>

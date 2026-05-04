@@ -109,3 +109,102 @@ $VERSION='2.087_619';
 1;
 __END__
 
+
+=head1 WebDyne::Request::PSGI::Constant(3pm)
+
+
+=head1 NAME
+
+WebDyne::Request::PSGI::Constant - request-adapter constants for the PSGI request layer
+
+
+=head1 SYNOPSIS
+
+
+ use WebDyne::Request::PSGI::Constant;
+
+=head1 DESCRIPTION
+
+C<WebDyne::Request::PSGI::Constant> defines defaults used specifically by the PSGI request adapter layer. It overlaps with C<WebDyne::PSGI::Constant>, but is scoped to request interpretation and middleware behavior when building C<WebDyne::Request::PSGI> objects.
+
+
+=head1 CONSTANTS
+
+=over
+
+=item *
+
+B<DOCUMENT_ROOT>
+
+Optional default document root for request resolution.
+
+
+
+=item *
+
+B<DOCUMENT_DEFAULT ('app.psp')>
+
+Default page selected when a resolved request path refers to a directory.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI_INDEX ('index.psp')>
+
+Index filename used by the request-side PSGI helpers.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI_MIDDLEWARE_STATIC>
+
+Regular expression controlling which static asset paths may be served directly.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI_MIDDLEWARE>
+
+Request-layer middleware stack definition.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI_ENV_KEEP / WEBDYNE_PSGI_ENV_SET>
+
+Environment variables preserved from or injected into PSGI request processing.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI_WARN_ON_ERROR>
+
+Optional warning control flag for request-layer PSGI errors.
+
+
+
+=back
+
+
+=head1 AUTHOR
+
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
+
+
+=head1 LICENSE and COPYRIGHT
+
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>
