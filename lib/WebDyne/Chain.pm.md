@@ -60,6 +60,8 @@ WebDyne includes two example Chain modules in the base package:
 
     Rewrite Request or Response headers, HTML content
 
+When used inside a page, `use WebDyne::Chain ...` is intended for the page `__PERL__` block. The import routine stores the nominated module list in page metadata and switches the page handler to `WebDyne::Chain`.
+
 # USAGE #
 
 WebDyne::Chain allows nomination of modules to chain in a psp page via the import method when using the module. At it&#39;s simplest you can import just the modules you want.
@@ -68,7 +70,7 @@ WebDyne::Chain allows nomination of modules to chain in a psp page via the impor
 <start_html>
 Server local time is <? localtime ?>
 __PERL__
-use WebDyne::Chain qw(WebDyne::Session WebDyne::State);
+use WebDyne::Chain qw(WebDyne::Session WebDyne::Filter);
 1;
 ```
 
@@ -96,7 +98,7 @@ use WebDyne::Session;
 
 # METHODS #
 
-WebDyne::Chain does not expose any public methods
+WebDyne::Chain does not expose any public methods intended for page code. Its `handler()` implementation is internal and is used to construct and dispatch the nominated handler chain.
 
 # OPTIONS #
 

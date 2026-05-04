@@ -19,7 +19,7 @@ print $WEBDYNE_DTD
 
 # Description #
 
-This module provides a list of configuration constantDs used in the WebDyne code. These constants are used to configure the behavior of the WebDyne module and can be accessed by importing the module and referencing the constants by name. Constants can be configured to different values by overriding values in local configuration files, setting environment
+This module provides a list of configuration constants used in the WebDyne code. These constants are used to configure the behavior of the WebDyne module and can be accessed by importing the module and referencing the constants by name. Constants can be configured to different values by overriding values in local configuration files, setting environment
  variables, command line options, or Apache directives.
 
 Common uses for modifying constant values allow for:
@@ -41,7 +41,7 @@ Default values for these configuration constants can be updated the following lo
 As a special case when running under PSGI environments, if WEBDYNE_DIR_CONFIG_CWD_LOAD is true \(which it is by default) then each directory that a \.psp file is run from is checked for the \.webdyne.conf.pl file \- but only WEBDYNE_DIR_CONFIG entries from the file are loaded. This allows for configuration of settings such a WebDyneChain modules to load, WebDyneTemplate
  configuration etc. on a per directory basis
 
-The WebDyne::Constant module is sub-classed by other WebDyne modules, and the values for any constants in the WebDyne::&lt;Module&gt;::Constant family of modules can be overridden by creating/updating one of the above two files. Here is a sample configuration file:
+The WebDyne::Constant module is sub-classed by other WebDyne modules, and the values for any constants in the WebDyne::&lt;Module&gt;::Constant family of modules can be overridden by creating or updating one of the above configuration files. Here is a sample configuration file:
 
 ```
 $_={
@@ -104,7 +104,7 @@ $_={
 
 # CONSTANTS #
 
-The following configuration constants are defined. The default value of the configuration item is provided after the constant name. Most can be overridden or adjusted however where they are read-only this is noted.
+The following commonly adjusted configuration constants are defined. The default value of the configuration item is provided after the constant name. Most can be overridden or adjusted; where they are read-only this is noted.
 
 * **WEBDYNE_CACHE_DN ()**
 
@@ -158,9 +158,21 @@ The following configuration constants are defined. The default value of the conf
 
     Content-type header for text/html.
 
-* **WEBDYNE_CONTENT_TYPE_PLAIN ('text/plain')**
+* **WEBDYNE_CONTENT_TYPE_TEXT ('text/plain')**
 
     Content-type header for text/plain.
+
+* **WEBDYNE_CONTENT_TYPE_HTML_ENCODED ('text/html; charset=UTF-8')**
+
+    Fully encoded Content-type header for HTML responses.
+
+* **WEBDYNE_CONTENT_TYPE_TEXT_ENCODED ('text/plain; charset=UTF-8')**
+
+    Fully encoded Content-type header for plain text responses.
+
+* **WEBDYNE_CONTENT_TYPE_JSON_ENCODED ('application/json; charset=UTF-8')**
+
+    Fully encoded Content-type header for JSON responses.
 
 * **WEBDYNE_CONTENT_TYPE_JSON ('application/json')**
 
@@ -203,6 +215,10 @@ The following configuration constants are defined. The default value of the conf
 * **WEBDYNE_START_HTML_PARAM_STATIC (1)**
 
     Make include/other sections in start_html tag static, i.e. load them at compile time and they never change. Make undef to force re-include every page load
+
+* **WEBDYNE_START_HTML_SHORTCUT_HR (&lt;HashRef&gt;)**
+
+    Shortcut attribute mappings for `start_html`, including built-in helpers such as `pico`, `htmx`, and `alpine`.
 
 * **WEBDYNE_HEAD_INSERT ()**
 
@@ -285,6 +301,10 @@ The following configuration constants are defined. The default value of the conf
 
     Show filename in error output.
 
+* **WEBDYNE_ERROR_SOURCE_FILENAME_FULL (0)**
+
+    Show full source filename rather than the shortened display form.
+
 * **WEBDYNE_ERROR_BACKTRACE_SHOW (1)**
 
     Show backtrace in error output.
@@ -292,6 +312,10 @@ The following configuration constants are defined. The default value of the conf
 * **WEBDYNE_ERROR_BACKTRACE_SHORT (0)**
 
     Show brief backtrace.
+
+* **WEBDYNE_ERROR_BACKTRACE_FULL (0)**
+
+    Show a fuller backtrace in error output.
 
 * **WEBDYNE_ERROR_EVAL_CONTEXT_SHOW (1)**
 
@@ -317,9 +341,9 @@ The following configuration constants are defined. The default value of the conf
 
     Show version in error output.
 
-* **WEBDYNE_ERROR_EVAL_TEXT_IX (0)**
+* **WEBDYNE_ERROR_INTERNAL_SHOW (0)**
 
-    Index for error eval text.
+    Show internal WebDyne error details intended mainly for debugging.
 
 * **WEBDYNE_ERROR_SHOW_ALTERNATE` ('error display disabled - enable WEBDYNE_ERROR_SHOW to show errors, or review web server error log.')**
 
@@ -340,6 +364,10 @@ The following configuration constants are defined. The default value of the conf
 * **WEBDYNE_JSON_CANONICAL (1)**
 
     Use JSON canonical mode.
+
+* **WEBDYNE_JSON_PRETTY (0)**
+
+    Enable pretty-printed JSON output by default.
 
 * **WEBDYNE_HTTP_HEADER (<HashRef>)**
 
@@ -369,9 +397,13 @@ The following configuration constants are defined. The default value of the conf
 
     List of HTTP request headers that denote the request is part of an AJAX \(e.g. HTMX) request and only partial HTML response is required.
 
-* **WEBDYNE_PSGI_STATIC (1)**
+* **WEBDYNE_HTTP_HEADER_AJAX_AR (&lt;ArrayRef&gt;)**
 
-    Allow the PSGI module to serve static content \(css files etc.)
+    Array form of the AJAX request header names derived from `WEBDYNE_HTTP_HEADER_AJAX_HR`.
+
+* **WEBDYNE_HTMX_FORCE (0)**
+
+    Force HTMX-oriented partial rendering behaviour even without an HTMX request header.
 
 * **WEBDYNE_PSP_EXT (.psp)**
 
@@ -393,6 +425,34 @@ The following configuration constants are defined. The default value of the conf
 
     Read-only value as hash reference showing location of files used to create the values for constants in this module.
 
+* **WEBDYNE_CONF_FN ('webdyne.conf.pl')**
+
+    Basename of the standard WebDyne local configuration file.
+
+* **WEBDYNE_HTML_TIDY (0)**
+
+    Enable HTML tidy post-processing by default.
+
+* **WEBDYNE_HTML_NEWLINE (0)**
+
+    Control whether WebDyne adds extra newlines to output.
+
+* **WEBDYNE_PAGI (auto-detected)**
+
+    Indicates whether the PAGI support module is currently loaded.
+
+* **WEBDYNE_PSGI (auto-detected)**
+
+    Indicates whether the PSGI support module is currently loaded.
+
+* **WEBDYNE_DEFAULT_TEST_FN**
+
+    Absolute path to the built-in WebDyne test page.
+
+* **WEBDYNE_DEFAULT_INDEX_FN**
+
+    Absolute path to the built-in WebDyne index page.
+
 * **MP2 (mod_perl version)**
 
     Mod_perl level. Auto-detected, do not change unless you know what you are doing.
@@ -400,4 +460,3 @@ The following configuration constants are defined. The default value of the conf
 * **MOD_PERL (mod_perl version)**
 
     Mod_perl environment runtime detected. Do not change unless you know what you are doing
-
