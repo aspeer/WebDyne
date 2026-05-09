@@ -73,7 +73,7 @@ use Cwd qw(fastcwd);
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='2.087_619';
+$VERSION='2.088_630';
 
 
 #  Run main
@@ -1440,14 +1440,16 @@ C<wdrender> aims to reproduce WebDyne output from the command line, but it canno
 Written by Andrew Speer, L<mailto:andrew@webdyne.org>
 
 
-=head1 LICENSE AND COPYRIGHT
+=head1 LICENSE and COPYRIGHT
 
 This file is part of WebDyne.
 
 This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
 
-This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 Full license text is available at:
 
 L<http://dev.perl.org/licenses/>
+

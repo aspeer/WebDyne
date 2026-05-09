@@ -32,7 +32,7 @@ require WebDyne::Constant;
 
 #  Version information. Must be all on one line
 #
-$VERSION='2.087_619';
+$VERSION='2.088_630';
 
 
 #  The guts
@@ -103,3 +103,4 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 L<http://dev.perl.org/licenses/>
+

@@ -62,7 +62,7 @@ use Exporter qw(import);
 #  Version information
 #
 $AUTHORITY='cpan:ASPEER';
-$VERSION='2.087_619';
+$VERSION='2.088_630';
 chomp($VERSION_GIT_SHA=do { local (@ARGV, $/) = ($_=__FILE__.'.sha'); <> if -f $_ });
 
 
@@ -4895,6 +4895,16 @@ L<Plack|https://metacpan.org/pod/Plack> L<Catalyst|https://metacpan.org/pod/Cata
 Andrew Speer E<lt>andrew.speer@isolutions.com.auE<gt> and contributors.
 
 
-=head1 LICENSE
+=head1 LICENSE and COPYRIGHT
 
-This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself. See  L<http://dev.perl.org/licenses/|http://dev.perl.org/licenses/> .
+This file is part of WebDyne.
+
+This software is copyright (c) 2026 by Andrew Speer L<mailto:andrew.speer@isolutions.com.au>.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+Full license text is available at:
+
+L<http://dev.perl.org/licenses/>
+

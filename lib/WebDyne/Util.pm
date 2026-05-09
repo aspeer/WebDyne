@@ -55,7 +55,7 @@ require Exporter;
 
 #  Version information
 #
-$VERSION='2.087_619';
+$VERSION='2.088_630';
 
 
 #  Var to hold package wide hash, for data shared across package, and error stack
@@ -786,3 +786,4 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 L<http://dev.perl.org/licenses/>
+
