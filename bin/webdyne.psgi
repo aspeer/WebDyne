@@ -234,20 +234,6 @@ sub local_constant_load {
 
 __END__
 
-sub normalize_dn {
-
-    #  Normal dir, normally document_root
-    #
-    my $rel_dn=shift();
-    my $abs_dn=File::Spec->rel2abs($rel_dn);
-    $abs_dn =~ s{/$}{} unless $abs_dn eq '/';
-    return $abs_dn;
-    
-}
-
-
-__END__
-
 
 =head1 NAME
 
