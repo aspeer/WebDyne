@@ -66,10 +66,10 @@ if (eval { require WebDyne::PAGI; 1 }) {
 if (eval { require Apache2::RequestRec; 1 } && !($> ==0)) {
     note('WebDyne::Apache test starting');
     push @INC, dirname(__FILE__);
-    require 't.pm';
+    require apache_harness;
     require Apache::TestRequest;
     diag('');
-    my $runner=&t::startup;
+    my $runner=&apache_harness::startup;
     my $test_no=Test::Builder->new->current_test();
     my $html_live=&Apache::TestRequest::GET_BODY(basename('15-request.psp'), 'X-Test-No'=>$test_no, 'X-Test-Header-Req-Get'=>'OK' );
     if ($html_live=~/Test No: (\d+)/) {
@@ -77,7 +77,7 @@ if (eval { require Apache2::RequestRec; 1 } && !($> ==0)) {
     }
     note('WebDyne::Apache test completed');
     diag('');
-    &t::shutdown($runner);
+    &apache_harness::shutdown($runner);
 }
 
 
@@ -134,4 +134,3 @@ sub render {
     return \$html;
 
 }
-

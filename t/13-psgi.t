@@ -126,6 +126,8 @@ sub main {
             next if $test_cn=~/api_bare\.psp$/;
             next if $test_cn=~/api_perl_inline\.psp$/;
             next if $test_cn=~/\/\d+-.*\.psp$/;
+            next if $test_cn=~/\/error_handler_.*\.psp$/;
+            next if $test_cn=~/\/error_format_.*\.psp$/;
 
 
             #  Iterate twice to make sure no change over multiple iterations
@@ -201,5 +203,3 @@ sub main {
     return \1;
     
 }
-
-

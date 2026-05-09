@@ -22,6 +22,7 @@ package WebDyne::PAGI::Constant;
 use strict qw(vars);
 use vars qw($VERSION @ISA %Constant);
 use warnings;
+no warnings qw(once);
 
 
 #  External modules

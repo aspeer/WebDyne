@@ -96,6 +96,8 @@ sub main {
             #  Skip files with numer prefix, specific to a single tes
             #
             next if ($test_fn=~/\/\d+\-.*\.psp/);
+            next if ($test_fn=~/\/error_handler_.*\.psp$/);
+            next if ($test_fn=~/\/error_format_.*\.psp$/);
 
 
             #  Create WebDyne render of PSP file and capture to file
@@ -303,5 +305,3 @@ sub render {
     return \$html;
 
 }
-
-

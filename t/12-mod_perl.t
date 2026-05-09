@@ -56,12 +56,12 @@ $ENV{'WEBDYNE_TEST_FILE_PREFIX'} ||= '02';
 #  Startup the web server and run tests
 #
 push @INC, dirname(__FILE__);
-require 't.pm';
+require apache_harness;
 diag('');
-my $runner=&t::startup();
+my $runner=&apache_harness::startup();
 ok(${&main(\@ARGV) || die err ()} || 0);    # || 0 stops warnings
 diag('');
-&t::shutdown($runner);
+&apache_harness::shutdown($runner);
 
 
 #  Testing finished
@@ -118,6 +118,8 @@ sub main {
             next if $test_cn=~/api_bare\.psp$/;
             next if $test_cn=~/api_perl_inline\.psp$/;
             next if $test_cn=~/\/\d+-.*\.psp$/;
+            next if $test_cn=~/\/error_handler_.*\.psp$/;
+            next if $test_cn=~/\/error_format_.*\.psp$/;
 
 
             #  Iterate twice to make sure no change over multiple iterations
@@ -280,5 +282,3 @@ PerlResponseHandler WebDyne
 END
 
 }
-
-

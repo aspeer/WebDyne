@@ -391,11 +391,13 @@ sub handler_http {
             }
 
         }
-        debug("final handler status: %s, content_type: %s, html:%s", $status, $r->content_type(), $html);
+        my $final_status=$r->status() || $status || HTTP_OK;
+        debug("final handler status: %s, content_type: %s, html:%s", $final_status, $r->content_type(), $html);
         
         
         #  Send headers unless already sent
         #
+        $r->res->status($final_status);
         my $headers_ar=$r->headers_out->psgi_flatten_without_sort();
         debug('sending headers: %s', Dumper($headers_ar));
         for (my $i=0; $i<@{$headers_ar}; $i+=2) {
@@ -408,7 +410,7 @@ sub handler_http {
         #
         if ($html) {
             debug('sending html to client via await()');
-            $r->res->content_type_try($WEBDYNE_CONTENT_TYPE_HTML);
+            $r->res->content_type($r->content_type() || $WEBDYNE_CONTENT_TYPE_HTML);
             return await $r->res->send($html || err);
         }
         
