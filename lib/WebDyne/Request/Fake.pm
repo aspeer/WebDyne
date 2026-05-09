@@ -456,6 +456,7 @@ sub dir_config {
 sub filename {
 
     my $r=shift();
+    return undef unless defined $r->{'filename'};
 
     #  Store cwd as takes a fair bit of processing time.
     File::Spec->rel2abs($r->{'filename'}, ($Package{'_cwd'} ||= fastcwd()));

@@ -217,20 +217,29 @@ sub new {
         debug('filename not supplied, determining from request');
 
         my $fn;
+        my $invalid_path;
         if (my $dn=($r{'document_root'} || $ENV{'DOCUMENT_ROOT'} || $DOCUMENT_ROOT)) {
 
             #  Get from URI and location
             #
             my $uri=$r{'uri'} || $r{'req'}->path();
             debug("uri: $uri");
-            $fn=File::Spec->catfile($dn, split(m{/+}, $uri));
+            my @uri_part=grep { length($_) } split(m{/+}, $uri);
+            if (grep { $_ eq '..' } @uri_part) {
+                debug("rejecting path traversal attempt in uri: $uri");
+                $fn=undef;
+                $invalid_path=1;
+            }
+            else {
+                $fn=File::Spec->rel2abs(File::Spec->catfile($dn, @uri_part));
+            }
             debug("fn: $fn from dn: $dn, uri: $uri");
 
         }
 
         #  Need to add default psp file ?
         #
-        unless ($fn=~WEBDYNE_PSP_EXT_RE) { # fastest
+        unless ($invalid_path || ($fn=~WEBDYNE_PSP_EXT_RE)) { # fastest
 
             #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
             #  handle it
@@ -255,6 +264,7 @@ sub new {
                     #  Otherwise append to existing path
                     #
                     $fn=File::Spec->catfile($fn, split m{/+}, $document_default); #/
+                    $fn=File::Spec->rel2abs($fn);
                 }
             }
             else {

@@ -21,7 +21,7 @@ use vars   qw($VERSION $AUTOLOAD @ISA);
 
 #  External modules
 #
-use HTTP::Status (qw(HTTP_INTERNAL_SERVER_ERROR HTTP_NOT_FOUND));
+use HTTP::Status (qw(HTTP_INTERNAL_SERVER_ERROR HTTP_NOT_FOUND HTTP_OK));
 use IO::File;
 use WebDyne::Util;
 use WebDyne::Constant;
@@ -68,9 +68,10 @@ sub run {
         my $ext=($fn=~/\.(\w+)$/) && $1;
         $hr->{'Content-Type'}=$WEBDYNE_MIME_TYPE_HR->{$ext} || $WEBDYNE_CONTENT_TYPE_TEXT;
         $r->send_http_header();
-        while (<$fh>) {$r->print($_)}
+        my $buf;
+        while (read($fh, $buf, 8192)) {$r->print($buf)}
         $fh->close();
-        return &Apache::OK
+        return HTTP_OK
     }
     else {
         warn("unable to open file '$fn', $!");

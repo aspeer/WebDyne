@@ -221,6 +221,7 @@ sub new {
         #  Iterate through options. If *not* supplied by SCRIPT_FILENAME keep going.
         #
         my $fn;
+        my $invalid_path;
         unless (($fn=$env_hr->{'SCRIPT_FILENAME'}) && !$r{'uri'}) {
         
         
@@ -232,9 +233,15 @@ sub new {
                 #  Get from URI and location
                 #
                 my $uri=$r{'uri'} || $env_hr->{'PATH_INFO'};
-                #my @split=split(m{/+}, $uri);
-                #debug("uri: $uri, split: %s", Dumper(\@split));
-                $fn=File::Spec->catfile($dn, split(m{/+}, $uri)); #/
+                my @uri_part=grep { length($_) } split(m{/+}, $uri);
+                if (grep { $_ eq '..' } @uri_part) {
+                    debug("rejecting path traversal attempt in uri: $uri");
+                    $fn=undef;
+                    $invalid_path=1;
+                }
+                else {
+                    $fn=File::Spec->rel2abs(File::Spec->catfile($dn, @uri_part));
+                }
                 debug("fn: $fn from dn: $dn, uri: $uri");
                 
             }
@@ -243,7 +250,7 @@ sub new {
             #  Need to add default psp file ?
             #
             #unless ($fn=~/\.psp$/) { # fastest
-            unless ($fn=~WEBDYNE_PSP_EXT_RE) { # fastest
+            unless ($invalid_path || ($fn=~WEBDYNE_PSP_EXT_RE)) { # fastest
 
                 #  Is it a directory that exists ? Only append default document if that is the case, else let the api code
                 #  handle it
@@ -270,6 +277,7 @@ sub new {
                         #  Otherwise append to existing path
                         #
                         $fn=File::Spec->catfile($fn, split m{/+}, $document_default); #/
+                        $fn=File::Spec->rel2abs($fn);
                     }
                 }
                 else {

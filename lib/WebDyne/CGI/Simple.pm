@@ -175,7 +175,7 @@ sub uploads {
     my @pairs;
     foreach my $param ($self->param()) {
         
-        my @fn = $self->upload();
+        my @fn = $self->param($param);
         debug('fn: %s', Dumper(\@fn));
         next unless @fn;
 

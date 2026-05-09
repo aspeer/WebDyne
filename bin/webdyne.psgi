@@ -231,7 +231,10 @@ sub local_constant_load {
 
 }
 
-__END__sub normalize_dn {
+
+__END__
+
+sub normalize_dn {
 
     #  Normal dir, normally document_root
     #
@@ -243,19 +246,7 @@ __END__sub normalize_dn {
 }
 
 
-
-
-
-
 __END__
-
-
-
-
-
-
-
-
 
 
 =head1 NAME
