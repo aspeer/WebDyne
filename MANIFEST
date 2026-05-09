@@ -1125,7 +1125,6 @@ t.other/path_info.psp
 t.other/r_dump.psp                       
 t.other/r_plack.pl                       
 t.other/redirect.psp                     
-t.other/source.psp                       
 t.other/svg.psp                          
 t.other/upload.psp                       
 t.other/version.psp                      
@@ -1475,7 +1474,6 @@ t/34-pagi-sse.t
 t/35-pagi-websocket.t
 t/33-error-format.t
 t/bin_helper.pm                          
-t/t.pm                                   
 bin/wdlint.md                            
 bin/webdyne.apache.md
 bin/webdyne.pagi.md
