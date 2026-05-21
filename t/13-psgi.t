@@ -13,7 +13,7 @@ use Test::More;
 #
 BEGIN {
     my @missing;
-    for my $m (qw(Plack::Test)) {
+    for my $m (qw(Plack::Test Plack::Request Plack::Response)) {
         eval "require $m; 1" or push @missing, $m;
     }
     if (@missing) {

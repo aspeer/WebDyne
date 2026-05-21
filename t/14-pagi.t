@@ -13,7 +13,7 @@ use Test::More;
 #
 BEGIN {
     my @missing;
-    for my $m (qw(PAGI::Test::Client)) {
+    for my $m (qw(PAGI::Test::Client PAGI::Request PAGI::Response PAGI::SSE PAGI::WebSocket Future::AsyncAwait)) {
         eval "require $m; 1" or push @missing, $m;
     }
     if (@missing) {
@@ -40,7 +40,6 @@ use File::Basename;
 use Data::Dumper;
 use IO::File;
 use Cwd qw(abs_path fastcwd);
-use Plack::Test;
 use HTTP::Request::Common qw(GET);
 
 

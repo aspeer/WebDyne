@@ -122,9 +122,9 @@ for my $case (@case) {
     my ($handler, $error_text, $kind_expect, $ctype_re)=@{$case};
     SKIP: {
         skip 'Skipping PSGI format test: missing Plack::Test', 3
-            if ($handler eq 'psgi' && !eval { require Plack::Test; 1 });
+            if ($handler eq 'psgi' && !eval { require WebDyne::PSGI; require Plack::Test; 1 });
         skip 'Skipping PAGI format test: missing PAGI::Test::Client', 3
-            if ($handler eq 'pagi' && !eval { require PAGI::Test::Client; 1 });
+            if ($handler eq 'pagi' && !eval { require WebDyne::PAGI; require PAGI::Test::Client; 1 });
 
         my $result=run_case(
             handler    => $handler,

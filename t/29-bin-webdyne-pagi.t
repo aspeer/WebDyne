@@ -12,7 +12,11 @@ my $script=File::Spec->catfile('bin', 'webdyne.pagi');
 ok(-f $script, 'webdyne.pagi script exists');
 
 BEGIN {
-    eval { require PAGI; 1 } or plan skip_all => 'Skipping webdyne.pagi script test: PAGI not installed';
+    my @missing;
+    for my $m (qw(PAGI PAGI::Middleware::Builder PAGI::Request PAGI::Response PAGI::SSE PAGI::WebSocket Future::AsyncAwait)) {
+        eval "require $m; 1" or push @missing, $m;
+    }
+    @missing and plan skip_all => 'Skipping webdyne.pagi script test: missing ' . join(', ', @missing);
 }
 
 my $stub_dn=tempdir(CLEANUP => 1);

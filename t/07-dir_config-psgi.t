@@ -9,11 +9,11 @@ $Data::Dumper::Indent=1;
 
 BEGIN {
     my @missing;
-    for my $m (qw(Plack::Request)) {
+    for my $m (qw(Plack::Request Plack::Response)) {
         eval "require $m; 1" or push @missing, $m;
     }
     if (@missing) {
-        plan skip_all => "Skipping PAGI tests: missing " . join(", ", @missing);
+        plan skip_all => "Skipping PSGI tests: missing " . join(", ", @missing);
     }
 }
 

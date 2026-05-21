@@ -11,6 +11,14 @@ use File::Spec;
 my $script=File::Spec->catfile('bin', 'webdyne.psgi');
 ok(-f $script, 'webdyne.psgi script exists');
 
+BEGIN {
+    my @missing;
+    for my $m (qw(Plack::Builder Plack::Request Plack::Response)) {
+        eval "require $m; 1" or push @missing, $m;
+    }
+    @missing and plan skip_all => 'Skipping webdyne.psgi script test: missing ' . join(', ', @missing);
+}
+
 my $stub_dn=tempdir(CLEANUP => 1);
 write_module($stub_dn, 'Plack::Runner', <<'END_MODULE');
 package Plack::Runner;

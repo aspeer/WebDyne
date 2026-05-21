@@ -13,7 +13,7 @@ use Test::More;
 #
 BEGIN {
     my @missing;
-    for my $m (qw(PAGI::Test::Client Future::AsyncAwait)) {
+    for my $m (qw(PAGI::Test::Client PAGI::Request PAGI::Response PAGI::SSE PAGI::WebSocket Future::AsyncAwait)) {
         eval "require $m; 1" or push @missing, $m;
     }
     if (@missing) {
