@@ -170,7 +170,7 @@ sub post_initialize {
 }
 
 
-sub postamble {
+sub MM::postamble {
     my $mm_or=shift();
     my $postamble;
     eval {ExtUtils::Git->import(); $postamble=&MY::postamble($mm_or)};
@@ -204,7 +204,7 @@ docker_update ::
 	cd docker && $(PERL) build.pl
 
 END
-    return $postamble;
+    return $mm_or->SUPER::postamble . $postamble;
 }
 
 
