@@ -10,6 +10,8 @@ requires 'HTML::Tagset';
 requires 'HTML::Tiny';
 requires 'HTML::TreeBuilder';
 requires 'HTTP::Status';
+requires 'HTTP::Negotiate';
+requires 'HTTP::AcceptLanguage';
 requires 'Hash::MultiValue';
 requires 'IO::String';
 requires 'JSON';
