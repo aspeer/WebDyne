@@ -1,0 +1,53 @@
+<start_html htmx title="HTMX Table Demo using Faker Perl module" h2 hr>
+<br>
+  <!-- Table start and row headers -->
+  <table>
+    <thead>
+      <tr>
+        <th>Firstname</th>
+        <th>Lastname</th>
+        <th>Company</th>
+      </tr>
+    </thead>
+
+    <tbody id="table_body">
+      <!-- HTMX section start, repeat over block to render next 10 rows. Note trick to force return of data on first render -->
+      <htmx handler force="!{! !(my $firstrow++) !}">
+        <block name="row">
+          <tr>
+            <td>${person_first_name}</td>
+            <td>${person_last_name}</td>
+            <td>${company_name}</td>
+          </tr>
+        </block>
+      </htmx>
+      <!-- HTMX section end -->
+    </tbody>
+
+    <!-- Table Footer -->
+    <tfoot>
+      <tr>
+        <td colspan="3" style="text-align: center">
+          <button hx-get="#" hx-target="#table_body" hx-swap="beforeend">Load More Data...</button>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+<end_html>
+
+__PERL__
+
+use Faker;
+
+sub handler {
+
+    my $self = shift;
+    my $fake_or = Faker->new('en-us');
+    for (1..10) {
+        my @data=map { $_ => $fake_or->$_ }
+            qw(person_first_name person_last_name company_name);
+        $self->render_block( 'row', @data) || return err();
+    }
+    return $self->render();
+
+}

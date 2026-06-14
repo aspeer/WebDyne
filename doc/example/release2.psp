@@ -1,0 +1,22 @@
+<start_html>
+<p>
+<perl handler=greeting>
+<block name="morning">
+Good morning, it is <? localtime ?>
+</block>
+<block name="evening">
+Good evening, it is  <? localtime ?>
+</block>
+</perl>
+
+__PERL__
+sub greeting {
+    my $self=shift();
+    if ((localtime)[2] < 12) {
+        $self->render_block('morning')
+    }
+    else {
+        $self->render_block('evening')
+    }
+    return $self->render()
+}

@@ -1,0 +1,8 @@
+<start_html script="https://unpkg.com/htmx.org@1.9.10">
+Click button for current server time:
+<button hx-get="#" hx-target="#time">Refresh</button>
+<p>
+<div id="time"><em>Time Not Loaded Yet</div>
+<htmx perl>
+return localtime
+</htmx>

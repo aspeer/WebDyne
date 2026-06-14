@@ -1,0 +1,13 @@
+<start_html>
+<pre>
+
+<!-- Basic require of Digest::MD5 module and import of functions -->
+
+<perl require="Digest::MD5" import="md5_hex md5_base64">
+
+printf("MD5_HEX: %s, MD5_BASE64: %s", md5_hex(), md5_base64());
+
+</perl>
+
+<pre>
+<end_html>

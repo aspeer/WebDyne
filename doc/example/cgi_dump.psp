@@ -1,0 +1,8 @@
+<start_html>
+<pre>
+<perl>
+my $self=shift();
+return Dumper($self->CGI());
+</perl>
+__PERL__
+use Data::Dumper;

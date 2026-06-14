@@ -1,0 +1,81 @@
+<!-- Start to cheat by using start/end_html tags to save space -->
+
+<start_html>
+<start_form>
+Get sales results for:&nbsp;<popup_menu name="month" values="@{qw(January February March)}">
+<p>
+<submit>
+<end_form>
+
+<perl handler="results">
+Sales results for +{month}: $${results}
+</perl>
+
+<hr>
+This page generated: !{! localtime() !}
+<end_html>
+
+__PERL__
+
+use WebDyne::Cache (\&cache);
+
+my %results=(
+
+	January		=> 20,
+	February	=> 30,
+	March		=> 40
+);
+
+
+sub cache {
+
+
+	#  Get self ref
+	#
+	my $self=shift();
+
+
+	#  Change page UUID based on month to cache
+	#  reults for that month to static HTML
+	#
+	if (my $month=$_{'month'}) {
+
+		#  Make sure month is valid
+		#
+		if (defined(my $uid=$results{$month})) {
+		
+		    #   It is. Change page UUID (inode) using month as a seed
+		    #
+            $self->inode($uid)
+            
+        }
+
+	}
+	
+    
+    #  Done
+    #
+    return \undef;
+
+}
+
+
+sub results {
+
+	my $self=shift();
+	if (my $month=$_{'month'}) {
+		
+		#  Could be a really long complex SQL query ...
+		#
+		my $results=$results{$month};
+
+
+		#  And display
+		#
+		return $self->render(results => $results);
+	}
+	else {
+		return \undef;
+	}
+
+}

@@ -1,0 +1,27 @@
+<start_html>
+Server time is:
+<pre>
+<!-- tagged inline -->
+<perl> localtime() </perl>
+
+<!-- processing instructions -->
+<? localtime() ?>
+
+<!-- substitution -->
+!{! localtime() !}
+
+<!-- server side script -->
+<script type="application/perl"> localtime() </script>
+
+<!-- subroutine, direct output -->
+<perl handler="time1"/>
+
+<!-- subroutine, templated output -->
+<perl handler="time2" chomp>
+${time}
+</perl>
+
+</pre>
+__PERL__
+sub time1 { return localtime }
+sub time2 { return shift()->render( time=>scalar localtime() ) }

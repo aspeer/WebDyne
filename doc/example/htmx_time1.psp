@@ -1,0 +1,2 @@
+<start_html>
+<htmx force=1>Server local time: <? localtime() ?> </htmx>

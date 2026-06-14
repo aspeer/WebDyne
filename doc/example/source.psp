@@ -1,0 +1,441 @@
+#  Quick and dirty source viewer, cribbed from index.psp and cut down
+#
+<start_html 
+    title="Source: +{source}" 
+    h2
+    hr
+    include_style="@{qw(source.css)}"
+    style="@{qw(
+        https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css
+        https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css
+    )}" 
+    script="@{qw(
+        https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js
+    )}"
+    include_script="@{qw(source.js)}"
+>
+
+<!-- Now get the file content -->
+
+<perl handler="source">
+
+<block name="source">
+<script  data-lang="${lang}" type="text/plain">${code}</script>
+</block>
+
+<pre><code class="hljs" id="output"></code></pre>
+<hr>
+<a href="+{source}">Run</a>
+
+</perl>
+
+<!-- HTMX section end -->
+
+__PERL__
+
+use File::Basename qw(dirname fileparse);
+use WebDyne::Constant;
+use WebDyne::Util;
+use Cwd qw(realpath);
+use IO::File;
+
+sub source {
+
+
+    #  Get source file and display
+    #
+    my $self=shift();
+    my $cgi_or=$self->CGI() ||
+        return err('unable to get CGI object');
+    
+    
+    #  Massage to get full file name path and sanity check file is 
+    #  under document_root
+    #
+    my $srce_fn=$_{'source'} || 'time.psp' ||
+        return err('no filename to display');
+    my $full_dn=$self->full_dn() ||
+        return err('no full_dn');
+    my $path_fn=File::Spec->catfile($full_dn, $srce_fn);
+    $path_fn=$self->test_fn($path_fn) || do {
+        debug("null return from test_fn for path: $path_fn");
+        my $lang='text';
+        my $text='[Blocked]';
+        $self->render_block('source', lang=>$lang, code=>$text);
+        return $self->render(
+            language    => $lang, 
+        );
+    };
+        
+
+    #  Vars we need
+    #
+    my $srce;
+    my @srce_html;
+    my @srce_lang;
+    my $perl;
+    
+    
+    #  Open and run through file line by line, splitting out perl and HTML bits
+    #
+    my $path_fh=IO::File->new($path_fn, O_RDONLY) ||
+        return err("unable to open file: $srce_fn, $!");
+    
+    
+    #  If not .psp file then flick perl flag so goes into the lang bucket
+    #
+    unless ($srce_fn=~/\.psp$/) { $perl++ }
+    
+    
+    #  Now iterate over file
+    #
+    my ($binary, $lang);  
+    while (my $line=<$path_fh>) {
+        
+        if ($line =~ /[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\xFF]/) {
+            push @srce_lang, '[Binary file - not displaying]';
+            $lang='text';
+            $binary++;
+            last;
+        }
+
+        if ($line=~/^__PERL__/) {
+            $perl++;
+        }
+        if ($perl) {
+            push @srce_lang, $line
+        }
+        else {
+            push @srce_html, $line
+        }
+    }
+    
+    
+    #  Get mapping hash
+    #
+    my $ext_to_lang_hr=&ext_to_lang();
+    my ($ext)=($srce_fn=~/\.(.*?)$/);
+    $lang ||= $ext_to_lang_hr->{$ext};
+    $lang ||= $ext ? 'automatic' : 'text';
+    
+    
+    #  Concatenate together and escape </script> tag in HTML, then render
+    #
+    #
+    if (my $srce_html=join(undef, @srce_html)) {
+        $srce_html=~s/<\/script>/<\\\/script>/gm;
+        $self->render_block('source', lang=>'html', code=>$srce_html);
+    }
+    if (my $srce_lang=join(undef, @srce_lang)) {
+        $srce_lang=~s/<\/script>/<\\\/script>/gm;
+        $self->render_block('source', lang=>$lang, code=>$srce_lang);
+    }
+        
+
+    #  And render
+    #
+    return $self->render(
+        language    => $lang, 
+    );
+    
+}
+
+
+sub test_fn {
+
+    
+    #  Check if file type OK and path not outside root_dn
+    #
+    my ($self, $test_fn)=@_;
+    my $cgi_or=$self->CGI() ||
+         return err('unable to get CGI object');
+    my $r=$self->r() || 
+        return err('unable to get request object');
+        
+        
+    #  Return if not a real file
+    #
+    $test_fn=$self->sanitize_path($cgi_or, $test_fn) || do {
+        debug("fail, sanitize_path null return for fn: $test_fn");
+        return undef;
+    };
+    
+    
+    #  Get just the filename
+    #
+    my $fn_only=(File::Spec->splitpath($test_fn))[2] || do {
+        debug("file, unable to get filename component for fn: $test_fn");
+        return undef;
+    };
+    
+    
+    #  Return if extension not OK
+    #
+    my $ext=lc((fileparse($test_fn, qr/\.[^.]*/))[2]);
+    $ext=~s/^\.//;
+    unless ($WEBDYNE_MIME_TYPE_HR->{$ext} || $WEBDYNE_INDEX_EXT_ALLOWED_HR->{$ext}) {
+        debug("fail, file extenstion: $ext not supported MIME type for fn: $test_fn");
+        return undef;
+    }
+    
+    
+    #  Return if no realpath
+    #
+    unless (realpath($test_fn)) {
+        debug("fail, no realpath() for fn: $test_fn");
+        return undef;
+    }
+    
+    
+    #  No dot files, .. etc.
+    #
+    if ($test_fn=~/\/\.+/) {
+        debug("fail, not showing files with leading . for fn: $test_fn");
+        return undef;
+    }
+    if ( $test_fn=~/^\.+/) {
+        debug("fail, not showing files with multiple .. for fn: $test_fn");
+        return undef;
+    }
+    
+    
+    #  Get directory
+    #
+    my $test_dn=dirname(realpath($test_fn)) || do {
+        debug("fail, dirname not returned for fn: $test_fn");
+        return undef;
+    };
+
+
+    #  Now check not higher than document root
+    #    
+    my $root_dn=$r->document_root() || do {
+        debug('fail, root_dn not found !');
+        return undef;
+    };
+    if (!defined($test_dn) || (index($test_dn,$root_dn) !=0)) {
+        # Bad person, trying to escape
+        debug("fail, escape detected for dn: $test_dn, root_dn: $root_dn");
+        return undef;
+    }
+    elsif (-l  $test_fn) {
+        debug("fail, file is symlink for fn: $test_fn");
+        return undef;
+    }
+    elsif (! -f $test_fn) {
+        debug("fail, file not found for fn: $test_fn");
+        return undef;
+    }
+    elsif (! -r _) {
+        debug("fail, file not readable for fn: $test_fn");
+        return undef;
+    }
+    elsif (! -s _) {
+        debug('fail, file is zero size');
+        return undef;
+    }
+    elsif (! -f _) {
+        debug('fail, file is not regular file');
+        return undef;
+    }
+    else {
+        debug("returning fn: $test_fn");
+        return $test_fn if -f _;
+    }
+    
+
+    #  Fail safe
+    #
+    debug('fail, test cases not matched');
+    return undef;
+    
+}
+
+
+sub full_dn {
+
+
+    #  Get the full dn of the URI location we are currently at
+    #
+    my ($self, $path_dn)=@_;
+    my $cgi_or=$self->CGI() ||
+         return err('unable to get CGI object');
+    my $r=$self->r() || 
+        return err('unable to get request object');
+
+
+    #  Where do we want to be ? Use File::Spec::Unix rather than URI, 
+    #  it's not happy when we don't have a base component.
+    #
+    $path_dn ||= $self->sanitize_path($cgi_or, ($r->path_info() || $ENV{'PATH_INFO'})) ||
+        return err('unable to get path');
+    debug("path_dn: $path_dn");
+        
+    
+    #  Now get real dn and check not higher than document root
+    #    
+    my $root_dn=$r->document_root();
+    my $full_dn;
+    for (1..2) { # Max 2 loops to check and sanitise path
+        $full_dn=File::Spec->catdir($root_dn, split(m{/+}, $path_dn));
+        $full_dn=realpath($full_dn);
+        if (!defined($full_dn) || (index($full_dn,$root_dn) !=0)) {
+            # Bad person, trying to escape
+            $full_dn=$root_dn;
+            next;
+        }
+        elsif(-f $full_dn) {
+            #  Clicked on a file URL which isn't recognised. Go back to index
+            #
+            $path_dn=dirname($path_dn);
+            next;
+        }
+        last;
+    }
+    
+    
+    #  Reset if things go bad
+    #
+    unless ($full_dn && (-d $full_dn)) {
+        $full_dn=$root_dn;
+    }
+    
+    
+    #  Done;
+    #
+    return $full_dn;
+    
+}
+
+
+sub sanitize_path {
+
+    my ($self, $cgi_or, $dn)=@_;
+    $dn=$cgi_or->url_decode($dn);
+    $dn =~ s/[\x00-\x1F\x7F]//g;
+    $dn =~ s{//+}{/}g;
+    $dn =~ s{^/*}{/};
+    $dn =~ s{/$}{} unless $dn eq '/';
+    $dn = File::Spec->canonpath($dn);
+    $dn =~ s{[^A-Za-z0-9_\-.\s/]}{}g;
+    $dn ='/' unless $dn =~ m{^/};
+    return $dn;
+    
+}
+
+
+sub ext_to_lang {
+
+    my %ext_to_lang = (
+    
+        # Perl
+        'pl'      => 'perl',
+        'pm'      => 'perl',
+        't'       => 'perl',
+        'psp'     => 'perl',
+        'PL'      => 'perl',
+
+        # Python
+        'py'      => 'python',
+
+        # Ruby
+        'rb'      => 'ruby',
+
+        # JavaScript & TypeScript
+        'js'      => 'javascript',
+        'jsx'     => 'javascript',
+        'ts'      => 'typescript',
+        'tsx'     => 'typescript',
+
+        # Web
+        'html'    => 'xml',  # HTML is treated as XML in highlight.js
+        'htm'     => 'xml',
+        'xml'     => 'xml',
+        'css'     => 'css',
+        'scss'    => 'scss',
+
+        # JSON / YAML / Config
+        'json'    => 'json',
+        'yaml'    => 'yaml',
+        'yml'     => 'yaml',
+        'ini'     => 'ini',
+        'toml'    => 'toml',
+
+        # Bash / Shell
+        'sh'      => 'bash',
+        'bash'    => 'bash',
+        'zsh'     => 'bash',
+
+        # C / C++
+        'c'       => 'c',
+        'h'       => 'cpp',  # highlight.js prefers 'cpp'
+        'cpp'     => 'cpp',
+        'cc'      => 'cpp',
+        'cxx'     => 'cpp',
+        'hpp'     => 'cpp',
+        'hxx'     => 'cpp',
+
+        # Java / JVM
+        'java'    => 'java',
+        'kt'      => 'kotlin',
+        'kts'     => 'kotlin',
+        'scala'   => 'scala',
+        'groovy'  => 'groovy',
+
+        # C#
+        'cs'      => 'csharp',
+
+        # PHP
+        'php'     => 'php',
+
+        # Go
+        'go'      => 'go',
+
+        # Rust
+        'rs'      => 'rust',
+
+        # Swift / Apple
+        'swift'   => 'swift',
+        'm'       => 'objectivec',
+        'mm'      => 'objectivec',
+
+        # SQL
+        'sql'     => 'sql',
+
+        # R
+        'r'       => 'r',
+
+        # Lua
+        'lua'     => 'lua',
+
+        # Markdown / Text
+        'md'      => 'markdown',
+        'markdown'=> 'markdown',
+        'txt'     => 'plaintext',
+
+        # Makefiles & build
+        'makefile'=> 'makefile',
+        'mk'      => 'makefile',
+        'cmake'   => 'cmake',
+
+        # Docker / CI
+        'dockerfile' => 'dockerfile',
+        'env'        => 'bash',
+
+        # LaTeX
+        'tex'     => 'latex',
+
+        # Assembly
+        'asm'     => 'x86asm',
+        's'       => 'x86asm',
+
+        # Powershell
+        'ps1'     => 'powershell'
+        
+    );
+    
+    return \%ext_to_lang
+    
+}
+
+    

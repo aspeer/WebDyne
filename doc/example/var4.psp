@@ -1,0 +1,79 @@
+<html>
+<head>
+<title>Variables</title>
+</head>
+<body>
+
+<!-- Environment variables -->
+
+<p>
+<!-- Short Way -->
+Request Method: *{REQUEST_METHOD}
+<br>
+<!-- Same as Perl code -->
+Request Method: 
+<perl> $ENV{'REQUEST_METHOD'} </perl>
+
+
+<!-- Request record methods. Only methods that return a scalar result are usable -->
+
+<p>
+<!-- Short Way -->
+Request Protocol: ^{protocol}
+<br>
+<!-- Same as Perl code -->
+Request Protocol: 
+<perl> my $self=shift(); my $r=$self->r(); return $r->protocol() </perl>
+
+
+<!-- CGI params -->
+
+<form>
+Your Name:
+<p><textfield name="name" default="Test" size="12">
+<p><submit name="Submit">
+</form>
+<p>
+<!-- Short Way -->
+You Entered: +{name}
+<br>
+<!-- Same as Perl code -->
+You Entered: 
+<perl> my $self=shift(); my $cgi_or=$self->CGI(); return $cgi_or->param('name') </perl>
+<br>
+<!-- CGI vars are also loaded into the %_ global var, so the above is the same as -->
+You Entered: 
+<perl> $_{'name'} </perl>
+
+
+<!-- Array Syntax -->
+
+<form>
+<p>
+Favourite colour 1:
+<p><popup_menu name="popup_menu1" values="@{qw(red green blue)}">
+
+
+<!-- Hash Syntax -->
+
+<p>
+Favourite colour 2 (pick multiple):
+<p><popup_menu multiple name="popup_menu2" values="%{red=>Red, green=>Green, blue=>Blue, orange=>'Orange', yellow=>'Yellow'}" default='green'>
+<p><submit name="Submit">
+
+</form>
+
+<perl handler run="+{popup_menu1}">
+Favourite colour 1: +{popup_menu1}
+<p>
+Favourite colour 2: ${popup_menu2_values}
+</perl>
+
+</body>
+</html>
+
+__PERL__
+
+sub handler {
+	return join(',', shift->CGI->param('popup_menu2'));
+}
