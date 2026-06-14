@@ -1,17 +1,1 @@
-INHERIT: mkdocs.yml
-
-# GitHub/public deployment overrides.
-site_url: https://webdyne.org/
-
-theme:
-  custom_dir: overrides
-
-plugins:
-  - search:
-      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
-  - mkdocs-simple-hooks:
-      hooks:
-        on_page_markdown: "mkdocs_hooks_gh:rewrite_md"
-  - redirects:
-      redirect_maps:
-        index.md: 00_introduction.md
+doc/mkdocs/mkdocs.gh.yml
