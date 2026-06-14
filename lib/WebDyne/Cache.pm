@@ -80,9 +80,8 @@ sub handler : method {
 
 __END__
 
-
-
 =begin markdown
+
 # WebDyne::Cache(3pm) #
 
 # NAME #
@@ -249,7 +248,6 @@ This is free software; you can redistribute it and/or modify it under the same t
 Full license text is available at:
 
 &lt;http://dev.perl.org/licenses/&gt;
-
 
 =end markdown
 

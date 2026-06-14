@@ -98,10 +98,8 @@ sub main {
 
 __END__
 
-
-
-
 =begin markdown
+
 # NAME #
 
 wdlint - check Perl syntax in the \_\_PERL\_\_ section of a  WebDyne file

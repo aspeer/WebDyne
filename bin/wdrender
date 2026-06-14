@@ -980,18 +980,8 @@ sub html_tidy {
 
 __END__
 
-
-
-
-
-
-
-
-
-
-
-
 =begin markdown
+
 # NAME #
 
 wdrender - parse and render WebDyne files
@@ -1251,7 +1241,6 @@ This is free software; you can redistribute it and/or modify it under the same t
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 

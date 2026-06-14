@@ -490,15 +490,8 @@ sub UNIVERSAL::AUTOLOAD {
 
 __END__
 
-
-
-
-
-
-
-
-
 =begin markdown
+
 # WebDyne::Chain.pm(3pm) #
 
 # NAME #
@@ -612,7 +605,6 @@ Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and contributors.
 # LICENSE #
 
 This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself. See  [http://dev.perl.org/licenses/](http://dev.perl.org/licenses/) .
-
 
 =end markdown
 

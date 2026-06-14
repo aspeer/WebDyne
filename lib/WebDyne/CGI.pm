@@ -82,9 +82,8 @@ sub new {
 1;
 __END__
 
-
-
 =begin markdown
+
 # WebDyne::CGI(3pm) #
 
 # NAME #
@@ -200,7 +199,6 @@ Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and contributors.
 # LICENSE #
 
 This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself. See  [https://dev.perl.org/licenses/](https://dev.perl.org/licenses/) .
-
 
 =end markdown
 

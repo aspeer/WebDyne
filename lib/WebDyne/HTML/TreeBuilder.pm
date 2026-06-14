@@ -1277,9 +1277,8 @@ map { eval("sub $_ { &_get_set($_, \@_) }") }  qw(_text_block_tag _line_no _line
 1;
 __END__
 
-
-
 =begin markdown
+
 # WebDyne::HTML::TreeBuilder(3pm) #
 
 # NAME #
@@ -1352,7 +1351,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 

@@ -234,7 +234,6 @@ sub local_constant_load {
 
 __END__
 
-
 =begin markdown
 
 # NAME
@@ -322,7 +321,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 

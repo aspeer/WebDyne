@@ -46,9 +46,8 @@ $VERSION='2.088_630';
 1;
 __END__
 
-
-
 =begin markdown
+
 # WebDyne::Chain::Constant(3pm) #
 
 # NAME #
@@ -91,7 +90,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 

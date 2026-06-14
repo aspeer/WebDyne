@@ -348,19 +348,8 @@ sub perl_inc_dn {
         
 __END__
 
-
-
-
-
-
-
-
-
-
-
-
-
 =begin markdown
+
 # NAME
 
 webdyne.apache - start a temporary Apache mod_perl instance for serving WebDyne pages
@@ -521,7 +510,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 

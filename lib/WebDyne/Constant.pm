@@ -1004,16 +1004,8 @@ sub import {
 
 __END__
 
-
-
-
-
-
-
-
-
-
 =begin markdown
+
 # WebDyne::Constant(3pm) #
 
 # NAME #
@@ -1476,7 +1468,6 @@ The following commonly adjusted configuration constants are defined. The default
 * **MOD_PERL (mod_perl version)**
 
     Mod_perl environment runtime detected. Do not change unless you know what you are doing
-
 
 =end markdown
 
