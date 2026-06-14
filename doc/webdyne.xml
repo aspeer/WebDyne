@@ -4183,7 +4183,7 @@ PerlSetVar      WebDyneChain                 'WebDyne::Session'
 
   <section>
     <info>
-      <title>Miscellaneous</title>
+      <title>Utilities</title>
     </info>
 
     <section>
@@ -4611,7 +4611,7 @@ PerlSetVar      WebDyneTemplate '/path/to/template.psp'
 
   <section>
     <info>
-      <title>Miscellaneous</title>
+      <title>Additional Notes</title>
     </info>
 
     <para>Things to note or information not otherwise contained elsewhere:</para>
@@ -4699,7 +4699,7 @@ Server local time is: &lt;? localtime ?&gt;</programlisting>
           <para>This documentation is written with the <link xlink:href="https://www.xmlmind.com/xmleditor/" xmlns:xlink="http://www.w3.org/1999/xlink">XMLMind XML Editor</link>, then
           converted to Markdown with <link xlink:href="https://pandoc.org" xmlns:xlink="http://www.w3.org/1999/xlink">pandoc</link> and displayed using <link
           xlink:href="https://www.mkdocs.org" xmlns:xlink="http://www.w3.org/1999/xlink">MKdocs</link>. The documentation for WebDyne is maintained on a <link
-          xlink:href="https://github.com/aspeer/mkdocs-WebDyne-Doc" xmlns:xlink="http://www.w3.org/1999/xlink">Github repository</link>.</para>
+          xlink:href="https://github.com/aspeer/WebDyne" xmlns:xlink="http://www.w3.org/1999/xlink">Github repository</link>.</para>
         </listitem>
       </varlistentry>
     </variablelist>

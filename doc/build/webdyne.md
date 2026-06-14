@@ -67,7 +67,7 @@ __PERL__
 sub print_time {
     print(scalar localtime);
 }
-    
+
 ```
 
 [Run](https://demo.webdyne.org/example/introduction3.psp)
@@ -121,7 +121,7 @@ interpreted on the server, not the client:
 
 ``` html
 <start_html title="Server Time">
-Server local time is: 
+Server local time is:
 <script type="application/perl">
     print scalar localtime()
 </script>
@@ -152,7 +152,7 @@ sub server_time {
     #  Get self ref
     #
     my $self=shift();
-    
+
     #  Get local time
     #
     my $time=scalar localtime();
@@ -160,11 +160,11 @@ sub server_time {
     #  Loop 4 times
     #
     foreach my $i (1..4) {
-    
+
         #  Render template block
         #
         $self->render_block('server_time', i=>$i, time=>$time)
-        
+
     }
 
     #  Return section
@@ -299,7 +299,7 @@ restarted for the new configuration file to take effect. This will need
 to be done as a the root user.
 
 ``` bash
-[root@localhost ~]# wdapacheinit 
+[root@localhost ~]# wdapacheinit
 
 [install] - Installation source directory '/usr'.
 [install] - Creating cache directory '/var/cache/webdyne'.
@@ -355,7 +355,7 @@ Apache 2.4 syntax - adjust path and syntax as required:
     AddHandler    modperl    .psp
     PerlHandler   WebDyne
 
-    #  Set a directory for storage of cache files. Make sure this exists already is writable by the 
+    #  Set a directory for storage of cache files. Make sure this exists already is writable by the
     #  Apache daemon process.
     #
     PerlSetVar    WEBDYNE_CACHE_DN    '/opt/webdyne/cache'
@@ -404,7 +404,7 @@ later
 
     #  Start an Apache test instance on a single .psp file
     #
-    $ perl -Ilib bin/webdyne.apache ./time.psp 
+    $ perl -Ilib bin/webdyne.apache ./time.psp
     /usr/sbin/httpd -D ONE_PROCESS -d /tmp/webdyne_apache_ol2EWnkb -f /tmp/webdyne_apache_ol2EWnkb/conf/httpd.conf -D APACHE2 -D APACHE2_4 -D PERL_USEITHREADS
     using Apache/2.4.62 (event MPM)
 
@@ -460,7 +460,7 @@ and validate the WebDyne is working correctly:
 Once verified as working correctly you can serve WebDyne content from a
 particular directory - or from a single file - using the syntax:
 
-    #  To serve up all files in a directory. If app.psp exists in the directory it will be 
+    #  To serve up all files in a directory. If app.psp exists in the directory it will be
     #  served by default. If it does not exist a file index will be displayed
     #
     $ webdyne.psgi <directory>
@@ -565,7 +565,7 @@ Save as app.psgi and start with command line:
 
     #  Assuming app.psgi in current directory
     #
-    plackup 
+    plackup
 
 
     #  Or if named differently
@@ -638,7 +638,7 @@ WebDyne is working correctly:
 Once verified as working correctly you can serve WebDyne content from a
 particular directory - or from a single file - using the syntax:
 
-    #  To serve up all files in a directory. If app.psp exists in the directory it will be 
+    #  To serve up all files in a directory. If app.psp exists in the directory it will be
     #  served by default. If it does not exist a file index will be displayed
     #
     $ webdyne.pagi <directory>
@@ -1123,7 +1123,7 @@ or text within the tags:
 <!-- The perl method will be called, but "Hello World" will not be displayed ! -->
 
 <perl handler="hello">
-Hello World 
+Hello World
 </perl>
 
 </body>
@@ -1153,7 +1153,7 @@ again:
 <!-- The perl method will be called, and this time the "Hello World" will be displayed-->
 
 <perl handler="hello">
-Hello World 
+Hello World
 </perl>
 
 </body>
@@ -1162,7 +1162,7 @@ Hello World
 __PERL__
 
 sub hello {
-    
+
     my $self=shift();
     return $self->render();
 
@@ -1185,7 +1185,7 @@ concatenated and send to the browser.
 
 <perl handler="hello">
 <p>
-Hello World 
+Hello World
 </perl>
 
 </body>
@@ -1194,7 +1194,7 @@ Hello World
 __PERL__
 
 sub hello {
-    
+
     my $self=shift();
     my @html;
     for (0..3) { push @html, $self->render() };
@@ -1215,7 +1215,7 @@ Same output using the \$self-\>print() method:
 
 <perl handler="hello">
 <p>
-Hello World 
+Hello World
 </perl>
 
 </body>
@@ -1224,7 +1224,7 @@ Hello World
 __PERL__
 
 sub hello {
-    
+
     #  Note use of $self->print()
     #
     my $self=shift();
@@ -1247,7 +1247,7 @@ default:
 <!-- Note shortcut via handler attribute with no value -->
 
 <perl handler>
-Hello World 
+Hello World
 </perl>
 
 </body>
@@ -1259,7 +1259,7 @@ __PERL__
 #  Subroutine called "handler" is invoked by default
 #
 sub handler {
-    
+
     my $self=shift();
     return $self->render()
 
@@ -1390,7 +1390,7 @@ sub handler1 {
     #
     my $text='Hello World 1';
     return $text;
-    
+
 }
 
 sub handler2 {
@@ -1399,7 +1399,7 @@ sub handler2 {
     #
     my $text='Hello World 2';
     return \$text;
-    
+
 }
 
 sub handler3 {
@@ -1407,17 +1407,17 @@ sub handler3 {
     #  Returning an array ref is OK
     #
     my @text=('Hello', 'World', 3);
-    
-    
+
+
     #  This won't work
     #
     #return @text
 
-    
+
     #  Returning an array ref is OK - note it won't auto insert spaces though !
     #
     return \@text
-    
+
 }
 
 sub handler4 {
@@ -1427,11 +1427,11 @@ sub handler4 {
     my $text='Hello World 4';
     print $text;
     print "\n";
-    
+
     #  Printing a scalar ref is OK
     #
     print \$text;
-    
+
 }
 
 sub handler5 {
@@ -1440,23 +1440,23 @@ sub handler5 {
     #
     my @text=('Hello ', 'World ', 5);
     print @text;
-    
-    
+
+
     #  Print new line manually, or turn on autonewline -
     #  see next example;
     #
     print "\n";
-    
+
     #  Array refs are OK
     #
     print \@text;
-    
-    
+
+
     #  Printing hash ref's won't work ! This will fail
     #
     # print { a=>1, b=>2 }
     return \undef;
-    
+
 }
 
 sub handler6 {
@@ -1464,14 +1464,14 @@ sub handler6 {
     #  You can print using a webdyne method handler
     #
     my $self=shift();
-    
-    
+
+
     #  Text we want to print
     #
     my $text="Hello World 6\n";
     my @text=('Hello ', 'World ', 6, "\n");
-    
-    
+
+
     #  These all work
     #
     $self->print($text);
@@ -1479,7 +1479,7 @@ sub handler6 {
     $self->print(@text);
     $self->print(\@text);
     return \undef;
-    
+
 }
 
 sub handler7 {
@@ -1487,35 +1487,35 @@ sub handler7 {
     #  You can print using a webdyne method handler
     #
     my $self=shift();
-    
-    
+
+
     #  Text we want to print
     #
     my $text="Hello World 7";
     my @text=('Hello ', 'World ', 7);
-    
-    
+
+
     #  Turn on autonew line to print "\n" at end of every call
     #
     $self->autonewline(1);
-    
-    
+
+
     #  These work
     #
     $self->print($text);
     $self->print(\$text);
-    
-    
+
+
     #  These put a CR between every element in the array
     $self->print(@text);
     $self->print(\@text);
-    
-    
+
+
     #  Turn off autonewline and return
     #
     $self->autonewline(0);
     return \undef;
-    
+
 }
 
 sub handler8 {
@@ -1525,15 +1525,15 @@ sub handler8 {
     use feature 'say';
     my $self=shift();
     my $text='Hello World 8';
-    
-    
+
+
     #  These will print, but won't send newline - say() won't send \n to TIEHANDLE
     #
     say($text);
     say($text);
     $self->print("\n");
-    
-    
+
+
     #  Use this instead
     #
     $self->say($text, $text);
@@ -1545,15 +1545,15 @@ sub handler9 {
     #
     my $self=shift();
     my $text='Hello World 9';
-    
-    
+
+
     #  These will print, but won't send newline unless the autonewline attribute is specified
     #
     $self->print($text);
     $self->print($text);
     $self->print("\n");
-    
-}    
+
+}
 ```
 
 [Run](https://demo.webdyne.org/example/output1.psp)
@@ -1585,7 +1585,7 @@ passing parameters which it can act on:
 __PERL__
 
 sub hello {
-    
+
     my ($self, $param)=@_;
     return \"Hello world $param"
 }
@@ -1659,7 +1659,7 @@ $i++;
 my $x=0;
 
 sub hello {
-    
+
     #  Note x may not increment as you expect because you will probably
     #  get a different Apache process each time you load this page
     #
@@ -1754,7 +1754,7 @@ Hello World ${time}
 
 __PERL__
 
-sub hello { 
+sub hello {
     my $self=shift();
     my $time=localtime();
     $self->render( time=>$time );
@@ -1795,23 +1795,23 @@ Hello World ${time}, loop iteration ${i}.
 __PERL__
 
 sub hello0 {
-    
+
     my $self=shift();
     my @html;
     my $time=localtime();
-    for (my $i=0; $i<3; $i++) { 
-        push @html, $self->render( time=>$time, i=>$i) 
+    for (my $i=0; $i<3; $i++) {
+        push @html, $self->render( time=>$time, i=>$i)
     };
     return \@html;
 }
 
 sub hello1 {
-    
+
     #  Alternate syntax using print
     #
     my $self=shift();
     my $time=localtime();
-    for (my $i=0; $i<3; $i++) { 
+    for (my $i=0; $i<3; $i++) {
         print $self->render( time=>$time, i=>$i)
     };
     return \undef
@@ -1887,7 +1887,7 @@ should provide an example of potential variable usage:
 Request Method: *{REQUEST_METHOD}
 <br>
 <!-- Same as Perl code -->
-Request Method: 
+Request Method:
 <perl> $ENV{'REQUEST_METHOD'} </perl>
 
 
@@ -1898,7 +1898,7 @@ Request Method:
 Request Protocol: ^{protocol}
 <br>
 <!-- Same as Perl code -->
-Request Protocol: 
+Request Protocol:
 <perl> my $self=shift(); my $r=$self->r(); return $r->protocol() </perl>
 
 
@@ -1914,11 +1914,11 @@ Your Name:
 You Entered: +{name}
 <br>
 <!-- Same as Perl code -->
-You Entered: 
+You Entered:
 <perl> my $self=shift(); my $cgi_or=$self->CGI(); return $cgi_or->param('name') </perl>
 <br>
 <!-- CGI vars are also loaded into the %_ global var, so the above is the same as -->
-You Entered: 
+You Entered:
 <perl> $_{'name'} </perl>
 
 
@@ -1998,7 +1998,7 @@ available in the <start_html\> tag including loading multiple scripts
 and stylesheets:
 
 ``` html
-<start_html title="Hello World" 
+<start_html title="Hello World"
     style="@{qw(https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap)}"
     script="@{qw(https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js)}"
 >
@@ -2061,11 +2061,11 @@ following:
             WEBDYNE_HEAD_INSERT => << 'END'
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css">
     <style>
-    :root { --pico-font-size: 85% } 
+    :root { --pico-font-size: 85% }
     body { padding-top: 10px; padding-left: 10px;
     </style>
     END
-        
+
         }
     }
 
@@ -2081,7 +2081,7 @@ content:
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css">
     <style>
-        :root { --pico-font-size: 85% } 
+        :root { --pico-font-size: 85% }
     </style>
     </head>
 
@@ -2127,11 +2127,11 @@ something like this:
 What's your name ?
 <p><textfield name="name">
 <p>
-What's the combination ? 
-<p><checkbox_group 
+What's the combination ?
+<p><checkbox_group
     name="words" values="@{qw(eenie meenie minie moe)}" defaults="@{qw(eenie minie)}">
 <p>
-What's your favourite color ? 
+What's your favourite color ?
 <p><popup_menu name="color" values="@{qw(red green blue chartreuse)}">
 <p><submit>
 <end_form>
@@ -2218,7 +2218,7 @@ __PERL__
 use Locale::Country;
 
 sub countries {
-    
+
     my $self=shift();
     my @countries = sort { $a cmp $b } all_country_names();
     $self->render( countries_ar=>\@countries );
@@ -2248,7 +2248,7 @@ responses:
 <!-- Note use of CGI.pm derived textfield tag -->
 
 <form>
-Enter your name: 
+Enter your name:
 <p><textfield name="name">
 <p><submit>
 </form>
@@ -2265,7 +2265,7 @@ Hello ${name}, pleased to meet you.
 
 __PERL__
 
-sub hello { 
+sub hello {
     my $self=shift();
 
     #  Get CGI instance
@@ -2347,17 +2347,17 @@ Hello !{! \$_{name} !}, pleased to meet you.
 
 __PERL__
 
-sub hello1 { 
+sub hello1 {
     my $self=shift();
     my $cgi_or=$self->CGI();
     my $name=$cgi_or->param('name');
     $self->render( name=>$name);
 }
 
-sub hello2 { 
+sub hello2 {
 
     my $self=shift();
-    
+
     #  Quicker method of getting name param
     #
     my $name=$_{'name'};
@@ -2447,7 +2447,7 @@ sub check {
     return $self->render();
 
 }
-        
+
 ```
 
 [Run](https://demo.webdyne.org/example/block1.psp)
@@ -2469,7 +2469,7 @@ Enter your name:
 <perl handler="hello">
 
 
-<!-- The following block is only rendered if we get a name - see the perl 
+<!-- The following block is only rendered if we get a name - see the perl
     code -->
 
 <block name="greeting">
@@ -2499,7 +2499,7 @@ It has been a pleasure to serve you, +{name} !
 
 __PERL__
 
-sub hello { 
+sub hello {
 
     my $self=shift();
 
@@ -2550,7 +2550,7 @@ The time here is <? localtime() ?>
 
 __PERL__
 
-sub hello { 
+sub hello {
 
     my $self=shift();
 
@@ -2826,7 +2826,7 @@ sub mtime {
 
     my $self=shift();
     my $r=$self->request();
-    
+
     my $srce_pn=$r->filename();
         my $srce_mtime=(stat($srce_pn))[9];
     my $srce_localmtime=localtime $srce_mtime;
@@ -2862,7 +2862,7 @@ Hello World
 <!-- A normal dynamic section - code is run each time page is loaded -->
 
 <perl handler="localtime">
-Current time: ${time} 
+Current time: ${time}
 </perl>
 <hr>
 
@@ -2890,7 +2890,7 @@ sub mtime {
 
     my $self=shift();
     my $r=$self->request();
-    
+
     my $srce_pn=$r->filename();
         my $srce_mtime=(stat($srce_pn))[9];
     my $srce_localmtime=localtime $srce_mtime;
@@ -2921,11 +2921,11 @@ Hello World
 <hr>
 
 
-<!-- A normal dynamic section, but because of the meta tag it will be frozen 
+<!-- A normal dynamic section, but because of the meta tag it will be frozen
     at compile time -->
 
 <perl handler="localtime">
-Current time: ${time} 
+Current time: ${time}
 </perl>
 
 <!-- Note the static attribute. It is redundant now the whole page is flagged
@@ -2954,7 +2954,7 @@ sub mtime {
 
     my $self=shift();
     my $r=$self->request();
-    
+
     my $srce_pn=$r->filename();
         my $srce_mtime=(stat($srce_pn))[9];
     my $srce_localmtime=localtime $srce_mtime;
@@ -2981,7 +2981,7 @@ Hello World
 <hr>
 
 <perl handler="localtime">
-Current time: ${time} 
+Current time: ${time}
 </perl>
 
 <p>
@@ -3012,7 +3012,7 @@ sub mtime {
 
     my $self=shift();
     my $r=$self->request();
-    
+
     my $srce_pn=$r->filename();
         my $srce_mtime=(stat($srce_pn))[9];
     my $srce_localmtime=localtime $srce_mtime;
@@ -3051,7 +3051,7 @@ __PERL__
 use Locale::Country;
 
 sub countries {
-    
+
     my $self=shift();
     my @countries = sort { $a cmp $b } all_country_names();
     $self->render( countries_ar=>\@countries );
@@ -3093,7 +3093,7 @@ __PERL__
 use Locale::Country;
 
 sub countries {
-    
+
     my $self=shift();
     my @countries = sort {$a cmp $b} all_country_names();
     $self->render( countries_ar=>\@countries );
@@ -3182,8 +3182,8 @@ sub cache {
 
         #  If older than 10 seconds force recompile
         #
-        if ((time()-$mtime) > 10) { 
-                $self->cache_compile(1) 
+        if ((time()-$mtime) > 10) {
+                $self->cache_compile(1)
         };
 
     #  Done
@@ -3252,16 +3252,16 @@ sub cache {
         #  Make sure month is valid
         #
         if (defined(my $uid=$results{$month})) {
-        
+
             #   It is. Change page UUID (inode) using month as a seed
             #
             $self->inode($uid)
-            
+
         }
 
     }
-    
-    
+
+
     #  Done
     #
     return \undef;
@@ -3273,7 +3273,7 @@ sub results {
 
     my $self=shift();
     if (my $month=$_{'month'}) {
-        
+
         #  Could be a really long complex SQL query ...
         #
         my $results=$results{$month};
@@ -3343,9 +3343,9 @@ sub chart_data {
         values  => [(120, 150, 180, 100)]
     );
     return \%data
-    
+
 }
-        
+
 ```
 
 [Run](https://demo.webdyne.org/example/chart1.psp)
@@ -3377,7 +3377,7 @@ library
   <script type=module>
 
     import { Grid, html } from "https://unpkg.com/gridjs?module";
-    
+
     // Parse JSON from script tag
     const json = JSON.parse(document.getElementById("data").textContent);
 
@@ -3419,7 +3419,7 @@ sub data {
     );
     my @json=map {my %data; @data{@rows}=@{$data[$_]}; \%data} (0..$#data);
     return \@json;
-    
+
 }
 ```
 
@@ -3462,7 +3462,7 @@ sub uppercase {
         id   => $id
     );
     return \%data
-    
+
 }
 
 sub doublecase {
@@ -3474,7 +3474,7 @@ sub doublecase {
         id   => $id
     );
     return \%data
-    
+
 }
 ```
 
@@ -3516,7 +3516,7 @@ to a backend file called `htmx_time1.psp`. Here is the display file,
 <p>Click the button below to load time data from the server</p>
 
 <!-- HTMX Trigger Button -->
-<button 
+<button
   hx-get="htmx_time1.psp"
   hx-target="#time-container"
   hx-swap="innerHTML"
@@ -3574,7 +3574,7 @@ example:
 <p>Click the button below to load time data from the server</p>
 
 <!-- HTMX Trigger Button -->
-<button 
+<button
   hx-get="htmx_time2.psp"
   hx-target="#time-container"
   hx-swap="innerHTML"
@@ -3633,7 +3633,7 @@ two button example:
 Click the button below to load time data from the server.</p>
 
 <!-- HTMX Trigger Button for Local Time -->
-<button 
+<button
   style="width:180px"
   hx-get="/htmx_time3.psp"
   hx-target="#time-container"
@@ -3646,7 +3646,7 @@ Get Local Time
 <p>
 
 <!-- HTMX Trigger Button for UTC Time -->
-<button 
+<button
   style="width:180px"
   hx-get="/htmx_time3.psp"
   hx-target="#time-container"
@@ -3728,7 +3728,7 @@ Or the local/UTC time example converted to run everything from one file:
 Click the button below to load time data from the server.</p>
 
 <!-- HTMX Trigger Button for Local Time -->
-<button 
+<button
   style="width:180px"
   hx-get="#"
   hx-target="#time"
@@ -3740,7 +3740,7 @@ Get Local Time
 <p>
 
 <!-- HTMX Trigger Button for UTC Time -->
-<button 
+<button
   style="width:180px"
   hx-get="#"
   hx-target="#time"
@@ -3803,17 +3803,17 @@ async sub sse {
     #
     my $self=shift();
     my $sse_or=$self->r->sse();
-    
-    
+
+
     #  Send start with some extra headers to discourage buffering
     #
-    await $sse_or->start(status => HTTP_OK, 
+    await $sse_or->start(status => HTTP_OK,
         headers => [
-            ['X-Accel-Buffering' => 'no'], 
+            ['X-Accel-Buffering' => 'no'],
             ['Content-Encoding' => 'identity']
         ]);
-    
-    
+
+
     #  Now main loop
     #
     my $progress = 0;
@@ -4339,7 +4339,7 @@ Reference of WebDyne tags and supported attributes
         form has been submitted in a similar form to the <perl\> tag
         run attribute.
 
-            #  Only show a block if a name parameter has been supplied 
+            #  Only show a block if a name parameter has been supplied
             #
             <block name="showname" display="+{name}">
             Thank you for registering +{name} !
@@ -4943,7 +4943,7 @@ Reference of WebDyne tags and supported attributes
         my $self=shift();
         my $cgi_or=$self->CGI();
         return Dumper($cgi_or->uploads()->flatten);
-        
+
     }
     ```
 
@@ -5212,8 +5212,8 @@ use a <Perl\>..</Perl\> section in the `httpd.conf` file, e.g.:
     variables in a separate file and include them, e.g. in the `apache.conf`
     file:
 
-        # Some config setting defaults. See documentation for full range. 
-        # Commented out # options represent defaults 
+        # Some config setting defaults. See documentation for full range.
+        # Commented out # options represent defaults
         #
         PerlRequire conf.d/webdyne_constant.pl
 
@@ -5222,7 +5222,7 @@ use a <Perl\>..</Perl\> section in the `httpd.conf` file, e.g.:
         use WebDyne;
         use WebDyne::Constant;
 
-        #  Error display/extended display on/off. More granular options below. 
+        #  Error display/extended display on/off. More granular options below.
         #  Set to 1 to enable, 0 to disable
         #
         $WebDyne::WEBDYNE_ERROR_SHOW=1;
@@ -5589,7 +5589,7 @@ is not very efficient:
     PerlSetVar      WebDyneChain                 'WebDyne::Session'
     </location>
 
-# Miscellaneous
+# Utilities
 
 ## Command Line Utilities
 
@@ -5998,7 +5998,7 @@ other authors. Without Perl, and Perl modules such as `mod_perl/PSGI`,
 would not be possible. To the authors of those modules - and all the
 other modules used to a lesser extent by WebDyne - I convey my thanks.
 
-# Miscellaneous
+# Additional Notes
 
 Things to note or information not otherwise contained elsewhere:
 
@@ -6023,7 +6023,7 @@ How to check syntax of a PSP file
     Run the command`wdlint <filename.psp>` to check for syntax error and
     report back:
 
-        $ wdlint check.psp 
+        $ wdlint check.psp
         syntax error at check.psp line 8, near "my 2"
         check.psp had compilation errors.
 
@@ -6061,7 +6061,7 @@ Use of hash characters for comments in PSP files
 
     ``` html
     #  This is my server time display file
-    #  
+    #
     #  VERSION=1.23
     #
     <start_html>
@@ -6087,7 +6087,7 @@ About this documentation
     Markdown with [pandoc](https://pandoc.org) and displayed using
     [MKdocs](https://www.mkdocs.org). The documentation for WebDyne is
     maintained on a [Github
-    repository](https://github.com/aspeer/mkdocs-WebDyne-Doc).
+    repository](https://github.com/aspeer/WebDyne).
 
 # Legal Information - Licensing and Copyright
 

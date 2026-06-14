@@ -11,9 +11,10 @@ which are interpreted and executed on the server. The resulting output
 is then sent to the browser.
 
 WebDyne works with common web server persistent Perl interpreters - such
-as Apache `mod_perl` and `PSGI` - to provide fast dynamic content. It
-works with PSGI servers such as Plack and Starman, and can be
-implemented as a Docker container to run HTML with embedded Perl code.
+as Apache `mod_perl,``PSGI` and `PAGI` - to provide fast dynamic
+content. It works with PSGI servers such as Plack and Starman, and can
+be implemented as a Docker container to run HTML with embedded Perl
+code.
 
 Pages are parsed once, then stored in a partially compiled format -
 speeding up subsequent processing by avoiding the need to re-parse a
@@ -66,7 +67,7 @@ __PERL__
 sub print_time {
     print(scalar localtime);
 }
-    
+
 ```
 
 [Run](https://demo.webdyne.org/example/introduction3.psp)
@@ -115,12 +116,12 @@ The local server time is: <div data-webdyne-perl> localtime() </div>
 
 [Run](https://demo.webdyne.org/example/introduction7.psp)
 
-Don't like <div\> style syntax ? Put the code in a <script\> block -
-it will be interpreted on the server, not the client:
+Alternatively, put the code in a <script\> block - it will be
+interpreted on the server, not the client:
 
 ``` html
 <start_html title="Server Time">
-Server local time is: 
+Server local time is:
 <script type="application/perl">
     print scalar localtime()
 </script>
@@ -128,7 +129,7 @@ Server local time is:
 
 [Run](https://demo.webdyne.org/example/introduction7.psp)
 
-Template blocks and variable replacement is supported also:
+Template blocks and variable replacement are supported also:
 
 ``` html
 <start_html>
@@ -151,7 +152,7 @@ sub server_time {
     #  Get self ref
     #
     my $self=shift();
-    
+
     #  Get local time
     #
     my $time=scalar localtime();
@@ -159,11 +160,11 @@ sub server_time {
     #  Loop 4 times
     #
     foreach my $i (1..4) {
-    
+
         #  Render template block
         #
         $self->render_block('server_time', i=>$i, time=>$time)
-        
+
     }
 
     #  Return section
@@ -190,8 +191,8 @@ before you can begin serving PSP files:
 
 -   A web server or application configured to use WebDyne.
 
-WebDyne will work with Apache mod_perl, or PSGI compatible web servers
-(such as Plack, Starman etc.).
+WebDyne will work with Apache mod_perl, PAGI or PSGI compatible web
+servers (such as Plack, Starman etc.).
 
 Docker containers with pre-built versions of WebDyne are also available.
 
@@ -204,8 +205,7 @@ Destination of the installed files is dependent on the local CPAN
 configuration, however in most cases it will be to the Perl site library
 location. WebDyne supports installation to an alternate location using
 the PREFIX option in CPAN. Binaries are usually installed to `/usr/bin`
-or `/usr/local/bin` by CPAN, but may vary by distribution/local
-configuration.
+or `/usr/local/bin`, but may vary by distribution/local configuration.
 
 Assuming your CPAN environment is setup correctly you can run the
 command:
@@ -217,13 +217,19 @@ Or (with `cpanminus` if installed)
 `cpanm WebDyne`
 
 This will install the base WebDyne modules, which includes the Apache
-config utility and PSGI version. Note that Apache or PSGI servers and
-dependencies such as Plack or Starman are **not** installed by default
-and need to be installed separately - see the relevant section.
+config utility and PSGI and PAGI versions. Note that Apache or PSGI/PAGI
+servers and dependencies (such as Plack or Starman) are **not**
+installed by default and need to be installed separately - see the
+relevant section, or just run:
 
-Once installed you will need to configure your web server to use WebDyne
-to serve files with the `.psp` extension if using Apache - see section
-below.
+    cpanm Task::WebDyne::Plack
+
+to get everything needed to run with Plack/PSGI. For PAGI run:
+
+    cpanm Task::WebDyne::PAGI
+
+If using Apache you will need to configure your system to use WebDyne to
+serve files with the `.psp` extension - see Apache install section.
 
 ## Quickstart
 
@@ -246,7 +252,7 @@ $ cpanm WebDyne
 #
 $ wdrender app.psp
 
-#  Install Plack
+#  Install Plack if not already done.
 #
 $ cpanm Plack
 
@@ -293,7 +299,7 @@ restarted for the new configuration file to take effect. This will need
 to be done as a the root user.
 
 ``` bash
-[root@localhost ~]# wdapacheinit 
+[root@localhost ~]# wdapacheinit
 
 [install] - Installation source directory '/usr'.
 [install] - Creating cache directory '/var/cache/webdyne'.
@@ -349,7 +355,7 @@ Apache 2.4 syntax - adjust path and syntax as required:
     AddHandler    modperl    .psp
     PerlHandler   WebDyne
 
-    #  Set a directory for storage of cache files. Make sure this exists already is writable by the 
+    #  Set a directory for storage of cache files. Make sure this exists already is writable by the
     #  Apache daemon process.
     #
     PerlSetVar    WEBDYNE_CACHE_DN    '/opt/webdyne/cache'
@@ -388,6 +394,31 @@ distribution - locate the correct one for your distribution)
     [root@localhost ~]# chmod 770 /opt/webdyne/cache
 
 Restart Apache and check for any errors.
+
+### Development Apache WebDyne command
+
+A convenience utility `webdyne.apache` is supplied which starts a
+single-threaded instance of Apache on port 5000 to render WebDyne pages.
+It works in the same way as the PSGI and PAGI startup scripts outlined
+later
+
+    #  Start an Apache test instance on a single .psp file
+    #
+    $ perl -Ilib bin/webdyne.apache ./time.psp
+    /usr/sbin/httpd -D ONE_PROCESS -d /tmp/webdyne_apache_ol2EWnkb -f /tmp/webdyne_apache_ol2EWnkb/conf/httpd.conf -D APACHE2 -D APACHE2_4 -D PERL_USEITHREADS
+    using Apache/2.4.62 (event MPM)
+
+    waiting 60 seconds for server to start: .
+    [Sat May 02 16:56:20.700397 2026] [core:trace3] [pid 356673:tid 356673] core.c(3505): Setting LogLevel for all modules to trace8
+    [Sat May 02 16:56:21.115354 2026] [mpm_event:debug] [pid 356673:tid 356717] event.c(2402): AH02471: start_threads: Using epoll (wakeable)
+
+    waiting 60 seconds for server to start: ok (waited 0 secs)
+    server localhost:5000 started
+
+
+    #  Start an instance to with a simple directory index on the current directory
+    #
+    $ perl -Ilib bin/webdyne.apache .
 
 ## PSGI
 
@@ -429,7 +460,7 @@ and validate the WebDyne is working correctly:
 Once verified as working correctly you can serve WebDyne content from a
 particular directory - or from a single file - using the syntax:
 
-    #  To serve up all files in a directory. If app.psp exists in the directory it will be 
+    #  To serve up all files in a directory. If app.psp exists in the directory it will be
     #  served by default. If it does not exist a file index will be displayed
     #
     $ webdyne.psgi <directory>
@@ -448,7 +479,7 @@ particular directory - or from a single file - using the syntax:
     Starting WebDyne this way will enable "developer" mode such that a
     directory index will be displayed if an app.psp file does not exist, and
     full error messages with code backtraces are displayed if any errors are
-    encounterd.
+    encountered.
 
 To start with `plackup`:
 
@@ -476,22 +507,233 @@ more performant Starman server (assuming installed):
 !!! note
 
     Plack (via `webdyne.psgi` or `plackup`) and Starman versions of WebDyne
-    serve basic static files such as css, js, jpg etc. If you want more
-    control over non PSP files you should us best practices for service such
-    files via a traditional web server front end. Also note the Starman and
-    plackup instances of WebDyne do not support the --test option or
-    indexing - it assumes you are running in a production environment and
-    have checked everything with the Plack implementation of `webdyne.psgi`
-    first.
+    will serve basic static files such as css, js, jpg etc. If you want more
+    control over non PSP files you should use a traditional web server front
+    end to serve those assets. Also note the Starman and plackup instances
+    of WebDyne do not support the --test option or indexing - it assumes you
+    are running in a production environment and have checked everything with
+    the Plack implementation of `webdyne.psgi` first.
 
 Numerous options can be set from the command line via environment
-variables, including Webdyne configuration. See relevant section for all
+variables, including WebDyne configuration. See relevant section for all
 WebDyne configuration options but assuming a local file
 `webdyne.conf.pl`:
 
     #  Start instance webdyne.psgi using local config file
     #
     $ WEBDYNE_CONF=./webdyne.conf.pl webdyne.psgi --port=5012 .
+
+WebDyne can be incorporated into a traditional app.psgi startup file for
+PSGI in the following form. In this example any file with a .psp
+extension is routed to WebDyne for rendering
+
+``` perl
+#  Save as app.psgi
+#
+use strict;
+use warnings;
+use Plack::Builder;
+use WebDyne::PSGI;
+
+my $home_app = sub {
+    return [
+        200,
+        [ 'Content-Type' => 'text/plain' ],
+        [ "Welcome to the Home Page\n" ]
+    ];
+};
+
+my $webdyne_app = WebDyne::PSGI->new(
+    root  => '.',
+    index => 1,
+)->to_app;
+
+builder {
+    sub {
+        my $env = shift;
+        # Serve any URL ending in .psp through WebDyne
+        if ($env->{PATH_INFO} =~ /\.psp$/i) {
+            return $webdyne_app->($env);
+        }
+
+        return $home_app->($env);
+    };
+};
+```
+
+Save as app.psgi and start with command line:
+
+    #  Assuming app.psgi in current directory
+    #
+    plackup
+
+
+    #  Or if named differently
+    #
+    plackup myapp.psgi
+
+Or you can mount all files from a particular directory against the
+WebDyne render engine.
+
+``` perl
+use strict;
+use warnings;
+use Plack::Builder;
+use WebDyne::PSGI;
+
+# Main app for /
+my $home_app = sub {
+    return [
+        200,
+        [ 'Content-Type' => 'text/plain' ],
+        [ "Welcome to the Home Page\n" ]
+    ];
+};
+
+# Mount everything using builder
+builder {
+    mount '/'         => $home_app;
+    mount '/webdyne'  => WebDyne::PSGI->new( root => '.')->to_app;
+};
+```
+
+## PAGI
+
+WebDyne can also run as a PAGI application. PAGI support covers normal
+HTTP requests and, when using a PAGI server with the relevant scope
+support, server-sent events, WebSocket connections and application
+lifespan events.
+
+Ensure that PAGI is installed on your system via CPAN after installing
+WebDyne:
+
+    # Via CPAN
+    #
+    perl -MCPAN -e 'install PAGI'
+
+    # Modern systems
+    #
+    cpan PAGI
+
+    # Or better via CPANM
+    #
+    cpanm PAGI
+
+    # Or just do the whole lot in one hit. For WebDyne + PAGI
+    #
+    cpanm Task::WebDyne::PAGI
+
+you can then start a basic WebDyne server by running the webdyne.pagi
+command with the --test parameter
+
+    webdyne.pagi --test
+
+This will start a PAGI web server on your machine listening to port 5000
+(or port 5001 on a Mac). When started through `webdyne.pagi` the server
+binds to `0.0.0.0` unless a host is specified on the command line. Open
+a connection to http://127.0.0.1:5000/ (or the IP address of your
+server) in your web browser to view the test page and validate the
+WebDyne is working correctly:
+
+Once verified as working correctly you can serve WebDyne content from a
+particular directory - or from a single file - using the syntax:
+
+    #  To serve up all files in a directory. If app.psp exists in the directory it will be
+    #  served by default. If it does not exist a file index will be displayed
+    #
+    $ webdyne.pagi <directory>
+
+    #  E.g serve files in /var/www/html. By default WebDyne will serve app.psp if no filename
+    #  is specified. If app.psp does not exist a file index will be displayed.
+    #
+    $ webdyne.pagi /var/www/html
+
+    #  Or just a single app.psp file. Only this file will be served regardless of URL
+    #
+    $ webdyne.pagi /var/www/html/time.psp
+
+!!! tip
+
+    Starting WebDyne this way will enable "developer" mode such that a
+    directory index will be displayed if an app.psp file does not exist, and
+    full error messages with code backtraces are displayed if any errors are
+    encountered.
+
+To start with `pagi-server`:
+
+    #  Start WebDyne via pagi-server in the current directory. A file named app.psp must exist,
+    #  directory indexing will not be performed.
+    #
+    DOCUMENT_ROOT=. pagi-server --app `which webdyne.pagi` --port=5000 --host=0.0.0.0
+
+    #  Start serving a single file
+    #
+    DOCUMENT_ROOT=./time.psp pagi-server /opt/perl5/bin/webdyne.pagi
+
+The above starts a single-threaded web server using PAGI.
+
+!!! note
+
+    PAGI (via `webdyne.pagi` or `pagi-server`) versions of WebDyne will
+    serve basic static files such as css, js, jpg etc. If you want more
+    control over non PSP files you should use a traditional web server front
+    end to serve those assets.
+
+Numerous options can be set from the command line via environment
+variables, including WebDyne configuration. See relevant section for all
+WebDyne configuration options but assuming a local file
+`webdyne.conf.pl`:
+
+    #  Start instance webdyne.pagi using local config file
+    #
+    $ WEBDYNE_CONF=./webdyne.conf.pl webdyne.pagi --port=5012 .
+
+WebDyne can be incorporated into a traditional app.pagi/app.pl startup
+file for PAGI in the following form. In this example any file with a
+.psp extension is routed to WebDyne for rendering:
+
+``` perl
+use strict;
+use warnings;
+use Future::AsyncAwait;
+use experimental 'signatures';
+
+use PAGI::Middleware::Builder;
+use WebDyne::PAGI;
+
+my $home_app = async sub ($scope, $receive, $send) {
+    die "Unsupported scope type: $scope->{type}"
+        unless $scope->{type} eq 'http';
+
+    await $send->({
+        type    => 'http.response.start',
+        status  => 200,
+        headers => [
+            [ 'content-type', 'text/plain' ],
+        ],
+    });
+
+    await $send->({
+        type => 'http.response.body',
+        body => "Welcome to the Home Page\n",
+        more => 0,
+    });
+};
+
+my $webdyne_app = WebDyne::PAGI->new(
+    root  => '.',
+)->to_app;
+
+builder {
+    async sub ($scope, $receive, $send) {
+        if (($scope->{path} // '') =~ /\.psp$/i) {
+            return await $webdyne_app->($scope, $receive, $send);
+        }
+
+        return await $home_app->($scope, $receive, $send);
+    };
+};
+```
 
 ## Docker
 
@@ -881,7 +1123,7 @@ or text within the tags:
 <!-- The perl method will be called, but "Hello World" will not be displayed ! -->
 
 <perl handler="hello">
-Hello World 
+Hello World
 </perl>
 
 </body>
@@ -911,7 +1153,7 @@ again:
 <!-- The perl method will be called, and this time the "Hello World" will be displayed-->
 
 <perl handler="hello">
-Hello World 
+Hello World
 </perl>
 
 </body>
@@ -920,7 +1162,7 @@ Hello World
 __PERL__
 
 sub hello {
-    
+
     my $self=shift();
     return $self->render();
 
@@ -943,7 +1185,7 @@ concatenated and send to the browser.
 
 <perl handler="hello">
 <p>
-Hello World 
+Hello World
 </perl>
 
 </body>
@@ -952,7 +1194,7 @@ Hello World
 __PERL__
 
 sub hello {
-    
+
     my $self=shift();
     my @html;
     for (0..3) { push @html, $self->render() };
@@ -973,7 +1215,7 @@ Same output using the \$self-\>print() method:
 
 <perl handler="hello">
 <p>
-Hello World 
+Hello World
 </perl>
 
 </body>
@@ -982,7 +1224,7 @@ Hello World
 __PERL__
 
 sub hello {
-    
+
     #  Note use of $self->print()
     #
     my $self=shift();
@@ -1005,7 +1247,7 @@ default:
 <!-- Note shortcut via handler attribute with no value -->
 
 <perl handler>
-Hello World 
+Hello World
 </perl>
 
 </body>
@@ -1017,7 +1259,7 @@ __PERL__
 #  Subroutine called "handler" is invoked by default
 #
 sub handler {
-    
+
     my $self=shift();
     return $self->render()
 
@@ -1148,7 +1390,7 @@ sub handler1 {
     #
     my $text='Hello World 1';
     return $text;
-    
+
 }
 
 sub handler2 {
@@ -1157,7 +1399,7 @@ sub handler2 {
     #
     my $text='Hello World 2';
     return \$text;
-    
+
 }
 
 sub handler3 {
@@ -1165,17 +1407,17 @@ sub handler3 {
     #  Returning an array ref is OK
     #
     my @text=('Hello', 'World', 3);
-    
-    
+
+
     #  This won't work
     #
     #return @text
 
-    
+
     #  Returning an array ref is OK - note it won't auto insert spaces though !
     #
     return \@text
-    
+
 }
 
 sub handler4 {
@@ -1185,11 +1427,11 @@ sub handler4 {
     my $text='Hello World 4';
     print $text;
     print "\n";
-    
+
     #  Printing a scalar ref is OK
     #
     print \$text;
-    
+
 }
 
 sub handler5 {
@@ -1198,23 +1440,23 @@ sub handler5 {
     #
     my @text=('Hello ', 'World ', 5);
     print @text;
-    
-    
+
+
     #  Print new line manually, or turn on autonewline -
     #  see next example;
     #
     print "\n";
-    
+
     #  Array refs are OK
     #
     print \@text;
-    
-    
+
+
     #  Printing hash ref's won't work ! This will fail
     #
     # print { a=>1, b=>2 }
     return \undef;
-    
+
 }
 
 sub handler6 {
@@ -1222,14 +1464,14 @@ sub handler6 {
     #  You can print using a webdyne method handler
     #
     my $self=shift();
-    
-    
+
+
     #  Text we want to print
     #
     my $text="Hello World 6\n";
     my @text=('Hello ', 'World ', 6, "\n");
-    
-    
+
+
     #  These all work
     #
     $self->print($text);
@@ -1237,7 +1479,7 @@ sub handler6 {
     $self->print(@text);
     $self->print(\@text);
     return \undef;
-    
+
 }
 
 sub handler7 {
@@ -1245,35 +1487,35 @@ sub handler7 {
     #  You can print using a webdyne method handler
     #
     my $self=shift();
-    
-    
+
+
     #  Text we want to print
     #
     my $text="Hello World 7";
     my @text=('Hello ', 'World ', 7);
-    
-    
+
+
     #  Turn on autonew line to print "\n" at end of every call
     #
     $self->autonewline(1);
-    
-    
+
+
     #  These work
     #
     $self->print($text);
     $self->print(\$text);
-    
-    
+
+
     #  These put a CR between every element in the array
     $self->print(@text);
     $self->print(\@text);
-    
-    
+
+
     #  Turn off autonewline and return
     #
     $self->autonewline(0);
     return \undef;
-    
+
 }
 
 sub handler8 {
@@ -1283,15 +1525,15 @@ sub handler8 {
     use feature 'say';
     my $self=shift();
     my $text='Hello World 8';
-    
-    
+
+
     #  These will print, but won't send newline - say() won't send \n to TIEHANDLE
     #
     say($text);
     say($text);
     $self->print("\n");
-    
-    
+
+
     #  Use this instead
     #
     $self->say($text, $text);
@@ -1303,15 +1545,15 @@ sub handler9 {
     #
     my $self=shift();
     my $text='Hello World 9';
-    
-    
+
+
     #  These will print, but won't send newline unless the autonewline attribute is specified
     #
     $self->print($text);
     $self->print($text);
     $self->print("\n");
-    
-}    
+
+}
 ```
 
 [Run](https://demo.webdyne.org/example/output1.psp)
@@ -1333,7 +1575,7 @@ passing parameters which it can act on:
 <perl handler="hello" param="Bob"/>
 <p>
 
-<!-- We can pass an array or hashref also - see variables section for more info on this syntax -->
+<!-- We can pass an hashref also - see variables section for more info on this syntax -->
 
 <perl handler="hello_again" param="%{ firstname=>'Alice', lastname=>'Smith' }"/>
 
@@ -1343,7 +1585,7 @@ passing parameters which it can act on:
 __PERL__
 
 sub hello {
-    
+
     my ($self, $param)=@_;
     return \"Hello world $param"
 }
@@ -1417,7 +1659,7 @@ $i++;
 my $x=0;
 
 sub hello {
-    
+
     #  Note x may not increment as you expect because you will probably
     #  get a different Apache process each time you load this page
     #
@@ -1512,7 +1754,7 @@ Hello World ${time}
 
 __PERL__
 
-sub hello { 
+sub hello {
     my $self=shift();
     my $time=localtime();
     $self->render( time=>$time );
@@ -1553,23 +1795,23 @@ Hello World ${time}, loop iteration ${i}.
 __PERL__
 
 sub hello0 {
-    
+
     my $self=shift();
     my @html;
     my $time=localtime();
-    for (my $i=0; $i<3; $i++) { 
-        push @html, $self->render( time=>$time, i=>$i) 
+    for (my $i=0; $i<3; $i++) {
+        push @html, $self->render( time=>$time, i=>$i)
     };
     return \@html;
 }
 
 sub hello1 {
-    
+
     #  Alternate syntax using print
     #
     my $self=shift();
     my $time=localtime();
-    for (my $i=0; $i<3; $i++) { 
+    for (my $i=0; $i<3; $i++) {
         print $self->render( time=>$time, i=>$i)
     };
     return \undef
@@ -1645,18 +1887,18 @@ should provide an example of potential variable usage:
 Request Method: *{REQUEST_METHOD}
 <br>
 <!-- Same as Perl code -->
-Request Method: 
+Request Method:
 <perl> $ENV{'REQUEST_METHOD'} </perl>
 
 
-<!-- Apache request record methods. Only methods that return a scalar result are usable -->
+<!-- Request record methods. Only methods that return a scalar result are usable -->
 
 <p>
 <!-- Short Way -->
 Request Protocol: ^{protocol}
 <br>
 <!-- Same as Perl code -->
-Request Protocol: 
+Request Protocol:
 <perl> my $self=shift(); my $r=$self->r(); return $r->protocol() </perl>
 
 
@@ -1672,11 +1914,11 @@ Your Name:
 You Entered: +{name}
 <br>
 <!-- Same as Perl code -->
-You Entered: 
+You Entered:
 <perl> my $self=shift(); my $cgi_or=$self->CGI(); return $cgi_or->param('name') </perl>
 <br>
 <!-- CGI vars are also loaded into the %_ global var, so the above is the same as -->
-You Entered: 
+You Entered:
 <perl> $_{'name'} </perl>
 
 
@@ -1685,20 +1927,32 @@ You Entered:
 <form>
 <p>
 Favourite colour 1:
-<p><popup_menu name="popup_menu" values="@{qw(red green blue)}">
+<p><popup_menu name="popup_menu1" values="@{qw(red green blue)}">
 
 
-<!-- Hashe Syntax -->
+<!-- Hash Syntax -->
 
 <p>
-Favourite colour 2:
-<p><popup_menu name="popup_menu" 
-    values="%{red=>Red, green=>Green, blue=>Blue}">
+Favourite colour 2 (pick multiple):
+<p><popup_menu multiple name="popup_menu2" values="%{red=>Red, green=>Green, blue=>Blue, orange=>'Orange', yellow=>'Yellow'}" default='green'>
+<p><submit name="Submit">
 
 </form>
 
+<perl handler run="+{popup_menu1}">
+Favourite colour 1: +{popup_menu1}
+<p>
+Favourite colour 2: ${popup_menu2_values}
+</perl>
+
 </body>
 </html>
+
+__PERL__
+
+sub handler {
+    return join(',', shift->CGI->param('popup_menu2'));
+}
 ```
 
 [Run](https://demo.webdyne.org/example/var4.psp)
@@ -1744,7 +1998,7 @@ available in the <start_html\> tag including loading multiple scripts
 and stylesheets:
 
 ``` html
-<start_html title="Hello World" 
+<start_html title="Hello World"
     style="@{qw(https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap)}"
     script="@{qw(https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js)}"
 >
@@ -1807,11 +2061,11 @@ following:
             WEBDYNE_HEAD_INSERT => << 'END'
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css">
     <style>
-    :root { --pico-font-size: 85% } 
+    :root { --pico-font-size: 85% }
     body { padding-top: 10px; padding-left: 10px;
     </style>
     END
-        
+
         }
     }
 
@@ -1827,7 +2081,7 @@ content:
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css">
     <style>
-        :root { --pico-font-size: 85% } 
+        :root { --pico-font-size: 85% }
     </style>
     </head>
 
@@ -1873,11 +2127,11 @@ something like this:
 What's your name ?
 <p><textfield name="name">
 <p>
-What's the combination ? 
-<p><checkbox_group 
+What's the combination ?
+<p><checkbox_group
     name="words" values="@{qw(eenie meenie minie moe)}" defaults="@{qw(eenie minie)}">
 <p>
-What's your favourite color ? 
+What's your favourite color ?
 <p><popup_menu name="color" values="@{qw(red green blue chartreuse)}">
 <p><submit>
 <end_form>
@@ -1964,7 +2218,7 @@ __PERL__
 use Locale::Country;
 
 sub countries {
-    
+
     my $self=shift();
     my @countries = sort { $a cmp $b } all_country_names();
     $self->render( countries_ar=>\@countries );
@@ -1994,7 +2248,7 @@ responses:
 <!-- Note use of CGI.pm derived textfield tag -->
 
 <form>
-Enter your name: 
+Enter your name:
 <p><textfield name="name">
 <p><submit>
 </form>
@@ -2011,7 +2265,7 @@ Hello ${name}, pleased to meet you.
 
 __PERL__
 
-sub hello { 
+sub hello {
     my $self=shift();
 
     #  Get CGI instance
@@ -2093,17 +2347,17 @@ Hello !{! \$_{name} !}, pleased to meet you.
 
 __PERL__
 
-sub hello1 { 
+sub hello1 {
     my $self=shift();
     my $cgi_or=$self->CGI();
     my $name=$cgi_or->param('name');
     $self->render( name=>$name);
 }
 
-sub hello2 { 
+sub hello2 {
 
     my $self=shift();
-    
+
     #  Quicker method of getting name param
     #
     my $name=$_{'name'};
@@ -2193,7 +2447,7 @@ sub check {
     return $self->render();
 
 }
-        
+
 ```
 
 [Run](https://demo.webdyne.org/example/block1.psp)
@@ -2215,7 +2469,7 @@ Enter your name:
 <perl handler="hello">
 
 
-<!-- The following block is only rendered if we get a name - see the perl 
+<!-- The following block is only rendered if we get a name - see the perl
     code -->
 
 <block name="greeting">
@@ -2245,7 +2499,7 @@ It has been a pleasure to serve you, +{name} !
 
 __PERL__
 
-sub hello { 
+sub hello {
 
     my $self=shift();
 
@@ -2296,7 +2550,7 @@ The time here is <? localtime() ?>
 
 __PERL__
 
-sub hello { 
+sub hello {
 
     my $self=shift();
 
@@ -2572,7 +2826,7 @@ sub mtime {
 
     my $self=shift();
     my $r=$self->request();
-    
+
     my $srce_pn=$r->filename();
         my $srce_mtime=(stat($srce_pn))[9];
     my $srce_localmtime=localtime $srce_mtime;
@@ -2608,7 +2862,7 @@ Hello World
 <!-- A normal dynamic section - code is run each time page is loaded -->
 
 <perl handler="localtime">
-Current time: ${time} 
+Current time: ${time}
 </perl>
 <hr>
 
@@ -2636,7 +2890,7 @@ sub mtime {
 
     my $self=shift();
     my $r=$self->request();
-    
+
     my $srce_pn=$r->filename();
         my $srce_mtime=(stat($srce_pn))[9];
     my $srce_localmtime=localtime $srce_mtime;
@@ -2667,11 +2921,11 @@ Hello World
 <hr>
 
 
-<!-- A normal dynamic section, but because of the meta tag it will be frozen 
+<!-- A normal dynamic section, but because of the meta tag it will be frozen
     at compile time -->
 
 <perl handler="localtime">
-Current time: ${time} 
+Current time: ${time}
 </perl>
 
 <!-- Note the static attribute. It is redundant now the whole page is flagged
@@ -2700,7 +2954,7 @@ sub mtime {
 
     my $self=shift();
     my $r=$self->request();
-    
+
     my $srce_pn=$r->filename();
         my $srce_mtime=(stat($srce_pn))[9];
     my $srce_localmtime=localtime $srce_mtime;
@@ -2727,7 +2981,7 @@ Hello World
 <hr>
 
 <perl handler="localtime">
-Current time: ${time} 
+Current time: ${time}
 </perl>
 
 <p>
@@ -2758,7 +3012,7 @@ sub mtime {
 
     my $self=shift();
     my $r=$self->request();
-    
+
     my $srce_pn=$r->filename();
         my $srce_mtime=(stat($srce_pn))[9];
     my $srce_localmtime=localtime $srce_mtime;
@@ -2797,7 +3051,7 @@ __PERL__
 use Locale::Country;
 
 sub countries {
-    
+
     my $self=shift();
     my @countries = sort { $a cmp $b } all_country_names();
     $self->render( countries_ar=>\@countries );
@@ -2839,7 +3093,7 @@ __PERL__
 use Locale::Country;
 
 sub countries {
-    
+
     my $self=shift();
     my @countries = sort {$a cmp $b} all_country_names();
     $self->render( countries_ar=>\@countries );
@@ -2928,8 +3182,8 @@ sub cache {
 
         #  If older than 10 seconds force recompile
         #
-        if ((time()-$mtime) > 10) { 
-                $self->cache_compile(1) 
+        if ((time()-$mtime) > 10) {
+                $self->cache_compile(1)
         };
 
     #  Done
@@ -2998,16 +3252,16 @@ sub cache {
         #  Make sure month is valid
         #
         if (defined(my $uid=$results{$month})) {
-        
+
             #   It is. Change page UUID (inode) using month as a seed
             #
             $self->inode($uid)
-            
+
         }
 
     }
-    
-    
+
+
     #  Done
     #
     return \undef;
@@ -3019,7 +3273,7 @@ sub results {
 
     my $self=shift();
     if (my $month=$_{'month'}) {
-        
+
         #  Could be a really long complex SQL query ...
         #
         my $results=$results{$month};
@@ -3089,9 +3343,9 @@ sub chart_data {
         values  => [(120, 150, 180, 100)]
     );
     return \%data
-    
+
 }
-        
+
 ```
 
 [Run](https://demo.webdyne.org/example/chart1.psp)
@@ -3123,7 +3377,7 @@ library
   <script type=module>
 
     import { Grid, html } from "https://unpkg.com/gridjs?module";
-    
+
     // Parse JSON from script tag
     const json = JSON.parse(document.getElementById("data").textContent);
 
@@ -3165,7 +3419,7 @@ sub data {
     );
     my @json=map {my %data; @data{@rows}=@{$data[$_]}; \%data} (0..$#data);
     return \@json;
-    
+
 }
 ```
 
@@ -3208,7 +3462,7 @@ sub uppercase {
         id   => $id
     );
     return \%data
-    
+
 }
 
 sub doublecase {
@@ -3220,7 +3474,7 @@ sub doublecase {
         id   => $id
     );
     return \%data
-    
+
 }
 ```
 
@@ -3262,7 +3516,7 @@ to a backend file called `htmx_time1.psp`. Here is the display file,
 <p>Click the button below to load time data from the server</p>
 
 <!-- HTMX Trigger Button -->
-<button 
+<button
   hx-get="htmx_time1.psp"
   hx-target="#time-container"
   hx-swap="innerHTML"
@@ -3320,7 +3574,7 @@ example:
 <p>Click the button below to load time data from the server</p>
 
 <!-- HTMX Trigger Button -->
-<button 
+<button
   hx-get="htmx_time2.psp"
   hx-target="#time-container"
   hx-swap="innerHTML"
@@ -3342,7 +3596,7 @@ now with the HTML fragment generated by Perl:
 
 ``` html
 <start_html>
-<htmx handler="server_time">
+<htmx force handler="server_time">
 <p>
 Server local time: ${server_time}
 </htmx>
@@ -3379,7 +3633,7 @@ two button example:
 Click the button below to load time data from the server.</p>
 
 <!-- HTMX Trigger Button for Local Time -->
-<button 
+<button
   style="width:180px"
   hx-get="/htmx_time3.psp"
   hx-target="#time-container"
@@ -3392,7 +3646,7 @@ Get Local Time
 <p>
 
 <!-- HTMX Trigger Button for UTC Time -->
-<button 
+<button
   style="width:180px"
   hx-get="/htmx_time3.psp"
   hx-target="#time-container"
@@ -3474,7 +3728,7 @@ Or the local/UTC time example converted to run everything from one file:
 Click the button below to load time data from the server.</p>
 
 <!-- HTMX Trigger Button for Local Time -->
-<button 
+<button
   style="width:180px"
   hx-get="#"
   hx-target="#time"
@@ -3486,7 +3740,7 @@ Get Local Time
 <p>
 
 <!-- HTMX Trigger Button for UTC Time -->
-<button 
+<button
   style="width:180px"
   hx-get="#"
   hx-target="#time"
@@ -3507,6 +3761,159 @@ Get UTC Time
 ```
 
 [Run](https://demo.webdyne.org/example/htmx_demo4.psp)
+
+## SSE
+
+When run in a PAGI environment WebDyne supports Server-Sent Events
+(SSE). An async `sse` subroutine can be defined which will be called
+when an SSE event stream is requested. The handler can access the
+underlying `PAGI::SSE` helper via `$self->r->sse()`. Here is an example.
+Note the `sse` flag in the <start_html\> tag to denote the use of SSE
+in the document:
+
+``` html
+<start_html title="Progress Bar" h3 hr alpine sse>
+<progress id="bar" value="0" max="100"></progress>
+<span id="pct">0%</span>
+
+<script>
+const bar = document.getElementById('bar');
+const pct = document.getElementById('pct');
+
+const es = new EventSource("#");
+
+es.addEventListener("progress", e => {
+    const value = parseInt(e.data, 10);
+    bar.value = value;
+    pct.textContent = value + "%";
+});
+
+es.addEventListener("done", () => {
+    es.close();
+});
+</script>
+
+__PERL__
+use HTTP::Status qw(HTTP_OK);
+use Future::AsyncAwait;
+
+async sub sse {
+
+    #  Get self ref, PAGI::SSE object
+    #
+    my $self=shift();
+    my $sse_or=$self->r->sse();
+
+
+    #  Send start with some extra headers to discourage buffering
+    #
+    await $sse_or->start(status => HTTP_OK,
+        headers => [
+            ['X-Accel-Buffering' => 'no'],
+            ['Content-Encoding' => 'identity']
+        ]);
+
+
+    #  Now main loop
+    #
+    my $progress = 0;
+    await $sse_or->every(1, async sub {
+
+        $progress += 10;
+        await $sse_or->send_event(
+            event => 'progress',
+            data  => $progress,
+        );
+
+        if ($progress >= 100) {
+            await $sse_or->send_event(event => 'done');
+            $sse_or->close;  # stop stream
+        }
+    });
+
+}
+```
+
+If you do not wish to use the <start_html\> tag with the sse attribute
+you can use a meta tag to denote which subroutine to call for sse
+events, e.g. <meta name="WebDyne" content="sse=sse"\>
+
+## WebSockets
+
+When run in a PAGI environment WebDyne supports WebSockets (WS). An
+async `ws` subroutine can be defined which will be called when a PAGI
+WebSocket connection is opened. The request object exposes the
+underlying PAGI scope and send/receive callbacks, and the handler can
+use those to accept the connection and exchange WebSocket messages. Here
+is an example. Note the `ws` flag in the <start_html\> tag to denote
+the use of WebSockets in the document:
+
+``` html
+<start_html ws title="WebSocket Demo" h3>
+<input id="msg" value="Hello from browser">
+<button id="send">Send</button>
+<pre id="log"></pre>
+
+<script>
+  const log = (line) => {
+    document.getElementById('log').textContent += line + "\n";
+  };
+
+  const ws = new WebSocket(
+    `${location.origin.replace(/^http/, "ws")}${location.pathname}`
+  );
+
+  ws.onopen = () => log("connected");
+  ws.onmessage = (ev) => log("server: " + ev.data);
+  ws.onclose = () => log("closed");
+  ws.onerror = (ev) => log("error");
+
+  document.getElementById('send').onclick = () => {
+    const text = document.getElementById('msg').value;
+    log("client: " + text);
+    ws.send(text);
+  };
+</script>
+__PERL__
+use Future::AsyncAwait;
+
+async sub ws {
+
+    my $self=shift();
+    my $r=$self->r();
+    my ($scope, $receive, $send) = map {$r->{$_}} qw(scope receive send);
+
+    await $send->({
+        type => 'websocket.accept',
+    });
+
+    while (1) {
+        my $event = await $receive->();
+
+        last if $event->{type} eq 'websocket.disconnect';
+
+        if (defined $event->{text}) {
+            my $text=$event->{text}. ' '. scalar localtime;
+            await $send->({
+                type => 'websocket.send',
+                text => "$text",
+            });
+        }
+        elsif (defined $event->{bytes}) {
+            await $send->({
+                type  => 'websocket.send',
+                bytes => $event->{bytes},
+            });
+        }
+    }
+
+    return;
+}
+```
+
+If you do not wish to use the <start_html\> tag with the ws attribute
+you can use a meta tag to denote which subroutine to call for WebSocket
+events, e.g. <meta name="WebDyne" content="ws=ws"\>
 
 ## Dump
 
@@ -3932,7 +4339,7 @@ Reference of WebDyne tags and supported attributes
         form has been submitted in a similar form to the <perl\> tag
         run attribute.
 
-            #  Only show a block if a name parameter has been supplied 
+            #  Only show a block if a name parameter has been supplied
             #
             <block name="showname" display="+{name}">
             Thank you for registering +{name} !
@@ -4513,29 +4920,32 @@ Reference of WebDyne tags and supported attributes
 :   The standard <input type="file"\> tag type. User input with this
     tag is persistent. When querying this parameter after form
     submission responses will be in the form of a Plack::Request::Upload
-    object. User input with this tag is persistent.
+    object. User input with this tag is persistent. Example to
+    demonstrate minimal file upload facility:
 
-        <start_html title="File Upload">
-        <start_multipart_form>
-        <filefield name="file" multiple required>
-        <p>
-        <submit name=Upload>
-        <end_form>
+    ``` html
+    <start_html title="File Upload">
+    <start_multipart_form>
+    <filefield name="file" multiple required>
+    <p>
+    <submit name=Upload>
+    <end_form>
 
-        <pre>
-        <perl handler/>
-        </pre>
+    <pre>
+    <perl handler/>
+    </pre>
 
-        __PERL__
+    __PERL__
 
-        use Data::Dumper;
-        sub handler {
+    use Data::Dumper;
+    sub handler {
 
-            my $self=shift();
-            my $cgi_or=$self->CGI();
-            return Dumper($cgi_or->uploads()->flatten);
-            
-        }
+        my $self=shift();
+        my $cgi_or=$self->CGI();
+        return Dumper($cgi_or->uploads()->flatten);
+
+    }
+    ```
 
 <image_button\>
 
@@ -4580,8 +4990,10 @@ CGI()
 
 r(), request()
 
-:   Returns an instance of the Apache request object, or a mock object
-    with similar functionality when running under PSGI or FCGI
+:   Returns the current WebDyne request adapter. WebDyne provides a
+    common request interface across Apache, PSGI, PAGI and command-line
+    render contexts, with backend-specific details available where
+    supported.
 
 html_tiny()
 
@@ -4800,8 +5212,8 @@ use a <Perl\>..</Perl\> section in the `httpd.conf` file, e.g.:
     variables in a separate file and include them, e.g. in the `apache.conf`
     file:
 
-        # Some config setting defaults. See documentation for full range. 
-        # Commented out # options represent defaults 
+        # Some config setting defaults. See documentation for full range.
+        # Commented out # options represent defaults
         #
         PerlRequire conf.d/webdyne_constant.pl
 
@@ -4810,7 +5222,7 @@ use a <Perl\>..</Perl\> section in the `httpd.conf` file, e.g.:
         use WebDyne;
         use WebDyne::Constant;
 
-        #  Error display/extended display on/off. More granular options below. 
+        #  Error display/extended display on/off. More granular options below.
         #  Set to 1 to enable, 0 to disable
         #
         $WebDyne::WEBDYNE_ERROR_SHOW=1;
@@ -4944,7 +5356,7 @@ package namespace.
 
 `$WEBDYNE_CGI_DISABLE_UPLOADS`
 
-:   Disable CGI::Simple file uploads. Defaults to 1 (true - do not allow
+:   Disable CGI::Simple file uploads. Defaults to 0 (false - allow
     uploads).
 
 `$WEBDYNE_CGI_POST_MAX`
@@ -5042,16 +5454,23 @@ package namespace.
 \$WEBDYNE_PSGI_STATIC
 
 :   Allow the `webdyne.psgi` Plack instance to serve static pages (non
-    PSP pages) such as style sheets, javascript, images etc. Allowed
-    static file extensions are designated by the `$WEBDYNE_MIME_TYPE_HR`
-    config item - only files with extensions in that config item will be
-    served. Defaults to 1 (allow static pages to be served)
+    PSP pages) such as style sheets, javascript, images etc. Defaults to
+    1 (allow static pages to be served). The default PSGI static
+    middleware uses `$WEBDYNE_PSGI_MIDDLEWARE_STATIC` to decide which
+    files can be served directly.
+
+\$WEBDYNE_PAGI_STATIC
+
+:   Allow the `webdyne.pagi` PAGI instance to serve static pages (non
+    PSP pages) such as style sheets, javascript, images etc. Defaults to
+    1 (allow static pages to be served). The default PAGI static
+    middleware uses `$WEBDYNE_PAGI_MIDDLEWARE_STATIC` to decide which
+    files can be served directly.
 
 \$WEBDYNE_MIME_TYPE_HR
 
-:   Hash reference of file extensions and MIME types which will be
-    allowed to be served if `$WEBDYNE_PSGI_STATIC` is enabled. See
-    source code of
+:   Hash reference of file extensions and MIME types used when WebDyne
+    needs to identify static file content types. See source code of
     [`WebDyne/Constant.pm`](https://github.com/aspeer/WebDyne/blob/main/lib/WebDyne/Constant.pm)
     for defaults.
 
@@ -5073,8 +5492,8 @@ see each package for details.
 ### Environment Variables
 
 All WebDyne configuration items can be overridden by setting an
-environment variable of the same same when starting the PSGI version, or
-via an Apache SetEnv directive, e.g:
+environment variable of the same name when starting PSGI or PAGI
+instances, or via an Apache SetEnv directive, e.g:
 
     #  Start webdyne plack instance with extended error display for this run.
     #
@@ -5102,14 +5521,14 @@ WEBDYNE_CONF
 
 DOCUMENT_ROOT
 
-:   Plack and Starman instances only - the starting home directory or
-    file name (if file rather than directory) for the PSGI server to
-    use. Defaults to the current working directory if none specified.
+:   The starting home directory or file name (if file rather than
+    directory) for PSGI and PAGI server wrappers to use. Defaults to the
+    current working directory if none specified.
 
 DOCUMENT_DEFAULT
 
-:   Plack and Starman instances only - the default files to look for in
-    a directory if none given via browser URL. Defaults to "app.psp".
+:   The default file to look for in a directory if none is given via
+    browser URL. Defaults to "app.psp" for PSGI and PAGI wrappers.
 
 WEBDYNE_DEBUG
 
@@ -5170,14 +5589,16 @@ is not very efficient:
     PerlSetVar      WebDyneChain                 'WebDyne::Session'
     </location>
 
-# Miscellaneous
+# Utilities
 
 ## Command Line Utilities
 
-Command line utilities are fairly basic at this stage. Installation
-location will vary depening on your distribution - most will default to
-`/usr/local/bin`, but may be installed elsewhere in some cases,
-especially if you have nominated a `PREFIX` option when using CPAN.
+WebDyne installs several command line utilities for setup, local
+development and troubleshooting. Installation location will vary
+depending on your distribution - most will default to `/usr/local/bin`,
+but may be installed elsewhere in some cases, especially if you have
+nominated a `PREFIX` option when using CPAN. The commands provide their
+own help or manual output for detailed options.
 
 `wdapacheinit`
 
@@ -5195,14 +5616,15 @@ especially if you have nominated a `PREFIX` option when using CPAN.
 `wdrender`
 
 :   Usage: `wdrender filename.psp`. Will attempt to render the source
-    file to screen using WebDyne. Can only do basic tasks - any advanced
-    use (such as calls to the Apache request object) will fail.
+    file to screen using WebDyne. It is useful for testing page output
+    from the command line and can exercise fake, PSGI, PAGI and mod_perl
+    style request backends for troubleshooting.
 
 `wddump`
 
 :   Usage: `wddump filename`. Where filename is a compiled WebDyne
-    source file (usually in /var/webdyne/cache). Will dump out the saved
-    data structure of the compiled file.
+    source file (usually in `/var/webdyne/cache`). Will dump out the
+    saved data structure of the compiled file.
 
 `wddebug`
 
@@ -5215,8 +5637,21 @@ especially if you have nominated a `PREFIX` option when using CPAN.
 `webdyne.psgi`
 
 :   Used to run WebDyne as a PSGI process- usually invoked by Plack via
-    plackup or starman, but can be run directly for development
+    `plackup` or `starman`, but can be run directly for development
     purposes.
+
+`webdyne.pagi`
+
+:   Used to run WebDyne as a PAGI application. It can be run directly
+    for development or used as a PAGI application entry point, including
+    PAGI HTTP, SSE and WebSocket request handling where supported by the
+    server.
+
+`webdyne.apache`
+
+:   Starts a temporary Apache mod_perl instance for local development
+    and troubleshooting. It can serve a directory or a single PSP file
+    without installing a full system Apache configuration.
 
 `wdlint`
 
@@ -5337,13 +5772,13 @@ httpd.conf snippet:
 
     </Location>
 
-Note that any package used as the WebDyneCacheHandler target should be
+Note that any package used as the `WebDyneCacheHandler` target should be
 already loaded via "PerlRequire" or similar mechanism.
 
 As an example of why this could be useful consider the [caching
 examples](#caching_section) above. Instead of flagging that an
-individual file should only be re-compiled every x seconds, that policy
-could be applied to a whole directory with no alteration to the
+individual file should only be re-compiled every "x" seconds, that
+policy could be applied to a whole directory with no alteration to the
 individual pages.
 
 ## WebDyne::Session
@@ -5563,7 +5998,7 @@ other authors. Without Perl, and Perl modules such as `mod_perl/PSGI`,
 would not be possible. To the authors of those modules - and all the
 other modules used to a lesser extent by WebDyne - I convey my thanks.
 
-# Miscellaneous
+# Additional Notes
 
 Things to note or information not otherwise contained elsewhere:
 
@@ -5588,7 +6023,7 @@ How to check syntax of a PSP file
     Run the command`wdlint <filename.psp>` to check for syntax error and
     report back:
 
-        $ wdlint check.psp 
+        $ wdlint check.psp
         syntax error at check.psp line 8, near "my 2"
         check.psp had compilation errors.
 
@@ -5617,8 +6052,8 @@ How to pass \$self ref if using processing instructions
 
 Use of hash characters for comments in PSP files
 
-:   Any \# characters at the very start of a PSP file before a <html\>
-    or <start_html\> tag are treated as comments and discarded - they
+:   Any \# characters at the very start of a PSP file (before a <html\>
+    or <start_html\>) tag are treated as comments and discarded - they
     will not be stored or displayed (they are **not** translated into
     HTML comments). This allows easy to read comments at the start of
     PSP files. Any \# characters after the first valid tag are not
@@ -5626,7 +6061,7 @@ Use of hash characters for comments in PSP files
 
     ``` html
     #  This is my server time display file
-    #  
+    #
     #  VERSION=1.23
     #
     <start_html>
@@ -5652,7 +6087,7 @@ About this documentation
     Markdown with [pandoc](https://pandoc.org) and displayed using
     [MKdocs](https://www.mkdocs.org). The documentation for WebDyne is
     maintained on a [Github
-    repository](https://github.com/aspeer/mkdocs-WebDyne-Doc).
+    repository](https://github.com/aspeer/WebDyne).
 
 # Legal Information - Licensing and Copyright
 

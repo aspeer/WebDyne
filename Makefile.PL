@@ -1,6 +1,12 @@
 use 5.006;
 use strict;
 use ExtUtils::MakeMaker;
+use File::Copy qw(copy);
+use File::Spec;
+use Cwd qw(abs_path);
+use Tie::File;
+
+
 my $mm_ver=$ExtUtils::MakeMaker::VERSION;
 if ($mm_ver=~/_/) {    # dev version
     $mm_ver=eval $mm_ver;
@@ -46,7 +52,6 @@ my %WriteMakefile=(
         'Devel::Confess'    => 0,
         'Router::Simple'    => 0,
         'Hash::MultiValue'  => 0,
-        'Devel::Confess'    => 0,
         'Time::HiRes'       => 0,
         'Sub::Util'         => 0,
         'Term::ANSIColor'   => 0,
@@ -129,13 +134,9 @@ while (my ($mm_ver_test, $ar)=each %MM_Compat) {
 }
 WriteMakefile(%WriteMakefile);
 
-#package MY;
-use File::Copy qw(copy);
-use File::Spec;
-use Cwd qw(abs_path);
-use Tie::File;
 
-
+#  Extend Makefile
+#
 sub MY::post_initialize {
 
     #  Add license file, other support files here
@@ -170,8 +171,9 @@ sub MY::post_initialize {
 }
 
 
+#  Get ExtUtils::Git postamble if we are using it
+#
 sub MM::postamble {
-#sub MY::postamble {
     my $mm_or=shift();
     my $postamble;
     eval {ExtUtils::Git->import(); $postamble=&MY::postamble($mm_or)};
@@ -195,12 +197,12 @@ $(SRC_DIR)/webdyne.md : $(SRC_DIR)/webdyne.xml
 	mkdir -p $(TMP_DIR)
 	xmllint --xinclude --noent $< -o $(TMP_DIR)/$(notdir $<)
 	xsltproc $(SCRIPTS_DIR)/promote-title-ids.xsl $(TMP_DIR)/$(notdir $<) | sponge $(TMP_DIR)/$(notdir $<)
-	#pandoc -f docbook -t markdown-smart --lua-filter=$(SCRIPTS_DIR)/admonition-advanced.lua --lua-filter=$(SCRIPTS_DIR)/fix-images.lua --extract-media=$(DOC_DIR)/images -o $(TMP_DIR)/$(notdir $@) $(TMP_DIR)/$(notdir $<)
 	pandoc -f docbook -t markdown-smart --lua-filter=$(SCRIPTS_DIR)/admonition-advanced.lua --resource-path=$(SRC_DIR) --extract-media=$(DOC_DIR) -o $(TMP_DIR)/$(notdir $@) $(TMP_DIR)/$(notdir $<)
 	perl -pi -e 's/\\</</g' $(TMP_DIR)/$(notdir $@)
 	# Fix image placeholders from pandoc
-	#perl -pi -e 's/\[\]\{.*original-image-src="([^"]+)"[^\}]*\}/![](\1)/s' $(TMP_DIR)/$(notdir $@)
 	perl -pi -e 's{\Qdocs/images\E}{images}g' $(TMP_DIR)/$(notdir $@)
+	perl -pi -e 's/[ \t]+$$//' $(TMP_DIR)/$(notdir $@)
+	cp $(TMP_DIR)/$(notdir $@) $@
 	rm -f $(DOC_DIR)/*.md
 	perl $(SCRIPTS_DIR)/mdsplit.pl $(TMP_DIR)/$(notdir $@) $(DOC_DIR)
 
@@ -210,7 +212,7 @@ gh-deploy : $(SRC_DIR)/webdyne.md
 serve : $(SRC_DIR)/webdyne.md docker
 	docker rm -f webdyne-mkdocs || true
 	docker run -d --name webdyne-mkdocs -e PORT=5000 -p 5000:5000 webdyne-mkdocs
-	mkdocs serve -f mkdocs.local.yml
+	mkdocs serve -f mkdocs.yml
 
 doc_xml:
 	@echo Generating doc
@@ -263,36 +265,6 @@ sub MM::init_main {
     }
     $mm_or->{'EXE_FILES'}=\@fn;
     $mm_or->MM::SUPER::init_main();
-
-}
-
-sub MY::const_config0 {
-
-
-    #  Get self ref
-    #
-    my $mm_or=shift();
-    
-    
-    #  Set macro
-    #
-    $mm_or->{'macro'}{'SRC_DIR'}='doc';
-    ##BTMP_DIR := $(SRC_DIR)/build
-    #PSP_DIR := $(SRC_DIR)/example
-    #BPSP_FILES := $(shell find $(PSP_DIR) -type f -name '*.psp')
-
-    #DOC_DIR := docs
-    #SCRIPTS_DIR := scripts
-
-    #DOCKER_DIR := docker
-    #DOCKER_IMAGE := webdyne-mkdocs:latest
-    #DOCKER_STAMP := $(DOCKER_DIR)/.built
-    
-
-    #  Macros all set, return whatever master const_config does
-    #
-    return $mm_or->MY::SUPER::const_config();
-
 
 }
 
