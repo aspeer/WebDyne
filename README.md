@@ -30,8 +30,9 @@ WebDyne pages are HTML documents with embedded Perl and optional WebDyne-specifi
 Save the following as `app.psp`:
 
 ```html
-<start_html>
+<html><head><title>Server Time</title></head><body>
 The local server time is: <? localtime() ?>
+</body></html>
 ```
 
 You can render it directly from the command line:
@@ -39,6 +40,15 @@ You can render it directly from the command line:
 ```bash
 wdrender app.psp
 ```
+
+WebDyne supports sytactic shortcuts which still render as compliant HTML. 
+The following produces the exact same output as the first example:
+
+```html
+<start_html title="Server Time">
+The local server time is: <? localtime() ?>
+```
+
 
 Example output:
 

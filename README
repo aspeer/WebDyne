@@ -50,12 +50,19 @@ Quick Example
 
 Save the following as app.psp:
 
-    <start_html>
+    <html><head><title>Server Time</title></head><body>
     The local server time is: <? localtime() ?>
+    </body></html>
 
 You can render it directly from the command line:
 
     wdrender app.psp
+
+WebDyne supports sytactic shortcuts which still render as compliant
+HTML. The following produces the exact same output as the first example:
+
+    <start_html title="Server Time">
+    The local server time is: <? localtime() ?>
 
 Example output:
 
