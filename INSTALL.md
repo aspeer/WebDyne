@@ -2,45 +2,91 @@ INSTALL
 
 # Installation via CPAN #
 
-You can install the base WebDyne module, and all prerequisites, with:  
+Install the base WebDyne module, and its core prerequisites, with:
 
-    $ perl -MCPAN -e 'install WebDyne'
+```bash
+perl -MCPAN -e 'install WebDyne'
+```
 
- or alternatively on modern systems:  
+or, on systems using `cpanm`:
 
-    $ cpanm WebDyne
+```bash
+cpanm WebDyne
+```
 
- This assumes you have already setup and initialised CPAN appropriately for your environment. Note that WebDyne will not be automatically usable after this \- you must modify your Web server
- configuration to make it active or install the Plack PSGI version \(see below). You may do this manually \(referring to the documentation available in the doc directory, or at  [https://webdyne.org](https://webdyne.org) ) or via an installer module which will do the work for you. 
+This installs the core modules and command-line tools. Depending on the runtime you want to use, you may also need PSGI/Plack, PAGI, or Apache/mod_perl components.
 
-# Installation of the PSGI \(Plack) version #
+Full documentation is available in the `doc` directory and at [https://webdyne.org](https://webdyne.org).
 
-To use the PSGI version of WebDyne install the Plack module via:  
+# PSGI / Plack #
 
-    $ cpanm Plack
+To use WebDyne through PSGI, install Plack and any PSGI server you want to run:
 
-  You can then start the WebDyne server via the command  
+```bash
+cpanm Plack
+```
 
-    $ webdyne.psgi --test
+You can then validate the wrapper with:
 
-  To validate it is working. See instruction at  [https://webdyne.org](https://webdyne.org)  for additional usage information
+```bash
+webdyne.psgi --test
+```
 
-# Installation of the Apache Version #
+or serve a document root:
 
-The base WebDyne module comes with an installer module for Apache. It will be installed into whichever bin location \(usually  `/usr/local/bin` ) your CPAN configuration defaults to. You can run the installer with the command:  
+```bash
+webdyne.psgi /path/to/site-root
+```
 
-    $ wdapacheinit
+# PAGI #
 
- It will use reasonable defaults to try and locate and update your Apache config, Webdyne cache dir. etc. If you need to alter the defaults run  `wdapacheinit --help`  to review options
+To use WebDyne through PAGI, install the PAGI runtime stack required by your chosen PAGI server.
+
+You can then validate the wrapper with:
+
+```bash
+webdyne.pagi --test
+```
+
+or serve a document root:
+
+```bash
+webdyne.pagi /path/to/site-root
+```
+
+The PAGI runtime supports normal HTTP requests as well as server-sent event, WebSocket, and lifespan flows.
+
+# Apache / mod_perl #
+
+For permanent Apache/mod_perl configuration, use the Apache installer:
+
+```bash
+wdapacheinit
+```
+
+It uses reasonable defaults to locate and update Apache configuration and WebDyne cache directories. Run `wdapacheinit --help` to review available options before changing a system Apache installation.
+
+For temporary local development and troubleshooting under Apache/mod_perl, use:
+
+```bash
+webdyne.apache --test
+```
+
+or serve a local document root:
+
+```bash
+webdyne.apache /path/to/site-root
+```
 
 # Installation via Manual Build #
 
-You can download and install the base WebDyne module with the following commands after it is unpacked:  
+After unpacking the source tree, build and install with:
 
-    $ perl Makefile.PL
-    $ make 
-    $ make test 
-    $ make install
+```bash
+perl Makefile.PL
+make
+make test
+make install
+```
 
- You will need to download and install all prerequisite modules manually. Modules required should be listed when you run the  `perl Makefile.PL`  command. Similarly to the CPAN install you will either need to adjust your Web server configuration manually to serve WebDyne pages, or run/download the appropriate installer or Plack
- module.
+Modules required by the selected build and runtime path should be reported when you run `perl Makefile.PL`. As with a CPAN install, you still need to configure or start the appropriate runtime wrapper before WebDyne pages will be served.

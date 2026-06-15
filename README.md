@@ -2,11 +2,11 @@ README
 
 # Introduction #
 
-WebDyne is a dynamic content generation engine for Apache/mod_perl and PSGI web servers \(such as Plack and Starman). HTML documents with embedded Perl code are processed to produce dynamic HTML output.
+WebDyne is a dynamic content generation engine for Apache/mod_perl, PSGI web servers such as Plack and Starman, and PAGI runtimes. HTML documents with embedded Perl code are processed to produce dynamic HTML output.
 
-An installer is included in the base WebDyne module for Apache, or a PSGI variant is included for use with Plack. Once WebDyne is installed any file with a  `.psp`  extension is treated as a WebDyne source file. It is parsed for WebDyne tags \(such as  `<perl>`  and  `<block>` ) which are interpreted and executed on the server as appropriate to generate a compliant HTML document. The resulting output is then sent to the browser.
+An installer is included in the base WebDyne module for Apache, and wrapper scripts are included for PSGI, PAGI, and temporary local Apache/mod_perl development. Once WebDyne is installed any file with a `.psp` extension is treated as a WebDyne source file. It is parsed for WebDyne tags such as `<perl>` and `<block>`, which are interpreted and executed on the server as appropriate to generate a compliant HTML document. The resulting output is then sent to the browser.
 
-Once parsed paged are are optionally stored in a partially compiled format, speeding up subsequent processing. The aim of WebDyne is to make coding web pages with Perl components a faster, easier and more enjoyable experience.
+Once parsed, pages are optionally stored in a partially compiled format, speeding up subsequent processing. The aim of WebDyne is to make coding web pages with Perl components a faster, easier and more enjoyable experience.
 
 Full documentation for WebDyne (with examples) is available at [https://webdyne.org](https://webdyne.org).
 
@@ -96,6 +96,20 @@ Or serve a document root directory with the PSGI wrapper:
 webdyne.psgi /path/to/site-root
 ```
 
+The PAGI wrapper can be started in the same style:
+
+```bash
+webdyne.pagi --test
+webdyne.pagi /path/to/site-root
+```
+
+For Apache/mod_perl development without installing system-wide Apache configuration, use the temporary Apache runner:
+
+```bash
+webdyne.apache --test
+webdyne.apache /path/to/site-root
+```
+
 ## A Simple PSGI Site ##
 
 Create a directory with an `app.psp` file:
@@ -117,9 +131,9 @@ WebDyne will serve `.psp` files from that directory through the PSGI runtime.
 
 WebDyne can be used in several ways:
 
-- Apache/mod_perl
+- Apache/mod_perl, either permanently configured or started locally through `webdyne.apache`
 - PSGI, including wrapper usage through `webdyne.psgi`
-- PAGI, including wrapper usage through `webdyne.pagi`
+- PAGI, including HTTP, server-sent event, WebSocket, and lifespan handling through `webdyne.pagi`
 - standalone rendering through `wdrender`, `wdcompile`, or direct use of `WebDyne::html()`
 
 # Features #
@@ -138,6 +152,7 @@ WebDyne supports:
 
 Repository documentation includes:
 
+- `doc/webdyne.xml` as the definitive guide source
 - `doc/webdyne.md`
 - `lib/WebDyne.pm.md`
 - command documentation in `bin/*.md`
@@ -146,6 +161,6 @@ Useful entry points include:
 
 - `bin/wdrender.md`
 - `bin/wdcompile.md`
+- `bin/webdyne.apache.md`
 - `bin/webdyne.psgi.md`
 - `bin/webdyne.pagi.md`
-
