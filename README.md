@@ -53,7 +53,7 @@ The local server time is: <? localtime() ?>
 Example output:
 
 ```html
-<!DOCTYPE html><html lang="en"><head><title>Untitled Document</title><meta charset="UTF-8"></head>
+<!DOCTYPE html><html lang="en"><head><title>Server Time</title><meta charset="UTF-8"></head>
 <body><p>The local server time is: ...</p></body></html>
 ```
 
