@@ -1,0 +1,6 @@
+.pm_filter.pf
+MYMETA.json
+MYMETA.yml
+Makefile
+cpanfile~
+lib/WebDyne.pm.sha
