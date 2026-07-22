@@ -62,7 +62,7 @@ BEGIN {
         printf STDERR ("Please install missing CPAN modules (you may need mod_perl-devel packages also): %s \n", join(', ', @missing));
         exit 1;
     }
-    
+
 }
 
 
@@ -115,8 +115,8 @@ sub main {
         $opt{'root'} = pop @{$argv_ar};
     }
     $opt{'root'} ||=($ENV{'DOCUMENT_ROOT'} || fastcwd());
-    
-    
+
+
     #  File or dir ? If file Apache won't like as DOCUMENT_ROOT so need to set
     #  as Perl environment var in httpd.conf (later) and handle differently
     #
@@ -134,6 +134,10 @@ sub main {
     if ($opt{'index'} eq '1') {
         $opt{'index'}=$WEBDYNE_DEFAULT_INDEX_FN;
     }
+#    \1;
+#}
+
+#__END__
 
 
     #  Startup server
@@ -172,8 +176,8 @@ sub request_mod_perl_startup {
         TMPDIR  => 1,
         CLEANUP => !$opt_hr->{'keep_tmp'},
     );
-    
-    
+
+
     #  Create webdyne cache there
     #
     mkdir (my $cache_dn=File::Spec->catdir($svr_root_dn, 'cache'));
@@ -186,14 +190,14 @@ sub request_mod_perl_startup {
         return if $_[0] =~ /Duplicate specification/;
         CORE::warn @_;
     };
-    
-    
+
+
     #  Don't need index.html generated
     #
     no warnings qw(once redefine);
     *Apache::TestConfig::generate_index_html=sub {};
-    
-    
+
+
     #  Don't want include libraries changes, stuf this out
     #
     *Apache::TestConfig::configure_startup_pl=sub {};
@@ -256,22 +260,22 @@ sub request_mod_perl_postamble {
     #
     my ($document_root, $opt_hr)=@_;
     $document_root=File::Spec->rel2abs($document_root);
-    
-    
+
+
     #  Need to work out if stderr writable. If not need to use alternate log file (prob running in container)
     #
     my $stderr_fn='/dev/stderr';
     my $stdout_fn='/dev/stdout';
     if (! open(my $fh, '>>', $stderr_fn)) {
-    
+
         #  Not writable, probably running under docker, revert to traditional
         #
         print STDERR "unable to write to stderr,stdout - reverting to log files\n";
         $stderr_fn='logs/error.log';
         $stdout_fn='logs/access.log';
     }
-    
-    
+
+
     #  Same for ulimit - if not available probably running in container
     #
     if (my $out = qx{bash -c 'ulimit -c unlimited 2>&1'}) {
@@ -282,8 +286,11 @@ sub request_mod_perl_postamble {
             *Apache::TestRun::set_ulimit=sub {};
         }
     }
-    
-    
+
+    use Data::Dumper;
+    print Dumper(\$0, &perl_inc_dn_test());
+    die;
+
     #  Ok - proceed
     #
     my $default_index_fn=File::Spec->rel2abs($WEBDYNE_DEFAULT_INDEX_FN || File::Spec->catfile($document_root, 'index.psp'));
@@ -345,7 +352,42 @@ sub perl_inc_dn {
     }
     return \@lib;
 }
-        
+
+
+sub perl_inc_dn_test {
+
+    my %default_inc=map { $_ => 1 } @{ perl_inc_dn_default() || [] };
+    my %seen;
+    my @lib=grep {
+        !$default_inc{$_} && !$seen{$_}++
+    } map {
+        File::Spec->rel2abs($_)
+    } grep {
+        defined($_) && !ref($_) && length($_) && -d $_
+    } @INC;
+
+    return \@lib;
+}
+
+
+sub perl_inc_dn_default {
+
+    my @default_inc;
+    #local %ENV=%ENV;
+    #delete @ENV{qw(PERL5LIB PERLLIB PERL_USE_UNSAFE_INC)};
+
+    if (open(my $perl_fh, '-|', $^X, '-e', 'print join qq(\0), grep { defined && !ref && length && -d } @INC')) {
+        local $/;
+        my $inc=<$perl_fh>;
+        close($perl_fh);
+        @default_inc=map {
+            File::Spec->rel2abs($_)
+        } split(/\0/, ($inc || ''));
+    }
+
+    return \@default_inc;
+}
+
 __END__
 
 =begin markdown
