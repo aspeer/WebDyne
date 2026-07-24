@@ -716,14 +716,16 @@ sub handler : method {    # no subsort
                 debug('using MP2 or FCGI_ROLE path');
                 my $r_child=$r->lookup_file($fn, $r->output_filters) ||
                     return err();
-                debug("r_child: $r_child");
+                debug("r_child: $r_child, self: $self");
                 $r_child->handler('default-handler');
                 $r_child->content_type(WEBDYNE_CONTENT_TYPE_HTML);
 
                 #  Apache bug ? Need to set content type on r also
                 $r->content_type(WEBDYNE_CONTENT_TYPE_HTML);
                 debug("set content type to: $WEBDYNE_CONTENT_TYPE_HTML, running");
-                return $r_child->run($self);
+                #return $r_child->run($self);
+                return $r_child->run();
+
 
             }
             else {
