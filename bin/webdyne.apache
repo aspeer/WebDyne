@@ -88,7 +88,7 @@ sub main {
         index       => 1,
         root        => fastcwd(),
         keep_tmp    => 0,
-        port        => '5000',
+        port        => ($^O eq 'darwin') ? 5001 : 5000
         %{do(glob(sprintf('~/.%s.opt', basename(__FILE__)))) || {}}
     );
 
@@ -103,7 +103,7 @@ sub main {
         'port=s',
         'keep_tmp!',
         'test!',
-        'dump_postamble',
+        'dump_postamble|dump-postamble',
         'argv=s',
         'help|?'
     ) || return err('bad options');
@@ -134,14 +134,11 @@ sub main {
     if ($opt{'index'} eq '1') {
         $opt{'index'}=$WEBDYNE_DEFAULT_INDEX_FN;
     }
-#    \1;
-#}
-
-#__END__
-
-
+    
+    
     #  Startup server
     #
+    printf("Starting server on localhost (127.0.0.1), port: %s\n", $opt{'port'});
     my $runner=request_mod_perl_startup(\%opt) || return err();
 
 
@@ -276,7 +273,12 @@ sub request_mod_perl_postamble {
     }
 
 
-    #  Same for ulimit - if not available probably running in container
+    #  Same for ulimit - if not available probably running in container. Update - disable it anyway with env
+    #
+    $ENV{'APACHE_TEST_ULIMIT_SET'}++;
+    
+    
+    #  Might as well keep for reference
     #
     if (my $out = qx{bash -c 'ulimit -c unlimited 2>&1'}) {
         my $rc  = $? >> 8;
@@ -286,12 +288,31 @@ sub request_mod_perl_postamble {
             *Apache::TestRun::set_ulimit=sub {};
         }
     }
+    
+    
+    #  Running on Mac ? Need to load mod_rewrite manually.
+    #
+    my $module_load_rewrite;
+    if ($^O eq 'darwin') {
+        my $apxs = $ENV{APXS} || $ENV{APACHE_TEST_APXS} || 'apxs';
+        my $libexecdir = qx{"$apxs" -q 'libexecdir' 2>/dev/null};
+        die "Unable to query 'libexecdir' using $apxs\n" if $? != 0;
+        chomp $libexecdir;
+        $module_load_rewrite= <<"END"
+<IfModule !rewrite_module>
+    LoadModule rewrite_module $libexecdir/mod_rewrite.so
+</IfModule>
+END
+        ;        
+    }
+    
+    
+    #  Get any additional library paths we want
+    #
+    my @perl_inc_dn=@{&perl_inc_dn()};
 
-    use Data::Dumper;
-    print Dumper(\$0, &perl_inc_dn_test());
-    die;
 
-    #  Ok - proceed
+    #  Ok - proceed to build postamble
     #
     my $default_index_fn=File::Spec->rel2abs($WEBDYNE_DEFAULT_INDEX_FN || File::Spec->catfile($document_root, 'index.psp'));
     my $default_index_dn=dirname($default_index_fn);
@@ -299,8 +320,9 @@ sub request_mod_perl_postamble {
     push (@PerlSetEnv, sprintf('PerlSetEnv DOCUMENT_ROOT %s', $opt_hr->{'root_pn'})) if  $opt_hr->{'root_pn'};
     push (@PerlSetEnv, "PerlSetEnv WEBDYNE_ERROR_TEXT 1") unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
-    my $PerlSwitches=join("\n", map { sprintf('PerlSwitches -I%s', $_) } @{&perl_inc_dn()});
+    my $PerlSwitches=join("\n", map { sprintf('PerlSwitches -I%s', $_) } @perl_inc_dn);
     my $postamble= <<"END"
+$module_load_rewrite
 $PerlSetEnv
 $PerlSwitches
 PerlModule WebDyne
@@ -336,7 +358,7 @@ END
 }
 
 
-sub perl_inc_dn {
+sub perl_inc_dn0 {
 
     my @lib;
     if (($^O ne 'MSWin32') && (-r (my $proc_fn='/proc/self/cmdline'))) {
@@ -354,7 +376,7 @@ sub perl_inc_dn {
 }
 
 
-sub perl_inc_dn_test {
+sub perl_inc_dn {
 
     my %default_inc=map { $_ => 1 } @{ perl_inc_dn_default() || [] };
     my %seen;
