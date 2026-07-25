@@ -42,5 +42,5 @@ like($stdout, qr/-port\n5123/, 'webdyne.apache forwards requested port to Apache
 like($stdout, qr/PerlSetEnv DOCUMENT_ROOT \Q$source_fn\E/, 'webdyne.apache preserves file root as DOCUMENT_ROOT in postamble');
 like($stdout, qr/Alias \/index\.psp/, 'webdyne.apache emits index alias postamble for file-root startup');
 is($stderr, '', 'webdyne.apache stubbed run writes no stderr');
-
+#diag($stderr);
 done_testing();

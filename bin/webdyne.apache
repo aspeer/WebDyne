@@ -88,7 +88,7 @@ sub main {
         index       => 1,
         root        => fastcwd(),
         keep_tmp    => 0,
-        port        => ($^O eq 'darwin') ? 5001 : 5000
+        port        => ($^O eq 'darwin') ? 5001 : 5000,
         %{do(glob(sprintf('~/.%s.opt', basename(__FILE__)))) || {}}
     );
 
@@ -293,7 +293,7 @@ sub request_mod_perl_postamble {
     
     #  Running on Mac ? Need to load mod_rewrite manually.
     #
-    my $module_load_rewrite;
+    my $module_load_rewrite='';
     if ($^O eq 'darwin') {
         my $apxs = $ENV{APXS} || $ENV{APACHE_TEST_APXS} || 'apxs';
         my $libexecdir = qx{"$apxs" -q 'libexecdir' 2>/dev/null};

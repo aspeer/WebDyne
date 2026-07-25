@@ -188,7 +188,7 @@ PSP_FILES := $(shell find $(PSP_DIR) -type f -name '*.psp')
 DOC_DIR := docs
 SCRIPTS_DIR := scripts
 
-DOCKER_DIR := docker
+DOCKER_DIR := mkdocs/docker
 DOCKER_IMAGE := webdyne-mkdocs:latest
 DOCKER_STAMP := $(DOCKER_DIR)/.built
 
@@ -213,6 +213,15 @@ serve : $(SRC_DIR)/webdyne.md docker
 	docker rm -f webdyne-mkdocs || true
 	docker run -d --name webdyne-mkdocs -e PORT=5000 -p 5000:5000 webdyne-mkdocs
 	mkdocs serve -f mkdocs.yml
+
+
+mkdocs-docker: $(DOCKER_STAMP)
+
+$(DOCKER_STAMP) : $(PSP_FILES) $(DOCKER_DIR)/Dockerfile.alpine
+	docker build  -t $(DOCKER_IMAGE) -f ($DOCKET_DIR)/Dockerfile.alpine .
+	touch $(DOCKER_STAMP)
+
+
 
 doc_xml:
 	@echo Generating doc
