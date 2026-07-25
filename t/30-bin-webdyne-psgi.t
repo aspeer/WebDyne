@@ -65,6 +65,7 @@ my ($stdout, $stderr, $rc)=run_cmd(
     '--noindex', '--nostatic', '--argv', '--port 6021',
     $tmp_dn,
 );
+#diag($stdout);
 is($rc, 0, 'webdyne.psgi exits cleanly through stubbed runner');
 like($stdout, qr/args=.*--port 6021/, 'webdyne.psgi forwards argv options to Plack::Runner');
 like($stdout, qr/status=200/, 'webdyne.psgi built app serves request through stubbed runner');

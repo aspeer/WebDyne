@@ -189,6 +189,11 @@ sub request_mod_perl_startup {
     };
 
 
+    #  Don't need ulimit
+    #
+    $ENV{'APACHE_TEST_ULIMIT_SET'}++;
+    
+
     #  Don't need index.html generated
     #
     no warnings qw(once redefine);
@@ -273,10 +278,6 @@ sub request_mod_perl_postamble {
     }
 
 
-    #  Same for ulimit - if not available probably running in container. Update - disable it anyway with env
-    #
-    $ENV{'APACHE_TEST_ULIMIT_SET'}++;
-    
     
     #  Might as well keep for reference
     #

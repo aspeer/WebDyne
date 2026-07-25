@@ -15,7 +15,6 @@ BEGIN {
 
     #  Get in before module load
     #
-    #$ENV{WEBDYNE_HTML_TIDY}=1;
     $ENV{'WEBDYNE_HTML_NEWLINE'}=0;
     $ENV{'WEBDYNE_ERROR_TEXT'}=1;
     
@@ -43,18 +42,15 @@ use WebDyne::Util;
 
 #  Other external modules
 #
-#use WebDyne;
-#use WebDyne::Util;
-#use WebDyne::Constant;
-#use WebDyne::Request::Fake;
+use WebDyne::Constant;
 use Getopt::Long;
 use Pod::Usage;
 use IO::File;
 use IO::String;
 use File::Spec;
 use File::Temp qw(tempdir);
-use FindBin qw($RealBin $Script);
-use URI::Escape;
+use FindBin qw($Script);
+#use URI::Escape;
 use Data::Dumper;
 use Term::ANSIColor;
 use File::Basename;
@@ -108,6 +104,7 @@ sub main {
         root    => fastcwd(),
         keep_tmp => 0,
         warn    => 1,
+        apache_stdout => 0,
         %{do(glob(sprintf('~/.%s.opt', basename(__FILE__)))) || {}}
 
     );
@@ -136,6 +133,8 @@ sub main {
         'loop',
         'method=s',
         'mod_perl|apache',
+        'apache_stdout|apache-stdout!',
+        'dump_postamble|dump-postamble',
         'options=s@',
         'outfile=s',
         'pagi',
@@ -148,12 +147,13 @@ sub main {
         'raw',
         'repeat|num|n=s',
         'request|r=s',
-        'root|docroot|doc_root|document_root=s',
+        'root|docroot|doc_root|doc-root|document_root|document-root=s',
         'sse',
+        'silent|quiet!',
         #'status=s', # Not applied
         'theme=s',
         'tidy|pretty!',
-        'keep_tmp!',
+        'keep_tmp|keep-tmp!',
         'help|?',
         'warn!', 
         'man',
@@ -209,6 +209,7 @@ sub main {
         @request_type=grep {$opt{$_}} @request_type;
         @request_type || (@request_type=$opt{'request'});
     }
+    #die Dumper(\@request_type);
     
     
     #  Get request method wanted
@@ -218,7 +219,7 @@ sub main {
 
     #  Convert any headers into a HTTP::Header object
     #
-    my @headers_in=map { split(/[:=]/, $_) } @{$opt{'headers_in'}};
+    my @headers_in=map { split(/[:=]/, $_, 2) } @{$opt{'headers_in'}};
     my $headers_in_or=HTTP::Headers->new(@headers_in);
     
 
@@ -246,9 +247,9 @@ sub main {
     #
     my @query_string;
     if (my $query_opt_ar=$opt{$method}) {
-        my @query_opt=map { split(/[;&]/) } @{$query_opt_ar};
+        my @query_opt=map { split(/[;&]/, $_) } @{$query_opt_ar};
         foreach my $query_opt (@query_opt) {
-            my ($key, $value)=split(/[:=]/, $query_opt);
+            my ($key, $value)=split(/[:=]/, $query_opt, 2);
             push @query_string, $key, $value
         }
     };
@@ -261,7 +262,7 @@ sub main {
     if (my $param_opt_ar=$opt{'param'}) {
         my @param_opt=map { split(/[;&]/) } @{$param_opt_ar};
         foreach my $param (@param_opt) {
-            my ($key, $value)=split(/[:=]/, $param);
+            my ($key, $value)=split(/[:=]/, $param, 2);
             if (ref($param{$key}) eq 'ARRAY') {
                 #  Array already, push
                 push @{$param{$key}}, $value;
@@ -298,7 +299,7 @@ sub main {
     #  If we're running apache backend start server now
     #
     my $apache_runner;
-    if ($opt{'mod_perl'} || $opt{'all'}) {
+    if ($opt{'mod_perl'} || $opt{'all'} || (grep {/^(?:mod_perl|apache)$/} @request_type)) {
         $apache_runner=&request_mod_perl_startup(\%opt);
     }
 
@@ -312,6 +313,13 @@ sub main {
         #
         foreach my $request_type (@request_type) {
         
+        
+            #  If different request types (more than one) identify
+            #
+            if ((@request_type > 1) && !$opt{'silent'}) {
+                print "Request type: $request_type\n";
+            }
+
             
             #  Run as many repeats as nominated
             #
@@ -336,6 +344,7 @@ sub main {
                     next;
                 }
                 
+
                 #  Don't colourise or format if --raw optoion given
                 #
                 unless ($opt{'raw'}) {
@@ -484,48 +493,6 @@ sub request_psgi_server {
     
 }
 
-sub request_psgi_server0 {
-
-
-    #  Use PSGI mock handler. Get filename we want to render
-    #
-    my ($req_or, $opt_hr)=@_;
-
-
-    #  Load modules we need
-    #
-    require WebDyne::PSGI;
-    require Plack::Test::Server;
-    require LWP::UserAgent;
-    
-
-    #  Create new instance of WebDyne PSGI handler
-    #
-    my $app_cr=($_{'psgi_app_cr'} ||= 
-        (my $psgi_or=WebDyne::PSGI->new(root=>$opt_hr->{'root'}))->to_app());
-        
-        
-    #  Start the server
-    #
-    my $server_or=Plack::Test::Server->new($app_cr);
-    die Dumper($server_or);
-    my $ua_or=LWP::UserAgent->new();
-    $req_or->uri($server_or->uri . $req_or->uri);
-
-
-    #  Now run. For some reason PSGI manipulates request object so clone first and restore
-    #
-    my $uri_or=$req_or->uri->clone();
-    $uri_or->uri($server_or->uri . $uri_or->uri);
-    die Duper($uri_or->as_string());
-    my $res_or=$ua_or->request($uri_or);
-    
-    
-    #  Return results
-    #
-    return $res_or;
-    
-}
 
 sub request_pagi {
 
@@ -555,7 +522,6 @@ sub request_pagi {
     #  Extract method wanted and run
     #
     my $method=lc($req_or->method());
-    #die Dumper($req_or);
     my $pagi_res_or=$test_or->$method($req_or->uri->path(), query=>{ @{ $opt_hr->{'query_string'}} });
     
 
@@ -576,6 +542,13 @@ sub request_pagi {
 }
 
 
+sub request_apache {
+
+    return goto &request_mod_perl;
+    
+}
+
+
 sub request_mod_perl {
 
 
@@ -587,7 +560,7 @@ sub request_mod_perl {
     #  Load modules we need
     #
     require Apache::TestRequest; 
-    
+
 
     #  Get response object
     #
@@ -600,6 +573,9 @@ sub request_mod_perl {
     elsif ($method eq 'POST') {
         #$res_or=&{"Apache::TestRequest::${method}"}($req_or->uri, content => [$req_or->content], $req_or->headers->flatten());
         $res_or=&{"Apache::TestRequest::${method}"}($req_or->uri, $opt_hr->{'query_string'}, $req_or->headers->flatten());
+    }
+    else {
+        return err('method %s not supported for mod_perl/apache request type', $method);
     }
 
 
@@ -615,7 +591,6 @@ sub request_mod_perl_shutdown {
     
     #  Shut down Apache server
     #
-    #my ($runner, $svr_root_dn)=@_;
     my $runner=shift();
     
     
@@ -659,6 +634,23 @@ sub request_mod_perl_startup {
         return if $_[0] =~ /Duplicate specification/;
         CORE::warn @_;
     };
+    
+    
+    #  Don't try and set ulimit
+    #
+    $ENV{'APACHE_TEST_ULIMIT_SET'}++;
+
+
+    #  Don't need index.html generated
+    #
+    no warnings qw(once redefine);
+    require Apache::TestConfig;
+    *Apache::TestConfig::generate_index_html=sub {};
+
+
+    #  Don't want include libraries changed, stub this out
+    #
+    *Apache::TestConfig::configure_startup_pl=sub {};
 
 
     #  Runner object init
@@ -670,7 +662,7 @@ sub request_mod_perl_startup {
         
     #  Get postamble with WebDyne config
     #
-    my $postamble=&request_mod_perl_postamble();
+    my $postamble=&request_mod_perl_postamble($opt_hr);
 
 
     # Choose a random port the "Apache::Test" way: -port=select
@@ -700,26 +692,93 @@ sub request_mod_perl_startup {
 
 sub request_mod_perl_postamble {
 
-    #  Get all WEBDYNE_CONF env vars
+
+    #  Create postamble suitable for running Apache and interpreting .psp files
+    #
+    my $opt_hr=shift();
+
+
+    #  Need to work out if stderr writable. If not need to use alternate log file (prob running in container)
+    #
+    my $stderr_fn=$opt_hr->{'apache_stdout'} ? '/dev/stderr' : File::Spec->devnull();
+    my $stdout_fn=$opt_hr->{'apache_stdout'} ? '/dev/stdout' : File::Spec->devnull();
+    if (! open(my $fh, '>>', $stderr_fn)) {
+
+        #  Not writable, probably running under docker, revert to traditional
+        #
+        print STDERR "unable to write to stderr,stdout - reverting to log files\n";
+        $stderr_fn='logs/error.log';
+        $stdout_fn='logs/access.log';
+    
+    }
+
+
+    #  Get any additional library paths we want
+    #
+    my @perl_inc_dn=@{&perl_inc_dn()};
+
+
+    #  Ok - proceed to build postamble
     #
     my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
     push (@PerlSetEnv, "PerlSetEnv WEBDYNE_ERROR_TEXT 1") unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
-    return <<"END"
+    my $PerlSwitches=join("\n", map { sprintf('PerlSwitches -I%s', $_) } @perl_inc_dn);
+    my $postamble= <<"END"
 $PerlSetEnv
-ErrorLog /dev/stderr
-LogLevel debug
-CustomLog /dev/stdout combined
-PerlSwitches -I/home/aspeer/Development/pm-WebDyne/lib
-<Perl>
-    use lib '/home/aspeer/Development/pm-WebDyne/lib';
-</Perl>
+$PerlSwitches
 PerlModule WebDyne
 AddHandler modperl .psp
 PerlResponseHandler WebDyne
+
+ErrorLog $stderr_fn
+LogLevel debug
+LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined
+CustomLog $stdout_fn combined
 END
+    ;
+    exit print $postamble if $opt_hr->{'dump_postamble'};
+    return $postamble;
 
 }
+
+
+sub perl_inc_dn {
+
+
+    #  Return array ref of any additional libraries specified via command line (-I)
+    #
+    my %default_inc=map { $_ => 1 } @{ perl_inc_dn_default() || [] };
+    my %seen;
+    my @lib=grep {
+        !$default_inc{$_} && !$seen{$_}++
+    } map {
+        File::Spec->rel2abs($_)
+    } grep {
+        defined($_) && !ref($_) && length($_) && -d $_
+    } @INC;
+
+    return \@lib;
+}
+
+
+sub perl_inc_dn_default {
+
+    my @default_inc;
+    #local %ENV=%ENV;
+    #delete @ENV{qw(PERL5LIB PERLLIB PERL_USE_UNSAFE_INC)};
+    if (open(my $perl_fh, '-|', $^X, '-e', 'print join qq(\0), grep { defined && !ref && length && -d } @INC')) {
+        local $/;
+        my $inc=<$perl_fh>;
+        close($perl_fh);
+        @default_inc=map {
+            File::Spec->rel2abs($_)
+        } split(/\0/, ($inc || ''));
+    }
+
+    return \@default_inc;
+}
+
 
 
 sub request_fake {
@@ -738,12 +797,14 @@ sub request_fake {
     
     #  Setup environment to emulate CGI param if needed
     #
+
     my %env=(
         QUERY_STRING    => sub { $req_or->uri->query },
         REQUEST_METHOD  => sub { $req_or->method },
         CONTENT_TYPE    => sub { $req_or->content_type },
         CONTENT_LENGTH  => sub { $req_or->content_length }
     );
+    local %ENV = %ENV;    
     while (my($key, $cr)=each %env) {
         if (defined(my $value=$cr->($key))) {
             $ENV{$key}=$value;
@@ -821,7 +882,7 @@ sub request_fake {
         $html
     );
     
-    
+
     #  Return response obkect
     #
     return $res_or;
@@ -972,7 +1033,7 @@ sub html_tidy {
     my ($html, $opt_hr)=@_;
     eval { require HTML::Tidy5 } ||
         return do { warn("install system libtidy-devel package and HTML::Tidy5 to tidy output.\n") if $opt_hr->{'warn'}; $html };
-    $html=HTML::Tidy5->new($WebDyne::WEBDYNE_HTML_TIDY_CONFIG_HR)->clean($html);
+    $html=HTML::Tidy5->new($WEBDYNE_HTML_TIDY_CONFIG_HR)->clean($html);
     return $html;
 
 }

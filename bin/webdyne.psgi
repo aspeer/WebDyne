@@ -178,6 +178,8 @@ sub startup {
     #  Get WebDyne::PSGI options and Plack::Runner args
     #
     my ($opt_hr, @argv)=@_;
+    use Data::Dumper;
+    print Dumper($opt_hr, \@argv);
     
     
     #  Running from command line without being stared by plackup or starman
@@ -188,11 +190,11 @@ sub startup {
 
     #  Mac conflicts with Plack default port of 5000 - choose 5001
     #
-    if ($^O eq 'darwin') {
-        $plack_or->parse_options('--port', '5001', @argv) unless grep { /--port/ } @argv
+    if (($^O eq 'darwin') && !(grep { /--port/ } @argv)) {
+        $plack_or->parse_options('--port', '5001', @argv)
     }
     else {
-        $plack_or->parse_options(@argv);
+        $plack_or->parse_options(map {split(/\s+/)} @argv);
     }
     
 

@@ -33,6 +33,22 @@ sub startup {
     };
 
 
+    #  Don't need ulimit
+    #
+    $ENV{'APACHE_TEST_ULIMIT_SET'}++;
+
+
+    #  Don't need index.html generated
+    #
+    no warnings qw(once redefine);
+    *Apache::TestConfig::generate_index_html=sub {};
+
+
+    #  Don't want include libraries changes, stuf this out
+    #
+    *Apache::TestConfig::configure_startup_pl=sub {};
+
+
     #  Runner object init
     #
     require Apache::TestRunPerl;
@@ -74,18 +90,56 @@ sub startup_conf {
 
     #  Get all WEBDYNE_CONF env vars
     #
+    my @perl_inc_dn=@{&perl_inc_dn()};
+    my $PerlSwitches=join("\n", map { sprintf('PerlSwitches -I%s', $_) } @perl_inc_dn);
     my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
     push(@PerlSetEnv, 'PerlSetEnv WEBDYNE_ERROR_TEXT 1') unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
     return <<"END";
 $PerlSetEnv
+$PerlSwitches
 PerlSetEnv WEBDYNE_CONF .
-PerlSwitches -I../lib
+#PerlSwitches -I../lib
 PerlModule WebDyne
 AddHandler modperl .psp
 PerlResponseHandler WebDyne
 END
 
+}
+
+
+sub perl_inc_dn {
+
+    my %default_inc=map { $_ => 1 } @{ perl_inc_dn_default() || [] };
+    my %seen;
+    my @lib=grep {
+        !$default_inc{$_} && !$seen{$_}++
+    } map {
+        File::Spec->rel2abs($_)
+    } grep {
+        defined($_) && !ref($_) && length($_) && -d $_
+    } @INC;
+
+    return \@lib;
+}
+
+
+sub perl_inc_dn_default {
+
+    my @default_inc;
+    #local %ENV=%ENV;
+    #delete @ENV{qw(PERL5LIB PERLLIB PERL_USE_UNSAFE_INC)};
+
+    if (open(my $perl_fh, '-|', $^X, '-e', 'print join qq(\0), grep { defined && !ref && length && -d } @INC')) {
+        local $/;
+        my $inc=<$perl_fh>;
+        close($perl_fh);
+        @default_inc=map {
+            File::Spec->rel2abs($_)
+        } split(/\0/, ($inc || ''));
+    }
+
+    return \@default_inc;
 }
 
 

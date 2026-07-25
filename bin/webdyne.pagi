@@ -195,11 +195,11 @@ sub startup {
 
     #  Mac conflicts with Plack default port of 5000 - choose 5001
     #
-    if ($^O eq 'darwin') {
-        $pagi_or->parse_options('--port', '5001', @argv) unless grep { /--port/ } @argv
+    if (($^O eq 'darwin') && !(grep { /--port/ } @argv)) {
+        $pagi_or->parse_options('--port', '5001', @argv);
     }
     else {
-        $pagi_or->parse_options(@argv);
+        $pagi_or->parse_options(map {split(/\s+/)} @argv);
     }
     
 
