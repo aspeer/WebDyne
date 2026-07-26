@@ -178,8 +178,6 @@ sub startup {
     #  Get WebDyne::PSGI options and Plack::Runner args
     #
     my ($opt_hr, @argv)=@_;
-    use Data::Dumper;
-    print Dumper($opt_hr, \@argv);
     
     
     #  Running from command line without being stared by plackup or starman
