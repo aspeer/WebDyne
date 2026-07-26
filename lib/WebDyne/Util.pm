@@ -811,7 +811,7 @@ my $msg = errstr();
 
 It exports the standard utility functions by default and uses environment variables such as `WEBDYNE_DEBUG`, `WEBDYNE_DEBUG_FILE`, `WEBDYNE_DEBUG_FILTER`, and related settings to control runtime debug output.
 
-Apache startup helpers are available on request.
+`perl_inc_dn` is exported by default and can also be requested explicitly. `apache_startup` and `apache_shutdown` are available on request, or through the `:all` export tag.
 
 # FUNCTIONS #
 
@@ -906,7 +906,7 @@ C<WebDyne::Util> provides the common debugging, error-stack, and error-formattin
 
 It exports the standard utility functions by default and uses environment variables such as C<WEBDYNE_DEBUG>, C<WEBDYNE_DEBUG_FILE>, C<WEBDYNE_DEBUG_FILTER>, and related settings to control runtime debug output.
 
-Apache startup helpers are available on request.
+C<perl_inc_dn> is exported by default and can also be requested explicitly. C<apache_startup> and C<apache_shutdown> are available on request, or through the C<:all> export tag.
 
 
 =head1 FUNCTIONS

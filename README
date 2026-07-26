@@ -39,12 +39,12 @@ instructions such as <? ... ?>, and shortcut tags such as <start_html>.
 
 WebDyne Features
 
--   server-side HTML rendering with embedded Perl
--   a path from quick inline page logic to cleaner separation using
-    __PERL__, modules, templates, and handler chains
--   compile-time parsing and caching of .psp pages
--   runtime flexibility across Apache/mod_perl, PSGI, PAGI, and
-    standalone rendering tools
+- server-side HTML rendering with embedded Perl
+- a path from quick inline page logic to cleaner separation using
+  __PERL__, modules, templates, and handler chains
+- compile-time parsing and caching of .psp pages
+- runtime flexibility across Apache/mod_perl, PSGI, PAGI, and standalone
+  rendering tools
 
 Quick Example
 
@@ -91,9 +91,9 @@ This installs the core WebDyne modules and command-line tools.
 Depending on how you want to run WebDyne, you may also need additional
 runtime components:
 
--   for PSGI: Plack and optionally a PSGI server such as Starman
--   for Apache: Apache HTTP Server plus mod_perl
--   for PAGI: the PAGI runtime stack
+- for PSGI: Plack and optionally a PSGI server such as Starman
+- for Apache: Apache HTTP Server plus mod_perl
+- for PAGI: the PAGI runtime stack
 
 Hello World
 
@@ -139,39 +139,39 @@ Runtime Modes
 
 WebDyne can be used in several ways:
 
--   Apache/mod_perl, either permanently configured or started locally
-    through webdyne.apache
--   PSGI, including wrapper usage through webdyne.psgi
--   PAGI, including HTTP, server-sent event, WebSocket, and lifespan
-    handling through webdyne.pagi
--   standalone rendering through wdrender, wdcompile, or direct use of
-    WebDyne::html()
+- Apache/mod_perl, either permanently configured or started locally
+  through webdyne.apache
+- PSGI, including wrapper usage through webdyne.psgi
+- PAGI, including HTTP, server-sent event, WebSocket, and lifespan
+  handling through webdyne.pagi
+- standalone rendering through wdrender, wdcompile, or direct use of
+  WebDyne::html()
 
 Features
 
 WebDyne supports:
 
--   embedded Perl in HTML pages
--   <? ... ?>, <perl>...</perl>, and related WebDyne tag styles
--   compile-time parsing and cached intermediate representations
--   template blocks and includes
--   handler chains, session helpers, filters, and templates
--   CGI-style parameter access from page code
--   standalone rendering and debugging tools
+- embedded Perl in HTML pages
+- <? ... ?>, <perl>...</perl>, and related WebDyne tag styles
+- compile-time parsing and cached intermediate representations
+- template blocks and includes
+- handler chains, session helpers, filters, and templates
+- CGI-style parameter access from page code
+- standalone rendering and debugging tools
 
 Further Reading
 
 Repository documentation includes:
 
--   doc/webdyne.xml as the definitive guide source
--   doc/webdyne.md
--   lib/WebDyne.pm.md
--   command documentation in bin/*.md
+- doc/webdyne.xml as the definitive guide source
+- doc/webdyne.md
+- lib/WebDyne.pm.md
+- command documentation in bin/*.md
 
 Useful entry points include:
 
--   bin/wdrender.md
--   bin/wdcompile.md
--   bin/webdyne.apache.md
--   bin/webdyne.psgi.md
--   bin/webdyne.pagi.md
+- bin/wdrender.md
+- bin/wdcompile.md
+- bin/webdyne.apache.md
+- bin/webdyne.psgi.md
+- bin/webdyne.pagi.md
