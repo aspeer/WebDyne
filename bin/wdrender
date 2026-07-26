@@ -99,7 +99,7 @@ sub main {
         colour  => 1,
         lineno  => 1,
         theme   => 'light',
-        request => 'fake',
+        #request => ['fake'],
         method  => 'GET',
         root    => fastcwd(),
         keep_tmp => 0,
@@ -146,7 +146,7 @@ sub main {
         'put=s@',
         'raw',
         'repeat|num|n=s',
-        'request|r=s',
+        'request|r=s@',
         'root|docroot|doc_root|doc-root|document_root|document-root=s',
         'sse',
         'silent|quiet!',
@@ -203,14 +203,22 @@ sub main {
     #  Consolidate backend request handler options into one multiplexer option
     #
     my @request_type=qw(fake psgi psgi_server pagi mod_perl);
-    $opt{'request'}=(grep {$opt{$_}} @request_type)[0] || $opt{'request'};
-    unless ($opt{'all'}) {
-        #@request_type=grep {$opt{$_}} qw(fake psgi pagi mod_perl);
-        @request_type=grep {$opt{$_}} @request_type;
-        @request_type || (@request_type=$opt{'request'});
+    my $request_ar=ref($opt{'request'}) eq 'ARRAY' ? $opt{'request'} : [ grep { defined } $opt{'request'} ];
+    #my %request_type=map { $_=>1 } @{$opt{'request'}};
+    my %request_type=map { $_=>1 } @{$request_ar};
+    map { $request_type{$_}=1 } grep { $opt{$_} } @request_type;
+    unless ($request_type{'all'} || $opt{'all'}) {
+        @request_type=grep {$request_type{$_} || $opt{$_}} @request_type;
     }
-    #die Dumper(\@request_type);
-    
+    @request_type=('fake') unless @request_type;
+
+
+    #  Santy check to make sure no invalid request types
+    #
+    delete @request_type{(@request_type, 'all')};
+    return err('invalid or missing request type \'%s\', must be one of fake,psgi,psgi_server,pagi,mod_perl,all', join(',', sort keys %request_type)) 
+        if keys %request_type;
+        
     
     #  Get request method wanted
     #
@@ -741,44 +749,6 @@ END
     return $postamble;
 
 }
-
-
-sub perl_inc_dn {
-
-
-    #  Return array ref of any additional libraries specified via command line (-I)
-    #
-    my %default_inc=map { $_ => 1 } @{ perl_inc_dn_default() || [] };
-    my %seen;
-    my @lib=grep {
-        !$default_inc{$_} && !$seen{$_}++
-    } map {
-        File::Spec->rel2abs($_)
-    } grep {
-        defined($_) && !ref($_) && length($_) && -d $_
-    } @INC;
-
-    return \@lib;
-}
-
-
-sub perl_inc_dn_default {
-
-    my @default_inc;
-    #local %ENV=%ENV;
-    #delete @ENV{qw(PERL5LIB PERLLIB PERL_USE_UNSAFE_INC)};
-    if (open(my $perl_fh, '-|', $^X, '-e', 'print join qq(\0), grep { defined && !ref && length && -d } @INC')) {
-        local $/;
-        my $inc=<$perl_fh>;
-        close($perl_fh);
-        @default_inc=map {
-            File::Spec->rel2abs($_)
-        } split(/\0/, ($inc || ''));
-    }
-
-    return \@default_inc;
-}
-
 
 
 sub request_fake {

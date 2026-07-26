@@ -6,6 +6,7 @@ use warnings;
 use Cwd qw(fastcwd);
 use File::Spec;
 use File::Temp qw(tempdir);
+use WebDyne::Util qw(perl_inc_dn);
 
 
 sub startup {
@@ -105,41 +106,6 @@ AddHandler modperl .psp
 PerlResponseHandler WebDyne
 END
 
-}
-
-
-sub perl_inc_dn {
-
-    my %default_inc=map { $_ => 1 } @{ perl_inc_dn_default() || [] };
-    my %seen;
-    my @lib=grep {
-        !$default_inc{$_} && !$seen{$_}++
-    } map {
-        File::Spec->rel2abs($_)
-    } grep {
-        defined($_) && !ref($_) && length($_) && -d $_
-    } @INC;
-
-    return \@lib;
-}
-
-
-sub perl_inc_dn_default {
-
-    my @default_inc;
-    #local %ENV=%ENV;
-    #delete @ENV{qw(PERL5LIB PERLLIB PERL_USE_UNSAFE_INC)};
-
-    if (open(my $perl_fh, '-|', $^X, '-e', 'print join qq(\0), grep { defined && !ref && length && -d } @INC')) {
-        local $/;
-        my $inc=<$perl_fh>;
-        close($perl_fh);
-        @default_inc=map {
-            File::Spec->rel2abs($_)
-        } split(/\0/, ($inc || ''));
-    }
-
-    return \@default_inc;
 }
 
 

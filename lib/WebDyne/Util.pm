@@ -39,6 +39,7 @@ our (
 #  External modules
 #
 use Data::Dumper;
+use File::Spec;
 use IO::File;
 use POSIX qw(strftime);
 
@@ -50,7 +51,7 @@ require Exporter;
 
 #  Exports
 #
-@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal debug);
+@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal debug perl_inc_dn);
 
 
 #  Version information
@@ -665,6 +666,43 @@ sub errstack {
 
 }
 
+
+sub perl_inc_dn {
+
+    #  Return array ref of any additional libraries specified via command line (-I)
+    #
+    my %default_inc=map { $_ => 1 } @{ perl_inc_dn_default() || [] };
+    my %seen;
+    my @lib=grep {
+        !$default_inc{$_} && !$seen{$_}++
+    } map {
+        File::Spec->rel2abs($_)
+    } grep {
+        defined($_) && !ref($_) && length($_) && -d $_
+    } @INC;
+
+    return \@lib;
+}
+
+
+sub perl_inc_dn_default {
+
+    my @default_inc;
+    #local %ENV=%ENV;
+    #delete @ENV{qw(PERL5LIB PERLLIB PERL_USE_UNSAFE_INC)};
+
+    if (open(my $perl_fh, '-|', $^X, '-e', 'print join qq(\0), grep { defined && !ref && length && -d } @INC')) {
+        local $/;
+        my $inc=<$perl_fh>;
+        close($perl_fh);
+        @default_inc=map {
+            File::Spec->rel2abs($_)
+        } split(/\0/, ($inc || ''));
+    }
+
+    return \@default_inc;
+}
+
 1;__END__
 
 =begin markdown
@@ -724,6 +762,10 @@ It exports the standard utility functions by default and uses environment variab
 * **errnofatal($bool)**
 
     Control whether errors are treated as fatal by the utility layer.
+
+* **perl_inc_dn()**
+
+    Return non-default library directories from `@INC`.
 
 # NOTES #
 
@@ -838,6 +880,14 @@ Return the current error stack.
 B<errnofatal($bool)>
 
 Control whether errors are treated as fatal by the utility layer.
+
+
+
+=item *
+
+B<perl_inc_dn()>
+
+Return non-default library directories from C<@INC>.
 
 
 
