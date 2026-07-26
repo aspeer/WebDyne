@@ -37,7 +37,7 @@ no warnings qw(once);
 
 #  Use the base module for err()
 #
-use WebDyne::Util;
+use WebDyne::Util qw(:all);
 
 
 #  Other external modules
@@ -516,7 +516,6 @@ sub request_pagi {
     #use Future::AsyncAwait;
     #use Sub::Util qw(set_subname);
 
-    
 
     #  Create new instance of WebDyne::PAGI handler
     #

@@ -36,7 +36,7 @@ use POSIX qw(pause);
 #  WebDyne modules
 #
 use WebDyne::Constant;
-use WebDyne::Util;
+use WebDyne::Util qw(:all);
 
 
 #  Version information

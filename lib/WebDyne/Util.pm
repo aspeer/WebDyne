@@ -17,7 +17,7 @@ package WebDyne::Util;
 #
 sub BEGIN {$^W=0}
 use strict qw(vars);
-use vars   qw($VERSION @EXPORT);
+use vars   qw($VERSION @EXPORT @EXPORT_OK %EXPORT_TAGS);
 use warnings;
 no warnings qw(uninitialized redefine once);
 
@@ -40,7 +40,6 @@ our (
 #
 use Data::Dumper;
 use File::Spec;
-use File::Temp qw(tempdir);
 use IO::File;
 use POSIX qw(strftime);
 
@@ -52,7 +51,9 @@ require Exporter;
 
 #  Exports
 #
-@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal debug perl_inc_dn apache_startup apache_shutdown);
+@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal debug perl_inc_dn);
+@EXPORT_OK=qw(perl_inc_dn apache_startup apache_shutdown);
+%EXPORT_TAGS=(all => [@EXPORT, @EXPORT_OK]);
 
 
 #  Version information
@@ -712,7 +713,8 @@ sub apache_startup {
     #  Use an Apache::Test server root under tmp.  By default File::Temp cleans
     #  this at process exit; --keep_tmp flips CLEANUP off for debugging.
     #
-    my $svr_root_dn=$opt_hr->{'serverroot'} || tempdir(
+    require File::Temp;
+    my $svr_root_dn=$opt_hr->{'serverroot'} || File::Temp::tempdir(
         'webdyne_apache_XXXXXXXX',
         TMPDIR  => 1,
         CLEANUP => exists($opt_hr->{'keep_tmp'}) ? !$opt_hr->{'keep_tmp'} : 1,
@@ -809,6 +811,8 @@ my $msg = errstr();
 
 It exports the standard utility functions by default and uses environment variables such as `WEBDYNE_DEBUG`, `WEBDYNE_DEBUG_FILE`, `WEBDYNE_DEBUG_FILTER`, and related settings to control runtime debug output.
 
+Apache startup helpers are available on request.
+
 # FUNCTIONS #
 
 * **debug($message, @args)**
@@ -901,6 +905,8 @@ WebDyne::Util - debugging and error-stack utility functions for WebDyne
 C<WebDyne::Util> provides the common debugging, error-stack, and error-formatting functions used throughout the WebDyne codebase.
 
 It exports the standard utility functions by default and uses environment variables such as C<WEBDYNE_DEBUG>, C<WEBDYNE_DEBUG_FILE>, C<WEBDYNE_DEBUG_FILTER>, and related settings to control runtime debug output.
+
+Apache startup helpers are available on request.
 
 
 =head1 FUNCTIONS
