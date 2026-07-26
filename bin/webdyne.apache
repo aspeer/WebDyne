@@ -287,24 +287,6 @@ END
 }
 
 
-sub perl_inc_dn0 {
-
-    my @lib;
-    if (($^O ne 'MSWin32') && (-r (my $proc_fn='/proc/self/cmdline'))) {
-        my $proc_fh=IO::File->new($proc_fn, O_RDONLY) || return;
-        my @arg;
-        local $/;
-        my $proc=<$proc_fh>;
-        $proc_fh->close();
-        if (defined($proc) && $proc) {
-            @arg=split(/\0/, $proc);
-        }
-        @lib=map { File::Spec->rel2abs(substr($_,2)) } (grep { /^-I/ } @arg);
-    }
-    return \@lib;
-}
-
-
 __END__
 
 =begin markdown

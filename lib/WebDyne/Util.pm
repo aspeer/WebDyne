@@ -709,29 +709,47 @@ sub apache_startup {
 
     my $opt_hr=shift() || {};
 
+    #  Use an Apache::Test server root under tmp.  By default File::Temp cleans
+    #  this at process exit; --keep_tmp flips CLEANUP off for debugging.
+    #
     my $svr_root_dn=$opt_hr->{'serverroot'} || tempdir(
         'webdyne_apache_XXXXXXXX',
         TMPDIR  => 1,
         CLEANUP => exists($opt_hr->{'keep_tmp'}) ? !$opt_hr->{'keep_tmp'} : 1,
     );
 
+    #  Some command-line helpers run best with an isolated cache inside the
+    #  temporary server root, rather than the system/default WebDyne cache.
+    #
     if ($opt_hr->{'cache_dn_env'}) {
         mkdir(my $cache_dn=File::Spec->catdir($svr_root_dn, 'cache'));
         $ENV{'WEBDYNE_CACHE_DN'}=$cache_dn;
     }
 
+    #  Apache::Test may warn about duplicate inherited options; they are noisy
+    #  but benign for these one-process throwaway instances.
+    #
     local $SIG{__WARN__}=sub {
         return if $_[0] =~ /Duplicate specification/;
         CORE::warn @_;
     };
 
+    #  Avoid Apache::Test attempting to adjust process ulimits in environments
+    #  where that is either unnecessary or not permitted.
+    #
     $ENV{'APACHE_TEST_ULIMIT_SET'}++;
 
+    #  Apache::Test normally writes startup.pl and index.html helpers. WebDyne
+    #  supplies the whole runtime config via the caller's postamble instead.
+    #
     no warnings qw(once redefine);
     require Apache::TestConfig;
     *Apache::TestConfig::generate_index_html=sub {};
     *Apache::TestConfig::configure_startup_pl=sub {};
 
+    #  Load Apache::Test lazily so WebDyne::Util can be used without mod_perl
+    #  development dependencies unless an Apache helper is actually invoked.
+    #
     require Apache::TestRunPerl;
     my $runner=Apache::TestRunPerl->new();
     unless ($runner) {
@@ -740,6 +758,9 @@ sub apache_startup {
         return err($message);
     }
 
+    #  The postamble is caller-owned because wdrender, webdyne.apache, and the
+    #  test harness each need subtly different Apache configuration fragments.
+    #
     my @argv=(
         '-port'         => defined($opt_hr->{'port'}) ? $opt_hr->{'port'} : 'select',
         '-serverroot'   => $svr_root_dn,
