@@ -446,7 +446,7 @@ sub main {
     #  Shutdown server if using Apache backend
     #
     if ($apache_runner) {
-        &request_mod_perl_shutdown($apache_runner);
+        &apache_shutdown($apache_runner);
     }
     
 
@@ -592,31 +592,6 @@ sub request_mod_perl {
     return $res_or;
     
 }
-
-
-sub request_mod_perl_shutdown {
-
-    
-    #  Shut down Apache server
-    #
-    my $runner=shift();
-    
-    
-    #  Shutdown
-    #
-    $runner->{'server'}->stop();
-    
-    
-    #  Remove temp
-    #
-    #if ($svr_root_dn && ($svr_root_dn=~/webdyne_apache_\w{4}/) && (-d $svr_root_dn)) {
-    
-        #  Stub - should be cleaned automatically
-        #
-        #warn("would delete $svr_root_dn");
-    #}
-    
-} 
 
 
 sub request_mod_perl_startup {

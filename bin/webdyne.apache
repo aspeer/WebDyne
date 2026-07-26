@@ -144,7 +144,7 @@ sub main {
 
     #  Shutdown on signal
     #
-    my $shutdown_cr=sub { request_mod_perl_shutdown($runner); exit 0 };
+    my $shutdown_cr=sub { apache_shutdown($runner); exit 0 };
     $SIG{'INT'}=$shutdown_cr;
     $SIG{'TERM'}=$shutdown_cr;
 
@@ -237,20 +237,6 @@ sub request_mod_perl_startup {
     #  Done
     #
     return $runner;
-
-}
-
-
-sub request_mod_perl_shutdown {
-
-
-    #  Shut down Apache server
-    #
-    my $runner=shift();
-    return unless $runner;
-
-
-    $runner->{'server'}->stop() if $runner->{'server'};
 
 }
 

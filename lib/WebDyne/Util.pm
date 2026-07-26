@@ -51,7 +51,7 @@ require Exporter;
 
 #  Exports
 #
-@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal debug perl_inc_dn);
+@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal debug perl_inc_dn apache_shutdown);
 
 
 #  Version information
@@ -703,6 +703,15 @@ sub perl_inc_dn_default {
     return \@default_inc;
 }
 
+
+sub apache_shutdown {
+
+    my $runner=shift();
+    return unless $runner && $runner->{'server'};
+    $runner->{'server'}->stop();
+    return;
+}
+
 1;__END__
 
 =begin markdown
@@ -766,6 +775,10 @@ It exports the standard utility functions by default and uses environment variab
 * **perl_inc_dn()**
 
     Return non-default library directories from `@INC`.
+
+* **apache_shutdown($runner)**
+
+    Stop an Apache::Test runner instance if it is active.
 
 # NOTES #
 
@@ -888,6 +901,14 @@ Control whether errors are treated as fatal by the utility layer.
 B<perl_inc_dn()>
 
 Return non-default library directories from C<@INC>.
+
+
+
+=item *
+
+B<apache_shutdown($runner)>
+
+Stop an Apache::Test runner instance if it is active.
 
 
 

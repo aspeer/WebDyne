@@ -6,7 +6,7 @@ use warnings;
 use Cwd qw(fastcwd);
 use File::Spec;
 use File::Temp qw(tempdir);
-use WebDyne::Util qw(perl_inc_dn);
+use WebDyne::Util qw(apache_shutdown perl_inc_dn);
 
 
 sub startup {
@@ -111,10 +111,7 @@ END
 
 sub shutdown {
 
-    my $runner=shift();
-    return unless $runner && $runner->{'server'};
-    $runner->{'server'}->stop();
-    return;
+    return apache_shutdown(@_);
 
 }
 
