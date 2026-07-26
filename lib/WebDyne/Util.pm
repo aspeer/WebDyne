@@ -40,6 +40,7 @@ our (
 #
 use Data::Dumper;
 use File::Spec;
+use File::Temp qw(tempdir);
 use IO::File;
 use POSIX qw(strftime);
 
@@ -51,7 +52,7 @@ require Exporter;
 
 #  Exports
 #
-@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal debug perl_inc_dn apache_shutdown);
+@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal debug perl_inc_dn apache_startup apache_shutdown);
 
 
 #  Version information
@@ -704,6 +705,55 @@ sub perl_inc_dn_default {
 }
 
 
+sub apache_startup {
+
+    my $opt_hr=shift() || {};
+
+    my $svr_root_dn=$opt_hr->{'serverroot'} || tempdir(
+        'webdyne_apache_XXXXXXXX',
+        TMPDIR  => 1,
+        CLEANUP => exists($opt_hr->{'keep_tmp'}) ? !$opt_hr->{'keep_tmp'} : 1,
+    );
+
+    if ($opt_hr->{'cache_dn_env'}) {
+        mkdir(my $cache_dn=File::Spec->catdir($svr_root_dn, 'cache'));
+        $ENV{'WEBDYNE_CACHE_DN'}=$cache_dn;
+    }
+
+    local $SIG{__WARN__}=sub {
+        return if $_[0] =~ /Duplicate specification/;
+        CORE::warn @_;
+    };
+
+    $ENV{'APACHE_TEST_ULIMIT_SET'}++;
+
+    no warnings qw(once redefine);
+    require Apache::TestConfig;
+    *Apache::TestConfig::generate_index_html=sub {};
+    *Apache::TestConfig::configure_startup_pl=sub {};
+
+    require Apache::TestRunPerl;
+    my $runner=Apache::TestRunPerl->new();
+    unless ($runner) {
+        my $message='unable to create Apache::TestRunPerl instance';
+        die "$message\n" if $opt_hr->{'die_on_error'};
+        return err($message);
+    }
+
+    my @argv=(
+        '-port'         => defined($opt_hr->{'port'}) ? $opt_hr->{'port'} : 'select',
+        '-serverroot'   => $svr_root_dn,
+        '-documentroot' => $opt_hr->{'documentroot'},
+        '-postamble'    => $opt_hr->{'postamble'},
+        '-one-process',
+        '-start-httpd',
+    );
+
+    $runner->run(@argv);
+    return $runner;
+}
+
+
 sub apache_shutdown {
 
     my $runner=shift();
@@ -775,6 +825,10 @@ It exports the standard utility functions by default and uses environment variab
 * **perl_inc_dn()**
 
     Return non-default library directories from `@INC`.
+
+* **apache_startup(\%options)**
+
+    Start an Apache::Test runner instance with a caller-supplied postamble.
 
 * **apache_shutdown($runner)**
 
@@ -901,6 +955,14 @@ Control whether errors are treated as fatal by the utility layer.
 B<perl_inc_dn()>
 
 Return non-default library directories from C<@INC>.
+
+
+
+=item *
+
+B<apache_startup(\%options)>
+
+Start an Apache::Test runner instance with a caller-supplied postamble.
 
 
 

@@ -5,8 +5,7 @@ use warnings;
 
 use Cwd qw(fastcwd);
 use File::Spec;
-use File::Temp qw(tempdir);
-use WebDyne::Util qw(apache_shutdown perl_inc_dn);
+use WebDyne::Util qw(apache_startup apache_shutdown perl_inc_dn);
 
 
 sub startup {
@@ -17,71 +16,19 @@ sub startup {
     my $opt_hr=shift();
 
 
-    #  Server root tmpdir
-    #
-    my $svr_root_dn=tempdir(
-        'webdyne_apache_XXXXXXXX',
-        TMPDIR  => 1,
-        CLEANUP => 1,
-    );
-
-
-    #  Start Apache server. Mask warnings about duplicate options.
-    #
-    local $SIG{__WARN__}=sub {
-        return if $_[0] =~ /Duplicate specification/;
-        CORE::warn @_;
-    };
-
-
-    #  Don't need ulimit
-    #
-    $ENV{'APACHE_TEST_ULIMIT_SET'}++;
-
-
-    #  Don't need index.html generated
-    #
-    no warnings qw(once redefine);
-    *Apache::TestConfig::generate_index_html=sub {};
-
-
-    #  Don't want include libraries changes, stuf this out
-    #
-    *Apache::TestConfig::configure_startup_pl=sub {};
-
-
-    #  Runner object init
-    #
-    require Apache::TestRunPerl;
-    my $runner=Apache::TestRunPerl->new()
-        || die "unable to create Apache::TestRunPerl instance";
-
-
     #  Get postamble with WebDyne config
     #
     my $postamble=&startup_conf();
 
 
-    #  Choose a random port the Apache::Test way and generate config.
+    #  Start Apache using Apache::Test.
     #
-    my @argv=(
-        '-port'         => 'select',
-        '-serverroot'   => $svr_root_dn,
-        '-documentroot' => File::Spec->catdir(fastcwd(), 't'),
-        '-postamble'    => $postamble,
-        '-one-process',
-        '-start-httpd',
-    );
-
-
-    #  Start the server.
-    #
-    $runner->run(@argv);
-
-
-    #  Done, return runner object
-    #
-    return $runner;
+    return apache_startup({
+        port         => 'select',
+        documentroot => File::Spec->catdir(fastcwd(), 't'),
+        postamble    => $postamble,
+        die_on_error => 1,
+    });
 
 }
 

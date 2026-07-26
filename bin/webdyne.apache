@@ -27,7 +27,6 @@ use Cwd qw(fastcwd);
 use Config;
 use File::Basename;
 use File::Spec;
-use File::Temp qw(tempdir);
 use IO::File;
 use Fcntl;
 use Getopt::Long;
@@ -166,77 +165,20 @@ sub request_mod_perl_startup {
     my $opt_hr=shift();
 
 
-    #  Server root tmpdir
-    #
-    my $svr_root_dn=tempdir(
-        'webdyne_apache_XXXXXXXX',
-        TMPDIR  => 1,
-        CLEANUP => !$opt_hr->{'keep_tmp'},
-    );
-
-
-    #  Create webdyne cache there
-    #
-    mkdir (my $cache_dn=File::Spec->catdir($svr_root_dn, 'cache'));
-    $ENV{'WEBDYNE_CACHE_DN'}=$cache_dn;
-
-
-    #  Start Apache server. Mask warnings about duplicate options
-    #
-    local $SIG{__WARN__}=sub {
-        return if $_[0] =~ /Duplicate specification/;
-        CORE::warn @_;
-    };
-
-
-    #  Don't need ulimit
-    #
-    $ENV{'APACHE_TEST_ULIMIT_SET'}++;
-    
-
-    #  Don't need index.html generated
-    #
-    no warnings qw(once redefine);
-    *Apache::TestConfig::generate_index_html=sub {};
-
-
-    #  Don't want include libraries changes, stuf this out
-    #
-    *Apache::TestConfig::configure_startup_pl=sub {};
-
-
-    #  Runner object init
-    #
-    require Apache::TestRunPerl;
-    my $runner = Apache::TestRunPerl->new() ||
-        return err('unable to create Apache::TestRunPerl instance');
-
-
     #  Get postamble with WebDyne config
     #
     my $postamble=request_mod_perl_postamble($opt_hr->{'root'}, $opt_hr);
 
 
-    #  Start httpd in one-process mode
+    #  Start Apache using Apache::Test.
     #
-    my @argv=(
-        '-port'         => $opt_hr->{'port'},
-        '-serverroot'   => $svr_root_dn,
-        '-documentroot' => $opt_hr->{'root'},
-        '-postamble'    => $postamble,
-        '-one-process',
-        '-start-httpd'
-    );
-
-
-    #  Now start. Will die if can't start
-    #
-    $runner->run(@argv);
-
-
-    #  Done
-    #
-    return $runner;
+    return apache_startup({
+        port         => $opt_hr->{'port'},
+        documentroot => $opt_hr->{'root'},
+        postamble    => $postamble,
+        keep_tmp     => $opt_hr->{'keep_tmp'},
+        cache_dn_env => 1,
+    });
 
 }
 

@@ -48,7 +48,6 @@ use Pod::Usage;
 use IO::File;
 use IO::String;
 use File::Spec;
-use File::Temp qw(tempdir);
 use FindBin qw($Script);
 #use URI::Escape;
 use Data::Dumper;
@@ -600,75 +599,20 @@ sub request_mod_perl_startup {
     #  Startup Apache test instance
     #
     my $opt_hr=shift();
-    
 
-    #  Server root tmpdir
-    #
-    my $svr_root_dn=tempdir(
-        'webdyne_apache_XXXXXXXX',
-        TMPDIR  => 1,
-        CLEANUP => !$opt_hr->{'keep_tmp'},   # we’ll stop httpd first, then remove manually
-    );
-
-
-    #  Start Apache server. Mask warnings about duplicate options
-    #
-    local $SIG{__WARN__}=sub { 
-        return if $_[0] =~ /Duplicate specification/;
-        CORE::warn @_;
-    };
-    
-    
-    #  Don't try and set ulimit
-    #
-    $ENV{'APACHE_TEST_ULIMIT_SET'}++;
-
-
-    #  Don't need index.html generated
-    #
-    no warnings qw(once redefine);
-    require Apache::TestConfig;
-    *Apache::TestConfig::generate_index_html=sub {};
-
-
-    #  Don't want include libraries changed, stub this out
-    #
-    *Apache::TestConfig::configure_startup_pl=sub {};
-
-
-    #  Runner object init
-    #
-    require Apache::TestRunPerl;
-    my $runner = Apache::TestRunPerl->new() ||
-        return err('unable to create Apache::TestRunPerl instance');
-        
-        
     #  Get postamble with WebDyne config
     #
     my $postamble=&request_mod_perl_postamble($opt_hr);
 
 
-    # Choose a random port the "Apache::Test" way: -port=select
-    # And tell it we intend to start httpd (so it generates config)
+    #  Start Apache using Apache::Test.
     #
-    my @argv=(
-        '-port'         => 'select', 
-        '-serverroot'   => $svr_root_dn,
-        '-documentroot' => $opt_hr->{'root'},
-        '-postamble'    => $postamble,
-        '-one-process',
-        '-start-httpd'
-    );
-
-
-    #  Now start. Will die if can't start
-    #
-    $runner->run(@argv);
-    
-    
-    #  Done, return runner object
-    #
-    return $runner;
+    return apache_startup({
+        port         => 'select',
+        documentroot => $opt_hr->{'root'},
+        postamble    => $postamble,
+        keep_tmp     => $opt_hr->{'keep_tmp'},
+    });
 
 }
 
