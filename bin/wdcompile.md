@@ -56,13 +56,13 @@ By default the command prints the compiled page data section only. `--meta` prin
 
     Enable or disable compile-time filter stages nominated in the file. Filters are disabled by default.
 
-* **--outfile**
+* **--outfile, --dest, --dest_fn**
 
     Intended to specify a destination file for the compiled Storable cache. In the current `wdcompile` script this option is parsed but not wired through to the compiler's `dest` parameter, so it does not currently write an output file.
 
-* **--repeat | --r | --num | --n**
+* **--repeat=NUM, --r=NUM, --num=NUM, --n=NUM**
 
-    Specify the number of times to repeat the compile. Used for consistency testing
+    Specify the number of times to repeat the compile. Used for consistency testing.
 
 * **--stage0 | --0**
 
@@ -98,7 +98,7 @@ By default the command prints the compiled page data section only. `--meta` prin
 
 * **--version**
 
-    Display the script version and exit.
+    Display the script version and WebDyne version, then exit.
 
 # Examples #
 
@@ -173,7 +173,7 @@ $VAR1 = [
 # Notes #
 
 The  `wdcompile`  command will attempt to build the HTML tree as faithfully as possible from the command line environment, but may not be able to interpret all HTML files, especially those with malformed HTML tags. It is reliant on HTML::TreeBuilder and HTML::Parser. If you are sure your HTML is compliant \(all tags closed, all attributes double quoted
- etc.) and wdcompile is still producing a malformed tree you can submit a big report with the smallest possible HTML file needed to replicate the issue.
+ etc.) and wdcompile is still producing a malformed tree you can submit a bug report with the smallest possible HTML file needed to replicate the issue.
 
 # Author #
 

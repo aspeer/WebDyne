@@ -1,6 +1,6 @@
 # NAME
 
-WebDyne - PAGI application for handling web requests
+webdyne.pagi - PAGI application runner for WebDyne
 
 # SYNOPSIS
 
@@ -20,6 +20,8 @@ The underlying `WebDyne::PAGI` application can dispatch PAGI scope types for nor
 
 `webdyne.pagi` parses a small set of wrapper options itself and passes remaining command line options through to `PAGI::Runner`.
 
+Wrapper defaults can be preloaded from `~/.webdyne.pagi.opt` by creating an anonymous hash of option names and values.
+
 Wrapper options handled by `webdyne.pagi` itself:
 
 **--test** Use WebDyne's internal test page as the root.
@@ -28,13 +30,13 @@ Wrapper options handled by `webdyne.pagi` itself:
 
 **--index / --noindex** Enable or disable index handling. With the default enabled setting, the wrapper maps the index document to WebDyne's internal default index page.
 
-**--root** Set the document root.
+**--root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
 
-**--argv** Supply additional arguments that the wrapper will prepend before invoking `PAGI::Runner`.
+**--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `PAGI::Runner`.
 
 Remaining command line options are handled by `PAGI::Runner`. Some common options are:
 
-**-o, --host** Which host interface to bind to. When launched through `webdyne.pagi`, the wrapper adds `--host 0.0.0.0` unless you specify a host explicitly.
+**-o, --host** Which host interface to bind to. When launched through `webdyne.pagi`, the wrapper adds `--host 0.0.0.0` unless a `--host` option is present.
 
 **-p, --port** Which port to bind to.
 
@@ -55,6 +57,8 @@ Remaining command line options are handled by `PAGI::Runner`. Some common option
 **--access-log / --no-access-log** Configure access logging.
 
 **--pid, --user, --group, -q, --quiet, -v, --version, --help** Standard runner process and output controls.
+
+On macOS, if no `--port` option is passed through to `PAGI::Runner`, the wrapper uses port `5001` to avoid conflicts with the default port. Other platforms use the normal runner default unless a port is supplied.
 
 # EXAMPLES
 

@@ -1,7 +1,7 @@
 
 # NAME
 
-WebDyne - PSGI application for handling web requests
+webdyne.psgi - PSGI application runner for WebDyne
 
 # SYNOPSIS
 
@@ -13,11 +13,13 @@ WebDyne - PSGI application for handling web requests
 
 # DESCRIPTION
 
-`webdyne.psgi` is a PSGI application script that handles web requests using the WebDyne framework. It initializes the environment, creates a new PSGI request object, determines the appropriate handler, and processes the request to generate a response.
+`webdyne.psgi` builds a `WebDyne::PSGI` application, applies configured Plack middleware, loads local WebDyne constants for the selected root, and runs the app through `Plack::Runner`.
 
 # OPTIONS
 
 `webdyne.psgi` parses a small set of wrapper options itself and passes remaining command line options through to `Plack::Runner`.
+
+Wrapper defaults can be preloaded from `~/.webdyne.psgi.opt` by creating an anonymous hash of option names and values.
 
 Wrapper options handled by `webdyne.psgi` itself:
 
@@ -27,9 +29,9 @@ Wrapper options handled by `webdyne.psgi` itself:
 
 **--index / --noindex** Enable or disable index handling. With the default enabled setting, the wrapper maps the index document to WebDyne's internal default index page.
 
-**--root** Set the document root.
+**--root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
 
-**--argv** Supply additional arguments that the wrapper will prepend before invoking `Plack::Runner`.
+**--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `Plack::Runner`.
 
 Remaining command line options are handled by `Plack::Runner` and are the same as described in the [plackup(1)](man:plackup(1)) man page. Refer to that page for full options but some common options are:
 
@@ -44,6 +46,8 @@ Remaining command line options are handled by `Plack::Runner` and are the same a
 **-I** Same as perl -I for library include paths
 
 **-M** Same as perl -M for loading modules before the script starts
+
+On macOS, if no `--port` option is passed through to `Plack::Runner`, the wrapper uses port `5001` to avoid conflicts with Plack's default port. Other platforms use the normal Plack default unless a port is supplied.
 
 
 # EXAMPLES

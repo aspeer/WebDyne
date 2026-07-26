@@ -9,11 +9,17 @@ wdapacheinit - Install or uninstall WebDyne Apache configuration files
 
 `wdapacheinit --cache /var/www/cache`
 
+`wdapacheinit --print`
+
+`wdapacheinit --uninstall`
+
 # DESCRIPTION
 
 `wdapacheinit` will install or uninstall the WebDyne Apache configuration files. 
 It will create the necessary configuration files and directories for Apache to serve WebDyne pages. 
-The script will also attempt to set the correct permissions on the cache directory.
+The script will also attempt to set the correct ownership and permissions on the cache directory.
+
+Command-line options are copied into uppercase environment variables before the Apache discovery constants are loaded, so supplied options override the detected values.
 
 NOTE: Apache must be restarted after running this script !
 
@@ -25,41 +31,41 @@ NOTE: Apache must be restarted after running this script !
 - `--man`
   Display the full manual.
 
-- `--apache_uname | --uname`
+- `--apache_uname=USER | --uname=USER`
   Specify the Apache user name.
 
-- `--apache_gname | --gname`
+- `--apache_gname=GROUP | --gname=GROUP`
   Specify the Apache group name.
 
-- `--httpd_bin | --httpd`
+- `--httpd_bin=PATH | --httpd=PATH`
   Specify the path to the httpd binary.
 
-- `--dir_apache_conf | --apache_conf | --conf`
+- `--dir_apache_conf=DIR | --apache_conf=DIR | --conf=DIR`
   Specify the directory for Apache configuration files.
 
-- `--dir_apache_modules | --apache_modules | --modules`
+- `--dir_apache_modules=DIR | --apache_modules=DIR | --modules=DIR`
   Specify the directory for Apache modules.
 
-- `--file_mod_perl_lib | --mod_perl_lib | --mod_perl`
+- `--file_mod_perl_lib=PATH | --mod_perl_lib=PATH | --mod_perl=PATH`
   Specify the path to the mod_perl library.
 
 - `--mp2`
   Use mod_perl 2.
 
-- `--webdyne_cache_dn | --webdyne_cache | --cache_dn | --cache | --dir_webdyne_cache`
+- `--webdyne_cache_dn=DIR | --webdyne_cache=DIR | --cache_dn=DIR | --cache=DIR | --dir_webdyne_cache=DIR`
   Specify the directory for WebDyne cache.
 
 - `--silent`
-  Run the script in silent mode.
+  Suppress installer status messages.
 
 - `--setcontext`
-  Set the context for the script.
+  When SELinux is detected, change the context of module library files that would otherwise only generate a warning. Cache directory context handling is attempted independently when SELinux support is available.
 
 - `--uninstall`
   Uninstall the WebDyne Apache configuration.
 
 - `--text | --print`
-  Print the configuration.
+  Print the generated WebDyne Apache include configuration and exit without completing the install.
 
 - `--version`
   Display the script version and exit.
@@ -73,12 +79,17 @@ The script will attempt to automatically detect the correct settings for your sy
 
 `wdapacheinit --cache /var/www/cache`
 
+`wdapacheinit --print`
+
+`wdapacheinit --uninstall`
+
 # NOTES
 
-Apache installation of WebDyne is split into two components. The first is the installation of the WebDyne Apache configuration files, which is done by this script. The second is the installation of the configuration files for the WebDyne framework to enable renderings
-of WebDyne pages. 
+Apache installation of WebDyne is split into two components. The first is the installation of the WebDyne Apache configuration files, which is done by this script. The second is the installation of the configuration files for the WebDyne framework to enable rendering of WebDyne pages.
 
-The second component is of configuration variables that can be set to change behaviour of the WebdDyne system, 
+The generated WebDyne Perl configuration contains variables that can be set to change the behaviour of the WebDyne system.
+
+Where Apache uses a conf.d-style include directory, the generated WebDyne Apache include is written there and the main Apache configuration file is not changed. Where no such include directory is detected, the script updates the main Apache configuration between WebDyne delimiter markers.
 
 # AUTHOR
 

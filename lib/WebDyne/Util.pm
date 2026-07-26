@@ -51,7 +51,7 @@ require Exporter;
 
 #  Exports
 #
-@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal debug perl_inc_dn);
+@EXPORT=qw(err errstr errclr errdump errsubst errstack errnofatal debug);
 @EXPORT_OK=qw(perl_inc_dn apache_startup apache_shutdown);
 %EXPORT_TAGS=(all => [@EXPORT, @EXPORT_OK]);
 

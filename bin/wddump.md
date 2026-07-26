@@ -10,9 +10,9 @@ wddump - dump the data structure of a WebDyne page in the cache directory
 
 # Description #
 
-The  `wddump`  command displays the internal data structure of a compiled WebDyne psp file from the WebDyne cache directory. The  `wddump`  utility is of limited diagnostic use \- the  `wdcompile`  tool is more suitable for troubleshooting HTML tree errors.
+The  `wddump`  command reads a compiled WebDyne Storable cache file and displays its internal data structure with `Data::Dumper`. The  `wddump`  utility is of limited diagnostic use \- the  `wdcompile`  tool is more suitable for troubleshooting HTML tree errors.
 
-`wddump`  can be useful to see a picture of the final data structure looks like on complex pages built via many filters, combining static and dynamic blocks etc.
+`wddump`  can be useful for inspecting the final data structure of complex pages built through multiple filters, static blocks, and dynamic blocks.
 
 # Options #
 

@@ -6,7 +6,7 @@ wdlint - check Perl syntax in the \_\_PERL\_\_ section of a  WebDyne file
 
 # SYNOPSIS #
 
-wdlint \[PERL_OPTIONS] FILE
+`wdlint [PERL_OPTIONS] FILE`
 
 <a name="wdlint-description"></a>
 
@@ -77,7 +77,9 @@ $ wdlint -Ilib page.psp
 
 # Notes #
 
-Only the Perl code after the  __PERL__  marker is linted. If a file contains no  `__PERL__`  section, the command still constructs a temporary file and runs Perl against it, but there may be little or nothing useful to validate.
+Only the Perl code after the  `__PERL__`  marker is linted. If a file contains no  `__PERL__`  section, the command still constructs a temporary file and runs Perl with `-x`, but there may be little or nothing useful to validate.
+
+The temporary file is removed after the Perl syntax check completes.
 
 wdlint  adds  `use strict;`  to the temporary file during checking, so code that only compiles without strict mode may fail under  wdlint .
 

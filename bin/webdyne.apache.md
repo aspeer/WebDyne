@@ -20,7 +20,7 @@ By default the script:
 
 - uses the current working directory as the document root
 - enables WebDyne index handling
-- listens on port `5000`
+- listens on port `5001` on macOS, or `5000` on other platforms
 - creates a temporary Apache server root
 - creates a temporary WebDyne cache directory under that server root
 - starts Apache in one-process mode and then waits until interrupted
@@ -45,17 +45,17 @@ This utility is primarily designed for quick prototyping and development under A
 
 * **--port**
 
-    Specify the Apache listen port. The default is `5000`.
+    Specify the Apache listen port. The default is `5001` on macOS, or `5000` on other platforms.
 
-* **--keep_tmp**
+* **--keep_tmp / --nokeep_tmp**
 
-    Keep the temporary Apache server root instead of cleaning it up automatically on exit.
+    Keep or remove the temporary Apache server root on exit. By default it is cleaned up automatically.
 
 * **--test**
 
     Use the internal WebDyne test page as the root page.
 
-* **--dump_postamble**
+* **--dump_postamble, --dump-postamble**
 
     Print the generated Apache configuration postamble and exit instead of starting the server.
 
@@ -75,11 +75,13 @@ The generated Apache configuration currently does the following:
 - installs `mod_perl` handling for `.psp` files with `PerlResponseHandler WebDyne`
 - sets `DOCUMENT_DEFAULT` to the resolved WebDyne default index page
 - passes through any current `WEBDYNE_*` environment variables as `PerlSetEnv`
+- passes through non-default Perl include paths as `PerlSwitches -I...`
 - sets `WEBDYNE_ERROR_TEXT=1` unless already defined
 - grants access to both the resolved default index directory and the selected document root
 - sets `DirectoryIndex index.psp`
 - aliases `/index.psp` to the resolved default index file
 - rewrites directory requests to `/index.psp`
+- on macOS, loads `mod_rewrite` explicitly when Apache does not already have it loaded
 - logs to `/dev/stderr` and `/dev/stdout` where possible, otherwise falls back to Apache log files
 
 The script also reads defaults from `~/.webdyne.apache.opt` if that file exists.

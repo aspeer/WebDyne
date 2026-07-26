@@ -67,7 +67,7 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
 * **--request=TYPE, -r TYPE**
 
-    Select the backend used to execute the request. Valid values in the current script are `fake`, `psgi`, `psgi_server`, `pagi`, and `mod_perl`.
+    Select one or more backends used to execute the request. Repeat the option to run multiple backends. Valid values are `fake`, `psgi`, `psgi_server`, `pagi`, `mod_perl`, and `all`.
 
 * **--fake**
 
@@ -91,7 +91,7 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
 * **--all**
 
-    Run all supported backends instead of just one selected backend.
+    Run all supported backends instead of just one selected backend. This is equivalent to `--request=all`.
 
 * **--root=DIR, --docroot=DIR, --doc_root=DIR, --document_root=DIR**
 
@@ -100,6 +100,14 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 * **--keep_tmp**
 
     When using the `mod_perl` backend, do not cleanup temporary Apache server root.
+
+* **--apache_stdout, --apache-stdout / --noapache_stdout, --noapache-stdout**
+
+    When using the `mod_perl` backend, send Apache access/error logs to stdout/stderr where possible instead of suppressing them.
+
+* **--dump_postamble, --dump-postamble**
+
+    Print the generated Apache postamble and exit instead of starting the Apache test instance.
 
 ## Request Construction ##
 
@@ -127,13 +135,15 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Add request parameters and use `OPTIONS`.
 
+Request parameter options may be repeated, and each value may contain multiple `;` or `&` separated key/value pairs. Keys and values may be separated with `=` or `:`.
+
 * **--head**
 
     Use `HEAD`.
 
 * **--param=KEY=VALUE**
 
-    Pass handler parameters to the WebDyne handler call. These are separate from request query/body parameters and are available to handler-side Perl code.
+    Pass handler parameters to the WebDyne handler call. These are separate from request query/body parameters and are available to handler-side Perl code. Repeat the option or separate entries with `;` or `&`. Duplicate keys are preserved as array values.
 
 * **--headers_in=NAME:VALUE, --header_in=NAME:VALUE**
 
@@ -240,7 +250,7 @@ wdrender --htmx --headers_in "X-Debug: 1" fragment.psp
 
 # NOTES #
 
-`wdrender` aims to reproduce WebDyne output from the command line, but it cannot perfectly duplicate every web-server runtime detail. In particular, pages that depend on a specific server environment may behave differently across `fake`, `psgi`, `pagi`, and `mod_perl` backends.
+`wdrender` aims to reproduce WebDyne output from the command line, but it cannot perfectly duplicate every web-server runtime detail. In particular, pages that depend on a specific server environment may behave differently across `fake`, `psgi`, `psgi_server`, `pagi`, and `mod_perl` backends.
 
 # AUTHOR #
 

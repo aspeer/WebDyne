@@ -20,6 +20,8 @@ my $msg = errstr();
 
 It exports the standard utility functions by default and uses environment variables such as `WEBDYNE_DEBUG`, `WEBDYNE_DEBUG_FILE`, `WEBDYNE_DEBUG_FILTER`, and related settings to control runtime debug output.
 
+`perl_inc_dn` is exported by default and can also be requested explicitly. `apache_startup` and `apache_shutdown` are available on request, or through the `:all` export tag.
+
 # FUNCTIONS #
 
 * **debug($message, @args)**
@@ -53,6 +55,18 @@ It exports the standard utility functions by default and uses environment variab
 * **errnofatal($bool)**
 
     Control whether errors are treated as fatal by the utility layer.
+
+* **perl_inc_dn()**
+
+    Return non-default library directories from `@INC`.
+
+* **apache_startup(\%options)**
+
+    Start an Apache::Test runner instance with a caller-supplied postamble.
+
+* **apache_shutdown($runner)**
+
+    Stop an Apache::Test runner instance if it is active.
 
 # NOTES #
 
