@@ -142,6 +142,14 @@ DISTRIBUTIONS
       Env::Path 0.19
     requirements:
       ExtUtils::MakeMaker 0
+  ExtUtils-CChecker-0.12
+    pathname: P/PE/PEVANS/ExtUtils-CChecker-0.12.tar.gz
+    provides:
+      ExtUtils::CChecker 0.12
+    requirements:
+      ExtUtils::CBuilder 0
+      Module::Build 0.4004
+      perl 5.014
   File-ShareDir-1.118
     pathname: R/RE/REHSACK/File-ShareDir-1.118.tar.gz
     provides:
@@ -174,6 +182,49 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.008001
+  Future-0.52
+    pathname: P/PE/PEVANS/Future-0.52.tar.gz
+    provides:
+      Future 0.52
+      Future::Exception 0.52
+      Future::Mutex 0.52
+      Future::PP 0.52
+      Future::Utils 0.52
+      Test::Future 0.52
+      Test::Future::Deferred 0.52
+    requirements:
+      Carp 1.25
+      List::Util 1.29
+      Module::Build 0.4004
+      Test::Builder::Module 0
+      Time::HiRes 0
+      perl 5.014
+  Future-AsyncAwait-0.71
+    pathname: P/PE/PEVANS/Future-AsyncAwait-0.71.tar.gz
+    provides:
+      Future::AsyncAwait 0.71
+      Future::AsyncAwait::Awaitable 0.71
+      Future::AsyncAwait::ExtensionBuilder 0.71
+      Test::Future::AsyncAwait::Awaitable 0.71
+    requirements:
+      ExtUtils::CBuilder 0
+      File::ShareDir 1.00
+      Future 0.50
+      Module::Build 0.4004
+      XS::Parse::Keyword 0.13
+      XS::Parse::Keyword::Builder 0.13
+      XS::Parse::Sublike 0.31
+      XS::Parse::Sublike::Builder 0.31
+      perl 5.016
+  Future-XS-0.15
+    pathname: P/PE/PEVANS/Future-XS-0.15.tar.gz
+    provides:
+      Future::XS 0.15
+    requirements:
+      ExtUtils::CBuilder 0
+      Future 0.48_001
+      Module::Build 0.4004
+      perl 5.024
   HTML-Parser-3.83
     pathname: O/OA/OALDERS/HTML-Parser-3.83.tar.gz
     provides:
@@ -333,6 +384,59 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       perl 5.008001
+  IO-Async-0.805
+    pathname: P/PE/PEVANS/IO-Async-0.805.tar.gz
+    provides:
+      Future::IO::Impl::IOAsync 0.805
+      IO::Async 0.805
+      IO::Async::Channel 0.805
+      IO::Async::Debug 0.805
+      IO::Async::File 0.805
+      IO::Async::FileStream 0.805
+      IO::Async::Function 0.805
+      IO::Async::Future 0.805
+      IO::Async::Handle 0.805
+      IO::Async::Internals::ChildManager 0.805
+      IO::Async::Internals::FunctionWorker 0.805
+      IO::Async::Listener 0.805
+      IO::Async::Loop 0.805
+      IO::Async::Loop::Poll 0.805
+      IO::Async::Loop::Select 0.805
+      IO::Async::LoopTests 0.805
+      IO::Async::Metrics 0.805
+      IO::Async::Notifier 0.805
+      IO::Async::OS 0.805
+      IO::Async::OS::MSWin32 0.805
+      IO::Async::OS::cygwin 0.805
+      IO::Async::OS::linux 0.805
+      IO::Async::PID 0.805
+      IO::Async::Process 0.805
+      IO::Async::Protocol 0.805
+      IO::Async::Protocol::LineStream 0.805
+      IO::Async::Protocol::Stream 0.805
+      IO::Async::Resolver 0.805
+      IO::Async::Routine 0.805
+      IO::Async::Signal 0.805
+      IO::Async::Socket 0.805
+      IO::Async::Stream 0.805
+      IO::Async::Test 0.805
+      IO::Async::Timer 0.805
+      IO::Async::Timer::Absolute 0.805
+      IO::Async::Timer::Countdown 0.805
+      IO::Async::Timer::Periodic 0.805
+    requirements:
+      Exporter 5.57
+      File::stat 0
+      Future 0.44
+      Future::Utils 0.18
+      IO::Poll 0
+      List::Util 0
+      Module::Build 0.4004
+      Socket 2.007
+      Storable 0
+      Struct::Dumb 0
+      Time::HiRes 0
+      perl 5.014
   IO-HTML-1.004
     pathname: C/CJ/CJM/IO-HTML-1.004.tar.gz
     provides:
@@ -469,6 +573,137 @@ DISTRIBUTIONS
       POSIX 0
       Socket 0
       Time::HiRes 0
+  PAGI-Server-0.002006
+    pathname: J/JJ/JJNAPIORK/PAGI-Server-0.002006.tar.gz
+    provides:
+      PAGI::Server 0.002006
+      PAGI::Server::AsyncFile 0.002006
+      PAGI::Server::Connection 0.002006
+      PAGI::Server::ConnectionState 0.002006
+      PAGI::Server::EventValidator 0.002006
+      PAGI::Server::Protocol::HTTP1 0.002006
+      PAGI::Server::Protocol::HTTP2 0.002006
+      PAGI::Server::Runner 0.002006
+      PAGI::Server::TransportState 0.002006
+    requirements:
+      ExtUtils::MakeMaker 0
+      Future 0.50
+      Future::AsyncAwait 0.66
+      HTTP::Parser::XS 0.17
+      IO::Async 0.802
+      IO::Socket::IP 0.43
+      Protocol::WebSocket 0.26
+      URI::Escape 5.09
+      perl 5.018
+  PAGI-Tools-0.002002
+    pathname: J/JJ/JJNAPIORK/PAGI-Tools-0.002002.tar.gz
+    provides:
+      PAGI::App::Cascade 0.002002
+      PAGI::App::Directory 0.002002
+      PAGI::App::File 0.002002
+      PAGI::App::Healthcheck 0.002002
+      PAGI::App::Loader 0.002002
+      PAGI::App::NotFound 0.002002
+      PAGI::App::Proxy 0.002002
+      PAGI::App::Redirect 0.002002
+      PAGI::App::Router 0.002002
+      PAGI::App::SSE::Pubsub 0.002002
+      PAGI::App::Throttle 0.002002
+      PAGI::App::URLMap 0.002002
+      PAGI::App::WebSocket::Broadcast 0.002002
+      PAGI::App::WebSocket::Chat 0.002002
+      PAGI::App::WebSocket::Echo 0.002002
+      PAGI::App::WrapCGI 0.002002
+      PAGI::App::WrapPSGI 0.002002
+      PAGI::App::WrapPSGI::Writer 0.002002
+      PAGI::Context 0.002002
+      PAGI::Context::HTTP 0.002002
+      PAGI::Context::SSE 0.002002
+      PAGI::Context::WebSocket 0.002002
+      PAGI::Endpoint::HTTP 0.002002
+      PAGI::Endpoint::Router 0.002002
+      PAGI::Endpoint::Router::RouteBuilder 0.002002
+      PAGI::Endpoint::SSE 0.002002
+      PAGI::Endpoint::WebSocket 0.002002
+      PAGI::Headers 0.002002
+      PAGI::Lifespan 0.002002
+      PAGI::Middleware 0.002002
+      PAGI::Middleware::AccessLog 0.002002
+      PAGI::Middleware::Auth::Basic 0.002002
+      PAGI::Middleware::Auth::Bearer 0.002002
+      PAGI::Middleware::Builder 0.002002
+      PAGI::Middleware::CORS 0.002002
+      PAGI::Middleware::CSRF 0.002002
+      PAGI::Middleware::ConditionalGet 0.002002
+      PAGI::Middleware::ContentLength 0.002002
+      PAGI::Middleware::ContentNegotiation 0.002002
+      PAGI::Middleware::Cookie 0.002002
+      PAGI::Middleware::Cookie::Jar 0.002002
+      PAGI::Middleware::Debug 0.002002
+      PAGI::Middleware::ETag 0.002002
+      PAGI::Middleware::ErrorHandler 0.002002
+      PAGI::Middleware::FormBody 0.002002
+      PAGI::Middleware::GZip 0.002002
+      PAGI::Middleware::HTTPSRedirect 0.002002
+      PAGI::Middleware::Head 0.002002
+      PAGI::Middleware::Healthcheck 0.002002
+      PAGI::Middleware::JSONBody 0.002002
+      PAGI::Middleware::Lint 0.002002
+      PAGI::Middleware::Maintenance 0.002002
+      PAGI::Middleware::MethodOverride 0.002002
+      PAGI::Middleware::RateLimit 0.002002
+      PAGI::Middleware::RequestId 0.002002
+      PAGI::Middleware::ReverseProxy 0.002002
+      PAGI::Middleware::Rewrite 0.002002
+      PAGI::Middleware::Runtime 0.002002
+      PAGI::Middleware::SSE::Retry 0.002002
+      PAGI::Middleware::SecurityHeaders 0.002002
+      PAGI::Middleware::Session 0.002002
+      PAGI::Middleware::Session::State 0.002002
+      PAGI::Middleware::Session::State::Bearer 0.002002
+      PAGI::Middleware::Session::State::Callback 0.002002
+      PAGI::Middleware::Session::State::Cookie 0.002002
+      PAGI::Middleware::Session::State::Header 0.002002
+      PAGI::Middleware::Session::Store 0.002002
+      PAGI::Middleware::Session::Store::Memory 0.002002
+      PAGI::Middleware::Static 0.002002
+      PAGI::Middleware::TrustedHosts 0.002002
+      PAGI::Middleware::WebSocket::RateLimit 0.002002
+      PAGI::Middleware::XSendfile 0.002002
+      PAGI::Request 0.002002
+      PAGI::Request::BodyStream 0.002002
+      PAGI::Request::MultiPartHandler 0.002002
+      PAGI::Request::MultipartStream 0.002002
+      PAGI::Request::Negotiate 0.002002
+      PAGI::Request::Part 0.002002
+      PAGI::Request::Upload 0.002002
+      PAGI::Response 0.002002
+      PAGI::Response::Writer 0.002002
+      PAGI::SSE 0.002002
+      PAGI::Session 0.002002
+      PAGI::Stash 0.002002
+      PAGI::Test::Client 0.002002
+      PAGI::Test::ConnectionState 0.002002
+      PAGI::Test::Response 0.002002
+      PAGI::Test::SSE 0.002002
+      PAGI::Test::WebSocket 0.002002
+      PAGI::Tools 0.002002
+      PAGI::Utils 0.002002
+      PAGI::Utils::Random 0.002002
+      PAGI::Utils::SecureCompare 0.002002
+      PAGI::WebSocket 0.002002
+    requirements:
+      Cookie::Baker 0.11
+      ExtUtils::MakeMaker 0
+      Future 0.50
+      Future::AsyncAwait 0.66
+      HTTP::Date 6.06
+      HTTP::MultiPartParser 0.02
+      Hash::MultiValue 0.16
+      IO::Compress::Gzip 0
+      JSON::MaybeXS 1.004003
+      Module::Load 0
+      perl 5.018
   POSIX-strftime-Compiler-0.46
     pathname: K/KA/KAZEBURO/POSIX-strftime-Compiler-0.46.tar.gz
     provides:
@@ -586,6 +821,29 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 6.42
       Plack 0.9925
+  Protocol-WebSocket-0.26
+    pathname: V/VT/VTI/Protocol-WebSocket-0.26.tar.gz
+    provides:
+      Protocol::WebSocket 0.26
+      Protocol::WebSocket::Client undef
+      Protocol::WebSocket::Cookie undef
+      Protocol::WebSocket::Cookie::Request undef
+      Protocol::WebSocket::Cookie::Response undef
+      Protocol::WebSocket::Frame undef
+      Protocol::WebSocket::Handshake undef
+      Protocol::WebSocket::Handshake::Client undef
+      Protocol::WebSocket::Handshake::Server undef
+      Protocol::WebSocket::Message undef
+      Protocol::WebSocket::Request undef
+      Protocol::WebSocket::Response undef
+      Protocol::WebSocket::Stateful undef
+      Protocol::WebSocket::URL undef
+    requirements:
+      Carp 0
+      Digest::MD5 0
+      Digest::SHA 0
+      Module::Build::Tiny 0.035
+      Scalar::Util 0
   Router-Simple-0.17
     pathname: T/TO/TOKUHIROM/Router-Simple-0.17.tar.gz
     provides:
@@ -628,6 +886,13 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 6.30
       IO::File 1.14
+  Struct-Dumb-0.16
+    pathname: P/PE/PEVANS/Struct-Dumb-0.16.tar.gz
+    provides:
+      Struct::Dumb 0.16
+    requirements:
+      Module::Build 0.4004
+      perl 5.014
   Sub-Uplevel-0.2800
     pathname: D/DA/DAGOLDEN/Sub-Uplevel-0.2800.tar.gz
     provides:
@@ -919,3 +1184,28 @@ DISTRIBUTIONS
       Exporter 0
       Module::Build 0.4005
       perl 5.008001
+  XS-Parse-Keyword-0.49
+    pathname: P/PE/PEVANS/XS-Parse-Keyword-0.49.tar.gz
+    provides:
+      XS::Parse::Infix 0.49
+      XS::Parse::Infix::Builder 0.49
+      XS::Parse::Keyword 0.49
+      XS::Parse::Keyword::Builder 0.49
+    requirements:
+      ExtUtils::CBuilder 0
+      ExtUtils::CChecker 0.11
+      ExtUtils::ParseXS 3.16
+      File::ShareDir 1.00
+      Module::Build 0.4004
+      perl 5.014
+  XS-Parse-Sublike-0.41
+    pathname: P/PE/PEVANS/XS-Parse-Sublike-0.41.tar.gz
+    provides:
+      Sublike::Extended 0.41
+      XS::Parse::Sublike 0.41
+      XS::Parse::Sublike::Builder 0.41
+    requirements:
+      ExtUtils::CBuilder 0
+      File::ShareDir 1.00
+      Module::Build 0.4004
+      perl 5.016

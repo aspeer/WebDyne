@@ -12,13 +12,13 @@ webdyne.pagi - PAGI application runner for WebDyne
 
 # DESCRIPTION
 
-`webdyne.pagi` is a PAGI application script that handles web requests using the WebDyne framework. It builds a `WebDyne::PAGI` application, loads any configured PAGI middleware, and starts it through `PAGI::Runner`.
+`webdyne.pagi` is a PAGI application script that handles web requests using the WebDyne framework. It builds a `WebDyne::PAGI` application, loads any configured PAGI middleware, and starts it through `PAGI::Server::Runner`.
 
 The underlying `WebDyne::PAGI` application can dispatch PAGI scope types for normal HTTP requests, server-sent events, WebSocket connections, and lifespan startup or shutdown events.
 
 # OPTIONS
 
-`webdyne.pagi` parses a small set of wrapper options itself and passes remaining command line options through to `PAGI::Runner`.
+`webdyne.pagi` parses a small set of wrapper options itself and passes remaining command line options through to `PAGI::Server::Runner`.
 
 Wrapper defaults can be preloaded from `~/.webdyne.pagi.opt` by creating an anonymous hash of option names and values.
 
@@ -28,21 +28,23 @@ Wrapper options handled by `webdyne.pagi` itself:
 
 **--static / --nostatic** Enable or disable PAGI static-file middleware.
 
-**--index / --noindex** Enable or disable index handling. With the default enabled setting, the wrapper maps the index document to WebDyne's internal default index page.
+**--index / --noindex / --no-index** Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
+
+**--index=FILE** Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
 
 **--root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
 
-**--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `PAGI::Runner`.
+**-E, --env** Set the PAGI environment mode to `development`, `production`, or `none`. The wrapper sets `PAGI_ENV` and forwards the mode to `PAGI::Server::Runner`.
 
-Remaining command line options are handled by `PAGI::Runner`. Some common options are:
+**--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `PAGI::Server::Runner`.
+
+Remaining command line options are handled by `PAGI::Server::Runner`. Some common options are:
 
 **-o, --host** Which host interface to bind to. When launched through `webdyne.pagi`, the wrapper adds `--host 0.0.0.0` unless a `--host` option is present.
 
 **-p, --port** Which port to bind to.
 
 **-s, --server** Which PAGI server class to use. The runner default is `PAGI::Server`.
-
-**-E, --env** Environment mode, for example `development`, `production`, or `none`.
 
 **-l, --loop** Event loop backend.
 
@@ -58,7 +60,7 @@ Remaining command line options are handled by `PAGI::Runner`. Some common option
 
 **--pid, --user, --group, -q, --quiet, -v, --version, --help** Standard runner process and output controls.
 
-On macOS, if no `--port` option is passed through to `PAGI::Runner`, the wrapper uses port `5001` to avoid conflicts with the default port. Other platforms use the normal runner default unless a port is supplied.
+On macOS, if no `--port` option is passed through to `PAGI::Server::Runner`, the wrapper uses port `5001` to avoid conflicts with the default port. Other platforms use the normal runner default unless a port is supplied.
 
 # EXAMPLES
 
@@ -69,6 +71,14 @@ To run the script for basic functionality and serve files from `/var/www/html`, 
 Disable wrapper-managed index handling and rely on the PAGI request layer's default document behaviour instead:
 
 `webdyne.pagi --noindex /var/www/html`
+
+Use `home.psp` as the default document for directory requests:
+
+`webdyne.pagi --index=home.psp /var/www/html`
+
+Start in production mode:
+
+`webdyne.pagi --env production /var/www/html`
 
 Start on another port:
 
@@ -88,7 +98,9 @@ Start with a different event loop backend:
 
 # ENVIRONMENT VARIABLES
 
-This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configuration and environment handling, including `DOCUMENT_ROOT`, `DOCUMENT_DEFAULT`, and the relevant `WEBDYNE_*` settings used by the PAGI modules.
+This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configuration and environment handling, including `DOCUMENT_ROOT`, `DOCUMENT_DEFAULT`, `PAGI_ENV`, and the relevant `WEBDYNE_*` settings used by the PAGI modules.
+
+`DOCUMENT_DEFAULT`, when set, supplies the default `index` value before `~/.webdyne.pagi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.pagi.opt` also overrides the environment.
 
 When launched from the command line, the wrapper also reads local WebDyne configuration from `DOCUMENT_ROOT/.webdyne.conf.pl` before starting the PAGI runner.
 

@@ -65,7 +65,7 @@ if (!caller || exists $ENV{PAR_TEMP}) {
     my %opt=(
         test    => 0,
         static  => 1,
-        index   => 1,
+        index   => defined($ENV{'DOCUMENT_DEFAULT'}) ? $ENV{'DOCUMENT_DEFAULT'} : 1,
         %{do(glob(sprintf('~/.%s.opt', basename(__FILE__)))) || {}}
     );
 
@@ -74,12 +74,29 @@ if (!caller || exists $ENV{PAR_TEMP}) {
     #
     require Getopt::Long;
     Getopt::Long::Configure('pass_through');
+    @ARGV=grep {
+        if ($_ eq '--no-index') {
+            $opt{'index'}=0;
+            0;
+        }
+        elsif (/^--index=(.*)$/) {
+            $opt{'index'}=$1;
+            0;
+        }
+        else {
+            1;
+        }
+    } @ARGV;
     Getopt::Long::GetOptions(
         \%opt,
         'test!',
         'static!',
-        'index!',
+        'index!' => sub {
+            my ($name, $value)=@_;
+            $opt{'index'}=$value ? 1 : 0;
+        },
         'root:s',
+        'env|E=s',
         'argv:s'
     );
     
@@ -101,7 +118,7 @@ if (!caller || exists $ENV{PAR_TEMP}) {
 }
 else {
 
-    # No - called from pagi_server. Need document root and doc default from 
+    # No - called from psgi_server or starman. Need document root and doc default from 
     # env or var
     #
     my %opt=(
@@ -184,6 +201,18 @@ sub startup {
     #
     require Plack::Runner;
     my $plack_or=Plack::Runner->new();
+    
+    
+    #  Environment/mode. The wrapper consumes -E/--env so that values can
+    #  also come from ~/.webdyne.psgi.opt, then passes it on to the runner.
+    #
+    if (defined($opt_hr->{'env'})) {
+        die "--env must be development, production, or none\n"
+            unless $opt_hr->{'env'} =~ /^(?:development|production|none)$/;
+        $ENV{'PLACK_ENV'}=$opt_hr->{'env'};
+        push (@argv, ('--env', $opt_hr->{'env'}))
+            unless grep { $_ eq '-E' || $_ eq '--env' || /^--env=/ } @argv;
+    }
     
 
     #  Mac conflicts with Plack default port of 5000 - choose 5001

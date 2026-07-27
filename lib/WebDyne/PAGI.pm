@@ -436,7 +436,7 @@ sub handler_lifespan {
         while (1) {
             my $event_hr = await $receive->();
             if ($event_hr->{'type'} eq 'lifespan.startup') {
-                printf STDERR "[lifespan] WebDyne PAGI handler startup. DOCUMENT_ROOT: %s, DOCUMENT_DEFAULT: %s\n", $self->{'root'}, basename($self->{'index'});
+                printf STDERR "[lifespan] WebDyne PAGI handler startup. DOCUMENT_ROOT: %s, DOCUMENT_DEFAULT: %s\n", $self->{'root'}, basename($self->{'index'} || $DOCUMENT_DEFAULT);
                 await $send->({ type => 'lifespan.startup.complete' });
                 
             }
