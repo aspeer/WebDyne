@@ -216,7 +216,7 @@ sub startup {
     #  Run it
     #
     *PAGI::Server::Runner::load_app=sub { return $app_cr };
-    exit $pagi_or->run();
+    exit ($pagi_or->run() || 0);
 
 }
 
