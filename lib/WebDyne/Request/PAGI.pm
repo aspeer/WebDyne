@@ -376,7 +376,8 @@ sub headers_in {
         my $headers_pagi_or=$r->{'req'}->headers();
         debug('headers_pagi_or: %s', Dumper($headers_pagi_or));
         my @header;
-        foreach my $header ($headers_pagi_or->keys) {
+        #foreach my $header ($headers_pagi_or->keys) {
+        foreach my $header ($headers_pagi_or->names) {
             my @value=$headers_pagi_or->get_all($header);
             $header=~s{(^|-)([a-z])}{$1\u$2}g;
             map { push @header, ($header, $_) } @value;

@@ -46,7 +46,7 @@ $VERSION='2.088_630';
 #
 BEGIN {
     my @missing;
-    for my $module (qw(PAGI)) {
+    for my $module (qw(PAGI::Server PAGI::Tools)) {
         eval "require $module; 1" or push @missing, $module;
     }
     if (@missing) {
@@ -177,15 +177,15 @@ sub build {
 sub startup {
 
 
-    #  Get WebDyne::PAGI options and PAGI::Runner args
+    #  Get WebDyne::PAGI options and PAGI::Server::Runner args
     #
     my ($opt_hr, @argv)=@_;
     
     
     #  Running from command line without being stared by plackup or starman
     #
-    require PAGI::Runner;
-    my $pagi_or=PAGI::Runner->new();
+    require PAGI::Server::Runner;
+    my $pagi_or=PAGI::Server::Runner->new();
     
     
     #  Add host 0.0.0.0 option unless already spec'd as option
@@ -215,7 +215,7 @@ sub startup {
     
     #  Run it
     #
-    *PAGI::Runner::load_app=sub { return $app_cr };
+    *PAGI::Server::Runner::load_app=sub { return $app_cr };
     exit $pagi_or->run();
 
 }

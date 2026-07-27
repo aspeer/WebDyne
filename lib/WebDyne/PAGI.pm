@@ -167,7 +167,7 @@ sub handler_sse {
     #
     my $req_or=PAGI::Request->new($scope, $receive) ||
         return err('unable to get PAGI::Request object');
-    my $res_or=PAGI::Response->new($scope, $send) ||
+    my $res_or=PAGI::Response->new($scope) ||
         return err('unable to get PAGI::Response object');
     my $sse_or=PAGI::SSE->new($scope, $receive, $send) ||
         return err('unable to get PAGI::SSE object');
@@ -244,7 +244,7 @@ sub handler_ws {
     #
     my $req_or=PAGI::Request->new($scope, $receive) ||
         return err('unable to get PAGI::Request object');
-    my $res_or=PAGI::Response->new($scope, $send) ||
+    my $res_or=PAGI::Response->new($scope) ||
         return err('unable to get PAGI::Response object');
     my $ws_or=PAGI::WebSocket->new($scope, $receive, $send) ||
         return err('unable to get PAGI::WebSocket object');
@@ -303,7 +303,7 @@ sub handler_http {
         #
         my $req_or=PAGI::Request->new($scope, $receive) ||
             return err('unable to get PAGI::Request object');
-        my $res_or=PAGI::Response->new($scope, $send) ||
+        my $res_or=PAGI::Response->new($scope) ||
             return err('unable to get PAGI::Response object');
         
 
@@ -411,7 +411,7 @@ sub handler_http {
         if ($html) {
             debug('sending html to client via await()');
             $r->res->content_type($r->content_type() || $WEBDYNE_CONTENT_TYPE_HTML);
-            return await $r->res->send($html || err);
+            return await $r->res->send($html || err)->respond($send);
         }
         
         
