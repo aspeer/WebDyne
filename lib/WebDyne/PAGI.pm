@@ -411,7 +411,9 @@ sub handler_http {
         if ($html) {
             debug('sending html to client via await()');
             $r->res->content_type($r->content_type() || $WEBDYNE_CONTENT_TYPE_HTML);
-            return await $r->res->send($html || err)->respond($send);
+            my $respond_status=await $r->res->send($html || err)->respond($send);
+            $r->DESTROY();
+            return $respond_status;
         }
         
         
