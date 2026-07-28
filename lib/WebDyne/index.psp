@@ -2,16 +2,16 @@
 #
 <start_html 
     title="File Index" 
-    include_style="@{qw(index.css)}"
+    include_style="@{qw(webdyne.css index.css)}"
     style="@{qw(
-        https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css
+        https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/atom-one-dark.min.css
         https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css
     )}" 
     meta="%{viewport=>'width=device-width, initial-scale=1.0'}"
     script="@{qw(
         https://cdn.jsdelivr.net/npm/htmx.org@1.9.5
         https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js#defer
-        https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js
+        https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/highlight.min.js
         https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js#defer
     )}"
     include_script="@{qw(index.js)}"
@@ -33,7 +33,7 @@
       <tr>
         <th><a href="${sort_name_href}">Filename</a></th>
         <th><a href="${sort_mtime_href}">Last Modified</a></th>
-        <th><a href="${sort_size_href}">Size</a></th>
+        <th style="text-align: right"><a href="${sort_size_href}">Size</a></th>
         <th style="text-align: right">View</th>
       </tr>
     </thead>
@@ -42,11 +42,11 @@
       <tr>
         <td><a href="${href}">${filename}</a></td>
         <td>${date}</td>
-        <td>${size}</td>
+        <td style="text-align: right">${size}</td>
         
             <block name="file" display="!{! $_[1]->{'type'} eq 'file' !}" >
             <td style="text-align: right"  x-data="{ isOpen: false }">
-                <a href="#" @click.prevent="toggleSourceRow($el, $data)" class="cursor-pointer inline-flex items-center gap-1"  data-filename="${filename}" data-md5="${md5_hex}">
+                <a href="#" @click.prevent="toggleSourceRow($el, $data)" class="source-toggle"  data-filename="${filename}" data-md5="${md5_hex}">
                     <svg data-lucide="chevron-left" width="16" height="16" :style="isOpen ? 'transform: rotate(-90deg)' : ''" style="transition: transform .15s ease-in-out;"></svg>
                 </a>
             </td>

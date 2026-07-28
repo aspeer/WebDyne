@@ -1,7 +1,13 @@
 :root {
-  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 85%/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
   color: #373c44;
   background: #fff;
+  --webdyne-code-background: #f5f6f7;
+  --webdyne-code-color: #646b79;
+  --webdyne-code-font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --webdyne-code-font-size: .875em;
+  --webdyne-code-padding: 0;
+  --webdyne-spacing: 0.75rem;
 }
 
 * {
@@ -9,8 +15,17 @@
 }
 
 body {
-  margin: 0;
-  padding: 10px;
+  margin: var(--webdyne-spacing);
+  padding: 0;
+}
+
+body > header,
+body > main,
+body > footer {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding: var(--webdyne-spacing);
 }
 
 h1,
@@ -124,7 +139,7 @@ table {
 
 th,
 td {
-  padding: .4rem .6rem;
+  padding: .5rem;
   border-bottom: 1px solid #dfe3e7;
   text-align: left;
 }
@@ -132,8 +147,13 @@ td {
 pre {
   max-width: 100%;
   overflow: auto;
-  padding: .65rem;
-  background: #f5f6f7;
+  padding: var(--webdyne-code-padding);
+  background: var(--webdyne-code-background);
+  color: var(--webdyne-code-color);
+  font-family: var(--webdyne-code-font-family);
+  font-size: var(--webdyne-code-font-size);
+  font-weight: 400;
+  line-height: initial;
 }
 
 .tight-code-block,
