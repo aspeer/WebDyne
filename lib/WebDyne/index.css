@@ -14,11 +14,11 @@ td {
 }
 
 tbody tr:nth-child(even) td {
-  background-color: var(--pico-table-row-stripped-background-color);
+  background-color: var(--pico-table-row-stripped-background-color, rgba(111, 120, 135, .0375));
 }
 
 tbody tr:hover td {
-  background-color: var(--pico-form-element-selected-background-color);
+  background-color: var(--pico-form-element-selected-background-color, #dfe3eb);
 }
 
 hr {
