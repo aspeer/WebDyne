@@ -246,7 +246,7 @@ my %constant_temp;
     WEBDYNE_START_HTML_PARAM_STATIC => 1,
     
     
-    #  Shortcut attributes for start_html
+    #  Shortcut attributes for start_html. Use with convention <start_html pico title="My Title"> to use
     #
     WEBDYNE_START_HTML_SHORTCUT_HR => {
     
@@ -276,9 +276,20 @@ my %constant_temp;
     #
     #  WEBDYNE_HEAD_INSERT =>  '<link href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" rel="stylesheet">'
     #
-    #  Will be added to all <head> sections universally.
+    #  Will be added to all <head> sections universally. Default is to inline webdyne.css so don't need to
+    #  worry about where docroot is, enabling static file load etc. Just null out with
     #
-    WEBDYNE_HEAD_INSERT => '',
+    #  WEBDYNE_HEAD_INSERT => undef,
+    #
+    #  To disable.
+    #
+    WEBDYNE_HEAD_INSERT => sprintf('<style>%s</style>', do {
+        local $/;
+        my $style_fn=&fullpath('webdyne.css');
+        open my $fh, '<', $style_fn
+            or die sprintf('unable to read default stylesheet %s: %s', $style_fn, $!);
+        <$fh>;
+    }),
     
     
     #  Ignore ignorable whitespace in compile. Play around with these settings if
@@ -573,10 +584,11 @@ my %constant_temp;
     WEBDYNE_PSGI => $INC{'WebDyne/PSGI.pm'} ? 1 : 0,
     
     
-    #  Indexer and test files
+    #  Indexer and test, style files
     #
     WEBDYNE_DEFAULT_TEST_FN  => &fullpath('time.psp'),
     WEBDYNE_DEFAULT_INDEX_FN => &fullpath('index.psp'),
+    WEBDYNE_DEFAULT_STYLE_FN => &fullpath('webdyne.css'),
 
     
     #  Mod_perl level. Do not change unless you know what you are
