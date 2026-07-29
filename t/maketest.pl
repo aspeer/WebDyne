@@ -8,6 +8,7 @@ use vars   qw($VERSION);
 
 BEGIN {
     $ENV{'WEBDYNE_CONF'}='.' unless ($ENV{'WEBDYNE_TEST_FILE_PREFIX'} eq '03');
+    $ENV{'WEBDYNE_HEAD_INSERT'}=0 unless ($ENV{'WEBDYNE_TEST_FILE_PREFIX'} eq '03');
 }
 
 #  External Modules
