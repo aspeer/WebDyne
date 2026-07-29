@@ -40,19 +40,21 @@ sub startup_conf {
     #
     my @perl_inc_dn=@{&perl_inc_dn()};
     my $PerlSwitches=join("\n", map { sprintf('PerlSwitches -I%s', $_) } @perl_inc_dn);
-    my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
+    my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { $ENV{$_} } grep { /^WEBDYNE_/ } keys %ENV;
     push(@PerlSetEnv, 'PerlSetEnv WEBDYNE_ERROR_TEXT 1') unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
-    return <<"END";
+    my $postamble= <<"END";
 $PerlSetEnv
 $PerlSwitches
 PerlSetEnv WEBDYNE_CONF .
+PerlSetEnv WEBDYNE_HEAD_INSERT 0
 #PerlSwitches -I../lib
 PerlModule WebDyne
 AddHandler modperl .psp
 PerlResponseHandler WebDyne
 END
-
+;
+    return $postamble;
 }
 
 

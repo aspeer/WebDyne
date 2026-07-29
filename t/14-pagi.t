@@ -29,6 +29,7 @@ BEGIN {
 BEGIN { 
     $ENV{'WEBDYNE_CONF'}='.'; 
     $ENV{'WEBDYNE_ERROR_TEXT'}=1;
+    $ENV{'WEBDYNE_HEAD_INSERT'}=0;
 }
 
 

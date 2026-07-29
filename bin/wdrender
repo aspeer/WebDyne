@@ -646,7 +646,7 @@ sub request_mod_perl_postamble {
 
     #  Ok - proceed to build postamble
     #
-    my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
+    my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { $ENV{$_} } grep { /^WEBDYNE_/ } keys %ENV;
     push (@PerlSetEnv, "PerlSetEnv WEBDYNE_ERROR_TEXT 1") unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
     my $PerlSwitches=join("\n", map { sprintf('PerlSwitches -I%s', $_) } @perl_inc_dn);

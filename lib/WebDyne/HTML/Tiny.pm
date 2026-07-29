@@ -632,7 +632,7 @@ sub head {
     my ($self, $html, @param)=@_;
     #debug("$self head, html:$html, attr:%s", Dumper(\@_));
     debug("$self head, param:%s", Dumper($_[2]));
-    $html.=$WEBDYNE_HEAD_INSERT;
+    $html.=$WEBDYNE_HEAD_INSERT if $WEBDYNE_HEAD_INSERT;
     return $self->SUPER::head(grep {$_} ($html, @param));
     
 }

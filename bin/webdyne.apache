@@ -245,7 +245,7 @@ END
     #
     my $default_index_fn=File::Spec->rel2abs($WEBDYNE_DEFAULT_INDEX_FN || File::Spec->catfile($document_root, 'index.psp'));
     my $default_index_dn=dirname($default_index_fn);
-    my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { /^WEBDYNE_/ } keys %ENV;
+    my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { $ENV{$_} } grep { /^WEBDYNE_/ } keys %ENV;
     push (@PerlSetEnv, sprintf('PerlSetEnv DOCUMENT_ROOT %s', $opt_hr->{'root_pn'})) if  $opt_hr->{'root_pn'};
     push (@PerlSetEnv, "PerlSetEnv WEBDYNE_ERROR_TEXT 1") unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
