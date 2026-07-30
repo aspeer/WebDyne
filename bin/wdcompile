@@ -68,10 +68,11 @@ sub main {
     #
     my %opt=(
 
-        nofilter      => 1,    # don't run through any filters
-        noperl        => 1,    # don't run perl code,
-        notimestamp   => 1,
-        manifest      => 1,
+        no_filter      => 1,    # don't run through any filters
+        no_perl        => 1,    # don't run perl code,
+        no_timestamp   => 1,
+        no_head_insert => 1,
+        manifest      => 1
 
         #stage5   => 1,    # default
 
@@ -82,27 +83,28 @@ sub main {
     #  internal stage numbers so maps are 0=>stage0, 1=>stage2, 2=>stage3, 3=>stage4, confusing ..
     #
     GetOptions(
-        \%opt, qw(
-            stage0|0
-            stage1|1
-            stage2|2
-            stage3|3
-            stage4|4
-            stage5|5|final
-            meta
-            data
-            manifest!
-            outfile|dest|dest_fn:s
-            all
-            timestamp!
-            repeat|r|num|n=s
-            perl!
-            filter!
-            version
-            help|?
-            man
-            opt
-        )) || pod2usage(2);
+        \%opt, 
+        'stage0|0',
+        'stage1|1',
+        'stage2|2',
+        'stage3|3',
+        'stage4|4',
+        'stage5|5|final',
+        'meta',
+        'data',
+        'manifest!',
+        'head_insert|head-insert!',
+        'outfile|dest|dest_fn:s',
+        'all',
+        'timestamp!',
+        'repeat|r|num|n=s',
+        'perl!',
+        'filter!',
+        'version',
+        'help|?',
+        'man',
+        'dump_opt|opt'
+    ) || pod2usage(2);
     pod2usage(-verbose => 99, -sections => 'SYNOPSIS|OPTIONS', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {
@@ -114,7 +116,9 @@ sub main {
 
     #  Clunky, too hard to change module logic
     #
-    map {$opt{"no${_}"}=!($opt{$_})} qw(perl filter timestamp manifest);
+    map {$opt{"no_${_}"}=!($opt{$_})} qw(perl filter timestamp manifest head_insert);
+    #map {$opt{"no${_}"}=!($opt{$_})} qw(perl filter timestamp manifest head_insert);
+    #die Dumper(\%opt);
 
 
     #  Get srce file, add to options
@@ -126,7 +130,7 @@ sub main {
 
     #  Dump options for debugging
     #
-    die Dumper(\%opt) if $opt{'opt'};
+    die Dumper(\%opt) if $opt{'dump_opt'};
 
 
     #  Loop if required as diagnostic for consistant compiles, i.e. making

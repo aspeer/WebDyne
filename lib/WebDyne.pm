@@ -3612,8 +3612,8 @@ sub include {
             debug('head or body render');
             my %option=(
 
-                nofilter => 1,
-                noperl   => 1,
+                no_filter => 1,
+                no_perl   => 1,
                 stage0   => 1,
                 srce     => $pn,
                 
@@ -3705,8 +3705,8 @@ sub include {
             debug('block render');
             my %option=(
 
-                nofilter 	=> 1,
-                #noperl     => 1,
+                no_filter 	=> 1,
+                #no_perl     => 1,
                 stage1 	=> 1,
                 srce   	=> $pn,
                 implicit_body_p_tag => 0,

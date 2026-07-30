@@ -92,7 +92,7 @@ sub new {
     #  Init WebDyne module
     #
     require WebDyne::Request::Fake;
-    my $r=WebDyne::Request::Fake->new( filename=> ( $opt{'filename'} || $opt{'srce'} ) );
+    my $r=WebDyne::Request::Fake->new( filename=> ( $opt{'filename'} || $opt{'srce'} ), no_head_insert=>$opt{'no_head_insert'} );
 
 
     #  Get appropriate cgi_or
@@ -294,7 +294,7 @@ sub compile {
     #  is rentrant as the tree is descended
     #
     my %meta=(
-        manifest => $param_hr->{'nomanifest'} ? undef : [$html_cn]
+        manifest => $param_hr->{'no_manifest'} ? undef : [$html_cn]
     );
     my $data_ar=$self->parse($tree_or, \%meta) || do {
         return err($close_cr->());
@@ -420,7 +420,7 @@ sub compile {
     #  runs it can access meta data via $self->meta();
     #
     $self->{'_meta_hr'}=\%meta if keys %meta;
-    if ((my $perl_ar=$meta{'perl'}) && !$param_hr->{'noperl'}) {
+    if ((my $perl_ar=$meta{'perl'}) && !$param_hr->{'no_perl'}) {
 
         #  This is inline __PERL__ perl. Must be executed before filter so any filters added by the __PERL__
         #  block are seen
@@ -445,7 +445,7 @@ sub compile {
         @filter=split(/\s+/, $filter) if $filter;
     }
     debug('filter %s', Dumper(\@filter));
-    if ((@filter) && !$param_hr->{'nofilter'}) {
+    if ((@filter) && !$param_hr->{'no_filter'}) {
         local $SIG{'__DIE__'};
         foreach my $filter (@filter) {
             $filter=~s/::filter$//;
@@ -549,9 +549,9 @@ sub compile {
     #
     my $time_compile=sprintf('%0.4f', time()-$time);
     $meta{'time_compile_elapsed'}=$time_compile unless
-        $param_hr->{'notimestamp'};
+        $param_hr->{'no_timestamp'};
     $meta{'time_compile'}=$time unless
-        $param_hr->{'notimestamp'};
+        $param_hr->{'no_timestamp'};
     debug("form $html_cn compile time $time_compile");
 
 

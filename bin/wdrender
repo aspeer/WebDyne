@@ -97,6 +97,7 @@ sub main {
         tidy    => 1,
         colour  => 1,
         lineno  => 1,
+        no_head_insert => 1,
         theme   => 'light',
         #request => ['fake'],
         method  => 'GET',
@@ -117,13 +118,14 @@ sub main {
         'colour|color!',
         'compare',
         'conf|config=s',
-        'noconf|noconfig|no_conf|no_config|no-conf|no-config',
+        'no_conf|no_config|noconf|noconfig|no-conf|no-config',
         'delay|sleep=i',
         # 'error=s', # Not applied
         'fake',
         'get=s@',
         'handler=s',
         'head',
+        'head_insert|head-insert!',
         'header|headers!',
         'header_only|header-only|headers_only|headers-only|headersonly',
         'headers_in|header_in=s@',
@@ -134,6 +136,7 @@ sub main {
         'mod_perl|apache',
         'apache_stdout|apache-stdout!',
         'dump_postamble|dump-postamble',
+        'dump_opt|opt',
         'options=s@',
         'outfile=s',
         'pagi',
@@ -166,16 +169,25 @@ sub main {
         print "WebDyne version: $WebDyne::VERSION ($WebDyne::VERSION_GIT_SHA)\n";
         exit 0
     };
+
+    #  Convert negative flags
+    #
+    map {$opt{"no_${_}"}=!($opt{$_})} qw(head_insert);
     
-    
+
     #  Special config ?
     #
     if (my $conf_fn=$opt{'conf'}) {
         $ENV{'WEBDYNE_CONF'}=$opt{'conf'};
     }
-    elsif($opt{'noconf'} || $opt{'raw'}) {
+    elsif($opt{'no_conf'} || $opt{'raw'}) {
         $ENV{'WEBDYNE_CONF'}='.';
     }
+
+
+    #  Dump options for debugging
+    #
+    die Dumper(\%opt) if $opt{'dump_opt'};
 
     
     #  Is dest file set ? If so open
@@ -717,6 +729,7 @@ sub request_fake {
         filename        => $req_or->uri->path(),
         select          => $html_fh,
         input           => $io_fh,
+        no_head_insert  => $opt_hr->{'no_head_insert'},
 
     ) || return err();
     

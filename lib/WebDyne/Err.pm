@@ -252,7 +252,7 @@ sub err_html {
                 $self->WebDyne::Compile::compile({
 
                         srce     => $WEBDYNE_ERR_TEMPLATE,
-                        nofilter => 1
+                        no_filter => 1
 
                     })) || return $self->err_html('fatal problem in error handler during compile !');
 

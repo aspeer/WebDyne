@@ -112,10 +112,10 @@ sub main {
             my %opt=(
 
                 srce        	=> $test_cn,
-                nofilter	=> 1,
-                noperl		=> 1,
-                notimestamp	=> 1,
-                nomanifest	=> 1,
+                no_filter	=> 1,
+                no_perl		=> 1,
+                no_timestamp	=> 1,
+                no_manifest	=> 1,
                 $stage_name	=> 1
                 
             );

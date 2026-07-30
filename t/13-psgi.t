@@ -7,6 +7,7 @@ use warnings;
 #  Test Harness
 #
 use Test::More;
+use Test::Differences qw(eq_or_diff_text table_diff unified_diff);
 
 
 #  Skip test if missing any modules or no mod_perl
@@ -55,6 +56,7 @@ use WebDyne::Util;
 #
 $Data::Dumper::Indent=1;
 $Data::Dumper::Sortkeys=1;
+table_diff();
 
 
 #  Setup environment for this test.
@@ -165,33 +167,8 @@ sub main {
                 $html_thaw_fh->close();
                 #note("thaw: $html_thaw");
                 
-                #  Yes ?
-                #
-                if ($html_live eq $html_thaw) {
-                
-                    #  OK
-                    #
-                    pass("$test_fn pass on stage: HTML render");
-                    #note("$test_fn .. [OK]");
-                }
-                else {
-                
-                    #  Fail
-                    #
-                    #die;
-                    fail(note("$test_fn fail on stage: HTML render"));
-                    eval { require Text::Diff } || do {
-                        note('unable to load Text::Diff module to show comparison');
-                        next;
-                    };
-                    my $diff=Text::Diff::diff(
-                        \Data::Dumper->Dump([\$html_live], ['$ACTUAL']),
-                        \Data::Dumper->Dump([\$html_thaw], ['$EXPECT']),
-                        { STYLE => 'Unified' }
-                    );
-                    diag("diff: $diff");
-                    #diag(sprintf('%s:%s', Dumper($html_live_sr, \$html_thaw)));
-                }
+                unified_diff();
+                eq_or_diff_text($html_live, $html_thaw, "$test_fn pass on stage: HTML render");
 
             }
 

@@ -298,8 +298,17 @@ sub _start_html {
     #
     my ($self, $attr_hr, @param)=@_;
     debug("$self _start_html, attr: %s, param: %s", Dumper($attr_hr, \@param));
-
     #return $self->SUPER::start_html($attr_hr, @param) if $self->{'_passthrough'};
+
+
+    #  Command-line tools can suppress both the global head insert and the
+    #  configured start_html head parameters.
+    #
+    my $r=$self->{'_r'};
+    my $no_head_insert=(ref($r) && $r->{'no_head_insert'});
+    my $webdyne_start_html_param_hr=$no_head_insert
+        ? {}
+        : $WEBDYNE_START_HTML_PARAM;
 
 
     #  Attributes we are going to use
@@ -307,7 +316,7 @@ sub _start_html {
     debug('WEBDYNE_START_HTML_PARAM: %s', Dumper($WEBDYNE_START_HTML_PARAM));
     my %attr=(
         %{$WEBDYNE_HTML_PARAM},
-        %{$WEBDYNE_START_HTML_PARAM},
+        %{$webdyne_start_html_param_hr},
         %{$attr_hr}
     );
     debug('attr: %s', Dumper(\%attr));
@@ -632,7 +641,9 @@ sub head {
     my ($self, $html, @param)=@_;
     #debug("$self head, html:$html, attr:%s", Dumper(\@_));
     debug("$self head, param:%s", Dumper($_[2]));
-    $html.=$WEBDYNE_HEAD_INSERT if $WEBDYNE_HEAD_INSERT;
+    my $r=$self->{'_r'};
+    my $no_head_insert=(ref($r) && $r->{'no_head_insert'});
+    $html.=$WEBDYNE_HEAD_INSERT if ($WEBDYNE_HEAD_INSERT && !$no_head_insert);
     return $self->SUPER::head(grep {$_} ($html, @param));
     
 }

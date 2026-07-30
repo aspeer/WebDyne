@@ -77,6 +77,7 @@ my %WriteMakefile=(
         'Test::More'        => 0,
         'Capture::Tiny'     => 0,
         'Test::Deep'        => 0,
+        'Test::Differences' => 0,
         'Test::Exception'   => 0,
         'Text::Diff'        => 0
     },
@@ -276,4 +277,3 @@ sub MM::init_main {
     $mm_or->MM::SUPER::init_main();
 
 }
-
