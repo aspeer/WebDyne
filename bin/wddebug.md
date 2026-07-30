@@ -127,7 +127,7 @@ WEBDYNE_DEBUG=render,compile wdrender time.psp
 
 # Author #
 
-Written by Andrew Speer,  <andrew.speer@isolutions.com.au>
+Andrew Speer <andrew.speer@isolutions.com.au>
 
 # LICENSE and COPYRIGHT #
 

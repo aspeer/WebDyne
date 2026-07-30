@@ -89,7 +89,7 @@ Because the command relies on Perl's own parser, it is a good tool for catching 
 
 # Author #
 
- Written by Andrew Speer,  <andrew.speer@isolutions.com.au>
+Andrew Speer <andrew.speer@isolutions.com.au>
 
 # LICENSE and COPYRIGHT #
 

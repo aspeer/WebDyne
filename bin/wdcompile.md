@@ -181,7 +181,7 @@ The  `wdcompile`  command will attempt to build the HTML tree as faithfully as p
 
 # Author #
 
-Written by Andrew Speer,  <andrew.speer@isolutions.com.au>
+Andrew Speer <andrew.speer@isolutions.com.au>
 
 # LICENSE and COPYRIGHT #
 
