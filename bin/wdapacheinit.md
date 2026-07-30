@@ -25,52 +25,52 @@ NOTE: Apache must be restarted after running this script !
 
 # OPTIONS
 
-- `--help`
+* **--help**
   Display a brief help message and exit.
 
-- `--man`
+* **--man**
   Display the full manual.
 
-- `--apache_uname=USER`
+* **--apache_uname=USER**
   Specify the Apache user name.
 
-- `--apache_gname=GROUP`
+* **--apache_gname=GROUP**
   Specify the Apache group name.
 
-- `--httpd_bin=PATH`
+* **--httpd_bin=PATH**
   Specify the path to the httpd binary.
 
-- `--dir_apache_conf=DIR`
+* **--dir_apache_conf=DIR**
   Specify the directory for Apache configuration files.
 
-- `--dir_apache_modules=DIR`
+* **--dir_apache_modules=DIR**
   Specify the directory for Apache modules.
 
-- `--file_mod_perl_lib=PATH`
+* **--file_mod_perl_lib=PATH**
   Specify the path to the mod_perl library.
 
-- `--mp2`
+* **--mp2**
   Use mod_perl 2.
 
-- `--webdyne_cache_dn=DIR`
+* **--webdyne_cache_dn=DIR**
   Specify the directory for WebDyne cache.
 
-- `--silent`
+* **--silent**
   Suppress installer status messages.
 
-- `--setcontext`
+* **--setcontext**
   When SELinux is detected, change the context of module library files that would otherwise only generate a warning. Cache directory context handling is attempted independently when SELinux support is available.
 
-- `--uninstall`
+* **--uninstall**
   Uninstall the WebDyne Apache configuration.
 
-- `--text`
+* **--text**
   Print the generated WebDyne Apache include configuration and exit without completing the install.
 
-- `--dump_opt`
+* **--dump_opt**
   Dump the processed option hash and exit.
 
-- `--version`
+* **--version**
   Display the script version and exit.
 
 
