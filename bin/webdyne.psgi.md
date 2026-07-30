@@ -23,35 +23,63 @@ Wrapper defaults can be preloaded from `~/.webdyne.psgi.opt` by creating an anon
 
 Wrapper options handled by `webdyne.psgi` itself:
 
-* **--test** Use WebDyne's internal test page as the root.
+* **--test**
 
-* **--static** Enable or disable PSGI static-file middleware.
+    Use WebDyne's internal test page as the root.
 
-* **--index** Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
+* **--static**
 
-* **--index=FILE** Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+    Enable or disable PSGI static-file middleware.
 
-* **--root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
+* **--index**
 
-* **--env** Set the PSGI/Plack environment mode to `development`, `production`, or `none`. The wrapper sets `PLACK_ENV` and forwards the mode to `Plack::Runner`.
+    Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
 
-* **--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `Plack::Runner`.
+* **--index=FILE**
 
-* **--dump_opt** Dump the processed option hash and exit.
+    Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+
+* **--root**
+
+    Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
+
+* **--env**
+
+    Set the PSGI/Plack environment mode to `development`, `production`, or `none`. The wrapper sets `PLACK_ENV` and forwards the mode to `Plack::Runner`.
+
+* **--argv**
+
+    Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `Plack::Runner`.
+
+* **--dump_opt**
+
+    Dump the processed option hash and exit.
 
 Remaining command line options are handled by `Plack::Runner` and are the same as described in the [plackup(1)](man:plackup(1)) man page. Refer to that page for full options but some common options are:
 
-* **--host** Which host interface to bind to
+* **--host**
 
-* **--port** Which port to bind to
+    Which host interface to bind to
 
-* **--server** Which server to use, e.g. Starman
+* **--port**
 
-* **--reload** Reload if libraries or other files change
+    Which port to bind to
 
-* **-I** Same as perl -I for library include paths
+* **--server**
 
-* **-M** Same as perl -M for loading modules before the script starts
+    Which server to use, e.g. Starman
+
+* **--reload**
+
+    Reload if libraries or other files change
+
+* **-I**
+
+    Same as perl -I for library include paths
+
+* **-M**
+
+    Same as perl -M for loading modules before the script starts
 
 On macOS, if no `--port` option is passed through to `Plack::Runner`, the wrapper uses port `5001` to avoid conflicts with Plack's default port. Other platforms use the normal Plack default unless a port is supplied.
 

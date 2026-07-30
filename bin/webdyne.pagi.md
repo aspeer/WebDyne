@@ -24,41 +24,75 @@ Wrapper defaults can be preloaded from `~/.webdyne.pagi.opt` by creating an anon
 
 Wrapper options handled by `webdyne.pagi` itself:
 
-* **--test** Use WebDyne's internal test page as the root.
+* **--test**
 
-* **--static** Enable or disable PAGI static-file middleware.
+    Use WebDyne's internal test page as the root.
 
-* **--index** Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
+* **--static**
 
-* **--index=FILE** Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+    Enable or disable PAGI static-file middleware.
 
-* **--root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
+* **--index**
 
-* **--env** Set the PAGI environment mode to `development`, `production`, or `none`. The wrapper sets `PAGI_ENV` and forwards the mode to `PAGI::Server::Runner`.
+    Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
 
-* **--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `PAGI::Server::Runner`.
+* **--index=FILE**
 
-* **--dump_opt** Dump the processed option hash and exit.
+    Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+
+* **--root**
+
+    Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
+
+* **--env**
+
+    Set the PAGI environment mode to `development`, `production`, or `none`. The wrapper sets `PAGI_ENV` and forwards the mode to `PAGI::Server::Runner`.
+
+* **--argv**
+
+    Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `PAGI::Server::Runner`.
+
+* **--dump_opt**
+
+    Dump the processed option hash and exit.
 
 Remaining command line options are handled by `PAGI::Server::Runner`. Some common options are:
 
-* **--host** Which host interface to bind to. When launched through `webdyne.pagi`, the wrapper adds `--host 0.0.0.0` unless a `--host` option is present.
+* **--host**
 
-* **--port** Which port to bind to.
+    Which host interface to bind to. When launched through `webdyne.pagi`, the wrapper adds `--host 0.0.0.0` unless a `--host` option is present.
 
-* **--server** Which PAGI server class to use. The runner default is `PAGI::Server`.
+* **--port**
 
-* **--loop** Event loop backend.
+    Which port to bind to.
 
-* **--lib** Add a library path to `@INC`.
+* **--server**
 
-* **-M** Load a module before the app starts.
+    Which PAGI server class to use. The runner default is `PAGI::Server`.
 
-* **--default-middleware** Enable or disable runner default middleware.
+* **--loop**
 
-* **--daemonize** Run as a background daemon.
+    Event loop backend.
 
-* **--access-log** Configure access logging.
+* **--lib**
+
+    Add a library path to `@INC`.
+
+* **-M**
+
+    Load a module before the app starts.
+
+* **--default-middleware**
+
+    Enable or disable runner default middleware.
+
+* **--daemonize**
+
+    Run as a background daemon.
+
+* **--access-log**
+
+    Configure access logging.
 
 Additional runner process and output controls are passed through to
 `PAGI::Server::Runner`; see that runner's documentation for details.
