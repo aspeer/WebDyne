@@ -7,7 +7,6 @@ use warnings;
 #  Test Harness
 #
 use Test::More;
-use Test::Differences qw(eq_or_diff_text table_diff unified_diff);
 
 
 #  Skip test if missing any modules or no mod_perl
@@ -37,6 +36,8 @@ BEGIN {
 #  Modules we need
 #
 use FindBin qw($RealBin $Script);
+use lib $RealBin;
+use test_diff qw(eq_or_diff_text_test);
 use File::Find qw(find);
 use File::Basename;
 use Data::Dumper;
@@ -55,7 +56,6 @@ use WebDyne::Util;
 #
 $Data::Dumper::Indent=1;
 $Data::Dumper::Sortkeys=1;
-table_diff();
 
 
 #  Setup environment for this test.
@@ -159,8 +159,7 @@ sub main {
                 $html_thaw_fh->close();
                 #diag("thaw: $html_thaw");
                 
-                unified_diff();
-                eq_or_diff_text($html_live, $html_thaw, "$test_fn pass on stage: HTML render");
+                eq_or_diff_text_test($html_live, $html_thaw, "$test_fn pass on stage: HTML render");
 
             }
 

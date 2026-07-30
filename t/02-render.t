@@ -16,8 +16,9 @@ BEGIN {
 #  Load
 #
 use Test::More qw(no_plan);
-use Test::Differences qw(eq_or_diff_text table_diff unified_diff);
 use FindBin qw($RealBin $Script);
+use lib $RealBin;
+use test_diff qw(eq_or_diff_text_test);
 use File::Temp qw(tempfile);
 use File::Find qw(find);
 use Data::Dumper;
@@ -28,7 +29,6 @@ $Data::Dumper::Indent=1;
 $Data::Dumper::Sortkeys=1;
 use Storable qw(lock_retrieve);
 $Storable::canonical=1;
-table_diff();
 
 
 #  Load WebDyne
@@ -183,8 +183,7 @@ sub main {
                     #
                     my $string_actual=Data::Dumper->Dump([$data_live_ar],['$VAR1']);
                     my $string_expect=Data::Dumper->Dump([$data_thaw_ar],['$VAR1']);
-                    unified_diff();
-                    eq_or_diff_text($string_actual, $string_expect, "$test_fn pass on stage: $stage") || die;
+                    eq_or_diff_text_test($string_actual, $string_expect, "$test_fn pass on stage: $stage");
 
                 } #foreach stage
                 
@@ -213,7 +212,7 @@ sub main {
                 my $html_thaw=<$html_thaw_fh>;
                 $html_thaw_fh->close();
 
-                eq_or_diff_text(${$html_live_sr}, $html_thaw, "$test_fn pass on stage: HTML render");
+                eq_or_diff_text_test(${$html_live_sr}, $html_thaw, "$test_fn pass on stage: HTML render");
 
             }
 
@@ -268,3 +267,4 @@ sub render {
     return \$html;
 
 }
+
