@@ -40,7 +40,7 @@ WebDyne::Static does not expose any options to the import function when called v
 
 # AUTHOR #
 
-Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and contributors.
+Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
 # LICENSE and COPYRIGHT #
 

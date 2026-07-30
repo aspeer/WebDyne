@@ -106,7 +106,7 @@ WebDyne::Chain does not expose any options other than the names of modules to ad
 
 # AUTHOR #
 
-Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and contributors.
+Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
 # LICENSE #
 

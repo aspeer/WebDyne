@@ -71,7 +71,7 @@ WebDyne::Handler accepts an optional handler class name at import time. The foll
 
 # AUTHOR #
 
-Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and contributors.
+Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
 # LICENSE #
 
