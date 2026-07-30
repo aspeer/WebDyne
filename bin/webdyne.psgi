@@ -321,6 +321,8 @@ Wrapper options handled by `webdyne.psgi` itself:
 
 **--root, --docroot, --doc_root, --doc-root, --document_root, --document-root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
 
+**-E, --env** Set the PSGI/Plack environment mode to `development`, `production`, or `none`. The wrapper sets `PLACK_ENV` and forwards the mode to `Plack::Runner`.
+
 **--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `Plack::Runner`.
 
 **--dump_opt, --dump-opt, --opt** Dump the processed option hash and exit.
@@ -344,13 +346,21 @@ On macOS, if no `--port` option is passed through to `Plack::Runner`, the wrappe
 
 # EXAMPLES
 
-To run the script, use the following command for basic functionality and serving files from the /var/www/html directory. With default settings, index handling is enabled and the wrapper uses WebDyne's internal default index page.
+To run the script, use the following command for basic functionality and serving files from the /var/www/html directory. With default settings, index handling is enabled and the wrapper uses WebDyne's built-in dynamic index page.
 
 `webdyne.psgi /var/www/html`
 
 Disable wrapper-managed index handling and rely on the PSGI request layer's default document behaviour instead
 
 `webdyne.psgi --no-index /var/www/html`
+
+Use `home.psp` as the default document for directory requests
+
+`webdyne.psgi --index=home.psp /var/www/html`
+
+Start in production mode
+
+`webdyne.psgi --env production /var/www/html`
 
 Start with the Starman server
 
@@ -362,7 +372,9 @@ Start with the internal test page
 
 # ENVIRONMENT VARIABLES
 
-This script is a frontend to the WebDyne PSGI stack. In addition to `Plack::Runner` options, it uses WebDyne configuration and environment handling, including `DOCUMENT_ROOT`, `DOCUMENT_DEFAULT`, and the relevant `WEBDYNE_*` settings used by the PSGI modules.
+This script is a frontend to the WebDyne PSGI stack. In addition to `Plack::Runner` options, it uses WebDyne configuration and environment handling, including `DOCUMENT_ROOT`, `DOCUMENT_DEFAULT`, `PLACK_ENV`, and the relevant `WEBDYNE_*` settings used by the PSGI modules.
+
+`DOCUMENT_DEFAULT`, when set, supplies the default `index` value before `~/.webdyne.psgi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.psgi.opt` also overrides the environment.
 
 # AUTHOR
 
@@ -421,6 +433,8 @@ B<--index=FILE> Use C<FILE> as the default document for directory requests inste
 
 B<--root, --docroot, --doc_root, --doc-root, --document_root, --document-root> Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, C<DOCUMENT_ROOT> or the current working directory is used.
 
+B<-E, --env> Set the PSGI/Plack environment mode to C<development>, C<production>, or C<none>. The wrapper sets C<PLACK_ENV> and forwards the mode to C<Plack::Runner>.
+
 B<--argv> Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking C<Plack::Runner>.
 
 B<--dump_opt, --dump-opt, --opt> Dump the processed option hash and exit.
@@ -444,13 +458,21 @@ On macOS, if no C<--port> option is passed through to C<Plack::Runner>, the wrap
 
 =head1 EXAMPLES
 
-To run the script, use the following command for basic functionality and serving files from the /var/www/html directory. With default settings, index handling is enabled and the wrapper uses WebDyne's internal default index page.
+To run the script, use the following command for basic functionality and serving files from the /var/www/html directory. With default settings, index handling is enabled and the wrapper uses WebDyne's built-in dynamic index page.
 
 C<webdyne.psgi /var/www/html>
 
 Disable wrapper-managed index handling and rely on the PSGI request layer's default document behaviour instead
 
 C<webdyne.psgi --no-index /var/www/html>
+
+Use C<home.psp> as the default document for directory requests
+
+C<webdyne.psgi --index=home.psp /var/www/html>
+
+Start in production mode
+
+C<webdyne.psgi --env production /var/www/html>
 
 Start with the Starman server
 
@@ -463,7 +485,9 @@ C<webdyne.psgi --test>
 
 =head1 ENVIRONMENT VARIABLES
 
-This script is a frontend to the WebDyne PSGI stack. In addition to C<Plack::Runner> options, it uses WebDyne configuration and environment handling, including C<DOCUMENT_ROOT>, C<DOCUMENT_DEFAULT>, and the relevant C<WEBDYNE_*> settings used by the PSGI modules.
+This script is a frontend to the WebDyne PSGI stack. In addition to C<Plack::Runner> options, it uses WebDyne configuration and environment handling, including C<DOCUMENT_ROOT>, C<DOCUMENT_DEFAULT>, C<PLACK_ENV>, and the relevant C<WEBDYNE_*> settings used by the PSGI modules.
+
+C<DOCUMENT_DEFAULT>, when set, supplies the default C<index> value before C<~/.webdyne.psgi.opt> and command-line options are applied. This means explicit CLI index options override the environment, and C<~/.webdyne.psgi.opt> also overrides the environment.
 
 
 =head1 AUTHOR

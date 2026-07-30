@@ -977,6 +977,7 @@ Defaults:
 * colour: enabled
 * line numbers: enabled
 * tidy formatting: enabled
+* head insertion: disabled
 * theme: `light`
 
 Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous hash of option names and values.
@@ -1005,7 +1006,7 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Set `WEBDYNE_CONF` to the specified configuration file before rendering.
 
-* **--no-conf, --no-config**
+* **--no_conf, --no_config, --no-conf, --no-config**
 
     Disable normal config loading by setting `WEBDYNE_CONF=.`.
 
@@ -1018,7 +1019,12 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
     Send output to nominated file. Colourisation is disabled but tidy will be performed if available.
     
 * **--warn / --no-warn**
+
     Enable or disable warnings about missing Tidy or Colourise modules
+
+* **--head_insert, --head-insert / --no-head_insert, --no-head-insert**
+
+    Enable or disable WebDyne head insertion while rendering from the command line, including configured `WEBDYNE_HEAD_INSERT` content and related `start_html` parameters. This is disabled by default so command-line checks show the page output without head snippets normally inserted during Apache, PSGI, or PAGI request handling.
 
 ## Backend Selection ##
 
@@ -1034,7 +1040,7 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Shortcut for `--request=psgi`.
 
-* **--psgi_server**
+* **--psgi_server, --psgi-server**
 
     Shortcut for `--request=psgi_server`.
 
@@ -1042,7 +1048,7 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Shortcut for `--request=pagi`.
 
-* **--mod_perl, --apache**
+* **--mod_perl, --mod-perl, --apache**
 
     Shortcut for `--request=mod_perl`.
 
@@ -1050,11 +1056,11 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Run all supported backends instead of just one selected backend. This is equivalent to `--request=all`.
 
-* **--root=DIR, --docroot=DIR, --doc_root=DIR, --document_root=DIR**
+* **--root=DIR, --docroot=DIR, --doc_root=DIR, --doc-root=DIR, --document_root=DIR, --document-root=DIR**
 
     Set the document root passed to backend handlers. Defaults to the current working directory.
 
-* **--keep_tmp**
+* **--keep_tmp, --keep-tmp / --no-keep_tmp, --no-keep-tmp**
 
     When using the `mod_perl` backend, do not cleanup temporary Apache server root.
 
@@ -1065,6 +1071,10 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 * **--dump_postamble, --dump-postamble**
 
     Print the generated Apache postamble and exit instead of starting the Apache test instance.
+
+* **--dump_opt, --dump-opt, --opt**
+
+    Dump the parsed option hash for debugging and exit.
 
 ## Request Construction ##
 
@@ -1102,7 +1112,7 @@ Request parameter options may be repeated, and each value may contain multiple `
 
     Pass handler parameters to the WebDyne handler call. These are separate from request query/body parameters and are available to handler-side Perl code. Repeat the option or separate entries with `;` or `&`. Duplicate keys are preserved as array values.
 
-* **--headers_in=NAME:VALUE, --header_in=NAME:VALUE**
+* **--headers_in=NAME:VALUE, --header_in=NAME:VALUE, --headers-in=NAME:VALUE, --header-in=NAME:VALUE**
 
     Add request headers. Multiple values may be supplied by repeating the option.
 
@@ -1116,7 +1126,7 @@ Request parameter options may be repeated, and each value may contain multiple `
 
 ## Response Display ##
 
-* **--header, --headers**
+* **--header, --headers / --no-header, --no-headers**
 
     Include the response status line and headers ahead of the rendered body.
 
@@ -1280,6 +1290,11 @@ tidy formatting: enabled
 
 =item *
 
+head insertion: disabled
+
+
+=item *
+
 theme: C<light>
 
 
@@ -1337,7 +1352,7 @@ Set C<WEBDYNE_CONF> to the specified configuration file before rendering.
 
 =item *
 
-B<--no-conf, --no-config>
+B<--no_conf, --no_config, --no-conf, --no-config>
 
 Disable normal config loading by setting C<WEBDYNE_CONF=.>.
 
@@ -1362,7 +1377,16 @@ Send output to nominated file. Colourisation is disabled but tidy will be perfor
 =item *
 
 B<--warn / --no-warn>
+
 Enable or disable warnings about missing Tidy or Colourise modules
+
+
+
+=item *
+
+B<--head_insert, --head-insert / --no-head_insert, --no-head-insert>
+
+Enable or disable WebDyne head insertion while rendering from the command line, including configured C<WEBDYNE_HEAD_INSERT> content and related C<start_html> parameters. This is disabled by default so command-line checks show the page output without head snippets normally inserted during Apache, PSGI, or PAGI request handling.
 
 
 
@@ -1399,7 +1423,7 @@ Shortcut for C<--request=psgi>.
 
 =item *
 
-B<--psgi_server>
+B<--psgi_server, --psgi-server>
 
 Shortcut for C<--request=psgi_server>.
 
@@ -1415,7 +1439,7 @@ Shortcut for C<--request=pagi>.
 
 =item *
 
-B<--mod_perl, --apache>
+B<--mod_perl, --mod-perl, --apache>
 
 Shortcut for C<--request=mod_perl>.
 
@@ -1431,7 +1455,7 @@ Run all supported backends instead of just one selected backend. This is equival
 
 =item *
 
-B<--root=DIR, --docroot=DIR, --doc_root=DIR, --document_root=DIR>
+B<--root=DIR, --docroot=DIR, --doc_root=DIR, --doc-root=DIR, --document_root=DIR, --document-root=DIR>
 
 Set the document root passed to backend handlers. Defaults to the current working directory.
 
@@ -1439,7 +1463,7 @@ Set the document root passed to backend handlers. Defaults to the current workin
 
 =item *
 
-B<--keep_tmp>
+B<--keep_tmp, --keep-tmp / --no-keep_tmp, --no-keep-tmp>
 
 When using the C<mod_perl> backend, do not cleanup temporary Apache server root.
 
@@ -1458,6 +1482,14 @@ When using the C<mod_perl> backend, send Apache access/error logs to stdout/stde
 B<--dump_postamble, --dump-postamble>
 
 Print the generated Apache postamble and exit instead of starting the Apache test instance.
+
+
+
+=item *
+
+B<--dump_opt, --dump-opt, --opt>
+
+Dump the parsed option hash for debugging and exit.
 
 
 
@@ -1540,7 +1572,7 @@ Pass handler parameters to the WebDyne handler call. These are separate from req
 
 =item *
 
-B<--headers_in=NAME:VALUE, --header_in=NAME:VALUE>
+B<--headers_in=NAME:VALUE, --header_in=NAME:VALUE, --headers-in=NAME:VALUE, --header-in=NAME:VALUE>
 
 Add request headers. Multiple values may be supplied by repeating the option.
 
@@ -1571,7 +1603,7 @@ Add the request header C<Accept: text/event-stream>.
 
 =item *
 
-B<--header, --headers>
+B<--header, --headers / --no-header, --no-headers>
 
 Include the response status line and headers ahead of the rendered body.
 
