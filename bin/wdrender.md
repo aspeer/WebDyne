@@ -264,7 +264,7 @@ wdrender --htmx --headers_in "X-Debug: 1" fragment.psp
 
 # AUTHOR #
 
-Written by Andrew Speer, <andrew@webdyne.org>
+Written by Andrew Speer, <andrew.speer@isolutions.com.au>
 
 # LICENSE AND COPYRIGHT #
 

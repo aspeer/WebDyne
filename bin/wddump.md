@@ -62,7 +62,7 @@ $VAR1 = [
 
 # Author #
 
-Written by Andrew Speer,  <andrew@webdyne.org>
+Written by Andrew Speer,  <andrew.speer@isolutions.com.au>
 
 # LICENSE and COPYRIGHT #
 
