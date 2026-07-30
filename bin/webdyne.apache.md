@@ -87,6 +87,7 @@ The generated Apache configuration currently does the following:
 - grants access to the selected document root
 - when built-in index handling is enabled, sets `DOCUMENT_DEFAULT` to WebDyne's internal index page, grants access to that file's directory, aliases `/index.psp` to it, and rewrites directory requests to `/index.psp`
 - when `DOCUMENT_DEFAULT` or `--index=FILE` supplies a relative filename, emits `PerlSetEnv DOCUMENT_DEFAULT FILE` and `DirectoryIndex FILE`
+- when `DOCUMENT_DEFAULT` or `--index=FILE` supplies an absolute filename, aliases `/index.psp` to that file and rewrites directory requests to `/index.psp`
 - when `--no-index` is used, omits all wrapper-managed index configuration
 - on macOS, loads `mod_rewrite` explicitly when Apache does not already have it loaded
 - logs to `/dev/stderr` and `/dev/stdout` where possible, otherwise falls back to Apache log files
