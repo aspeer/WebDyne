@@ -135,21 +135,43 @@ Start with a different event loop backend:
 
 # ENVIRONMENT VARIABLES
 
-This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configuration and environment handling, including `DOCUMENT_ROOT`, `DOCUMENT_DEFAULT`, `PAGI_ENV`, and the relevant `WEBDYNE_*` settings used by the PAGI modules.
+This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configuration and environment handling.
 
-`DOCUMENT_DEFAULT`, when set, supplies the default `index` value before `~/.webdyne.pagi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.pagi.opt` also overrides the environment.
+* **DOCUMENT_ROOT**
+
+    Supplies the document root when neither `--root` nor a final non-option document root argument is provided.
+
+* **DOCUMENT_DEFAULT**
+
+    Supplies the default `index` value before `~/.webdyne.pagi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.pagi.opt` also overrides the environment.
+
+* **PAGI_ENV**
+
+    Supplies the PAGI environment mode when `--env` is not provided.
+
+* **WEBDYNE_***
+
+    Supplies the relevant WebDyne settings used by the PAGI modules.
 
 When launched from the command line, the wrapper also reads local WebDyne configuration from `DOCUMENT_ROOT/.webdyne.conf.pl` before starting the PAGI runner.
 
 Relevant PAGI-specific settings from `WebDyne::PAGI::Constant` include:
 
-**WEBDYNE_PAGI_STATIC** Enable or disable static-file serving middleware.
+* **WEBDYNE_PAGI_STATIC**
 
-**WEBDYNE_PAGI_MIDDLEWARE_STATIC** Regular expression used to decide which static files are served directly.
+    Enable or disable static-file serving middleware.
 
-**WEBDYNE_PAGI_MIDDLEWARE** Middleware stack applied around the WebDyne PAGI app.
+* **WEBDYNE_PAGI_MIDDLEWARE_STATIC**
 
-**WEBDYNE_PAGI_ENV_KEEP / WEBDYNE_PAGI_ENV_SET** Environment variables preserved or injected for request handling.
+    Regular expression used to decide which static files are served directly.
+
+* **WEBDYNE_PAGI_MIDDLEWARE**
+
+    Middleware stack applied around the WebDyne PAGI app.
+
+* **WEBDYNE_PAGI_ENV_KEEP / WEBDYNE_PAGI_ENV_SET**
+
+    Environment variables preserved or injected for request handling.
 
 # AUTHOR
 

@@ -100,8 +100,11 @@ $ WEBDYNE_DEBUG=1 perl Makefile.PL && make install
 
 # Debugging #
 
-Actual debugging output is controlled by environment variables. See the WebDyne documentation for more information but in brief, setting the  WEBDYNE_DEBUG  environment variable to a value of 1 will enable all debugging output. Setting it to a string value that corresponds to a module or method will filter the debugging output to that module or
- method.
+Actual debugging output is controlled by environment variables. See the WebDyne documentation for more information.
+
+* **WEBDYNE_DEBUG**
+
+    Setting `WEBDYNE_DEBUG` to `1` enables all debugging output. Setting it to a string value that corresponds to a module or method filters the debugging output to that module or method.
 
 ```
 # Debug compilation of a file

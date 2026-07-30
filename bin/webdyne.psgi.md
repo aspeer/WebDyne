@@ -112,9 +112,23 @@ Start with the internal test page
 
 # ENVIRONMENT VARIABLES
 
-This script is a frontend to the WebDyne PSGI stack. In addition to `Plack::Runner` options, it uses WebDyne configuration and environment handling, including `DOCUMENT_ROOT`, `DOCUMENT_DEFAULT`, `PLACK_ENV`, and the relevant `WEBDYNE_*` settings used by the PSGI modules.
+This script is a frontend to the WebDyne PSGI stack. In addition to `Plack::Runner` options, it uses WebDyne configuration and environment handling.
 
-`DOCUMENT_DEFAULT`, when set, supplies the default `index` value before `~/.webdyne.psgi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.psgi.opt` also overrides the environment.
+* **DOCUMENT_ROOT**
+
+    Supplies the document root when neither `--root` nor a final non-option document root argument is provided.
+
+* **DOCUMENT_DEFAULT**
+
+    Supplies the default `index` value before `~/.webdyne.psgi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.psgi.opt` also overrides the environment.
+
+* **PLACK_ENV**
+
+    Supplies the PSGI/Plack environment mode when `--env` is not provided.
+
+* **WEBDYNE_***
+
+    Supplies the relevant WebDyne settings used by the PSGI modules.
 
 # AUTHOR
 
