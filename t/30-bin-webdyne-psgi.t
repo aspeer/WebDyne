@@ -82,14 +82,14 @@ write_file("$tmp_dn/app.psp", "<start_html>psgi\n");
 
 my ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--noindex', '--nostatic', '--env', 'production', '--argv', '--port 6021',
+    '--no-index', '--no-static', '--env', 'production', '--argv', '--port 6021',
     $tmp_dn,
 );
 #diag($stdout);
 is($rc, 0, 'webdyne.psgi exits cleanly through stubbed runner');
 like($stdout, qr/args=.*--port 6021 .*--env production/, 'webdyne.psgi forwards argv options and env mode to Plack::Runner');
 like($stdout, qr/env=production/, 'webdyne.psgi sets PLACK_ENV from --env');
-like($stdout, qr/^index=0$/m, 'webdyne.psgi --noindex sets index false');
+like($stdout, qr/^index=0$/m, 'webdyne.psgi --no-index sets index false');
 like($stdout, qr/status=200/, 'webdyne.psgi built app serves request through stubbed runner');
 like($stdout, qr/body=.*psgi/s, 'webdyne.psgi built app returns rendered body');
 is($stderr, '', 'webdyne.psgi stubbed run writes no stderr');
@@ -97,7 +97,7 @@ is($stderr, '', 'webdyne.psgi stubbed run writes no stderr');
 delete $ENV{PLACK_ENV};
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--noindex', '--nostatic', '--argv', '--port 6022',
+    '--no-index', '--no-static', '--argv', '--port 6022',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.psgi runs without --env');
@@ -107,7 +107,7 @@ is($stderr, '', 'webdyne.psgi no-env run writes no stderr');
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--nostatic', '--index',
+    '--no-static', '--index',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.psgi accepts bare --index');
@@ -116,7 +116,7 @@ is($stderr, '', 'webdyne.psgi bare --index run writes no stderr');
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--nostatic', '--index=home.psp',
+    '--no-static', '--index=home.psp',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.psgi accepts --index with string value');
@@ -126,7 +126,7 @@ is($stderr, '', 'webdyne.psgi --index=FILE run writes no stderr');
 local $ENV{DOCUMENT_DEFAULT}='env-default.psp';
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--nostatic',
+    '--no-static',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.psgi accepts DOCUMENT_DEFAULT without index option');
@@ -135,12 +135,23 @@ is($stderr, '', 'webdyne.psgi DOCUMENT_DEFAULT run writes no stderr');
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--nostatic', '--no-index',
+    '--no-static', '--no-index',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.psgi accepts --no-index spelling');
 like($stdout, qr/^index=0$/m, 'webdyne.psgi --no-index overrides DOCUMENT_DEFAULT');
 is($stderr, '', 'webdyne.psgi --no-index run writes no stderr');
+
+($stdout, $stderr, $rc)=run_cmd(
+    $^X, '-I', $stub_dn, '-Ilib', $script,
+    '--no-static', '--no-index', '--dump_opt', "--doc-root=$tmp_dn",
+);
+isnt($rc, 0, 'webdyne.psgi --dump_opt aborts after dumping options');
+is($stdout, '', 'webdyne.psgi --dump_opt writes no stdout');
+like($stderr, qr/'dump_opt'\s*=>\s*1/, 'webdyne.psgi --dump_opt dumps dump_opt flag');
+like($stderr, qr/'no_index'\s*=>\s*(?:!!)?1/, 'webdyne.psgi --dump_opt dumps generated no_index flag');
+like($stderr, qr/'no_static'\s*=>\s*(?:!!)?1/, 'webdyne.psgi --dump_opt dumps generated no_static flag');
+like($stderr, qr/'root'\s*=>\s*'\Q$tmp_dn\E'/, 'webdyne.psgi --dump_opt dumps root alias value');
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,

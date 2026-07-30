@@ -23,8 +23,15 @@ use warnings;
 #  External modules
 #
 use Cwd qw(fastcwd);
+use Data::Dumper;
 use File::Basename;
 use File::Spec;
+
+
+#  Local customisation
+#
+local $Data::Dumper::Indent=1;
+local $Data::Dumper::Sortkeys=1;
 
 
 #  PSGI modules we need
@@ -89,16 +96,20 @@ if (!caller || exists $ENV{PAR_TEMP}) {
     } @ARGV;
     Getopt::Long::GetOptions(
         \%opt,
+        my @opt=(
         'test!',
         'static!',
         'index!' => sub {
             my ($name, $value)=@_;
             $opt{'index'}=$value ? 1 : 0;
         },
-        'root:s',
+        'root|docroot|doc_root|doc-root|document_root|document-root:s',
         'env|E=s',
-        'argv:s'
+        'argv:s',
+        'dump_opt|dump-opt|opt'
+        )
     );
+    map {$opt{"no_${_}"}=!($opt{$_})} map { /^([^|!:=+]+)/ } grep {!ref($_) && /\!$/} @opt;
     
     
     #  Last argument is root directory
@@ -109,6 +120,11 @@ if (!caller || exists $ENV{PAR_TEMP}) {
     else {
         $opt{'root'} ||=($ENV{'DOCUMENT_ROOT'} ||  fastcwd());
     }
+
+
+    #  Dump options for debugging
+    #
+    die Dumper(\%opt) if $opt{'dump_opt'};
     
     
     #  Startup
@@ -291,13 +307,17 @@ Wrapper options handled by `webdyne.psgi` itself:
 
 **--test** Use WebDyne's internal test page as the root.
 
-**--static / --nostatic** Enable or disable PSGI static-file middleware.
+**--static / --no-static** Enable or disable PSGI static-file middleware.
 
-**--index / --noindex** Enable or disable index handling. With the default enabled setting, the wrapper maps the index document to WebDyne's internal default index page.
+**--index / --no-index** Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
 
-**--root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
+**--index=FILE** Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+
+**--root, --docroot, --doc_root, --doc-root, --document_root, --document-root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
 
 **--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `Plack::Runner`.
+
+**--dump_opt, --dump-opt, --opt** Dump the processed option hash and exit.
 
 Remaining command line options are handled by `Plack::Runner` and are the same as described in the [plackup(1)](man:plackup(1)) man page. Refer to that page for full options but some common options are:
 
@@ -324,7 +344,7 @@ To run the script, use the following command for basic functionality and serving
 
 Disable wrapper-managed index handling and rely on the PSGI request layer's default document behaviour instead
 
-`webdyne.psgi --noindex /var/www/html`
+`webdyne.psgi --no-index /var/www/html`
 
 Start with the Starman server
 
@@ -387,13 +407,17 @@ Wrapper options handled by C<webdyne.psgi> itself:
 
 B<--test> Use WebDyne's internal test page as the root.
 
-B<--static / --nostatic> Enable or disable PSGI static-file middleware.
+B<--static / --no-static> Enable or disable PSGI static-file middleware.
 
-B<--index / --noindex> Enable or disable index handling. With the default enabled setting, the wrapper maps the index document to WebDyne's internal default index page.
+B<--index / --no-index> Enable or disable directory index handling. With the default enabled setting, C<--index> uses WebDyne's built-in dynamic index page.
 
-B<--root> Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, C<DOCUMENT_ROOT> or the current working directory is used.
+B<--index=FILE> Use C<FILE> as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+
+B<--root, --docroot, --doc_root, --doc-root, --document_root, --document-root> Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, C<DOCUMENT_ROOT> or the current working directory is used.
 
 B<--argv> Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking C<Plack::Runner>.
+
+B<--dump_opt, --dump-opt, --opt> Dump the processed option hash and exit.
 
 Remaining command line options are handled by C<Plack::Runner> and are the same as described in the L<plackup(1)|man:plackup(1)> man page. Refer to that page for full options but some common options are:
 
@@ -420,7 +444,7 @@ C<webdyne.psgi /var/www/html>
 
 Disable wrapper-managed index handling and rely on the PSGI request layer's default document behaviour instead
 
-C<webdyne.psgi --noindex /var/www/html>
+C<webdyne.psgi --no-index /var/www/html>
 
 Start with the Starman server
 

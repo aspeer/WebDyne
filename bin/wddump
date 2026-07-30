@@ -32,8 +32,12 @@ use Pod::Usage;
 use Data::Dumper;
 use Storable;
 use FindBin qw($RealBin $Script);
-$Data::Dumper::Indent=1;
-$Data::Dumper::Sortkeys=1;
+
+
+#  Local customisation
+#
+local $Data::Dumper::Indent=1;
+local $Data::Dumper::Sortkeys=1;
 
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
@@ -60,11 +64,23 @@ sub main {
     #  Get command line options
     #
     my %opt;
-    GetOptions(\%opt, 'help|?', 'man', 'version') ||
+    GetOptions(
+        \%opt,
+        my @opt=(
+        'help|?',
+        'man',
+        'dump_opt|dump-opt|opt',
+        'version'
+        )
+    ) ||
         pod2usage(2);
     pod2usage(-verbose => 99, -sections => 'SYNOPSIS|OPTIONS', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {print "$Script version: $VERSION\n"; exit 0};
+
+    #  Dump options for debugging
+    #
+    die Dumper(\%opt) if $opt{'dump_opt'};
 
     #  Get srce file
     #
@@ -118,6 +134,10 @@ The  `wddump`  command reads a compiled WebDyne Storable cache file and displays
 * **--man**
 
     Display the full manual.
+
+* **--dump_opt, --dump-opt, --opt**
+
+    Dump the processed option hash and exit.
 
 * **--version**
 
@@ -207,6 +227,14 @@ Show brief help message.
 B<--man>
 
 Display the full manual.
+
+
+
+=item *
+
+B<--dump_opt, --dump-opt, --opt>
+
+Dump the processed option hash and exit.
 
 
 

@@ -33,7 +33,7 @@ END_PSP
 
 my ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-Ilib', $script,
-    '--nocolour', '--notidy', '--nolineno',
+    '--no-colour', '--no-tidy', '--no-lineno',
     '--param', 'value=omega',
     $source_fn,
 );
@@ -45,7 +45,7 @@ my ($outfile_fh, $outfile_fn)=tempfile();
 close($outfile_fh) || die $!;
 my ($file_out, $file_err, $file_rc)=run_cmd(
     $^X, '-Ilib', $script,
-    '--nocolour', '--notidy', '--nolineno',
+    '--no-colour', '--no-tidy', '--no-lineno',
     '--param', 'value=sigma',
     '--outfile', $outfile_fn,
     $source_fn,

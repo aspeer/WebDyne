@@ -39,7 +39,12 @@ use File::Temp          qw(tempfile);
 use File::Copy          qw(move);
 use ExtUtils::MakeMaker qw(prompt);
 use FindBin qw($RealBin $Script);
-$Data::Dumper::Indent=1;
+
+
+#  Local customisation
+#
+local $Data::Dumper::Indent=1;
+local $Data::Dumper::Sortkeys=1;
 
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
@@ -67,19 +72,27 @@ sub main {
     #
     my %opt;
     GetOptions(
-        \%opt, qw(
-            status
-            enable
-            disable
-            version
-            help|?
-            man
-            directory:s
-            yes
-        ));
+        \%opt,
+        my @opt=(
+        'status',
+        'enable',
+        'disable',
+        'version',
+        'help|?',
+        'man',
+        'directory|dir:s',
+        'dump_opt|dump-opt|opt',
+        'yes'
+        )
+    );
     pod2usage(-verbose => 99, -sections => 'SYNOPSIS|OPTIONS', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
     $opt{'version'} && do {print "$Script version: $VERSION\n"; exit 0};
+
+
+    #  Dump options for debugging
+    #
+    die Dumper(\%opt) if $opt{'dump_opt'};
 
 
     #  Check if user really wants to do this
@@ -328,9 +341,13 @@ By default debugging is optimized out of the WebDyne modules to increase perform
 
     Disable debugging in the WebDyne modules.
 
-* **--directory=DIR**
+* **--directory=DIR, --dir=DIR**
 
     Specify the directory containing `WebDyne.pm` and the `WebDyne/` module tree.
+
+* **--dump_opt, --dump-opt, --opt**
+
+    Dump the processed option hash and exit.
 
 * **--yes**
 
@@ -487,9 +504,17 @@ Disable debugging in the WebDyne modules.
 
 =item *
 
-B<--directory=DIR>
+B<--directory=DIR, --dir=DIR>
 
 Specify the directory containing C<WebDyne.pm> and the C<WebDyne/> module tree.
+
+
+
+=item *
+
+B<--dump_opt, --dump-opt, --opt>
+
+Dump the processed option hash and exit.
 
 
 

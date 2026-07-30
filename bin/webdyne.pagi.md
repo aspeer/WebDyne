@@ -26,17 +26,19 @@ Wrapper options handled by `webdyne.pagi` itself:
 
 **--test** Use WebDyne's internal test page as the root.
 
-**--static / --nostatic** Enable or disable PAGI static-file middleware.
+**--static / --no-static** Enable or disable PAGI static-file middleware.
 
-**--index / --noindex / --no-index** Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
+**--index / --no-index** Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
 
 **--index=FILE** Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
 
-**--root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
+**--root, --docroot, --doc_root, --doc-root, --document_root, --document-root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
 
 **-E, --env** Set the PAGI environment mode to `development`, `production`, or `none`. The wrapper sets `PAGI_ENV` and forwards the mode to `PAGI::Server::Runner`.
 
 **--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `PAGI::Server::Runner`.
+
+**--dump_opt, --dump-opt, --opt** Dump the processed option hash and exit.
 
 Remaining command line options are handled by `PAGI::Server::Runner`. Some common options are:
 
@@ -70,7 +72,7 @@ To run the script for basic functionality and serve files from `/var/www/html`, 
 
 Disable wrapper-managed index handling and rely on the PAGI request layer's default document behaviour instead:
 
-`webdyne.pagi --noindex /var/www/html`
+`webdyne.pagi --no-index /var/www/html`
 
 Use `home.psp` as the default document for directory requests:
 

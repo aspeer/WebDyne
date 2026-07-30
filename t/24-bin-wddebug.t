@@ -46,4 +46,10 @@ my $foo_pm=<$foo_fh>;
 close($foo_fh) || die $!;
 like($foo_pm, qr/0 && debug\('foo'\)/, 'wddebug --disable prefixes bare debug call in child module');
 
+my ($dump_out, $dump_err, $dump_rc)=run_cmd($^X, '-Ilib', $script, '--dir', $root_dn, '--dump_opt');
+isnt($dump_rc, 0, 'wddebug --dump_opt aborts after dumping options');
+is($dump_out, '', 'wddebug --dump_opt writes no stdout');
+like($dump_err, qr/'dump_opt'\s*=>\s*1/, 'wddebug --dump_opt dumps dump_opt flag');
+like($dump_err, qr/'directory'\s*=>\s*'\Q$root_dn\E'/, 'wddebug --dump_opt dumps directory alias value');
+
 done_testing();

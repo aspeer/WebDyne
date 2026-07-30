@@ -35,11 +35,11 @@ This utility is primarily designed for quick prototyping and development under A
 
     Enable index handling. This is on by default. If enabled with the default value, WebDyne uses its internal default index page.
 
-* **--noindex**
+* **--no-index**
 
     Disable index handling.
 
-* **--root | --docroot | --doc_root | --document_root**
+* **--root | --docroot | --doc_root | --doc-root | --document_root | --document-root**
 
     Specify the document root directory or a single `.psp` file to serve.
 
@@ -47,7 +47,7 @@ This utility is primarily designed for quick prototyping and development under A
 
     Specify the Apache listen port. The default is `5001` on macOS, or `5000` on other platforms.
 
-* **--keep_tmp / --nokeep_tmp**
+* **--keep_tmp, --keep-tmp / --no-keep_tmp, --no-keep-tmp**
 
     Keep or remove the temporary Apache server root on exit. By default it is cleaned up automatically.
 
@@ -58,6 +58,10 @@ This utility is primarily designed for quick prototyping and development under A
 * **--dump_postamble, --dump-postamble**
 
     Print the generated Apache configuration postamble and exit instead of starting the server.
+
+* **--dump_opt, --dump-opt, --opt**
+
+    Dump the processed option hash and exit.
 
 * **--argv**
 

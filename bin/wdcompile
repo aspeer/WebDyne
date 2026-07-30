@@ -39,8 +39,12 @@ use Pod::Usage;
 use Data::Dumper;
 use File::Spec;
 use FindBin qw($RealBin $Script);
-$Data::Dumper::Indent=1;
-$Data::Dumper::Sortkeys=1;
+
+
+#  Local customisation
+#
+local $Data::Dumper::Indent=1;
+local $Data::Dumper::Sortkeys=1;
 
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
@@ -84,6 +88,7 @@ sub main {
     #
     GetOptions(
         \%opt, 
+        my @opt=(
         'stage0|0',
         'stage1|1',
         'stage2|2',
@@ -103,7 +108,8 @@ sub main {
         'version',
         'help|?',
         'man',
-        'dump_opt|opt'
+        'dump_opt|dump-opt|opt'
+        ),
     ) || pod2usage(2);
     pod2usage(-verbose => 99, -sections => 'SYNOPSIS|OPTIONS', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
@@ -116,7 +122,7 @@ sub main {
 
     #  Clunky, too hard to change module logic
     #
-    map {$opt{"no_${_}"}=!($opt{$_})} qw(perl filter timestamp manifest head_insert);
+    map {$opt{"no_${_}"}=!($opt{$_})} map { /^([^|!:=+]+)/ } grep {/\!$/} @opt;
     #map {$opt{"no${_}"}=!($opt{$_})} qw(perl filter timestamp manifest head_insert);
     #die Dumper(\%opt);
 
@@ -263,7 +269,7 @@ By default the command prints the compiled page data section only. `--meta` prin
 
     Stop at the final compiled container representation. This is the default.
 
-* **--opt**
+* **--dump_opt, --dump-opt, --opt**
 
     Dump the parsed option hash for debugging and exit.
 
@@ -531,7 +537,7 @@ Stop at the final compiled container representation. This is the default.
 
 =item *
 
-B<--opt>
+B<--dump_opt, --dump-opt, --opt>
 
 Dump the parsed option hash for debugging and exit.
 

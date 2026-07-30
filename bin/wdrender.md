@@ -20,6 +20,7 @@ Defaults:
 * colour: enabled
 * line numbers: enabled
 * tidy formatting: enabled
+* head insertion: disabled
 * theme: `light`
 
 Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous hash of option names and values.
@@ -48,7 +49,7 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Set `WEBDYNE_CONF` to the specified configuration file before rendering.
 
-* **--noconf, --noconfig, --no_conf, --no_config, --no-conf, --no-config**
+* **--no_conf, --no_config, --no-conf, --no-config**
 
     Disable normal config loading by setting `WEBDYNE_CONF=.`.
 
@@ -60,8 +61,13 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Send output to nominated file. Colourisation is disabled but tidy will be performed if available.
     
-* **--warn / --nowarn**
+* **--warn / --no-warn**
+
     Enable or disable warnings about missing Tidy or Colourise modules
+
+* **--head_insert, --head-insert / --no-head_insert, --no-head-insert**
+
+    Enable or disable WebDyne head insertion while rendering from the command line, including configured `WEBDYNE_HEAD_INSERT` content and related `start_html` parameters. This is disabled by default so command-line checks show the page output without head snippets normally inserted during Apache, PSGI, or PAGI request handling.
 
 ## Backend Selection ##
 
@@ -77,7 +83,7 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Shortcut for `--request=psgi`.
 
-* **--psgi_server**
+* **--psgi_server, --psgi-server**
 
     Shortcut for `--request=psgi_server`.
 
@@ -85,7 +91,7 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Shortcut for `--request=pagi`.
 
-* **--mod_perl, --apache**
+* **--mod_perl, --mod-perl, --apache**
 
     Shortcut for `--request=mod_perl`.
 
@@ -93,21 +99,25 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Run all supported backends instead of just one selected backend. This is equivalent to `--request=all`.
 
-* **--root=DIR, --docroot=DIR, --doc_root=DIR, --document_root=DIR**
+* **--root=DIR, --docroot=DIR, --doc_root=DIR, --doc-root=DIR, --document_root=DIR, --document-root=DIR**
 
     Set the document root passed to backend handlers. Defaults to the current working directory.
 
-* **--keep_tmp**
+* **--keep_tmp, --keep-tmp / --no-keep_tmp, --no-keep-tmp**
 
     When using the `mod_perl` backend, do not cleanup temporary Apache server root.
 
-* **--apache_stdout, --apache-stdout / --noapache_stdout, --noapache-stdout**
+* **--apache_stdout, --apache-stdout / --no-apache_stdout, --no-apache-stdout**
 
     When using the `mod_perl` backend, send Apache access/error logs to stdout/stderr where possible instead of suppressing them.
 
 * **--dump_postamble, --dump-postamble**
 
     Print the generated Apache postamble and exit instead of starting the Apache test instance.
+
+* **--dump_opt, --dump-opt, --opt**
+
+    Dump the parsed option hash for debugging and exit.
 
 ## Request Construction ##
 
@@ -145,7 +155,7 @@ Request parameter options may be repeated, and each value may contain multiple `
 
     Pass handler parameters to the WebDyne handler call. These are separate from request query/body parameters and are available to handler-side Perl code. Repeat the option or separate entries with `;` or `&`. Duplicate keys are preserved as array values.
 
-* **--headers_in=NAME:VALUE, --header_in=NAME:VALUE**
+* **--headers_in=NAME:VALUE, --header_in=NAME:VALUE, --headers-in=NAME:VALUE, --header-in=NAME:VALUE**
 
     Add request headers. Multiple values may be supplied by repeating the option.
 
@@ -159,7 +169,7 @@ Request parameter options may be repeated, and each value may contain multiple `
 
 ## Response Display ##
 
-* **--header, --headers**
+* **--header, --headers / --no-header, --no-headers**
 
     Include the response status line and headers ahead of the rendered body.
 
@@ -167,11 +177,11 @@ Request parameter options may be repeated, and each value may contain multiple `
 
     Print only the response status line and headers.
 
-* **--colour, --color / --nocolour, --nocolor**
+* **--colour, --color / --no-colour, --no-color**
 
     Enable or disable HTML syntax highlighting for `text/html` responses.
 
-* **--lineno / --nolineno**
+* **--lineno / --no-lineno**
 
     Enable or disable line numbers in colourised output.
 
@@ -179,7 +189,7 @@ Request parameter options may be repeated, and each value may contain multiple `
 
     Select the colour theme used by syntax highlighting.
 
-* **--tidy, --pretty / --notidy, --nopretty**
+* **--tidy, --pretty / --no-tidy, --no-pretty**
 
     Enable or disable HTML tidy formatting for `text/html` responses. Tidy is skipped automatically for HTMX output.
 

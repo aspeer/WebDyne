@@ -27,4 +27,9 @@ like($stdout, qr/'alpha'\s*=>\s*1/, 'wddump prints stored hash content');
 like($stdout, qr/'omega'/, 'wddump prints stored array content');
 is($stderr, '', 'wddump writes no stderr');
 
+my ($dump_out, $dump_err, $dump_rc)=run_cmd($^X, '-Ilib', $script, '--dump_opt');
+isnt($dump_rc, 0, 'wddump --dump_opt aborts after dumping options');
+is($dump_out, '', 'wddump --dump_opt writes no stdout');
+like($dump_err, qr/'dump_opt'\s*=>\s*1/, 'wddump --dump_opt dumps dump_opt flag');
+
 done_testing();

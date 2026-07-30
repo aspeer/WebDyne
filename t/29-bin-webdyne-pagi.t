@@ -61,20 +61,20 @@ END_MODULE
 my $tmp_dn=tempdir(CLEANUP => 1);
 my ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--noindex', '--nostatic', '--env', 'production', '--argv', '--port 6011 --workers 2',
+    '--no-index', '--no-static', '--env', 'production', '--argv', '--port 6011 --workers 2',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.pagi exits cleanly through stubbed runner');
 like($stdout, qr/args=.*--port 6011 .*--workers 2 .*--env production .*--host 0\.0\.0\.0/, 'webdyne.pagi prepends argv options, env mode, and default host');
 like($stdout, qr/env=production/, 'webdyne.pagi sets PAGI_ENV from --env');
-like($stdout, qr/^index=0$/m, 'webdyne.pagi --noindex sets index false');
+like($stdout, qr/^index=0$/m, 'webdyne.pagi --no-index sets index false');
 like($stdout, qr/app=CODE/, 'webdyne.pagi passes a built app coderef to PAGI::Runner');
 is($stderr, '', 'webdyne.pagi stubbed run writes no stderr');
 
 delete $ENV{PAGI_ENV};
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--noindex', '--nostatic', '--argv', '--port 6012',
+    '--no-index', '--no-static', '--argv', '--port 6012',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.pagi runs without --env');
@@ -84,7 +84,7 @@ is($stderr, '', 'webdyne.pagi no-env run writes no stderr');
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--nostatic', '--index',
+    '--no-static', '--index',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.pagi accepts bare --index');
@@ -93,7 +93,7 @@ is($stderr, '', 'webdyne.pagi bare --index run writes no stderr');
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--nostatic', '--index=home.psp',
+    '--no-static', '--index=home.psp',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.pagi accepts --index with string value');
@@ -103,7 +103,7 @@ is($stderr, '', 'webdyne.pagi --index=FILE run writes no stderr');
 local $ENV{DOCUMENT_DEFAULT}='env-default.psp';
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--nostatic',
+    '--no-static',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.pagi accepts DOCUMENT_DEFAULT without index option');
@@ -112,12 +112,23 @@ is($stderr, '', 'webdyne.pagi DOCUMENT_DEFAULT run writes no stderr');
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--nostatic', '--no-index',
+    '--no-static', '--no-index',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.pagi accepts --no-index spelling');
 like($stdout, qr/^index=0$/m, 'webdyne.pagi --no-index overrides DOCUMENT_DEFAULT');
 is($stderr, '', 'webdyne.pagi --no-index run writes no stderr');
+
+($stdout, $stderr, $rc)=run_cmd(
+    $^X, '-I', $stub_dn, '-Ilib', $script,
+    '--no-static', '--no-index', '--dump_opt', "--doc-root=$tmp_dn",
+);
+isnt($rc, 0, 'webdyne.pagi --dump_opt aborts after dumping options');
+is($stdout, '', 'webdyne.pagi --dump_opt writes no stdout');
+like($stderr, qr/'dump_opt'\s*=>\s*1/, 'webdyne.pagi --dump_opt dumps dump_opt flag');
+like($stderr, qr/'no_index'\s*=>\s*(?:!!)?1/, 'webdyne.pagi --dump_opt dumps generated no_index flag');
+like($stderr, qr/'no_static'\s*=>\s*(?:!!)?1/, 'webdyne.pagi --dump_opt dumps generated no_static flag');
+like($stderr, qr/'root'\s*=>\s*'\Q$tmp_dn\E'/, 'webdyne.pagi --dump_opt dumps root alias value');
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,

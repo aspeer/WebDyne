@@ -66,6 +66,12 @@ use Cwd qw(fastcwd);
 #sub err { croak(@_) }
 
 
+#  Local customisation
+#
+local $Data::Dumper::Indent=1;
+local $Data::Dumper::Sortkeys=1;
+
+
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
 $VERSION='2.088_630';
@@ -93,7 +99,6 @@ sub main {
         handler => $ENV{'WebDyneHandler'} || 'WebDyne',
         error   => 'text',
         header  => 0,
-        warn    => 0,
         tidy    => 1,
         colour  => 1,
         lineno  => 1,
@@ -114,11 +119,12 @@ sub main {
     #
     GetOptions(
         \%opt,
+        my @opt=(
         'all',
         'colour|color!',
         'compare',
         'conf|config=s',
-        'no_conf|no_config|noconf|noconfig|no-conf|no-config',
+        'no_conf|no_config|no-conf|no-config' => sub { $opt{'no_conf'}=1 },
         'delay|sleep=i',
         # 'error=s', # Not applied
         'fake',
@@ -128,15 +134,15 @@ sub main {
         'head_insert|head-insert!',
         'header|headers!',
         'header_only|header-only|headers_only|headers-only|headersonly',
-        'headers_in|header_in=s@',
+        'headers_in|header_in|headers-in|header-in=s@',
         'htmx',
         'lineno!',
         'loop',
         'method=s',
-        'mod_perl|apache',
+        'mod_perl|mod-perl|apache',
         'apache_stdout|apache-stdout!',
         'dump_postamble|dump-postamble',
-        'dump_opt|opt',
+        'dump_opt|dump-opt|opt',
         'options=s@',
         'outfile=s',
         'pagi',
@@ -144,7 +150,7 @@ sub main {
         'patch=s@',
         'post=s@',
         'psgi',
-        'psgi_server',
+        'psgi_server|psgi-server',
         'put=s@',
         'raw',
         'repeat|num|n=s',
@@ -157,9 +163,10 @@ sub main {
         'tidy|pretty!',
         'keep_tmp|keep-tmp!',
         'help|?',
-        'warn!', 
+        'warn!',
         'man',
         'version'
+        ),
     ) || pod2usage(2);
     pod2usage(-verbose => 99, -sections => 'SYNOPSIS|OPTIONS', -exitval => 1) if $opt{'help'};
     pod2usage(-verbose => 2)                                                  if $opt{'man'};
@@ -170,9 +177,11 @@ sub main {
         exit 0
     };
 
+
     #  Convert negative flags
     #
-    map {$opt{"no_${_}"}=!($opt{$_})} qw(head_insert);
+    #map {$opt{"no_${_}"}=!($opt{$_})} qw(head_insert);
+    map {$opt{"no_${_}"}=!($opt{$_})} map { /^([^|!:=+]+)/ } grep {/\!$/} @opt;
     
 
     #  Special config ?
@@ -996,7 +1005,7 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Set `WEBDYNE_CONF` to the specified configuration file before rendering.
 
-* **--noconf, --noconfig, --no_conf, --no_config, --no-conf, --no-config**
+* **--no-conf, --no-config**
 
     Disable normal config loading by setting `WEBDYNE_CONF=.`.
 
@@ -1008,7 +1017,7 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Send output to nominated file. Colourisation is disabled but tidy will be performed if available.
     
-* **--warn / --nowarn**
+* **--warn / --no-warn**
     Enable or disable warnings about missing Tidy or Colourise modules
 
 ## Backend Selection ##
@@ -1049,7 +1058,7 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     When using the `mod_perl` backend, do not cleanup temporary Apache server root.
 
-* **--apache_stdout, --apache-stdout / --noapache_stdout, --noapache-stdout**
+* **--apache_stdout, --apache-stdout / --no-apache_stdout, --no-apache-stdout**
 
     When using the `mod_perl` backend, send Apache access/error logs to stdout/stderr where possible instead of suppressing them.
 
@@ -1115,11 +1124,11 @@ Request parameter options may be repeated, and each value may contain multiple `
 
     Print only the response status line and headers.
 
-* **--colour, --color / --nocolour, --nocolor**
+* **--colour, --color / --no-colour, --no-color**
 
     Enable or disable HTML syntax highlighting for `text/html` responses.
 
-* **--lineno / --nolineno**
+* **--lineno / --no-lineno**
 
     Enable or disable line numbers in colourised output.
 
@@ -1127,7 +1136,7 @@ Request parameter options may be repeated, and each value may contain multiple `
 
     Select the colour theme used by syntax highlighting.
 
-* **--tidy, --pretty / --notidy, --nopretty**
+* **--tidy, --pretty / --no-tidy, --no-pretty**
 
     Enable or disable HTML tidy formatting for `text/html` responses. Tidy is skipped automatically for HTMX output.
 
@@ -1328,7 +1337,7 @@ Set C<WEBDYNE_CONF> to the specified configuration file before rendering.
 
 =item *
 
-B<--noconf, --noconfig, --no_conf, --no_config, --no-conf, --no-config>
+B<--no-conf, --no-config>
 
 Disable normal config loading by setting C<WEBDYNE_CONF=.>.
 
@@ -1352,7 +1361,7 @@ Send output to nominated file. Colourisation is disabled but tidy will be perfor
 
 =item *
 
-B<--warn / --nowarn>
+B<--warn / --no-warn>
 Enable or disable warnings about missing Tidy or Colourise modules
 
 
@@ -1438,7 +1447,7 @@ When using the C<mod_perl> backend, do not cleanup temporary Apache server root.
 
 =item *
 
-B<--apache_stdout, --apache-stdout / --noapache_stdout, --noapache-stdout>
+B<--apache_stdout, --apache-stdout / --no-apache_stdout, --no-apache-stdout>
 
 When using the C<mod_perl> backend, send Apache access/error logs to stdout/stderr where possible instead of suppressing them.
 
@@ -1578,7 +1587,7 @@ Print only the response status line and headers.
 
 =item *
 
-B<--colour, --color / --nocolour, --nocolor>
+B<--colour, --color / --no-colour, --no-color>
 
 Enable or disable HTML syntax highlighting for C<text/html> responses.
 
@@ -1586,7 +1595,7 @@ Enable or disable HTML syntax highlighting for C<text/html> responses.
 
 =item *
 
-B<--lineno / --nolineno>
+B<--lineno / --no-lineno>
 
 Enable or disable line numbers in colourised output.
 
@@ -1602,7 +1611,7 @@ Select the colour theme used by syntax highlighting.
 
 =item *
 
-B<--tidy, --pretty / --notidy, --nopretty>
+B<--tidy, --pretty / --no-tidy, --no-pretty>
 
 Enable or disable HTML tidy formatting for C<text/html> responses. Tidy is skipped automatically for HTMX output.
 

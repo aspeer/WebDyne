@@ -40,21 +40,25 @@ By default the command prints the compiled page data section only. `--meta` prin
 
     Show the full compiled container, including both metadata and compiled page data.
 
-* **--[no]manifest**
+* **--manifest / --no-manifest**
 
     Enable or disable population of the source filename in the metadata manifest section. Manifest output is enabled by default.
 
-* **--[no]timestamp**
+* **--timestamp / --no-timestamp**
 
     Enable or disable compile timestamps in metadata. Timestamps are disabled by default.
 
-* **--[no]perl**
+* **--perl / --no-perl**
 
     Enable or disable execution of Perl in \__PERL__ sections at compile time. Perl execution is disabled by default.
 
-* **--[no]filter**
+* **--filter / --no-filter**
 
     Enable or disable compile-time filter stages nominated in the file. Filters are disabled by default.
+
+* **--head_insert, --head-insert / --no-head_insert, --no-head-insert**
+
+    Enable or disable WebDyne head insertion while compiling from the command line, including configured `WEBDYNE_HEAD_INSERT` content and related `start_html` parameters. This is disabled by default so diagnostic compile output is not changed by runtime head additions normally intended for Apache, PSGI, or PAGI request handling.
 
 * **--outfile, --dest, --dest_fn**
 
@@ -88,7 +92,7 @@ By default the command prints the compiled page data section only. `--meta` prin
 
     Stop at the final compiled container representation. This is the default.
 
-* **--opt**
+* **--dump_opt, --dump-opt, --opt**
 
     Dump the parsed option hash for debugging and exit.
 
