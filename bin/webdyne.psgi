@@ -311,35 +311,63 @@ Wrapper defaults can be preloaded from `~/.webdyne.psgi.opt` by creating an anon
 
 Wrapper options handled by `webdyne.psgi` itself:
 
-* **--test** Use WebDyne's internal test page as the root.
+* **--test**
 
-* **--static** Enable or disable PSGI static-file middleware.
+    Use WebDyne's internal test page as the root.
 
-* **--index** Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
+* **--static**
 
-* **--index=FILE** Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+    Enable or disable PSGI static-file middleware.
 
-* **--root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
+* **--index**
 
-* **--env** Set the PSGI/Plack environment mode to `development`, `production`, or `none`. The wrapper sets `PLACK_ENV` and forwards the mode to `Plack::Runner`.
+    Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
 
-* **--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `Plack::Runner`.
+* **--index=FILE**
 
-* **--dump_opt** Dump the processed option hash and exit.
+    Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+
+* **--root**
+
+    Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
+
+* **--env**
+
+    Set the PSGI/Plack environment mode to `development`, `production`, or `none`. The wrapper sets `PLACK_ENV` and forwards the mode to `Plack::Runner`.
+
+* **--argv**
+
+    Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `Plack::Runner`.
+
+* **--dump_opt**
+
+    Dump the processed option hash and exit.
 
 Remaining command line options are handled by `Plack::Runner` and are the same as described in the [plackup(1)](man:plackup(1)) man page. Refer to that page for full options but some common options are:
 
-* **--host** Which host interface to bind to
+* **--host**
 
-* **--port** Which port to bind to
+    Which host interface to bind to
 
-* **--server** Which server to use, e.g. Starman
+* **--port**
 
-* **--reload** Reload if libraries or other files change
+    Which port to bind to
 
-* **-I** Same as perl -I for library include paths
+* **--server**
 
-* **-M** Same as perl -M for loading modules before the script starts
+    Which server to use, e.g. Starman
+
+* **--reload**
+
+    Reload if libraries or other files change
+
+* **-I**
+
+    Same as perl -I for library include paths
+
+* **-M**
+
+    Same as perl -M for loading modules before the script starts
 
 On macOS, if no `--port` option is passed through to `Plack::Runner`, the wrapper uses port `5001` to avoid conflicts with Plack's default port. Other platforms use the normal Plack default unless a port is supplied.
 
@@ -372,9 +400,23 @@ Start with the internal test page
 
 # ENVIRONMENT VARIABLES
 
-This script is a frontend to the WebDyne PSGI stack. In addition to `Plack::Runner` options, it uses WebDyne configuration and environment handling, including `DOCUMENT_ROOT`, `DOCUMENT_DEFAULT`, `PLACK_ENV`, and the relevant `WEBDYNE_*` settings used by the PSGI modules.
+This script is a frontend to the WebDyne PSGI stack. In addition to `Plack::Runner` options, it uses WebDyne configuration and environment handling.
 
-`DOCUMENT_DEFAULT`, when set, supplies the default `index` value before `~/.webdyne.psgi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.psgi.opt` also overrides the environment.
+* **DOCUMENT_ROOT**
+
+    Supplies the document root when neither `--root` nor a final non-option document root argument is provided.
+
+* **DOCUMENT_DEFAULT**
+
+    Supplies the default `index` value before `~/.webdyne.psgi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.psgi.opt` also overrides the environment.
+
+* **PLACK_ENV**
+
+    Supplies the PSGI/Plack environment mode when `--env` is not provided.
+
+* **WEBDYNE_***
+
+    Supplies the relevant WebDyne settings used by the PSGI modules.
 
 # AUTHOR
 
@@ -427,49 +469,65 @@ Wrapper options handled by C<webdyne.psgi> itself:
 
 =item *
 
-B<--test> Use WebDyne's internal test page as the root.
+B<--test>
+
+Use WebDyne's internal test page as the root.
 
 
 
 =item *
 
-B<--static> Enable or disable PSGI static-file middleware.
+B<--static>
+
+Enable or disable PSGI static-file middleware.
 
 
 
 =item *
 
-B<--index> Enable or disable directory index handling. With the default enabled setting, C<--index> uses WebDyne's built-in dynamic index page.
+B<--index>
+
+Enable or disable directory index handling. With the default enabled setting, C<--index> uses WebDyne's built-in dynamic index page.
 
 
 
 =item *
 
-B<--index=FILE> Use C<FILE> as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+B<--index=FILE>
+
+Use C<FILE> as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
 
 
 
 =item *
 
-B<--root> Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, C<DOCUMENT_ROOT> or the current working directory is used.
+B<--root>
+
+Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, C<DOCUMENT_ROOT> or the current working directory is used.
 
 
 
 =item *
 
-B<--env> Set the PSGI/Plack environment mode to C<development>, C<production>, or C<none>. The wrapper sets C<PLACK_ENV> and forwards the mode to C<Plack::Runner>.
+B<--env>
+
+Set the PSGI/Plack environment mode to C<development>, C<production>, or C<none>. The wrapper sets C<PLACK_ENV> and forwards the mode to C<Plack::Runner>.
 
 
 
 =item *
 
-B<--argv> Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking C<Plack::Runner>.
+B<--argv>
+
+Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking C<Plack::Runner>.
 
 
 
 =item *
 
-B<--dump_opt> Dump the processed option hash and exit.
+B<--dump_opt>
+
+Dump the processed option hash and exit.
 
 
 
@@ -481,37 +539,49 @@ Remaining command line options are handled by C<Plack::Runner> and are the same 
 
 =item *
 
-B<--host> Which host interface to bind to
+B<--host>
+
+Which host interface to bind to
 
 
 
 =item *
 
-B<--port> Which port to bind to
+B<--port>
+
+Which port to bind to
 
 
 
 =item *
 
-B<--server> Which server to use, e.g. Starman
+B<--server>
+
+Which server to use, e.g. Starman
 
 
 
 =item *
 
-B<--reload> Reload if libraries or other files change
+B<--reload>
+
+Reload if libraries or other files change
 
 
 
 =item *
 
-B<-I> Same as perl -I for library include paths
+B<-I>
+
+Same as perl -I for library include paths
 
 
 
 =item *
 
-B<-M> Same as perl -M for loading modules before the script starts
+B<-M>
+
+Same as perl -M for loading modules before the script starts
 
 
 
@@ -549,9 +619,43 @@ C<webdyne.psgi --test>
 
 =head1 ENVIRONMENT VARIABLES
 
-This script is a frontend to the WebDyne PSGI stack. In addition to C<Plack::Runner> options, it uses WebDyne configuration and environment handling, including C<DOCUMENT_ROOT>, C<DOCUMENT_DEFAULT>, C<PLACK_ENV>, and the relevant C<WEBDYNE_*> settings used by the PSGI modules.
+This script is a frontend to the WebDyne PSGI stack. In addition to C<Plack::Runner> options, it uses WebDyne configuration and environment handling.
 
-C<DOCUMENT_DEFAULT>, when set, supplies the default C<index> value before C<~/.webdyne.psgi.opt> and command-line options are applied. This means explicit CLI index options override the environment, and C<~/.webdyne.psgi.opt> also overrides the environment.
+=over
+
+=item *
+
+B<DOCUMENT_ROOT>
+
+Supplies the document root when neither C<--root> nor a final non-option document root argument is provided.
+
+
+
+=item *
+
+B<DOCUMENT_DEFAULT>
+
+Supplies the default C<index> value before C<~/.webdyne.psgi.opt> and command-line options are applied. This means explicit CLI index options override the environment, and C<~/.webdyne.psgi.opt> also overrides the environment.
+
+
+
+=item *
+
+B<PLACK_ENV>
+
+Supplies the PSGI/Plack environment mode when C<--env> is not provided.
+
+
+
+=item *
+
+B<WEBDYNE_>*
+
+Supplies the relevant WebDyne settings used by the PSGI modules.
+
+
+
+=back
 
 
 =head1 AUTHOR

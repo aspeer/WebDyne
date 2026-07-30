@@ -94,6 +94,34 @@ The generated Apache configuration currently does the following:
 
 The script also reads defaults from `~/.webdyne.apache.opt` if that file exists. `index` is the canonical runtime option; a seeded `no_index` value is normalized into `index => 0`, and command-line options take final precedence.
 
+# ENVIRONMENT VARIABLES
+
+`webdyne.apache` uses a small number of environment variables directly and passes WebDyne environment settings through to the generated Apache configuration.
+
+* **DOCUMENT_ROOT**
+
+    Supplies the document root when neither `--root` nor a final non-option document root argument is provided.
+
+* **DOCUMENT_DEFAULT**
+
+    Supplies the default `index` value before `~/.webdyne.apache.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.apache.opt` also overrides the environment.
+
+* **WEBDYNE_***
+
+    Any current non-empty `WEBDYNE_*` environment variables are emitted into the generated Apache configuration as `PerlSetEnv` directives.
+
+* **WEBDYNE_ERROR_TEXT**
+
+    If not already defined, the wrapper emits `WEBDYNE_ERROR_TEXT=1` so errors from the temporary development server are returned as plain text.
+
+* **APXS**
+
+    On macOS, used to locate Apache's module directory when the wrapper needs to load `mod_rewrite` explicitly.
+
+* **APACHE_TEST_APXS**
+
+    On macOS, used as the fallback Apache extension tool path when `APXS` is not set.
+
 # EXAMPLES
 
 Start Apache in the current directory on the default port:

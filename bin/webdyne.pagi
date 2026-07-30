@@ -319,41 +319,75 @@ Wrapper defaults can be preloaded from `~/.webdyne.pagi.opt` by creating an anon
 
 Wrapper options handled by `webdyne.pagi` itself:
 
-* **--test** Use WebDyne's internal test page as the root.
+* **--test**
 
-* **--static** Enable or disable PAGI static-file middleware.
+    Use WebDyne's internal test page as the root.
 
-* **--index** Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
+* **--static**
 
-* **--index=FILE** Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+    Enable or disable PAGI static-file middleware.
 
-* **--root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
+* **--index**
 
-* **--env** Set the PAGI environment mode to `development`, `production`, or `none`. The wrapper sets `PAGI_ENV` and forwards the mode to `PAGI::Server::Runner`.
+    Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
 
-* **--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `PAGI::Server::Runner`.
+* **--index=FILE**
 
-* **--dump_opt** Dump the processed option hash and exit.
+    Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+
+* **--root**
+
+    Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
+
+* **--env**
+
+    Set the PAGI environment mode to `development`, `production`, or `none`. The wrapper sets `PAGI_ENV` and forwards the mode to `PAGI::Server::Runner`.
+
+* **--argv**
+
+    Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `PAGI::Server::Runner`.
+
+* **--dump_opt**
+
+    Dump the processed option hash and exit.
 
 Remaining command line options are handled by `PAGI::Server::Runner`. Some common options are:
 
-* **--host** Which host interface to bind to. When launched through `webdyne.pagi`, the wrapper adds `--host 0.0.0.0` unless a `--host` option is present.
+* **--host**
 
-* **--port** Which port to bind to.
+    Which host interface to bind to. When launched through `webdyne.pagi`, the wrapper adds `--host 0.0.0.0` unless a `--host` option is present.
 
-* **--server** Which PAGI server class to use. The runner default is `PAGI::Server`.
+* **--port**
 
-* **--loop** Event loop backend.
+    Which port to bind to.
 
-* **--lib** Add a library path to `@INC`.
+* **--server**
 
-* **-M** Load a module before the app starts.
+    Which PAGI server class to use. The runner default is `PAGI::Server`.
 
-* **--default-middleware** Enable or disable runner default middleware.
+* **--loop**
 
-* **--daemonize** Run as a background daemon.
+    Event loop backend.
 
-* **--access-log** Configure access logging.
+* **--lib**
+
+    Add a library path to `@INC`.
+
+* **-M**
+
+    Load a module before the app starts.
+
+* **--default-middleware**
+
+    Enable or disable runner default middleware.
+
+* **--daemonize**
+
+    Run as a background daemon.
+
+* **--access-log**
+
+    Configure access logging.
 
 Additional runner process and output controls are passed through to
 `PAGI::Server::Runner`; see that runner's documentation for details.
@@ -396,21 +430,43 @@ Start with a different event loop backend:
 
 # ENVIRONMENT VARIABLES
 
-This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configuration and environment handling, including `DOCUMENT_ROOT`, `DOCUMENT_DEFAULT`, `PAGI_ENV`, and the relevant `WEBDYNE_*` settings used by the PAGI modules.
+This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configuration and environment handling.
 
-`DOCUMENT_DEFAULT`, when set, supplies the default `index` value before `~/.webdyne.pagi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.pagi.opt` also overrides the environment.
+* **DOCUMENT_ROOT**
+
+    Supplies the document root when neither `--root` nor a final non-option document root argument is provided.
+
+* **DOCUMENT_DEFAULT**
+
+    Supplies the default `index` value before `~/.webdyne.pagi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.pagi.opt` also overrides the environment.
+
+* **PAGI_ENV**
+
+    Supplies the PAGI environment mode when `--env` is not provided.
+
+* **WEBDYNE_***
+
+    Supplies the relevant WebDyne settings used by the PAGI modules.
 
 When launched from the command line, the wrapper also reads local WebDyne configuration from `DOCUMENT_ROOT/.webdyne.conf.pl` before starting the PAGI runner.
 
 Relevant PAGI-specific settings from `WebDyne::PAGI::Constant` include:
 
-**WEBDYNE_PAGI_STATIC** Enable or disable static-file serving middleware.
+* **WEBDYNE_PAGI_STATIC**
 
-**WEBDYNE_PAGI_MIDDLEWARE_STATIC** Regular expression used to decide which static files are served directly.
+    Enable or disable static-file serving middleware.
 
-**WEBDYNE_PAGI_MIDDLEWARE** Middleware stack applied around the WebDyne PAGI app.
+* **WEBDYNE_PAGI_MIDDLEWARE_STATIC**
 
-**WEBDYNE_PAGI_ENV_KEEP / WEBDYNE_PAGI_ENV_SET** Environment variables preserved or injected for request handling.
+    Regular expression used to decide which static files are served directly.
+
+* **WEBDYNE_PAGI_MIDDLEWARE**
+
+    Middleware stack applied around the WebDyne PAGI app.
+
+* **WEBDYNE_PAGI_ENV_KEEP / WEBDYNE_PAGI_ENV_SET**
+
+    Environment variables preserved or injected for request handling.
 
 # AUTHOR
 
@@ -465,49 +521,65 @@ Wrapper options handled by C<webdyne.pagi> itself:
 
 =item *
 
-B<--test> Use WebDyne's internal test page as the root.
+B<--test>
+
+Use WebDyne's internal test page as the root.
 
 
 
 =item *
 
-B<--static> Enable or disable PAGI static-file middleware.
+B<--static>
+
+Enable or disable PAGI static-file middleware.
 
 
 
 =item *
 
-B<--index> Enable or disable directory index handling. With the default enabled setting, C<--index> uses WebDyne's built-in dynamic index page.
+B<--index>
+
+Enable or disable directory index handling. With the default enabled setting, C<--index> uses WebDyne's built-in dynamic index page.
 
 
 
 =item *
 
-B<--index=FILE> Use C<FILE> as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+B<--index=FILE>
+
+Use C<FILE> as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
 
 
 
 =item *
 
-B<--root> Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, C<DOCUMENT_ROOT> or the current working directory is used.
+B<--root>
+
+Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, C<DOCUMENT_ROOT> or the current working directory is used.
 
 
 
 =item *
 
-B<--env> Set the PAGI environment mode to C<development>, C<production>, or C<none>. The wrapper sets C<PAGI_ENV> and forwards the mode to C<PAGI::Server::Runner>.
+B<--env>
+
+Set the PAGI environment mode to C<development>, C<production>, or C<none>. The wrapper sets C<PAGI_ENV> and forwards the mode to C<PAGI::Server::Runner>.
 
 
 
 =item *
 
-B<--argv> Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking C<PAGI::Server::Runner>.
+B<--argv>
+
+Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking C<PAGI::Server::Runner>.
 
 
 
 =item *
 
-B<--dump_opt> Dump the processed option hash and exit.
+B<--dump_opt>
+
+Dump the processed option hash and exit.
 
 
 
@@ -519,55 +591,73 @@ Remaining command line options are handled by C<PAGI::Server::Runner>. Some comm
 
 =item *
 
-B<--host> Which host interface to bind to. When launched through C<webdyne.pagi>, the wrapper adds C<--host 0.0.0.0> unless a C<--host> option is present.
+B<--host>
+
+Which host interface to bind to. When launched through C<webdyne.pagi>, the wrapper adds C<--host 0.0.0.0> unless a C<--host> option is present.
 
 
 
 =item *
 
-B<--port> Which port to bind to.
+B<--port>
+
+Which port to bind to.
 
 
 
 =item *
 
-B<--server> Which PAGI server class to use. The runner default is C<PAGI::Server>.
+B<--server>
+
+Which PAGI server class to use. The runner default is C<PAGI::Server>.
 
 
 
 =item *
 
-B<--loop> Event loop backend.
+B<--loop>
+
+Event loop backend.
 
 
 
 =item *
 
-B<--lib> Add a library path to C<@INC>.
+B<--lib>
+
+Add a library path to C<@INC>.
 
 
 
 =item *
 
-B<-M> Load a module before the app starts.
+B<-M>
+
+Load a module before the app starts.
 
 
 
 =item *
 
-B<--default-middleware> Enable or disable runner default middleware.
+B<--default-middleware>
+
+Enable or disable runner default middleware.
 
 
 
 =item *
 
-B<--daemonize> Run as a background daemon.
+B<--daemonize>
+
+Run as a background daemon.
 
 
 
 =item *
 
-B<--access-log> Configure access logging.
+B<--access-log>
+
+Configure access logging.
 
 
 
@@ -616,21 +706,83 @@ C<webdyne.pagi --loop EV /home/aspeer/public_html>
 
 =head1 ENVIRONMENT VARIABLES
 
-This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configuration and environment handling, including C<DOCUMENT_ROOT>, C<DOCUMENT_DEFAULT>, C<PAGI_ENV>, and the relevant C<WEBDYNE_*> settings used by the PAGI modules.
+This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configuration and environment handling.
 
-C<DOCUMENT_DEFAULT>, when set, supplies the default C<index> value before C<~/.webdyne.pagi.opt> and command-line options are applied. This means explicit CLI index options override the environment, and C<~/.webdyne.pagi.opt> also overrides the environment.
+=over
+
+=item *
+
+B<DOCUMENT_ROOT>
+
+Supplies the document root when neither C<--root> nor a final non-option document root argument is provided.
+
+
+
+=item *
+
+B<DOCUMENT_DEFAULT>
+
+Supplies the default C<index> value before C<~/.webdyne.pagi.opt> and command-line options are applied. This means explicit CLI index options override the environment, and C<~/.webdyne.pagi.opt> also overrides the environment.
+
+
+
+=item *
+
+B<PAGI_ENV>
+
+Supplies the PAGI environment mode when C<--env> is not provided.
+
+
+
+=item *
+
+B<WEBDYNE_>*
+
+Supplies the relevant WebDyne settings used by the PAGI modules.
+
+
+
+=back
 
 When launched from the command line, the wrapper also reads local WebDyne configuration from C<DOCUMENT_ROOT/.webdyne.conf.pl> before starting the PAGI runner.
 
 Relevant PAGI-specific settings from C<WebDyne::PAGI::Constant> include:
 
-B<WEBDYNE_PAGI_STATIC> Enable or disable static-file serving middleware.
+=over
 
-B<WEBDYNE_PAGI_MIDDLEWARE_STATIC> Regular expression used to decide which static files are served directly.
+=item *
 
-B<WEBDYNE_PAGI_MIDDLEWARE> Middleware stack applied around the WebDyne PAGI app.
+B<WEBDYNE_PAGI_STATIC>
 
-B<WEBDYNE_PAGI_ENV_KEEP / WEBDYNE_PAGI_ENV_SET> Environment variables preserved or injected for request handling.
+Enable or disable static-file serving middleware.
+
+
+
+=item *
+
+B<WEBDYNE_PAGI_MIDDLEWARE_STATIC>
+
+Regular expression used to decide which static files are served directly.
+
+
+
+=item *
+
+B<WEBDYNE_PAGI_MIDDLEWARE>
+
+Middleware stack applied around the WebDyne PAGI app.
+
+
+
+=item *
+
+B<WEBDYNE_PAGI_ENV_KEEP / WEBDYNE_PAGI_ENV_SET>
+
+Environment variables preserved or injected for request handling.
+
+
+
+=back
 
 
 =head1 AUTHOR

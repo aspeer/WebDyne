@@ -150,52 +150,68 @@ NOTE: Apache must be restarted after running this script !
 # OPTIONS
 
 * **--help**
-  Display a brief help message and exit.
+
+    Display a brief help message and exit.
 
 * **--man**
-  Display the full manual.
+
+    Display the full manual.
 
 * **--apache_uname=USER**
-  Specify the Apache user name.
+
+    Specify the Apache user name.
 
 * **--apache_gname=GROUP**
-  Specify the Apache group name.
+
+    Specify the Apache group name.
 
 * **--httpd_bin=PATH**
-  Specify the path to the httpd binary.
+
+    Specify the path to the httpd binary.
 
 * **--dir_apache_conf=DIR**
-  Specify the directory for Apache configuration files.
+
+    Specify the directory for Apache configuration files.
 
 * **--dir_apache_modules=DIR**
-  Specify the directory for Apache modules.
+
+    Specify the directory for Apache modules.
 
 * **--file_mod_perl_lib=PATH**
-  Specify the path to the mod_perl library.
+
+    Specify the path to the mod_perl library.
 
 * **--mp2**
-  Use mod_perl 2.
+
+    Use mod_perl 2.
 
 * **--webdyne_cache_dn=DIR**
-  Specify the directory for WebDyne cache.
+
+    Specify the directory for WebDyne cache.
 
 * **--silent**
-  Suppress installer status messages.
+
+    Suppress installer status messages.
 
 * **--setcontext**
-  When SELinux is detected, change the context of module library files that would otherwise only generate a warning. Cache directory context handling is attempted independently when SELinux support is available.
+
+    When SELinux is detected, change the context of module library files that would otherwise only generate a warning. Cache directory context handling is attempted independently when SELinux support is available.
 
 * **--uninstall**
-  Uninstall the WebDyne Apache configuration.
+
+    Uninstall the WebDyne Apache configuration.
 
 * **--text**
-  Print the generated WebDyne Apache include configuration and exit without completing the install.
+
+    Print the generated WebDyne Apache include configuration and exit without completing the install.
 
 * **--dump_opt**
-  Dump the processed option hash and exit.
+
+    Dump the processed option hash and exit.
 
 * **--version**
-  Display the script version and exit.
+
+    Display the script version and exit.
 
 
 # EXAMPLES
@@ -272,112 +288,128 @@ NOTE: Apache must be restarted after running this script !
 =item *
 
 B<--help>
-  Display a brief help message and exit.
+
+Display a brief help message and exit.
 
 
 
 =item *
 
 B<--man>
-  Display the full manual.
+
+Display the full manual.
 
 
 
 =item *
 
 B<--apache_uname=USER>
-  Specify the Apache user name.
+
+Specify the Apache user name.
 
 
 
 =item *
 
 B<--apache_gname=GROUP>
-  Specify the Apache group name.
+
+Specify the Apache group name.
 
 
 
 =item *
 
 B<--httpd_bin=PATH>
-  Specify the path to the httpd binary.
+
+Specify the path to the httpd binary.
 
 
 
 =item *
 
 B<--dir_apache_conf=DIR>
-  Specify the directory for Apache configuration files.
+
+Specify the directory for Apache configuration files.
 
 
 
 =item *
 
 B<--dir_apache_modules=DIR>
-  Specify the directory for Apache modules.
+
+Specify the directory for Apache modules.
 
 
 
 =item *
 
 B<--file_mod_perl_lib=PATH>
-  Specify the path to the mod_perl library.
+
+Specify the path to the mod_perl library.
 
 
 
 =item *
 
 B<--mp2>
-  Use mod_perl 2.
+
+Use mod_perl 2.
 
 
 
 =item *
 
 B<--webdyne_cache_dn=DIR>
-  Specify the directory for WebDyne cache.
+
+Specify the directory for WebDyne cache.
 
 
 
 =item *
 
 B<--silent>
-  Suppress installer status messages.
+
+Suppress installer status messages.
 
 
 
 =item *
 
 B<--setcontext>
-  When SELinux is detected, change the context of module library files that would otherwise only generate a warning. Cache directory context handling is attempted independently when SELinux support is available.
+
+When SELinux is detected, change the context of module library files that would otherwise only generate a warning. Cache directory context handling is attempted independently when SELinux support is available.
 
 
 
 =item *
 
 B<--uninstall>
-  Uninstall the WebDyne Apache configuration.
+
+Uninstall the WebDyne Apache configuration.
 
 
 
 =item *
 
 B<--text>
-  Print the generated WebDyne Apache include configuration and exit without completing the install.
+
+Print the generated WebDyne Apache include configuration and exit without completing the install.
 
 
 
 =item *
 
 B<--dump_opt>
-  Dump the processed option hash and exit.
+
+Dump the processed option hash and exit.
 
 
 
 =item *
 
 B<--version>
-  Display the script version and exit.
+
+Display the script version and exit.
 
 
 
