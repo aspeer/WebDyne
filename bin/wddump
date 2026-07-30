@@ -127,7 +127,7 @@ The  `wddump`  command reads a compiled WebDyne Storable cache file and displays
 
 # Options #
 
-* **-h, --help**
+* **--help**
 
     Show brief help message.
 
@@ -135,7 +135,7 @@ The  `wddump`  command reads a compiled WebDyne Storable cache file and displays
 
     Display the full manual.
 
-* **--dump_opt, --dump-opt, --opt**
+* **--dump_opt**
 
     Dump the processed option hash and exit.
 
@@ -216,7 +216,7 @@ C<wddump>  can be useful for inspecting the final data structure of complex page
 
 =item *
 
-B<-h, --help>
+B<--help>
 
 Show brief help message.
 
@@ -232,7 +232,7 @@ Display the full manual.
 
 =item *
 
-B<--dump_opt, --dump-opt, --opt>
+B<--dump_opt>
 
 Dump the processed option hash and exit.
 

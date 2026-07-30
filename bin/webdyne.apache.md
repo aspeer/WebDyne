@@ -39,11 +39,11 @@ This utility is primarily designed for quick prototyping and development under A
 
     Use `FILE` as the Apache directory index/default document. Relative names are emitted as `DirectoryIndex FILE`. Absolute names are exposed through the same alias/rewrite mechanism used for the internal WebDyne index page.
 
-* **--no-index | --no_index**
+* **--no-index**
 
     Disable wrapper-managed index handling. No `DOCUMENT_DEFAULT`, `DirectoryIndex`, index alias, or index rewrite rules are emitted.
 
-* **--root | --docroot | --doc_root | --doc-root | --document_root | --document-root**
+* **--root**
 
     Specify the document root directory or a single `.psp` file to serve.
 
@@ -51,7 +51,7 @@ This utility is primarily designed for quick prototyping and development under A
 
     Specify the Apache listen port. The default is `5001` on macOS, or `5000` on other platforms.
 
-* **--keep_tmp, --keep-tmp / --no-keep_tmp, --no-keep-tmp**
+* **--keep_tmp**
 
     Keep or remove the temporary Apache server root on exit. By default it is cleaned up automatically.
 
@@ -59,11 +59,11 @@ This utility is primarily designed for quick prototyping and development under A
 
     Use the internal WebDyne test page as the root page.
 
-* **--dump_postamble, --dump-postamble**
+* **--dump_postamble**
 
     Print the generated Apache configuration postamble and exit instead of starting the server.
 
-* **--dump_opt, --dump-opt, --opt**
+* **--dump_opt**
 
     Dump the processed option hash and exit.
 
@@ -71,7 +71,7 @@ This utility is primarily designed for quick prototyping and development under A
 
     Accepted by the script option parser, but not otherwise used by the current code.
 
-* **--help | -?**
+* **--help**
 
     Display a brief help message and exit.
 

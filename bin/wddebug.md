@@ -32,11 +32,11 @@ By default debugging is optimized out of the WebDyne modules to increase perform
 
     Disable debugging in the WebDyne modules.
 
-* **--directory=DIR, --dir=DIR**
+* **--directory=DIR**
 
     Specify the directory containing `WebDyne.pm` and the `WebDyne/` module tree.
 
-* **--dump_opt, --dump-opt, --opt**
+* **--dump_opt**
 
     Dump the processed option hash and exit.
 
@@ -44,7 +44,7 @@ By default debugging is optimized out of the WebDyne modules to increase perform
 
     Automatically confirm the prompt to proceed with enabling or disabling debugging.
 
-* **--help|?**
+* **--help**
 
     Display a brief help message and exit.
 

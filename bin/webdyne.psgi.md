@@ -25,19 +25,19 @@ Wrapper options handled by `webdyne.psgi` itself:
 
 **--test** Use WebDyne's internal test page as the root.
 
-**--static / --no-static** Enable or disable PSGI static-file middleware.
+**--static** Enable or disable PSGI static-file middleware.
 
-**--index / --no-index** Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
+**--index** Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
 
 **--index=FILE** Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
 
-**--root, --docroot, --doc_root, --doc-root, --document_root, --document-root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
+**--root** Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
 
-**-E, --env** Set the PSGI/Plack environment mode to `development`, `production`, or `none`. The wrapper sets `PLACK_ENV` and forwards the mode to `Plack::Runner`.
+**--env** Set the PSGI/Plack environment mode to `development`, `production`, or `none`. The wrapper sets `PLACK_ENV` and forwards the mode to `Plack::Runner`.
 
 **--argv** Supply additional arguments that the wrapper prepends to the remaining command line arguments before invoking `Plack::Runner`.
 
-**--dump_opt, --dump-opt, --opt** Dump the processed option hash and exit.
+**--dump_opt** Dump the processed option hash and exit.
 
 Remaining command line options are handled by `Plack::Runner` and are the same as described in the [plackup(1)](man:plackup(1)) man page. Refer to that page for full options but some common options are:
 

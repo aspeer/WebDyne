@@ -25,34 +25,34 @@ NOTE: Apache must be restarted after running this script !
 
 # OPTIONS
 
-- `--help | -?`
+- `--help`
   Display a brief help message and exit.
 
 - `--man`
   Display the full manual.
 
-- `--apache_uname=USER | --apache-uname=USER | --uname=USER`
+- `--apache_uname=USER`
   Specify the Apache user name.
 
-- `--apache_gname=GROUP | --apache-gname=GROUP | --gname=GROUP`
+- `--apache_gname=GROUP`
   Specify the Apache group name.
 
-- `--httpd_bin=PATH | --httpd-bin=PATH | --httpd=PATH`
+- `--httpd_bin=PATH`
   Specify the path to the httpd binary.
 
-- `--dir_apache_conf=DIR | --dir-apache-conf=DIR | --apache_conf=DIR | --apache-conf=DIR | --conf=DIR`
+- `--dir_apache_conf=DIR`
   Specify the directory for Apache configuration files.
 
-- `--dir_apache_modules=DIR | --dir-apache-modules=DIR | --apache_modules=DIR | --apache-modules=DIR | --modules=DIR`
+- `--dir_apache_modules=DIR`
   Specify the directory for Apache modules.
 
-- `--file_mod_perl_lib=PATH | --file-mod-perl-lib=PATH | --mod_perl_lib=PATH | --mod-perl-lib=PATH | --mod_perl=PATH | --mod-perl=PATH`
+- `--file_mod_perl_lib=PATH`
   Specify the path to the mod_perl library.
 
 - `--mp2`
   Use mod_perl 2.
 
-- `--webdyne_cache_dn=DIR | --webdyne-cache-dn=DIR | --webdyne_cache=DIR | --webdyne-cache=DIR | --cache_dn=DIR | --cache-dn=DIR | --cache=DIR | --dir_webdyne_cache=DIR | --dir-webdyne-cache=DIR`
+- `--webdyne_cache_dn=DIR`
   Specify the directory for WebDyne cache.
 
 - `--silent`
@@ -64,10 +64,10 @@ NOTE: Apache must be restarted after running this script !
 - `--uninstall`
   Uninstall the WebDyne Apache configuration.
 
-- `--text | --print`
+- `--text`
   Print the generated WebDyne Apache include configuration and exit without completing the install.
 
-- `--dump_opt | --dump-opt | --opt`
+- `--dump_opt`
   Dump the processed option hash and exit.
 
 - `--version`

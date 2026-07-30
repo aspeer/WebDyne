@@ -341,11 +341,11 @@ By default debugging is optimized out of the WebDyne modules to increase perform
 
     Disable debugging in the WebDyne modules.
 
-* **--directory=DIR, --dir=DIR**
+* **--directory=DIR**
 
     Specify the directory containing `WebDyne.pm` and the `WebDyne/` module tree.
 
-* **--dump_opt, --dump-opt, --opt**
+* **--dump_opt**
 
     Dump the processed option hash and exit.
 
@@ -353,7 +353,7 @@ By default debugging is optimized out of the WebDyne modules to increase perform
 
     Automatically confirm the prompt to proceed with enabling or disabling debugging.
 
-* **--help|?**
+* **--help**
 
     Display a brief help message and exit.
 
@@ -504,7 +504,7 @@ Disable debugging in the WebDyne modules.
 
 =item *
 
-B<--directory=DIR, --dir=DIR>
+B<--directory=DIR>
 
 Specify the directory containing C<WebDyne.pm> and the C<WebDyne/> module tree.
 
@@ -512,7 +512,7 @@ Specify the directory containing C<WebDyne.pm> and the C<WebDyne/> module tree.
 
 =item *
 
-B<--dump_opt, --dump-opt, --opt>
+B<--dump_opt>
 
 Dump the processed option hash and exit.
 
@@ -528,7 +528,7 @@ Automatically confirm the prompt to proceed with enabling or disabling debugging
 
 =item *
 
-B<--help|?>
+B<--help>
 
 Display a brief help message and exit.
 

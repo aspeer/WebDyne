@@ -16,7 +16,7 @@ The  `wddump`  command reads a compiled WebDyne Storable cache file and displays
 
 # Options #
 
-* **-h, --help**
+* **--help**
 
     Show brief help message.
 
@@ -24,7 +24,7 @@ The  `wddump`  command reads a compiled WebDyne Storable cache file and displays
 
     Display the full manual.
 
-* **--dump_opt, --dump-opt, --opt**
+* **--dump_opt**
 
     Dump the processed option hash and exit.
 

@@ -24,7 +24,7 @@ By default the command prints the compiled page data section only. `--meta` prin
 
 # Options #
 
-* **-h, --help**
+* **--help**
 
     Show brief help message.
 
@@ -40,59 +40,59 @@ By default the command prints the compiled page data section only. `--meta` prin
 
     Show the full compiled container, including both metadata and compiled page data.
 
-* **--manifest / --no-manifest**
+* **--manifest**
 
     Enable or disable population of the source filename in the metadata manifest section. Manifest output is enabled by default.
 
-* **--timestamp / --no-timestamp**
+* **--timestamp**
 
     Enable or disable compile timestamps in metadata. Timestamps are disabled by default.
 
-* **--perl / --no-perl**
+* **--perl**
 
     Enable or disable execution of Perl in \__PERL__ sections at compile time. Perl execution is disabled by default.
 
-* **--filter / --no-filter**
+* **--filter**
 
     Enable or disable compile-time filter stages nominated in the file. Filters are disabled by default.
 
-* **--head_insert, --head-insert / --no-head_insert, --no-head-insert**
+* **--head_insert**
 
     Enable or disable WebDyne head insertion while compiling from the command line, including configured `WEBDYNE_HEAD_INSERT` content and related `start_html` parameters. This is disabled by default so diagnostic compile output is not changed by runtime head additions normally intended for Apache, PSGI, or PAGI request handling.
 
-* **--outfile, --dest, --dest_fn**
+* **--outfile**
 
     Intended to specify a destination file for the compiled Storable cache. In the current `wdcompile` script this option is parsed but not wired through to the compiler's `dest` parameter, so it does not currently write an output file.
 
-* **--repeat=NUM, --r=NUM, --num=NUM, --n=NUM**
+* **--repeat=NUM**
 
     Specify the number of times to repeat the compile. Used for consistency testing.
 
-* **--stage0 | --0**
+* **--stage0**
 
     Stop after parsing into the initial container representation.
 
-* **--stage1 | --1**
+* **--stage1**
 
     Stop after compile-time Perl processing.
 
-* **--stage2 | --2**
+* **--stage2**
 
     Stop after compile-time filter processing.
 
-* **--stage3 | --3**
+* **--stage3**
 
     Stop after the first optimisation pass.
 
-* **--stage4 | --4**
+* **--stage4**
 
     Stop after the second optimisation pass.
 
-* **--stage5 | --5 | --final**
+* **--stage5**
 
     Stop at the final compiled container representation. This is the default.
 
-* **--dump_opt, --dump-opt, --opt**
+* **--dump_opt**
 
     Dump the parsed option hash for debugging and exit.
 
