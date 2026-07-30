@@ -110,6 +110,7 @@ t/01-basic.t
 t/02-render.t
 t/03-meta.t                              
 t/04-cgi.t                               
+t/README.md
 t/blocks.psp
 t/blocks_repeat.psp
 t/cgi_all.psp                            
@@ -1131,7 +1132,8 @@ t.other/upload.psp
 t.other/version.psp                      
 t/08-cgi_param_expand.t                  
 t/cgi_param_expand.psp                   
-t/apache_harness.pm
+t/apache_harness_helper.pm
+t/test_diff_helper.pm
 t/data/02-cgi_param_expand.dat.0         
 t/data/02-cgi_param_expand.dat.1         
 t/data/02-cgi_param_expand.dat.2         

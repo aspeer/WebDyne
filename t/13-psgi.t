@@ -37,7 +37,7 @@ BEGIN {
 #
 use FindBin qw($RealBin $Script);
 use lib $RealBin;
-use test_diff qw(eq_or_diff_text_test);
+use test_diff_helper qw(eq_or_diff_text_test);
 use File::Find qw(find);
 use File::Basename;
 use Data::Dumper;

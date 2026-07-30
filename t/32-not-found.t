@@ -62,12 +62,20 @@ sub pagi_not_found {
 
 sub apache_not_found {
     require Apache::TestRequest;
-    require apache_harness;
-    my $runner=apache_harness::startup();
-    my $status=Apache::TestRequest::GET_RC("/$missing_cn");
-    my $body=Apache::TestRequest::GET_BODY("/$missing_cn");
-    apache_harness::shutdown($runner);
-    return ($status, $body);
+    require apache_harness_helper;
+    my $runner;
+    my @result;
+    my $ok=eval {
+        $runner=apache_harness_helper::startup();
+        my $status=Apache::TestRequest::GET_RC("/$missing_cn");
+        my $body=Apache::TestRequest::GET_BODY("/$missing_cn");
+        @result=($status, $body);
+        1;
+    };
+    my $err=$@;
+    apache_harness_helper::shutdown($runner) if $runner;
+    die $err unless $ok;
+    return @result;
 }
 
 

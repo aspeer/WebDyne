@@ -64,6 +64,7 @@ on build => sub {
 };
 
 on test => sub {
+    requires 'Algorithm::Diff';
     requires 'Capture::Tiny';
     requires 'File::Temp';
     requires 'IO::String';

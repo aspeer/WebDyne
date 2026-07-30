@@ -29,7 +29,7 @@ BEGIN {
 #
 use FindBin qw($RealBin $Script);
 use lib $RealBin;
-use test_diff qw(eq_or_diff_text_test);
+use test_diff_helper qw(eq_or_diff_text_test);
 use File::Find qw(find);
 use File::Basename;
 use Data::Dumper;
@@ -58,12 +58,18 @@ $ENV{'WEBDYNE_TEST_FILE_PREFIX'} ||= '02';
 #  Startup the web server and run tests
 #
 push @INC, dirname(__FILE__);
-require apache_harness;
+require apache_harness_helper;
+my $runner;
 diag('');
-my $runner=&apache_harness::startup();
-ok(${&main(\@ARGV) || die err ()} || 0);    # || 0 stops warnings
+my $ok=eval {
+    $runner=&apache_harness_helper::startup();
+    ok(${&main(\@ARGV) || die err ()} || 0);    # || 0 stops warnings
+    1;
+};
+my $err=$@;
 diag('');
-&apache_harness::shutdown($runner);
+&apache_harness_helper::shutdown($runner) if $runner;
+die $err unless $ok;
 
 
 #  Testing finished

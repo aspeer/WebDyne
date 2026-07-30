@@ -82,11 +82,19 @@ sub pagi_error {
 
 sub apache_error {
     require Apache::TestRequest;
-    require apache_harness;
-    my $runner=apache_harness::startup();
-    my $body=Apache::TestRequest::GET_BODY($fixture_cn);
-    apache_harness::shutdown($runner);
-    return (undef, q(), $body);
+    require apache_harness_helper;
+    my $runner;
+    my @result;
+    my $ok=eval {
+        $runner=apache_harness_helper::startup();
+        my $body=Apache::TestRequest::GET_BODY($fixture_cn);
+        @result=(undef, q(), $body);
+        1;
+    };
+    my $err=$@;
+    apache_harness_helper::shutdown($runner) if $runner;
+    die $err unless $ok;
+    return @result;
 }
 
 

@@ -73,6 +73,7 @@ my %WriteMakefile=(
 
     },
     BUILD_REQUIRES  => {
+        'Algorithm::Diff'   => 0,
         'Test::Simple'      => 0.44,
         'Test::More'        => 0,
         'Capture::Tiny'     => 0,

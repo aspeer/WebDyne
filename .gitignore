@@ -28,6 +28,13 @@
 /nytprof/
 /t/error_handler_*.psp
 /t/error_format_*.psp
+/t/1
+/t/SMOKE
+/t/TEST
+/t/TEST.PL
+/t/conf/
+/t/htdocs/
+/t/logs/
 
 # Generated local artifacts seen in this worktree
 /packer/webdyne.par

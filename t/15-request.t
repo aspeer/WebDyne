@@ -66,18 +66,24 @@ if (eval { require WebDyne::PAGI; 1 }) {
 if (eval { require Apache2::RequestRec; 1 } && !($> ==0)) {
     note('WebDyne::Apache test starting');
     push @INC, dirname(__FILE__);
-    require apache_harness;
+    require apache_harness_helper;
     require Apache::TestRequest;
+    my $runner;
     diag('');
-    my $runner=&apache_harness::startup;
-    my $test_no=Test::Builder->new->current_test();
-    my $html_live=&Apache::TestRequest::GET_BODY(basename('15-request.psp'), 'X-Test-No'=>$test_no, 'X-Test-Header-Req-Get'=>'OK' );
-    if ($html_live=~/Test No: (\d+)/) {
-        Test::Builder->new->current_test($1);
-    }
-    note('WebDyne::Apache test completed');
+    my $ok=eval {
+        $runner=&apache_harness_helper::startup;
+        my $test_no=Test::Builder->new->current_test();
+        my $html_live=&Apache::TestRequest::GET_BODY(basename('15-request.psp'), 'X-Test-No'=>$test_no, 'X-Test-Header-Req-Get'=>'OK' );
+        if ($html_live=~/Test No: (\d+)/) {
+            Test::Builder->new->current_test($1);
+        }
+        note('WebDyne::Apache test completed');
+        1;
+    };
+    my $err=$@;
     diag('');
-    &apache_harness::shutdown($runner);
+    &apache_harness_helper::shutdown($runner) if $runner;
+    die $err unless $ok;
 }
 
 

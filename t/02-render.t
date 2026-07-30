@@ -18,7 +18,7 @@ BEGIN {
 use Test::More qw(no_plan);
 use FindBin qw($RealBin $Script);
 use lib $RealBin;
-use test_diff qw(eq_or_diff_text_test);
+use test_diff_helper qw(eq_or_diff_text_test);
 use File::Temp qw(tempfile);
 use File::Find qw(find);
 use Data::Dumper;
@@ -267,4 +267,3 @@ sub render {
     return \$html;
 
 }
-

@@ -1,4 +1,4 @@
-package apache_harness;
+package apache_harness_helper;
 
 use strict;
 use warnings;
@@ -40,7 +40,9 @@ sub startup_conf {
     #
     my @perl_inc_dn=@{&perl_inc_dn()};
     my $PerlSwitches=join("\n", map { sprintf('PerlSwitches -I%s', $_) } @perl_inc_dn);
-    my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) } grep { $ENV{$_} } grep { /^WEBDYNE_/ } keys %ENV;
+    my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) }
+        grep { defined($ENV{$_}) && $ENV{$_} ne '' }
+        grep { /^WEBDYNE_/ } keys %ENV;
     push(@PerlSetEnv, 'PerlSetEnv WEBDYNE_ERROR_TEXT 1') unless defined($ENV{'WEBDYNE_ERROR_TEXT'});
     my $PerlSetEnv=join("\n", @PerlSetEnv);
     my $postamble= <<"END";
