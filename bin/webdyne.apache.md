@@ -18,8 +18,8 @@ webdyne.apache - start a temporary Apache mod_perl instance for serving WebDyne 
 
 By default the script:
 
-- uses the current working directory as the document root
-- enables WebDyne index handling
+- uses `DOCUMENT_ROOT` as the document root if it is set, otherwise the current working directory
+- enables WebDyne index handling, using `DOCUMENT_DEFAULT` if it is set
 - listens on port `5001` on macOS, or `5000` on other platforms
 - creates a temporary Apache server root
 - creates a temporary WebDyne cache directory under that server root
@@ -35,9 +35,13 @@ This utility is primarily designed for quick prototyping and development under A
 
     Enable index handling. This is on by default. If enabled with the default value, WebDyne uses its internal default index page.
 
-* **--no-index**
+* **--index=FILE**
 
-    Disable index handling.
+    Use `FILE` as the Apache directory index/default document. Relative names are emitted as `DirectoryIndex FILE`. Absolute names are exposed through the same alias/rewrite mechanism used for the internal WebDyne index page.
+
+* **--no-index | --no_index**
+
+    Disable wrapper-managed index handling. No `DOCUMENT_DEFAULT`, `DirectoryIndex`, index alias, or index rewrite rules are emitted.
 
 * **--root | --docroot | --doc_root | --doc-root | --document_root | --document-root**
 
@@ -77,18 +81,17 @@ The generated Apache configuration currently does the following:
 
 - loads the `WebDyne` Perl module
 - installs `mod_perl` handling for `.psp` files with `PerlResponseHandler WebDyne`
-- sets `DOCUMENT_DEFAULT` to the resolved WebDyne default index page
 - passes through any current `WEBDYNE_*` environment variables as `PerlSetEnv`
 - passes through non-default Perl include paths as `PerlSwitches -I...`
 - sets `WEBDYNE_ERROR_TEXT=1` unless already defined
-- grants access to both the resolved default index directory and the selected document root
-- sets `DirectoryIndex index.psp`
-- aliases `/index.psp` to the resolved default index file
-- rewrites directory requests to `/index.psp`
+- grants access to the selected document root
+- when built-in index handling is enabled, sets `DOCUMENT_DEFAULT` to WebDyne's internal index page, grants access to that file's directory, aliases `/index.psp` to it, and rewrites directory requests to `/index.psp`
+- when `DOCUMENT_DEFAULT` or `--index=FILE` supplies a relative filename, emits `PerlSetEnv DOCUMENT_DEFAULT FILE` and `DirectoryIndex FILE`
+- when `--no-index` is used, omits all wrapper-managed index configuration
 - on macOS, loads `mod_rewrite` explicitly when Apache does not already have it loaded
 - logs to `/dev/stderr` and `/dev/stdout` where possible, otherwise falls back to Apache log files
 
-The script also reads defaults from `~/.webdyne.apache.opt` if that file exists.
+The script also reads defaults from `~/.webdyne.apache.opt` if that file exists. `index` is the canonical runtime option; a seeded `no_index` value is normalized into `index => 0`, and command-line options take final precedence.
 
 # EXAMPLES
 
@@ -120,6 +123,18 @@ Show the generated Apache configuration instead of starting the server:
 
 ```sh
 webdyne.apache --dump_postamble /var/www/html
+```
+
+Disable wrapper-managed index handling:
+
+```sh
+webdyne.apache --no-index /var/www/html
+```
+
+Use a site-local default document:
+
+```sh
+webdyne.apache --index=home.psp /var/www/html
 ```
 
 Start using the internal test page:

@@ -91,21 +91,42 @@ sub main {
     #  Defaults
     #
     my %opt=(
-        index       => 1,
-        root        => fastcwd(),
+        index       => defined($ENV{'DOCUMENT_DEFAULT'}) ? $ENV{'DOCUMENT_DEFAULT'} : 1,
         keep_tmp    => 0,
         port        => ($^O eq 'darwin') ? 5001 : 5000,
         %{do(glob(sprintf('~/.%s.opt', basename(__FILE__)))) || {}}
     );
+    if (delete $opt{'no_index'}) {
+        $opt{'index'}=0;
+    }
 
 
     #  Process
     #
     Getopt::Long::Configure('pass_through');
+    @{$argv_ar}=grep {
+        if ($_ eq '--no-index') {
+            $opt{'index'}=0;
+            0;
+        }
+        elsif (/^--index=(.*)$/) {
+            $opt{'index'}=$1;
+            0;
+        }
+        else {
+            1;
+        }
+    } @{$argv_ar};
     GetOptions(
         \%opt,
         my @opt=(
-        'index!',
+        'index!' => sub {
+            my ($name, $value)=@_;
+            $opt{'index'}=$value ? 1 : 0;
+        },
+        'no_index' => sub {
+            $opt{'index'}=0
+        },
         'root|docroot|doc_root|doc-root|document_root|document-root=s',
         'port=s',
         'keep_tmp|keep-tmp!',
@@ -116,7 +137,7 @@ sub main {
         'help|?'
         )
     ) || return err('bad options');
-    map {$opt{"no_${_}"}=!($opt{$_})} map { /^([^|!:=+]+)/ } grep {/\!$/} @opt;
+    map {$opt{"no_${_}"} = !($opt{$_})} map { /^([^|!:=+]+)/ } grep {!ref($_) && /\!$/} @opt;
 
 
     #  Last argument is root directory
@@ -137,14 +158,6 @@ sub main {
     elsif($opt{'test'}) {
         $opt{'root_pn'}=$WEBDYNE_DEFAULT_TEST_FN;
     }
-
-
-    #  Indexing. 1 for enable with internal, string for some other indexing file
-    #
-    if ($opt{'index'} eq '1') {
-        $opt{'index'}=$WEBDYNE_DEFAULT_INDEX_FN;
-    }
-
 
     #  Dump options for debugging
     #
@@ -259,8 +272,36 @@ END
 
     #  Ok - proceed to build postamble
     #
-    my $default_index_fn=File::Spec->rel2abs($WEBDYNE_DEFAULT_INDEX_FN || File::Spec->catfile($document_root, 'index.psp'));
-    my $default_index_dn=dirname($default_index_fn);
+    my $index_postamble='';
+    if (my $document_default=$opt_hr->{'index'}) {
+        if ($document_default eq '1') {
+            $document_default=File::Spec->rel2abs($WEBDYNE_DEFAULT_INDEX_FN || File::Spec->catfile($document_root, 'index.psp'));
+        }
+        if (File::Spec->file_name_is_absolute($document_default)) {
+            my $default_index_fn=File::Spec->rel2abs($document_default);
+            my $default_index_dn=dirname($default_index_fn);
+            $index_postamble= <<"END";
+PerlSetEnv DOCUMENT_DEFAULT $default_index_fn
+DirectoryIndex index.psp
+Alias /index.psp $default_index_fn
+AliasMatch ^/(.+)/index\\.psp\$ $default_index_fn
+
+<Directory "$default_index_dn">
+    Require all granted
+</Directory>
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/index\\.psp\$
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ /index.psp [L,PT]
+END
+        }
+        else {
+            $index_postamble= <<"END";
+PerlSetEnv DOCUMENT_DEFAULT $document_default
+DirectoryIndex $document_default
+END
+        }
+    }
     my @PerlSetEnv=map { sprintf('PerlSetEnv %s %s', $_, $ENV{$_}) }
         grep { defined($ENV{$_}) && $ENV{$_} ne '' }
         grep { /^WEBDYNE_/ } keys %ENV;
@@ -272,32 +313,19 @@ END
 $module_load_rewrite
 $PerlSetEnv
 $PerlSwitches
-PerlModule WebDyne
-AddHandler modperl .psp
-PerlResponseHandler WebDyne
-PerlSetEnv DOCUMENT_DEFAULT $default_index_fn
-#PerlOptions +GlobalRequest
+	PerlModule WebDyne
+	AddHandler modperl .psp
+	PerlResponseHandler WebDyne
+$index_postamble
+	#PerlOptions +GlobalRequest
 
-ErrorLog $stderr_fn
-LogLevel debug
-CustomLog $stdout_fn combined
+	ErrorLog $stderr_fn
+	LogLevel debug
+	CustomLog $stdout_fn combined
 
-DirectoryIndex index.psp
-Alias /index.psp $default_index_fn
-AliasMatch ^/(.+)/index\.psp\$ $default_index_fn
-
-
-<Directory "$default_index_dn">
-    Require all granted
-</Directory>
-RewriteEngine On
-RewriteCond %{REQUEST_URI} !^\Q/index.psp\E\$
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ /index.psp [L,PT]
-
-<Directory "$document_root">
-    Require all granted
-</Directory>
+	<Directory "$document_root">
+	    Require all granted
+	</Directory>
 END
     ;
     exit print $postamble if $opt_hr->{'dump_postamble'};
