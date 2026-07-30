@@ -76,6 +76,9 @@ if (!caller || exists $ENV{PAR_TEMP}) {
         index   => defined($ENV{'DOCUMENT_DEFAULT'}) ? $ENV{'DOCUMENT_DEFAULT'} : 1,
         %{do(glob(sprintf('~/.%s.opt', basename(__FILE__)))) || {}}
     );
+    if (delete $opt{'no_index'}) {
+        $opt{'index'}=0;
+    }
 
 
     #  Process
@@ -104,13 +107,16 @@ if (!caller || exists $ENV{PAR_TEMP}) {
             my ($name, $value)=@_;
             $opt{'index'}=$value ? 1 : 0;
         },
+        'no_index' => sub {
+            $opt{'index'}=0
+        },
         'root|docroot|doc_root|doc-root|document_root|document-root:s',
         'env|E=s',
         'argv:s',
         'dump_opt|dump-opt|opt'
         )
     );
-    map {$opt{"no_${_}"}=!($opt{$_})} map { /^([^|!:=+]+)/ } grep {!ref($_) && /\!$/} @opt;
+    map {$opt{"no_${_}"} = !($opt{$_})} map { /^([^|!:=+]+)/ } grep {!ref($_) && /\!$/} @opt;
     
     
     #  Last argument is root directory
