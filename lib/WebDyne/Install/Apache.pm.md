@@ -23,11 +23,11 @@ The module builds rendered configuration files from bundled templates, merges va
 
 * **install($prefix, $installbin_dn, \%options)**
 
-    Run the Apache installer. This writes rendered configuration files derived from the bundled templates. If `text` is true in the options hash, the generated Apache config is printed instead of written to disk.
+    Run the Apache installer. This writes rendered configuration files derived from the bundled templates. If `text` is true in the options hash, the complete generated Apache/WebDyne config is printed instead of written to disk. If `dry_run` is true, planned filesystem and ownership changes are reported but not applied.
 
 * **uninstall($prefix, $installbin_dn, \%options)**
 
-    Run the uninstall path, removing generated Apache-side configuration files and delegating cache-directory cleanup to the base installer layer.
+    Run the uninstall path, removing generated Apache-side configuration files and delegating cache-directory cleanup to the base installer layer. If `dry_run` is true, planned removals are reported but not applied.
 
 # NOTES #
 

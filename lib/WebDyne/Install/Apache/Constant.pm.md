@@ -26,9 +26,21 @@ Commonly used constants include:
 
     Resolved path to the Apache `httpd` binary.
 
+* **APACHECTL_BIN**
+
+    Resolved path to `apachectl` or `apache2ctl`, used as a fallback source for Apache `-V` configuration output.
+
+* **APXS_BIN**
+
+    Resolved path to `apxs`, `apxs2`, or `apxs2.4`, used to query Apache development installation paths when available.
+
 * **DIR_APACHE_CONF**
 
     Resolved Apache configuration directory.
+
+* **DIR_APACHE_CONF_ENABLED**
+
+    Resolved Debian-style enabled configuration directory when `conf-available` and `conf-enabled` are detected.
 
 * **DIR_APACHE_MODULES**
 
@@ -69,6 +81,14 @@ This module also exposes helper routines used internally by the installer:
 * **httpd_bin()**
 
     Locate the Apache executable.
+
+* **apachectl_bin()**
+
+    Locate the Apache control executable.
+
+* **apxs_bin() / apxs_config()**
+
+    Locate APXS and query Apache development installation paths.
 
 * **httpd_config()**
 

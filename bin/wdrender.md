@@ -61,6 +61,10 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Send output to nominated file. Colourisation is disabled but tidy will be performed if available.
     
+* **--test**
+
+    Use WebDyne's built-in default test page as the source file.
+
 * **--warn**
 
     Enable or disable warnings about missing Tidy or Colourise modules

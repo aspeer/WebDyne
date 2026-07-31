@@ -40,6 +40,10 @@ By default the command prints the compiled page data section only. `--meta` prin
 
     Show the full compiled container, including both metadata and compiled page data.
 
+* **--test**
+
+    Use WebDyne's built-in default test page as the source file.
+
 * **--manifest**
 
     Enable or disable population of the source filename in the metadata manifest section. Manifest output is enabled by default.

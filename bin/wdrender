@@ -159,6 +159,7 @@ sub main {
         'sse',
         'silent|quiet!',
         #'status=s', # Not applied
+        'test',
         'theme=s',
         'tidy|pretty!',
         'keep_tmp|keep-tmp!',
@@ -214,7 +215,8 @@ sub main {
 
     #  Get srce file, add to options
     #
-    my $srce_fn=shift(@{$argv_ar}) ||
+    my $srce_fn=$opt{'test'} ? $WEBDYNE_DEFAULT_TEST_FN : shift(@{$argv_ar});
+    $srce_fn ||
         pod2usage("$Script: no source file specified !");
     (-f $srce_fn) ||
         pod2usage("$Script: input file not found !");
@@ -1018,6 +1020,10 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
     Send output to nominated file. Colourisation is disabled but tidy will be performed if available.
     
+* **--test**
+
+    Use WebDyne's built-in default test page as the source file.
+
 * **--warn**
 
     Enable or disable warnings about missing Tidy or Colourise modules
@@ -1371,6 +1377,14 @@ Disable config loading and skip HTML tidy/colour formatting.
 B<--outfile=FILE>
 
 Send output to nominated file. Colourisation is disabled but tidy will be performed if available.
+
+
+
+=item *
+
+B<--test>
+
+Use WebDyne's built-in default test page as the source file.
 
 
 

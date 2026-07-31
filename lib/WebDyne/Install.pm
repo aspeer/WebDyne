@@ -105,6 +105,7 @@ sub uninstall {
     #  Get cache dn
     #
     my $cache_dn=&cache_dn($prefix);
+    my $dry_run=$ENV{'DRY_RUN'};
 
 
     #  Delete cache files and remove if empty
@@ -113,10 +114,26 @@ sub uninstall {
         my @file_cn=glob(File::Spec->catfile($cache_dn, '*'));
         message "removing cache files from '$cache_dn'";
         foreach my $fn (grep {/\w{32}(\.html)?$/} @file_cn) {
-            unlink $fn;    #don't error here if problems, user will never see it
+            if ($dry_run) {
+                message "would remove cache file '$fn'";
+                next;
+            }
+            unlink($fn) ||
+                return err("unable to remove cache file $fn, $!");
         }
         message "removing cache directory '$cache_dn'";
-        rmdir $cache_dn unless ($cache_dn eq File::Spec->tmpdir);
+        unless ($cache_dn eq File::Spec->tmpdir) {
+            if ($dry_run) {
+                message "would remove cache directory '$cache_dn'";
+            }
+            else {
+                my @remaining=glob(File::Spec->catfile($cache_dn, '*'));
+                unless (@remaining) {
+                    rmdir($cache_dn) ||
+                        return err("unable to remove cache directory $cache_dn, $!");
+                }
+            }
+        }
     }
 
     #if ($prefix) {
@@ -155,9 +172,14 @@ sub install {
         #  Make
         #
         message "creating cache directory '$cache_dn'.";
-        File::Path::mkpath($cache_dn, 0, 0755) || do {
-            return err("unable to create dir $cache_dn") unless (-d $cache_dn)
-        };
+        if ($ENV{'DRY_RUN'}) {
+            message "would create cache directory '$cache_dn'.";
+        }
+        else {
+            File::Path::mkpath($cache_dn, 0, 0755) || do {
+                return err("unable to create dir $cache_dn") unless (-d $cache_dn)
+            };
+        }
 
     }
     else {
@@ -259,11 +281,11 @@ Its main job is to determine the appropriate cache directory, create it during i
 
 * **install($prefix)**
 
-    Create the cache directory if required and report progress through `message()`.
+    Create the cache directory if required and report progress through `message()`. If `DRY_RUN` is set in the environment, report the action without creating the directory.
 
 * **uninstall($prefix)**
 
-    Remove cached compile artifacts from the resolved cache directory and attempt to remove the directory if appropriate.
+    Remove cached compile artifacts from the resolved cache directory and attempt to remove the directory if appropriate. Cache cleanup is limited to files whose names match a 32-character word name, optionally followed by `.html`.
 
 * **cache_dn($prefix)**
 
@@ -324,7 +346,7 @@ Its main job is to determine the appropriate cache directory, create it during i
 
 B<install($prefix)>
 
-Create the cache directory if required and report progress through C<message()>.
+Create the cache directory if required and report progress through C<message()>. If C<DRY_RUN> is set in the environment, report the action without creating the directory.
 
 
 
@@ -332,7 +354,7 @@ Create the cache directory if required and report progress through C<message()>.
 
 B<uninstall($prefix)>
 
-Remove cached compile artifacts from the resolved cache directory and attempt to remove the directory if appropriate.
+Remove cached compile artifacts from the resolved cache directory and attempt to remove the directory if appropriate. Cache cleanup is limited to files whose names match a 32-character word name, optionally followed by C<.html>.
 
 
 

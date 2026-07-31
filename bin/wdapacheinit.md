@@ -45,6 +45,14 @@ NOTE: Apache must be restarted after running this script !
 
     Specify the path to the httpd binary.
 
+* **--apachectl_bin=PATH**
+
+    Specify the path to the apachectl or apache2ctl binary.
+
+* **--apxs_bin=PATH**
+
+    Specify the path to the apxs binary.
+
 * **--dir_apache_conf=DIR**
 
     Specify the directory for Apache configuration files.
@@ -79,11 +87,19 @@ NOTE: Apache must be restarted after running this script !
 
 * **--text**
 
-    Print the generated WebDyne Apache include configuration and exit without completing the install.
+    Print the complete generated Apache/WebDyne configuration fragments and exit without completing the install.
+
+* **--dry_run**
+
+    Report install or uninstall actions without writing, removing, linking, changing ownership, or changing SELinux context.
 
 * **--dump_opt**
 
     Dump the processed option hash and exit.
+
+* **--dump_config**
+
+    Dump the resolved Apache/WebDyne installation configuration after discovery and exit.
 
 * **--version**
 
@@ -109,6 +125,8 @@ Apache installation of WebDyne is split into two components. The first is the in
 The generated WebDyne Perl configuration contains variables that can be set to change the behaviour of the WebDyne system.
 
 Where Apache uses a conf.d-style include directory, the generated WebDyne Apache include is written there and the main Apache configuration file is not changed. Where no such include directory is detected, the script updates the main Apache configuration between WebDyne delimiter markers.
+
+During uninstall, cache cleanup is limited to files in the resolved WebDyne cache directory whose names match WebDyne's compiled cache pattern: a 32-character word name, optionally followed by `.html`. The cache directory itself is removed only if it is empty afterwards and is not the system temporary directory.
 
 # AUTHOR
 

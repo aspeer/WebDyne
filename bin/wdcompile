@@ -33,6 +33,7 @@ use WebDyne::Util;
 
 #  External modules
 #
+use WebDyne::Constant;
 use WebDyne::Compile;
 use Getopt::Long;
 use Pod::Usage;
@@ -105,6 +106,7 @@ sub main {
         'repeat|r|num|n=s',
         'perl!',
         'filter!',
+        'test',
         'version',
         'help|?',
         'man',
@@ -129,7 +131,8 @@ sub main {
 
     #  Get srce file, add to options
     #
-    my $srce_fn=$argv_ar->[0] ||
+    my $srce_fn=$opt{'test'} ? $WEBDYNE_DEFAULT_TEST_FN : $argv_ar->[0];
+    $srce_fn ||
         pod2usage("$Script: no source file specified !");
     $opt{'srce'}=$srce_fn;
 
@@ -220,6 +223,10 @@ By default the command prints the compiled page data section only. `--meta` prin
 * **--all**
 
     Show the full compiled container, including both metadata and compiled page data.
+
+* **--test**
+
+    Use WebDyne's built-in default test page as the source file.
 
 * **--manifest**
 
@@ -440,6 +447,14 @@ Show only the compiled page data section. This is the default output mode.
 B<--all>
 
 Show the full compiled container, including both metadata and compiled page data.
+
+
+
+=item *
+
+B<--test>
+
+Use WebDyne's built-in default test page as the source file.
 
 
 

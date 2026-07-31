@@ -23,11 +23,11 @@ Its main job is to determine the appropriate cache directory, create it during i
 
 * **install($prefix)**
 
-    Create the cache directory if required and report progress through `message()`.
+    Create the cache directory if required and report progress through `message()`. If `DRY_RUN` is set in the environment, report the action without creating the directory.
 
 * **uninstall($prefix)**
 
-    Remove cached compile artifacts from the resolved cache directory and attempt to remove the directory if appropriate.
+    Remove cached compile artifacts from the resolved cache directory and attempt to remove the directory if appropriate. Cache cleanup is limited to files whose names match a 32-character word name, optionally followed by `.html`.
 
 * **cache_dn($prefix)**
 
