@@ -71,7 +71,7 @@ WORKDIR /app
 
 # Checkout Webdyne. Used if cloning
 #
-#RUN git clone -b pagi --single-branch https://github.com/aspeer/WebDyne.git pm-WebDyne
+#RUN git clone -b development --single-branch https://github.com/aspeer/WebDyne.git pm-WebDyne
 #WORKDIR pm-WebDyne
 
 
@@ -113,7 +113,7 @@ RUN rm -rf ${PERL_CARTON_PATH}/cache &&  mkdir ${PERL_CARTON_PATH}/cache
 #
 # Now generate main image from builder image
 #
-FROM ${BASE} AS runtime
+FROM ${BASE} as runtime
 
 
 # Republish args

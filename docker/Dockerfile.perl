@@ -5,7 +5,7 @@
 #
 # Override with --build-arg
 #
-ARG BASE=perl:latest
+ARG BASE=perl:5.44
 ARG PORT=8080
 ARG WORKERS=8
 

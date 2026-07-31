@@ -11,10 +11,10 @@ use Cwd qw(cwd);
 # Quick and dirty to generate templates
 #
 my %base = (
-  debian => 'debian:bookworm',
-  alpine => 'alpine:latest',
-  fedora => 'fedora:43',
-  perl   => 'perl:latest'
+  debian => 'debian:trixie-slim',
+  alpine => 'alpine:3.24.1',
+  fedora => 'fedora:44',
+  perl   => 'perl:5.44'
 );
 
 

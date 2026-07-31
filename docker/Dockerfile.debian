@@ -5,7 +5,7 @@
 #
 # Override with --build-arg
 #
-ARG BASE=debian:bookworm
+ARG BASE=debian:trixie-slim
 ARG PORT=8080
 ARG WORKERS=8
 
