@@ -6,6 +6,38 @@ use File::Spec;
 use Cwd qw(abs_path);
 use Tie::File;
 
+BEGIN {
+
+    # ExtUtils::Manifest in some Perl versions walks the tree with symlink
+    # following enabled before MANIFEST.SKIP is applied. A local Python venv can
+    # therefore abort Makefile.PL when its python symlinks resolve twice.
+    require ExtUtils::Manifest;
+    require File::Find;
+
+    no warnings 'redefine';
+    *ExtUtils::Manifest::manifind = sub {
+        my $found = {};
+
+        my $wanted = sub {
+            my $name = ExtUtils::Manifest::clean_up_filename($File::Find::name);
+            return if -d $File::Find::name;
+            $found->{$name} = '';
+        };
+
+        File::Find::find(
+            {
+                wanted     => $wanted,
+                no_chdir   => 1,
+                preprocess => sub { grep { $_ ne '.venv' } @_ },
+            },
+            '.'
+        );
+
+        return $found;
+    };
+
+}
+
 
 my $mm_ver=$ExtUtils::MakeMaker::VERSION;
 if ($mm_ver=~/_/) {    # dev version
@@ -186,6 +218,7 @@ SRC_DIR := doc
 TMP_DIR := $(SRC_DIR)/build
 PSP_DIR := $(SRC_DIR)/example
 PSP_FILES := $(shell find $(PSP_DIR) -type f -name '*.psp')
+BIN_DOC_FILES := $(wildcard bin/*.md)
 
 DOC_DIR := docs
 SCRIPTS_DIR := scripts
@@ -195,18 +228,22 @@ DOCKER_IMAGE := webdyne-mkdocs:latest
 DOCKER_STAMP := $(DOCKER_DIR)/.built
 
 
-$(SRC_DIR)/webdyne.md : $(SRC_DIR)/webdyne.xml
+$(SRC_DIR)/webdyne.md : $(SRC_DIR)/webdyne.xml $(BIN_DOC_FILES)
 	mkdir -p $(TMP_DIR)
 	xmllint --xinclude --noent $< -o $(TMP_DIR)/$(notdir $<)
 	xsltproc $(SCRIPTS_DIR)/promote-title-ids.xsl $(TMP_DIR)/$(notdir $<) | sponge $(TMP_DIR)/$(notdir $<)
 	pandoc -f docbook -t markdown-smart --lua-filter=$(SCRIPTS_DIR)/admonition-advanced.lua --resource-path=$(SRC_DIR) --extract-media=$(DOC_DIR) -o $(TMP_DIR)/$(notdir $@) $(TMP_DIR)/$(notdir $<)
-	perl -pi -e 's/\\</</g' $(TMP_DIR)/$(notdir $@)
+	perl -pi -e 's/[\\]+</\&lt;/g; s/[\\]+>/\&gt;/g' $(TMP_DIR)/$(notdir $@)
 	# Fix image placeholders from pandoc
 	perl -pi -e 's{\Qdocs/images\E}{images}g' $(TMP_DIR)/$(notdir $@)
+	perl -0pi -e 's/\{\.manual-page-new-tab\s+role="manual-page-new-tab"\}/{target="_blank" rel="noopener"}/g' $(TMP_DIR)/$(notdir $@)
 	perl -pi -e 's/[ \t]+$$//' $(TMP_DIR)/$(notdir $@)
 	cp $(TMP_DIR)/$(notdir $@) $@
 	rm -f $(DOC_DIR)/*.md
 	perl $(SCRIPTS_DIR)/mdsplit.pl $(TMP_DIR)/$(notdir $@) $(DOC_DIR)
+	mkdir -p $(DOC_DIR)/utilities
+	rm -f $(DOC_DIR)/utilities/*.md
+	cp $(BIN_DOC_FILES) $(DOC_DIR)/utilities/
 
 gh-deploy : $(SRC_DIR)/webdyne.md
 	mkdocs gh-deploy -f mkdocs.gh.yml

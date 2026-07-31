@@ -96,13 +96,16 @@ sub install {
     $ENV{'DRY_RUN'}=1 if $dry_run;
 
 
-    #  Run the base install/uninstall routine to create the cache dir
+    #  Run the base install/uninstall routine to create the cache dir.
+    #  In --text mode this module only renders generated config to STDOUT;
+    #  cache path discovery still happens below, but no filesystem setup is
+    #  performed.
     #
-    unless ($Uninstall_fg) {
+    unless ($Uninstall_fg || $opt_hr->{'text'}) {
         WebDyne::Install->install($prefix, $installbin_dn) ||
             return err();
     }
-    else {
+    elsif ($Uninstall_fg) {
         WebDyne::Install->uninstall($prefix, $installbin_dn) ||
             return err();
     }

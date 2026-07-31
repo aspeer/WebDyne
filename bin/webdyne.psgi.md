@@ -1,5 +1,6 @@
+# webdyne.psgi #
 
-# NAME
+# NAME #
 
 webdyne.psgi - PSGI application runner for WebDyne
 
@@ -120,7 +121,7 @@ This script is a frontend to the WebDyne PSGI stack. In addition to `Plack::Runn
 
 * **DOCUMENT_DEFAULT**
 
-    Supplies the default `index` value before `~/.webdyne.psgi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.psgi.opt` also overrides the environment.
+    Supplies the default `index` value before `~/.webdyne.psgi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.psgi.opt` also overrides the environment. When the script is loaded by `plackup` or `starman` instead of run directly, the PSGI constant layer default is `app.psp`.
 
 * **PLACK_ENV**
 

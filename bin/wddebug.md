@@ -1,4 +1,4 @@
-# wddebug(1) #
+# wddebug #
 
 # NAME #
 

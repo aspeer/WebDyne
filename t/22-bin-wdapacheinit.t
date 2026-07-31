@@ -211,7 +211,7 @@ sub with_fake_apache_env {
 
 SKIP: {
 
-skip 'no non-root local user/group available for fake Apache install tests', 36
+skip 'no non-root local user/group available for fake Apache install tests', 42
     unless $fake_apache_uname && $fake_apache_gname;
 
 with_fake_apache_env(sub {
@@ -251,6 +251,22 @@ ok(!-e $dry_cache_dn, 'wdapacheinit --dry_run does not create cache directory');
 ok(!-e File::Spec->catfile($fake_conf_available, 'webdyne.conf'), 'wdapacheinit --dry_run does not write Apache config');
 ok(!-e File::Spec->catfile($fake_conf_available, 'webdyne_conf.pl'), 'wdapacheinit --dry_run does not write WebDyne config');
 ok(!-e File::Spec->catfile($fake_conf_enabled, 'webdyne.conf'), 'wdapacheinit --dry_run does not create enabled config link');
+
+my $text_cache_dn=File::Spec->catdir($fake_root, 'cache-text');
+my $text_webdyne_conf=File::Spec->catfile($fake_conf_available, 'webdyne.conf');
+with_fake_apache_env(sub {
+    ($stdout, $stderr, $rc)=run_cmd(
+        $perl_bin, '-Ilib', $script,
+        '--text',
+        '--cache', $text_cache_dn,
+    );
+});
+is($rc, 0, 'wdapacheinit --text install exits cleanly with fake Apache');
+is($stderr, '', 'wdapacheinit --text install writes no stderr');
+like($stdout, qr/# \Q$text_webdyne_conf\E/, 'wdapacheinit --text prints Apache config fragment');
+like($stdout, qr/\Q$text_cache_dn\E/, 'wdapacheinit --text uses resolved cache directory in output');
+ok(!-e $text_cache_dn, 'wdapacheinit --text does not create cache directory');
+ok(!-e $text_webdyne_conf, 'wdapacheinit --text does not write Apache config');
 
 make_path($dry_cache_dn);
 my $cache_file=write_file(File::Spec->catfile($dry_cache_dn, '0123456789abcdef0123456789abcdef'), 'cache');

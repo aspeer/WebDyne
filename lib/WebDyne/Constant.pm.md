@@ -220,10 +220,10 @@ The following commonly adjusted configuration constants are defined. The default
 
     Shortcut attribute mappings for `start_html`, including built-in helpers such as `pico`, `htmx`, and `alpine`.
 
-* **WEBDYNE_HEAD_INSERT ()**
+* **WEBDYNE_HEAD_INSERT (inline webdyne.css)**
 
     Anything that should be added in &lt;head&gt; section. Will be inserted verbatim before &lt;/head&gt;. No interpolation or variables, simple text string only. Useful for setting global stylesheet, e.g. &lt;link href=&quot;https://cdn.jsdelivr.net/npm/water.css@2/out/water.css&quot; rel=&quot;stylesheet&quot;&gt;. Will be added to all &lt;head&gt; sections
- universally.
+ universally. By default WebDyne inlines its bundled webdyne.css stylesheet. Set WEBDYNE_HEAD_INSERT to undef to disable default stylesheet insertion.
 
 * **WEBDYNE_COMPILE_IGNORE_WHITESPACE (1)**
 

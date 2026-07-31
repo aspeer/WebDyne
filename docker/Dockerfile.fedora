@@ -206,12 +206,12 @@ ENV DOCUMENT_ROOT=${DOCUMENT_ROOT}
 ENV WEBDYNE_CACHE_DN=${PERL_CARTON_PATH}/cache
 
 
-# Entrypoint script for starting process. Kicks off starman on ${PORT}
+# Entrypoint script for starting process. Kicks off the selected WebDyne server on ${PORT}
 #
 COPY docker/entrypoint.sh /usr/local/bin
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 
-# Empty cmd, entrypoint script runs "starman --port ${PORT} ${PERL_CARTON_PATH}/bin/webdyne.psgi ${DOCUMENT_ROOT}"
+# Empty cmd, entrypoint script runs the default PSGI/Starman server unless WEBDYNE_SERVER selects another runtime.
 #
 CMD []

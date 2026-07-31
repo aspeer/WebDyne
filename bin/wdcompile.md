@@ -1,4 +1,4 @@
-# wdcompile(1) #
+# wdcompile #
 
 # NAME #
 

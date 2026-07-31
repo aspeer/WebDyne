@@ -1,3 +1,5 @@
+# wdlint #
+
 # NAME #
 
 wdlint - check Perl syntax in the \_\_PERL\_\_ section of a  WebDyne file

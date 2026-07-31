@@ -1,4 +1,4 @@
-# wddump(1) #
+# wddump #
 
 # NAME #
 

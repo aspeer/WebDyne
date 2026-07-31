@@ -1,4 +1,6 @@
-# NAME
+# webdyne.pagi #
+
+# NAME #
 
 webdyne.pagi - PAGI application runner for WebDyne
 
@@ -143,7 +145,7 @@ This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configurati
 
 * **DOCUMENT_DEFAULT**
 
-    Supplies the default `index` value before `~/.webdyne.pagi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.pagi.opt` also overrides the environment.
+    Supplies the default `index` value before `~/.webdyne.pagi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.pagi.opt` also overrides the environment. When the script is loaded by `pagi-server` instead of run directly, the PAGI constant layer default is `app.psp`.
 
 * **PAGI_ENV**
 

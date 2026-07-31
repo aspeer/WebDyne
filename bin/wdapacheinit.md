@@ -1,5 +1,6 @@
+# wdapacheinit #
 
-# NAME
+# NAME #
 
 wdapacheinit - Install or uninstall WebDyne Apache configuration files
 
@@ -87,7 +88,7 @@ NOTE: Apache must be restarted after running this script !
 
 * **--text**
 
-    Print the complete generated Apache/WebDyne configuration fragments and exit without completing the install.
+    Print the complete generated Apache/WebDyne configuration fragments and exit without writing files, creating directories, changing ownership, or enabling Apache configuration.
 
 * **--dry_run**
 
