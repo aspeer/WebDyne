@@ -101,14 +101,12 @@ SKIP: {
 
 
 SKIP: {
-    my @missing;
-    for my $m (qw(Apache::Test Apache::TestRunPerl Apache::TestRequest mod_perl2 Apache2::RequestRec)) {
-        eval "require $m; 1" or push @missing, $m;
-    }
-    skip 'Skipping Apache 404 test: missing Apache test modules', 2 if @missing;
+    require apache_harness_helper;
+    my @missing=apache_harness_helper::apache_prereq_missing();
+    skip 'Skipping Apache 404 test: missing ' . join(', ', @missing), 2 if @missing;
     skip 'Skipping Apache 404 test: cannot run tests as root user', 2 if $> == 0;
     my ($apache_status, $apache_body)=eval { apache_not_found() };
-    if ($@ && $@ =~ /Operation not permitted|socket:/) {
+    if ($@ && apache_harness_helper::apache_startup_unavailable($@)) {
         skip 'Skipping Apache 404 test: sockets not available in this environment', 2;
     }
     is($apache_status, 404, 'Apache handler returns 404 for missing file');

@@ -8,6 +8,62 @@ use File::Spec;
 use WebDyne::Util qw(apache_startup apache_shutdown perl_inc_dn);
 
 
+sub apache_prereq_missing {
+
+    my @missing;
+    for my $module (qw(Apache::Test Apache::TestRunPerl Apache::TestRequest mod_perl2 Apache2::RequestRec)) {
+        eval "require $module; 1" or push @missing, $module;
+    }
+    push @missing, 'Apache httpd binary' unless apache_binary_available();
+    push @missing, 'local socket bind permission' unless local_socket_available();
+    return @missing;
+
+}
+
+
+sub apache_binary_available {
+
+    for my $env (qw(APACHE_TEST_HTTPD HTTPD_BIN HTTPD APACHE_TEST_APXS APXS_BIN APXS)) {
+        next unless $ENV{$env};
+        return 1 if -f $ENV{$env};
+    }
+
+    my @dir=grep { defined && length && -d } (
+        split(/:/, ($ENV{'PATH'} || q())),
+        qw(/usr/sbin /usr/bin /usr/local/sbin /usr/local/bin /sbin /bin /opt/sbin /opt/bin)
+    );
+    my %seen;
+    @dir=grep { !$seen{$_}++ } @dir;
+    for my $dir (@dir) {
+        for my $name (qw(httpd httpd2 httpd2.2 httpd2.4 apache apache2 apache2.2 apache2.4 apachectl apache2ctl)) {
+            return 1 if -f File::Spec->catfile($dir, $name);
+        }
+    }
+    return;
+
+}
+
+
+sub apache_startup_unavailable {
+
+    my $err=shift() || q();
+    return $err =~ /Operation not permitted|socket:|no ports available|port \d+ is in use|cannot determine server pid to shutdown/;
+
+}
+
+
+sub local_socket_available {
+
+    require Socket;
+    socket(my $socket, Socket::PF_INET(), Socket::SOCK_STREAM(), 0) || return;
+    bind($socket, Socket::sockaddr_in(0, Socket::inet_aton('127.0.0.1'))) || return;
+    listen($socket, 1) || return;
+    close($socket);
+    return 1;
+
+}
+
+
 sub startup {
 
 

@@ -12,10 +12,9 @@ use Test::More;
 #  Skip test if missing any modules or no mod_perl
 #
 BEGIN {
-    my @missing;
-    for my $m (qw(Apache::Test Apache::TestRunPerl Apache::TestRequest mod_perl2 Apache2::RequestRec)) {
-        eval "require $m; 1" or push @missing, $m;
-    }
+    use lib 't';
+    require apache_harness_helper;
+    my @missing=apache_harness_helper::apache_prereq_missing();
     if (@missing) {
         plan skip_all => 'mod_perl tests - missing ' . join(', ', @missing);
     }
@@ -69,6 +68,8 @@ my $ok=eval {
 my $err=$@;
 diag('');
 &apache_harness_helper::shutdown($runner) if $runner;
+plan skip_all => 'mod_perl tests - Apache test server unavailable'
+    if !$ok && apache_harness_helper::apache_startup_unavailable($err);
 die $err unless $ok;
 
 

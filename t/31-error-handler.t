@@ -120,14 +120,12 @@ SKIP: {
 
 
 SKIP: {
-    my @missing;
-    for my $m (qw(Apache::Test Apache::TestRunPerl Apache::TestRequest mod_perl2 Apache2::RequestRec)) {
-        eval "require $m; 1" or push @missing, $m;
-    }
-    skip 'Skipping Apache error test: missing Apache test modules', 1 if @missing;
+    require apache_harness_helper;
+    my @missing=apache_harness_helper::apache_prereq_missing();
+    skip 'Skipping Apache error test: missing ' . join(', ', @missing), 1 if @missing;
     skip 'Skipping Apache error test: cannot run tests as root user', 1 if $> == 0;
     my (undef, undef, $body)=eval { apache_error() };
-    if ($@ && $@ =~ /Operation not permitted|socket:/) {
+    if ($@ && apache_harness_helper::apache_startup_unavailable($@)) {
         skip 'Skipping Apache error test: sockets not available in this environment', 1;
     }
     ok(body_matches_error($body), 'Apache handler emits a recognisable error body');

@@ -63,10 +63,17 @@ if (eval { require WebDyne::PAGI; 1 }) {
 
 #  Apache
 #
-if (eval { require Apache2::RequestRec; 1 } && !($> ==0)) {
+push @INC, dirname(__FILE__);
+require apache_harness_helper;
+my @apache_missing=apache_harness_helper::apache_prereq_missing();
+if (@apache_missing) {
+    note('Skipping WebDyne::Apache request test: missing ' . join(', ', @apache_missing));
+}
+elsif ($> == 0) {
+    note('Skipping WebDyne::Apache request test: cannot run tests as root user');
+}
+else {
     note('WebDyne::Apache test starting');
-    push @INC, dirname(__FILE__);
-    require apache_harness_helper;
     require Apache::TestRequest;
     my $runner;
     diag('');
@@ -83,7 +90,12 @@ if (eval { require Apache2::RequestRec; 1 } && !($> ==0)) {
     my $err=$@;
     diag('');
     &apache_harness_helper::shutdown($runner) if $runner;
-    die $err unless $ok;
+    if (!$ok && apache_harness_helper::apache_startup_unavailable($err)) {
+        note('Skipping WebDyne::Apache request test: Apache test server unavailable');
+    }
+    else {
+        die $err unless $ok;
+    }
 }
 
 

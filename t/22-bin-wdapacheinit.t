@@ -9,11 +9,68 @@ use File::Temp qw(tempdir);
 use File::Spec;
 use File::Path qw(make_path);
 use Cwd qw(realpath);
+use Config qw(%Config);
 
 my $script=File::Spec->catfile('bin', 'wdapacheinit');
 ok(-f $script, 'wdapacheinit script exists');
 
-my ($version_out, $version_err, $version_rc)=run_cmd($^X, '-Ilib', $script, '--version');
+sub test_uname {
+
+    foreach my $name (qw(nobody apache apache2 www wwwrun httpd httpd2 www-data daemon bin)) {
+        my $uid=getpwnam($name);
+        return $name if defined($uid) && $uid > 0;
+    }
+    setpwent();
+    while (my @pw=getpwent()) {
+        if (defined($pw[2]) && $pw[2] > 0) {
+            endpwent();
+            return $pw[0];
+        }
+    }
+    endpwent();
+    return;
+
+}
+
+sub test_gname {
+
+    foreach my $name (qw(nobody apache apache2 www wwwrun httpd httpd2 www-data daemon bin)) {
+        my $gid=getgrnam($name);
+        return $name if defined($gid) && $gid > 0;
+    }
+    setgrent();
+    while (my @gr=getgrent()) {
+        if (defined($gr[2]) && $gr[2] > 0) {
+            endgrent();
+            return $gr[0];
+        }
+    }
+    endgrent();
+    return;
+
+}
+
+my $perl_bin=$^X;
+unless (File::Spec->file_name_is_absolute($perl_bin)) {
+    if (
+        $Config{'perlpath'} &&
+        File::Spec->file_name_is_absolute($Config{'perlpath'}) &&
+        -f $Config{'perlpath'}
+    ) {
+        $perl_bin=$Config{'perlpath'};
+    }
+    else {
+        foreach my $dir (grep {length} split(/:/, $ENV{'PATH'} || q())) {
+            my $candidate=File::Spec->catfile($dir, $perl_bin);
+            if (-f $candidate && -x $candidate) {
+                $perl_bin=$candidate;
+                last;
+            }
+        }
+    }
+}
+
+my ($version_out, $version_err, $version_rc)=run_cmd($perl_bin, '-Ilib', $script, '--version');
 is($version_rc, 0, 'wdapacheinit --version exits cleanly');
 like($version_out, qr/wdapacheinit version: \S+/, 'wdapacheinit --version reports script version');
 is($version_err, '', 'wdapacheinit --version writes no stderr');
@@ -56,7 +113,7 @@ sub uninstall {
 END_MODULE
 
 my ($stdout, $stderr, $rc)=run_cmd(
-    $^X, '-I', $stub_dn, '-Ilib', $script,
+    $perl_bin, '-I', $stub_dn, '-Ilib', $script,
     '--uninstall', '--cache', '/tmp/webdyne-cache', '--text', '--dry_run', '--mp2'
 );
 is($rc, 0, 'wdapacheinit stubbed uninstall exits cleanly');
@@ -68,7 +125,7 @@ like($stdout, qr/mp2=1/, 'wdapacheinit forwards mp2 option');
 is($stderr, '', 'wdapacheinit stubbed uninstall writes no stderr');
 
 ($stdout, $stderr, $rc)=run_cmd(
-    $^X, '-I', $stub_dn, '-Ilib', $script,
+    $perl_bin, '-I', $stub_dn, '-Ilib', $script,
     '--dump_opt',
     '--webdyne-cache-dn', '/tmp/webdyne-cache',
     '--dir-apache-conf', '/tmp/apache-conf',
@@ -86,7 +143,7 @@ like($stderr, qr/'apxs_bin'\s*=>\s*'\/tmp\/apxs'/, 'wdapacheinit accepts hyphena
 like($stderr, qr/'apachectl_bin'\s*=>\s*'\/tmp\/apachectl'/, 'wdapacheinit accepts hyphenated apachectl alias');
 
 ($stdout, $stderr, $rc)=run_cmd(
-    $^X, '-I', $stub_dn, '-Ilib', $script,
+    $perl_bin, '-I', $stub_dn, '-Ilib', $script,
     '--dump_config',
 );
 isnt($rc, 0, 'wdapacheinit --dump_config aborts after dumping discovered config');
@@ -106,12 +163,21 @@ make_path(
 );
 my $fake_httpd=write_file(File::Spec->catfile($fake_bin_dn, 'httpd'), <<"END_HTTPD");
 #!/bin/sh
-if [ "\$1" = "-V" ]; then
-  echo "Server version: Apache/2.4.99"
-  echo " -D HTTPD_ROOT=\\"$fake_apache_dn\\""
-  echo " -D SERVER_CONFIG_FILE=\\"apache2.conf\\""
-fi
+case "\$1" in
+  -V)
+    echo "Server version: Apache/2.4.99"
+    echo " -D HTTPD_ROOT=\\"$fake_apache_dn\\""
+    echo " -D SERVER_CONFIG_FILE=\\"apache2.conf\\""
+    ;;
+  -v)
+    echo "Server version: Apache/2.4.99"
+    ;;
+esac
 END_HTTPD
+my $fake_apachectl=write_file(File::Spec->catfile($fake_bin_dn, 'apachectl'), <<"END_APACHECTL");
+#!/bin/sh
+exec "$fake_httpd" "\$@"
+END_APACHECTL
 my $fake_apxs=write_file(File::Spec->catfile($fake_bin_dn, 'apxs'), <<"END_APXS");
 #!/bin/sh
 case "\$2" in
@@ -120,22 +186,44 @@ case "\$2" in
   *) exit 1 ;;
 esac
 END_APXS
-chmod 0755, $fake_httpd, $fake_apxs;
+chmod 0755, $fake_httpd, $fake_apachectl, $fake_apxs;
 
-{
+my $fake_apache_uname=test_uname();
+my $fake_apache_gname=test_gname();
+
+sub with_fake_apache_env {
+
+    my $code=shift();
     local $ENV{'PATH'}=$fake_bin_dn;
-    local $ENV{'APACHE_UNAME'}=(getpwuid($<))[0] || 'root';
-    local $ENV{'APACHE_GNAME'}=(getgrgid((split(/\s+/, $())[0]))[0] || $ENV{'APACHE_UNAME'};
+    local $ENV{'HTTPD_BIN'}=$fake_httpd;
+    local $ENV{'APACHE_TEST_HTTPD'}=$fake_httpd;
+    local $ENV{'APACHECTL_BIN'}=$fake_apachectl;
+    local $ENV{'APACHECTL'}=$fake_apachectl;
+    local $ENV{'APXS_BIN'}=$fake_apxs;
+    local $ENV{'APXS'}=$fake_apxs;
+    local $ENV{'APACHE_TEST_APXS'}=$fake_apxs;
+    local $ENV{'APACHE_UNAME'}=$fake_apache_uname;
+    local $ENV{'APACHE_GNAME'}=$fake_apache_gname;
     local $ENV{'FILE_MOD_PERL_LIB'}=File::Spec->catfile($fake_module_dn, 'mod_perl.so');
+    return $code->();
+
+}
+
+SKIP: {
+
+skip 'no non-root local user/group available for fake Apache install tests', 36
+    unless $fake_apache_uname && $fake_apache_gname;
+
+with_fake_apache_env(sub {
     write_file($ENV{'FILE_MOD_PERL_LIB'}, '');
     ($stdout, $stderr, $rc)=run_cmd(
-        $^X, '-Ilib',
+        $perl_bin, '-Ilib',
         '-MWebDyne::Install::Apache::Constant',
         '-MData::Dumper',
         '-e',
         'local $Data::Dumper::Sortkeys=1; print Data::Dumper::Dumper(\%WebDyne::Install::Apache::Constant::Constant)'
     );
-}
+});
 is($rc, 0, 'Apache constant discovery works with fake httpd/apxs');
 is($stderr, '', 'Apache constant discovery suppresses unsupported APXS query warnings');
 like($stdout, qr/'APXS_BIN'\s*=>\s*'\Q$fake_apxs\E'/, 'Apache constant discovery finds APXS');
@@ -146,17 +234,13 @@ like($stdout, qr/'DIR_APACHE_CONF'\s*=>\s*'\Q$fake_conf_available\E'/, 'Apache c
 like($stdout, qr/'DIR_APACHE_CONF_ENABLED'\s*=>\s*'\Q$fake_conf_enabled\E'/, 'Apache constant discovery records conf-enabled');
 
 my $dry_cache_dn=File::Spec->catdir($fake_root, 'cache-dry-run');
-{
-    local $ENV{'PATH'}=$fake_bin_dn;
-    local $ENV{'APACHE_UNAME'}=(getpwuid($<))[0] || 'root';
-    local $ENV{'APACHE_GNAME'}=(getgrgid((split(/\s+/, $())[0]))[0] || $ENV{'APACHE_UNAME'};
-    local $ENV{'FILE_MOD_PERL_LIB'}=File::Spec->catfile($fake_module_dn, 'mod_perl.so');
+with_fake_apache_env(sub {
     ($stdout, $stderr, $rc)=run_cmd(
-        $^X, '-Ilib', $script,
+        $perl_bin, '-Ilib', $script,
         '--dry_run',
         '--cache', $dry_cache_dn,
     );
-}
+});
 is($rc, 0, 'wdapacheinit --dry_run install exits cleanly with fake Apache');
 is($stderr, '', 'wdapacheinit --dry_run install writes no stderr');
 like($stdout, qr/Would create cache directory/, 'wdapacheinit --dry_run reports cache creation');
@@ -176,18 +260,14 @@ my $apache_conf_file=write_file(File::Spec->catfile($fake_conf_available, 'webdy
 my $webdyne_conf_file=write_file(File::Spec->catfile($fake_conf_available, 'webdyne_conf.pl'), 'webdyne config');
 my $enabled_link=File::Spec->catfile($fake_conf_enabled, 'webdyne.conf');
 symlink($apache_conf_file, $enabled_link) || die "unable to create test symlink $enabled_link, $!";
-{
-    local $ENV{'PATH'}=$fake_bin_dn;
-    local $ENV{'APACHE_UNAME'}=(getpwuid($<))[0] || 'root';
-    local $ENV{'APACHE_GNAME'}=(getgrgid((split(/\s+/, $())[0]))[0] || $ENV{'APACHE_UNAME'};
-    local $ENV{'FILE_MOD_PERL_LIB'}=File::Spec->catfile($fake_module_dn, 'mod_perl.so');
+with_fake_apache_env(sub {
     ($stdout, $stderr, $rc)=run_cmd(
-        $^X, '-Ilib', $script,
+        $perl_bin, '-Ilib', $script,
         '--uninstall',
         '--dry_run',
         '--cache', $dry_cache_dn,
     );
-}
+});
 is($rc, 0, 'wdapacheinit --dry_run uninstall exits cleanly with fake Apache');
 is($stderr, '', 'wdapacheinit --dry_run uninstall writes no stderr');
 like($stdout, qr/Would remove cache file/, 'wdapacheinit --dry_run uninstall reports cache file removal');
@@ -202,17 +282,13 @@ ok(-l $enabled_link, 'wdapacheinit --dry_run uninstall keeps enabled config link
 
 unlink($enabled_link) || die "unable to remove test symlink $enabled_link, $!";
 symlink('/tmp/not-webdyne.conf', $enabled_link) || die "unable to create non-target test symlink $enabled_link, $!";
-{
-    local $ENV{'PATH'}=$fake_bin_dn;
-    local $ENV{'APACHE_UNAME'}=(getpwuid($<))[0] || 'root';
-    local $ENV{'APACHE_GNAME'}=(getgrgid((split(/\s+/, $())[0]))[0] || $ENV{'APACHE_UNAME'};
-    local $ENV{'FILE_MOD_PERL_LIB'}=File::Spec->catfile($fake_module_dn, 'mod_perl.so');
+with_fake_apache_env(sub {
     ($stdout, $stderr, $rc)=run_cmd(
-        $^X, '-Ilib', $script,
+        $perl_bin, '-Ilib', $script,
         '--uninstall',
         '--cache', $dry_cache_dn,
     );
-}
+});
 is($rc, 0, 'wdapacheinit uninstall exits cleanly with non-target enabled symlink');
 is($stderr, '', 'wdapacheinit uninstall with non-target enabled symlink writes no stderr');
 like($stdout, qr/Not removing enabled Apache config link/, 'wdapacheinit uninstall reports non-target enabled symlink');
@@ -222,5 +298,7 @@ ok(!-e $webdyne_conf_file, 'wdapacheinit uninstall removes WebDyne config file')
 ok(!-e $cache_file, 'wdapacheinit uninstall removes cache file');
 ok(!-e $cache_html_file, 'wdapacheinit uninstall removes cache html file');
 ok(-e $cache_keep_file, 'wdapacheinit uninstall keeps non-cache file');
+
+}
 
 done_testing();
