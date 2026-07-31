@@ -56,3 +56,7 @@
 *.tmp
 *.swp
 *.swo
+
+# Build dir
+#
+/doc/build
