@@ -12,13 +12,13 @@
         <meta name="author" content="Andrew Speer">
       
       
-        <link rel="canonical" href="https://webdyne.org/09_credits/">
+        <link rel="canonical" href="https://webdyne.org/04_error_handling_error_handling/">
       
       
-        <link rel="prev" href="../08_troubleshooting/">
+        <link rel="prev" href="../03_advanced_usage_advanced_usage/">
       
       
-        <link rel="next" href="../10_additional_notes_additional_notes/">
+        <link rel="next" href="../05_utilities/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Credits - WebDyne</title>
+        <title>Error Handling - WebDyne</title>
       
     
     
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#credits" class="md-skip">
+        <a href="#error_handling" class="md-skip">
           Skip to content
         </a>
       
@@ -126,7 +126,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Credits
+              Error Handling
             
           </span>
         </div>
@@ -401,10 +401,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../04_error_handling_error_handling/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -420,6 +447,70 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dump_tag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dump
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Messages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-checking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Checking
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -536,19 +627,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../09_credits/" class="md-nav__link">
         
   
   
@@ -564,7 +646,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -974,12 +1055,162 @@
   
 
 
-<h1 id="credits">Credits<a class="headerlink" href="#credits" title="Permanent link">&para;</a></h1>
-<p>WebDyne relies heavily on modules and code developed and open-sourced by
-other authors. Without Perl, and Perl modules such as <code>mod_perl/PSGI</code>,
-<code>HTML::Tiny</code>, <code>HTML::TreeBuilder</code>, <code>Storable</code> and many others, WebDyne
-would not be possible. To the authors of those modules - and all the
-other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
+<h1 id="error_handling">Error Handling<a class="headerlink" href="#error_handling" title="Permanent link">&para;</a></h1>
+<h2 id="dump_tag">Dump<a class="headerlink" href="#dump_tag" title="Permanent link">&para;</a></h2>
+<p>The &lt;dump&gt; tag is a informational element which can be included in a
+page for diagnostic or debugging purposes. It will show various variable
+and state values for the page. By default if a &lt;dump&gt; flag is embedded
+in a page diagnostic information is not shown unless the <code>force</code>
+attribute is specified or the <code>$WEBDYNE_DUMP_FLAG</code> is set, the latter
+allowing the &lt;dump&gt; tag to be embedded into all pages on a site but
+not activated unless debugging enabled.</p>
+<p>Various diagnostic elements can be displayed - see the &lt;dump&gt; tag
+section for information on what they are. In this example all components
+are enabled and display is forced:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">&lt;</span><span class="nt">form</span><span class="p">&gt;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Your Name: <span class="p">&lt;</span><span class="nt">textfield</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;name&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">&lt;</span><span class="nt">submit</span><span class="p">&gt;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">&lt;/</span><span class="nt">form</span><span class="p">&gt;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">&lt;</span><span class="nt">dump</span> <span class="na">all</span> <span class="na">force</span><span class="p">&gt;</span>
+</span></code></pre></div>
+<p><a href="https://demo.webdyne.org/dump1.psp">Run</a></p>
+<p>Dump display/hide can be controlled by form parameters or run URI query
+strings. In the example below ticking the checkbox or simply appending
+"?dump_enable=1" to the URL will display the dump information:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="p">&lt;</span><span class="nt">form</span><span class="p">&gt;</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>Your Name: <span class="p">&lt;</span><span class="nt">textfield</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;name&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>Show Dump: <span class="p">&lt;</span><span class="nt">checkbox</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;dump_enable&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">&lt;</span><span class="nt">submit</span><span class="p">&gt;</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">&lt;/</span><span class="nt">form</span><span class="p">&gt;</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">&lt;</span><span class="nt">dump</span> <span class="na">all</span> <span class="na">force</span><span class="o">=</span><span class="s">&quot;!{! $_{&#39;dump_enable&#39;} !}&quot;</span><span class="p">&gt;</span>
+</span></code></pre></div>
+<p><a href="https://demo.webdyne.org/dump2.psp">Run</a></p>
+<h2 id="error-messages">Error Messages<a class="headerlink" href="#error-messages" title="Permanent link">&para;</a></h2>
+<p>Sooner or later something is going to go wrong in your code. If this
+happens WebDyne will generate an error showing what the error was and
+attempting to give information on where it came from: Take the following
+example:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Error&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Let&#39;s divide by zero: !{! my $z=0; return 5/$z !}
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">&lt;</span><span class="nt">end_html</span><span class="p">&gt;</span>
+</span></code></pre></div>
+<p><a href="https://demo.webdyne.org/err1.psp">Run</a></p>
+<p>If you run the above example an error message will be displayed</p>
+<p><img alt="" src="../images/err1.png" /></p>
+<p>In this example the backtrace is within in-line code, so all references
+in the backtrace are to internal WebDyne modules. The code fragment will
+show the line with the error.</p>
+<p>If we have a look at another example:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Error&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="p">&lt;</span><span class="nt">perl</span> <span class="na">handler</span><span class="o">=</span><span class="s">&quot;hello&quot;</span><span class="p">/&gt;</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p">&lt;</span><span class="nt">end_html</span><span class="p">&gt;</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>__PERL__
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>sub hello {
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    die(&#39;bang !&#39;);
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>}
+</span></code></pre></div>
+<p><a href="https://demo.webdyne.org/err2.psp">Run</a></p>
+<p>And the corresponding screen shot:</p>
+<p><img alt="" src="../images/err2.png" /></p>
+<p>We can see that the error occurred in the "hello" subroutine (invoked at
+line 2 of the page) within the perl block on line 9. The 32 digit
+hexadecimal number is the page unique ID - it is different for each
+page. WebDyne runs the code for each page in a package name space that
+includes the page's UID - in this way pages with identical subroutine
+names (e.g. two pages with a "hello" subroutine) can be accommodated
+with no collision.</p>
+<h2 id="exceptions">Exceptions<a class="headerlink" href="#exceptions" title="Permanent link">&para;</a></h2>
+<p>Errors (exceptions) can be generated within a WebDyne page in two ways:</p>
+<ul>
+<li>
+<p>By calling die() as shown in example above.</p>
+</li>
+<li>
+<p>By returning an error message via the err() method, exported by
+  default.</p>
+</li>
+</ul>
+<p>Examples</p>
+<div class="language-text highlight"><pre><span></span><code>__PERL__
+
+
+#  Good
+#
+sub hello {
+
+    return err(&#39;no foobar&#39;) if !$foobar;
+
+}
+
+# Also OK
+#
+sub hello {
+
+    return die(&#39;no foobar&#39;) if !$foobar;
+
+}
+</code></pre></div>
+<h2 id="error-checking">Error Checking<a class="headerlink" href="#error-checking" title="Permanent link">&para;</a></h2>
+<p>So far all the code examples have just assumed that any call to a
+WebDyne API method has been successful - no error checking is done.
+WebDyne always returns "undef" if an API method call fails - which
+should be checked for after every call in a best practice scenario.</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Error&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="p">&lt;</span><span class="nt">perl</span> <span class="na">handler</span><span class="o">=</span><span class="s">&quot;hello&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>Hello World ${foo}
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">&lt;/</span><span class="nt">perl</span><span class="p">&gt;</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="p">&lt;</span><span class="nt">end_html</span><span class="p">&gt;</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>__PERL__
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>sub hello {
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    #  Check for error after calling render function
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    #
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    shift()-&gt;render( bar=&gt; &#39;Again&#39;) || return err();
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>}
+</span></code></pre></div>
+<p><a href="https://demo.webdyne.org/err3.psp">Run</a></p>
+<p>You can use the err() function to check for errors in WebDyne Perl code
+associated with a page, e.g.:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Error&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="p">&lt;</span><span class="nt">form</span><span class="p">&gt;</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">&lt;</span><span class="nt">submit</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;Error&quot;</span> <span class="na">value</span><span class="o">=</span><span class="s">&quot;Click here for error !&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="p">&lt;/</span><span class="nt">form</span><span class="p">&gt;</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">&lt;</span><span class="nt">perl</span> <span class="na">handler</span><span class="o">=</span><span class="s">&quot;foo&quot;</span><span class="p">/&gt;&lt;</span><span class="nt">end_html</span><span class="p">&gt;</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>__PERL__
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>sub foo {
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="err">&amp;</span>bar() || return err();
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    \undef;
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>}
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>sub bar {
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    return err(&#39;bang !&#39;) if $_{&#39;Error&#39;};
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>    \undef;
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>}
+</span></code></pre></div>
+<p><a href="https://demo.webdyne.org/err4.psp">Run</a></p>
+<p>Note that the backtrace in this example shows where the error was
+triggered from.</p>
 
 
 
@@ -1009,7 +1240,7 @@ other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../08_troubleshooting/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Troubleshooting">
+          <a href="../03_advanced_usage_advanced_usage/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Advanced Usage">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1019,20 +1250,20 @@ other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Troubleshooting
+                Advanced Usage
               </div>
             </div>
           </a>
         
         
           
-          <a href="../10_additional_notes_additional_notes/" class="md-footer__link md-footer__link--next" aria-label="Next: Additional Notes">
+          <a href="../05_utilities/" class="md-footer__link md-footer__link--next" aria-label="Next: Utilities">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Additional Notes
+                Utilities
               </div>
             </div>
             <div class="md-footer__button md-icon">

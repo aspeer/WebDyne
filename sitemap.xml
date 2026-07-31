@@ -2,50 +2,86 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://webdyne.org/00_introduction/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <lastmod>2026-07-31</lastmod>
     </url>
     <url>
-         <loc>https://webdyne.org/01_installation_and_quickstart/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <loc>https://webdyne.org/01_installation_and_quickstart_installation_quickstart/</loc>
+         <lastmod>2026-07-31</lastmod>
     </url>
     <url>
          <loc>https://webdyne.org/02_basic_usage_examples/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <lastmod>2026-07-31</lastmod>
     </url>
     <url>
-         <loc>https://webdyne.org/03_advanced_usage/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <loc>https://webdyne.org/03_advanced_usage_advanced_usage/</loc>
+         <lastmod>2026-07-31</lastmod>
     </url>
     <url>
-         <loc>https://webdyne.org/04_error_handling/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <loc>https://webdyne.org/04_error_handling_error_handling/</loc>
+         <lastmod>2026-07-31</lastmod>
     </url>
     <url>
-         <loc>https://webdyne.org/05_reference/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <loc>https://webdyne.org/05_utilities/</loc>
+         <lastmod>2026-07-31</lastmod>
     </url>
     <url>
-         <loc>https://webdyne.org/06_miscellaneous/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <loc>https://webdyne.org/06_reference/</loc>
+         <lastmod>2026-07-31</lastmod>
     </url>
     <url>
-         <loc>https://webdyne.org/07_extending_webdyne/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <loc>https://webdyne.org/07_extending_webdyne_extending_webdyne/</loc>
+         <lastmod>2026-07-31</lastmod>
     </url>
     <url>
          <loc>https://webdyne.org/08_troubleshooting/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <lastmod>2026-07-31</lastmod>
     </url>
     <url>
          <loc>https://webdyne.org/09_credits/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <lastmod>2026-07-31</lastmod>
     </url>
     <url>
-         <loc>https://webdyne.org/10_miscellaneous/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <loc>https://webdyne.org/10_additional_notes_additional_notes/</loc>
+         <lastmod>2026-07-31</lastmod>
     </url>
     <url>
-         <loc>https://webdyne.org/11_legal_information_licensing_and_copyright/</loc>
-         <lastmod>2026-06-14</lastmod>
+         <loc>https://webdyne.org/11_legal_information_licensing_and_copyright_legal_information/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://webdyne.org/utilities/wdapacheinit/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://webdyne.org/utilities/wdcompile/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://webdyne.org/utilities/wddebug/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://webdyne.org/utilities/wddump/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://webdyne.org/utilities/wdlint/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://webdyne.org/utilities/wdrender/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://webdyne.org/utilities/webdyne.apache/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://webdyne.org/utilities/webdyne.pagi/</loc>
+         <lastmod>2026-07-31</lastmod>
+    </url>
+    <url>
+         <loc>https://webdyne.org/utilities/webdyne.psgi/</loc>
+         <lastmod>2026-07-31</lastmod>
     </url>
 </urlset>

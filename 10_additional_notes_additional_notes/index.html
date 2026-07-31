@@ -12,13 +12,13 @@
         <meta name="author" content="Andrew Speer">
       
       
-        <link rel="canonical" href="https://webdyne.org/09_credits/">
+        <link rel="canonical" href="https://webdyne.org/10_additional_notes_additional_notes/">
       
       
-        <link rel="prev" href="../08_troubleshooting/">
+        <link rel="prev" href="../09_credits/">
       
       
-        <link rel="next" href="../10_additional_notes_additional_notes/">
+        <link rel="next" href="../11_legal_information_licensing_and_copyright_legal_information/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Credits - WebDyne</title>
+        <title>Additional Notes - WebDyne</title>
       
     
     
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#credits" class="md-skip">
+        <a href="#additional_notes" class="md-skip">
           Skip to content
         </a>
       
@@ -126,7 +126,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Credits
+              Additional Notes
             
           </span>
         </div>
@@ -536,19 +536,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../09_credits/" class="md-nav__link">
         
   
   
@@ -564,7 +555,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -573,10 +563,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../10_additional_notes_additional_notes/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Additional Notes
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -592,6 +609,81 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#additional_notes_check_psp_syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to check syntax of a PSP file
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional_notes_processing_instruction_self" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to pass $self ref if using processing instructions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional_notes_hash_comment_characters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use of hash characters for comments in PSP files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional_notes_checkbox_hidden_field" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The &lt;checkbox&gt; tag will always set a hidden form field
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional_notes_about_documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        About this documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -974,12 +1066,75 @@
   
 
 
-<h1 id="credits">Credits<a class="headerlink" href="#credits" title="Permanent link">&para;</a></h1>
-<p>WebDyne relies heavily on modules and code developed and open-sourced by
-other authors. Without Perl, and Perl modules such as <code>mod_perl/PSGI</code>,
-<code>HTML::Tiny</code>, <code>HTML::TreeBuilder</code>, <code>Storable</code> and many others, WebDyne
-would not be possible. To the authors of those modules - and all the
-other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
+<h1 id="additional_notes">Additional Notes<a class="headerlink" href="#additional_notes" title="Permanent link">&para;</a></h1>
+<p>Things to note or information not otherwise contained elsewhere:</p>
+<h2 id="additional_notes_check_psp_syntax">How to check syntax of a PSP file<a class="headerlink" href="#additional_notes_check_psp_syntax" title="Permanent link">&para;</a></h2>
+<p>To check the syntax of a PSP file - or more specifically any Perl code
+in the __PERL__ section - you can use the <code>wdlint</code> command. Take
+this file with an assignment syntax error in the server_time() routine:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Hello World <span class="cp">&lt;? server_time() ?&gt;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>__PERL__
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>#!perl
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>sub server_time {
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    my 2==1; #Error here
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>}
+</span></code></pre></div>
+<p>Run the command<code>wdlint &lt;filename.psp&gt;</code> to check for syntax error and
+report back:</p>
+<div class="language-text highlight"><pre><span></span><code>$ wdlint check.psp
+syntax error at check.psp line 8, near &quot;my 2&quot;
+check.psp had compilation errors.
+</code></pre></div>
+<h2 id="additional_notes_processing_instruction_self">How to pass <code>$self</code> ref if using processing instructions<a class="headerlink" href="#additional_notes_processing_instruction_self" title="Permanent link">&para;</a></h2>
+<p>If you use the processing instruction form of calling a perl method it
+will not pass the WebDyne object ref through to your code. You can pass
+it by supplying @_ as a parameter, or just shift() and your own
+parameters:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>Hello World <span class="cp">&lt;? server_time(@_) ?&gt;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Hello World <span class="cp">&lt;? server_time(shift(), &#39;UTC&#39; ?&gt;</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>Hello World <span class="p">&lt;</span><span class="nt">perl</span> <span class="na">handler</span><span class="o">=</span><span class="s">&quot;server_time&quot;</span> <span class="na">param</span><span class="o">=</span><span class="s">&quot;UTC&quot;</span><span class="p">/&gt;</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>__PERL__
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>sub server_time {
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    #  Now we can get self ref
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    my ($self, $timezone)=@_;
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    #  Do something and return
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    $self-&gt;do_something()
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>}
+</span></code></pre></div>
+<h2 id="additional_notes_hash_comment_characters">Use of hash characters for comments in PSP files<a class="headerlink" href="#additional_notes_hash_comment_characters" title="Permanent link">&para;</a></h2>
+<p>Any # characters at the very start of a PSP file (before a &lt;html&gt; or
+&lt;start_html&gt;) tag are treated as comments and discarded - they will
+not be stored or displayed (they are <strong>not</strong> translated into HTML
+comments). This allows easy to read comments at the start of PSP files.
+Any # characters after the first valid tag are not treated specially -
+they will be rendered as normal HTML:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>#  This is my server time display file
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>#
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>#  VERSION=1.23
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>#
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>Server local time is: <span class="cp">&lt;? localtime ?&gt;</span>
+</span></code></pre></div>
+<h2 id="additional_notes_checkbox_hidden_field">The &lt;checkbox&gt; tag will always set a hidden form field<a class="headerlink" href="#additional_notes_checkbox_hidden_field" title="Permanent link">&para;</a></h2>
+<p>The &lt;checkbox&gt; tag is unusual in that it adds a hidden field (with the
+same name as the checkbox) to the HTML page to retain state. Thus if you
+are examining the checkbox parameter from CGI via <code>$_{'checkbox_name'}</code>
+or <code>$self-&gt;CGI-&gt;param('checkbox_name')</code> you may get an array rather than
+a single value. The value of the checkbox (boolean, checked or
+unchecked, i.e. 1 or 0) will always be the first value returned. So the
+code <code>if ($_{'checkbox_name'}) { .. do_something }</code> will work as
+expected - but just be careful if using in an array context.</p>
+<h2 id="additional_notes_about_documentation">About this documentation<a class="headerlink" href="#additional_notes_about_documentation" title="Permanent link">&para;</a></h2>
+<p>This documentation is written with the <a href="https://www.xmlmind.com/xmleditor/">XMLMind XML
+Editor</a>, then converted to Markdown
+with <a href="https://pandoc.org">pandoc</a> and displayed using
+<a href="https://www.mkdocs.org">MKdocs</a>. The documentation for WebDyne is
+maintained on a <a href="https://github.com/aspeer/WebDyne">Github repository</a>.</p>
 
 
 
@@ -1009,7 +1164,7 @@ other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../08_troubleshooting/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Troubleshooting">
+          <a href="../09_credits/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Credits">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1019,20 +1174,20 @@ other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Troubleshooting
+                Credits
               </div>
             </div>
           </a>
         
         
           
-          <a href="../10_additional_notes_additional_notes/" class="md-footer__link md-footer__link--next" aria-label="Next: Additional Notes">
+          <a href="../11_legal_information_licensing_and_copyright_legal_information/" class="md-footer__link md-footer__link--next" aria-label="Next: Legal Information - Licensing and Copyright">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Additional Notes
+                Legal Information - Licensing and Copyright
               </div>
             </div>
             <div class="md-footer__button md-icon">

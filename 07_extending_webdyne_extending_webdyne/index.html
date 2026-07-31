@@ -12,13 +12,13 @@
         <meta name="author" content="Andrew Speer">
       
       
-        <link rel="canonical" href="https://webdyne.org/09_credits/">
+        <link rel="canonical" href="https://webdyne.org/07_extending_webdyne_extending_webdyne/">
       
       
-        <link rel="prev" href="../08_troubleshooting/">
+        <link rel="prev" href="../06_reference/">
       
       
-        <link rel="next" href="../10_additional_notes_additional_notes/">
+        <link rel="next" href="../08_troubleshooting/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Credits - WebDyne</title>
+        <title>Extending WebDyne - WebDyne</title>
       
     
     
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#credits" class="md-skip">
+        <a href="#extending_webdyne" class="md-skip">
           Skip to content
         </a>
       
@@ -126,7 +126,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Credits
+              Extending WebDyne
             
           </span>
         </div>
@@ -482,10 +482,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../07_extending_webdyne_extending_webdyne/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extending WebDyne
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -501,6 +528,81 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#webdyne_chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WebDyne::Chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#webdynestatic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WebDyne::Static
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#webdynecache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WebDyne::Cache
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#webdynesession" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WebDyne::Session
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#webdynetemplate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WebDyne::Template
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -536,19 +638,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../09_credits/" class="md-nav__link">
         
   
   
@@ -564,7 +657,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -974,12 +1066,263 @@
   
 
 
-<h1 id="credits">Credits<a class="headerlink" href="#credits" title="Permanent link">&para;</a></h1>
-<p>WebDyne relies heavily on modules and code developed and open-sourced by
-other authors. Without Perl, and Perl modules such as <code>mod_perl/PSGI</code>,
-<code>HTML::Tiny</code>, <code>HTML::TreeBuilder</code>, <code>Storable</code> and many others, WebDyne
-would not be possible. To the authors of those modules - and all the
-other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
+<h1 id="extending_webdyne">Extending WebDyne<a class="headerlink" href="#extending_webdyne" title="Permanent link">&para;</a></h1>
+<p>WebDyne can be extended by the installation and use of supplementary
+Perl packages. There are several standard packages that come with the
+Webdyne distribution, or you can build your own using one of the
+standard packages as a template.</p>
+<p>The following gives an overview of the standard packages included in the
+distribution, or downloadable as extensions from CPAN.</p>
+<h2 id="webdyne_chain">WebDyne::Chain<a class="headerlink" href="#webdyne_chain" title="Permanent link">&para;</a></h2>
+<p>WebDyne::Chain is a module that will cascade a WebDyne request through
+one or more modules before delivery to the WebDyne engine. Most modules
+that extend WebDyne rely on WebDyne::Chain to get themselves inserted
+into the request lifecycle.</p>
+<p>Whilst WebDyne::Chain does not modify content itself, it allows any of
+the modules below to intercept the request as if they had been loaded by
+the target page directly (i.e., loaded in the __PERL__ section of a
+page via the "use" or "require" functions).</p>
+<p>Using WebDyne::Chain you can modify the behaviour of WebDyne pages based
+on their location. The WebDyne::Template module can be used in such
+scenario to wrap all pages in a location with a particular template.
+Another would be to make all pages in a particular location static
+without loading the WebDyne::Static module in each page:</p>
+<div class="language-text highlight"><pre><span></span><code>&lt;Location /static&gt;
+
+#  All pages in this location will be generated once only.
+PerlHandler     WebDyne::Chain
+PerlSetVar      WebDyneChain    &#39;WebDyne::Static&#39;
+
+&lt;/Location&gt;
+</code></pre></div>
+<p>Multiple modules can be chained at once:</p>
+<div class="language-text highlight"><pre><span></span><code>&lt;Location /&gt;
+
+#  We want templating and session cookies for all pages on our site.
+PerlHandler     WebDyne::Chain
+PerlSetVar      WebDyneChain    &#39;WebDyne::Session WebDyne::Template&#39;
+PerlSetVar      WebDyneTemplate &#39;/path/to/template.psp&#39;
+
+&lt;/Location&gt;
+</code></pre></div>
+<p>The above example would place all pages within the named template, and
+make session information to all pages via <code>$self-&gt;session_id()</code>. A good
+start to a rudimentary CMS.</p>
+<dl>
+<dt>WebDyneChain</dt>
+<dd>
+<p>Directive. Supply a space separated string of WebDyne modules that the
+  request should be passed through.</p>
+</dd>
+</dl>
+<h2 id="webdynestatic">WebDyne::Static<a class="headerlink" href="#webdynestatic" title="Permanent link">&para;</a></h2>
+<p>Loading WebDyne::Static into a __PERL__ block flags to WebDyne that
+the entire page should be rendered once at compile time, then the static
+HTML resulting from that compile will be handed out on subsequent
+requests. Any active element or code in the page will only be run once.
+There are no API methods associated with this module</p>
+<p>See the <a href="../03_advanced_usage_advanced_usage/#static_sections">Static Sections</a> reference for more
+information on how to use this module within an individual page.</p>
+<p>WebDyne::Static can also be used in conjunction with the
+<a href="./#webdyne_chain">WebDyne::Chain</a> module to flag all files in a directory
+or location as static. An example httpd.conf snippet:</p>
+<div class="language-text highlight"><pre><span></span><code>&lt;Location /static/&gt;
+
+PerlHandler     WebDyne::Chain
+PerlSetVar      WebDyneChain    &#39;WebDyne::Static&#39;
+
+&lt;/Location&gt;
+</code></pre></div>
+<h2 id="webdynecache">WebDyne::Cache<a class="headerlink" href="#webdynecache" title="Permanent link">&para;</a></h2>
+<p>Loading WebDyne::Cache into a __PERL__ block flags to WebDyne that
+the page wants the engine to call a designated routine every time it is
+run. The called routine can generate a new UID (Unique ID) for the page,
+or force it to be recompiled. There are no API methods associated with
+this module.</p>
+<p>See the <a href="../03_advanced_usage_advanced_usage/#caching_section">Caching</a> section above for more information
+on how to use this module with an individual page.</p>
+<p>WebDyne::Cache can also be used in conjunction with the
+<a href="./#webdyne_chain">WebDyne::Chain</a> module to flag all files in a
+particular location are subject to a cache handling routine. An example
+httpd.conf snippet:</p>
+<div class="language-text highlight"><pre><span></span><code>&lt;Location /cache/&gt;
+
+#  Run all requests through the MyModule::cache function to see if a page should
+#  be recompiled before sending it out
+#
+PerlHandler     WebDyne::Chain
+PerlSetVar      WebDyneChain    &#39;WebDyne::Cache&#39;
+PerlSetVar      WebDyneCacheHandler &#39;&amp;MyModule::cache&#39;
+
+&lt;/Location&gt;
+</code></pre></div>
+<p>Note that any package used as the <code>WebDyneCacheHandler</code> target should be
+already loaded via "PerlRequire" or similar mechanism.</p>
+<p>As an example of why this could be useful consider the <a href="../03_advanced_usage_advanced_usage/#caching_section">caching
+examples</a> above. Instead of flagging that an
+individual file should only be re-compiled every "x" seconds, that
+policy could be applied to a whole directory with no alteration to the
+individual pages.</p>
+<h2 id="webdynesession">WebDyne::Session<a class="headerlink" href="#webdynesession" title="Permanent link">&para;</a></h2>
+<p>WebDyne::Session generates a unique session ID for each browser
+connection and stores it in a cookie. It has the following API:</p>
+<dl>
+<dt>session_id()</dt>
+<dd>
+<p>Function. Returns the unique session id assigned to the browser. Call
+  via <code>$self-&gt;session_id()</code> from perl code.</p>
+</dd>
+<dt><code>$WEBDYNE_SESSION_ID_COOKIE_NAME</code></dt>
+<dd>
+<p>Constant. Holds the name of the cookie that will be used to assign the
+  session id in the users browser. Defaults to "session". Set as per
+  <a href="../06_reference/#webdyne_constants">WebDyne::Constants</a> section. Resides in the
+  <code>WebDyne::Session::Constant</code> package namespace.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="language-text highlight"><pre><span></span><code>&lt;start_html&gt;
+
+Session ID: !{! shift()-&gt;session_id() !}
+
+&lt;end_html&gt;
+
+__PERL__
+
+use WebDyne::Session;
+1;
+</code></pre></div>
+<p><a href="https://demo.webdyne.org/session1.psp">Run</a></p>
+<p>WebDyne::Session can also be used in conjunction with the
+<a href="./#webdyne_chain">WebDyne::Chain</a> module to make session information
+available to all pages within a location. An example httpd.conf snippet:</p>
+<div class="language-text highlight"><pre><span></span><code>&lt;Location /&gt;
+
+# We want session cookies for our whole site
+#
+PerlHandler     WebDyne::Chain
+PerlSetVar      WebDyneChain    &#39;WebDyne::Session&#39;
+
+#  Change cookie name from &quot;session&quot; to &quot;gingernut&quot; for something different
+#
+PerlSetVar      WEBDYNE_SESSION_ID_COOKIE_NAME    &#39;gingernut&#39;
+
+&lt;/Location&gt;
+</code></pre></div>
+<h2 id="webdynetemplate">WebDyne::Template<a class="headerlink" href="#webdynetemplate" title="Permanent link">&para;</a></h2>
+<p>One of the more powerful WebDyne extensions. WebDyne::Template can be
+used to build CMS (Content Management Systems). It will extract the
+&lt;head&gt; and &lt;body&gt; sections from an existing HTML or WebDyne page and
+insert them into the corresponding head and body blocks of a template
+file.</p>
+<p>The merging is done once at compile time - there are no repeated search
+and replace operations each time the file is loaded, or server side
+includes, so the resulting pages are quite fast.</p>
+<p>Both the template and content files should be complete - there is no
+need to write the content without a &lt;head&gt; section, or leave out
+&lt;html&gt; tags. As a result both the content and template files can be
+viewed as standalone documents.</p>
+<p>The API:</p>
+<dl>
+<dt>template ( filename )</dt>
+<dd>
+<p>Function. Set the file name of the template to be used. If no path is
+  specified file name will be relative to the current request directory</p>
+</dd>
+<dt>WebDyneTemplate</dt>
+<dd>
+<p>Directive. Can be used to supply the template file name in a Apache
+  Dir_Config section, or a the WEBDYNE_DIR_CONFIG section of a
+  webdyne.conf.pl file for PSGI</p>
+</dd>
+</dl>
+<p>Example:</p>
+<p>The template:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Template&quot;</span> <span class="na">style</span><span class="o">=</span><span class="s">&quot;@{qw(https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css template1.css https://unpkg.com/gridjs/dist/theme/mermaid.min.css)}&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;app&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="p">&lt;</span><span class="nt">header</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;topbar&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;topbar-inner&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;brand&quot;</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;home.psp&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;logo&quot;</span> <span class="na">aria-hidden</span><span class="o">=</span><span class="s">&quot;true&quot;</span><span class="p">&gt;</span>WS<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>          <span class="p">&lt;</span><span class="nt">span</span><span class="p">&gt;</span>Web Site<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        <span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="p">&lt;</span><span class="nt">nav</span> <span class="na">aria-label</span><span class="o">=</span><span class="s">&quot;Top&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>          <span class="p">&lt;</span><span class="nt">ul</span> <span class="na">style</span><span class="o">=</span><span class="s">&quot;margin:0; padding:0; display:flex; gap:0.75rem; list-style:none;&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>            <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;#&quot;</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;secondary&quot;</span> <span class="na">role</span><span class="o">=</span><span class="s">&quot;button&quot;</span> <span class="na">style</span><span class="o">=</span><span class="s">&quot;padding:0.45rem 0.75rem;&quot;</span><span class="p">&gt;</span>Sign in<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>          <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        <span class="p">&lt;/</span><span class="nt">nav</span><span class="p">&gt;</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="p">&lt;/</span><span class="nt">header</span><span class="p">&gt;</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="p">&lt;</span><span class="nt">aside</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;sidebar&quot;</span> <span class="na">aria-label</span><span class="o">=</span><span class="s">&quot;Sidebar&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;sidebar-inner&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>        <span class="p">&lt;</span><span class="nt">h6</span> <span class="na">style</span><span class="o">=</span><span class="s">&quot;margin-bottom:0.75rem;&quot;</span><span class="p">&gt;</span>Menu<span class="p">&lt;/</span><span class="nt">h6</span><span class="p">&gt;</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>        <span class="p">&lt;</span><span class="nt">ul</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;navlist&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>          <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;template_home1.psp&quot;</span> <span class="na">aria-current</span><span class="o">=</span><span class="s">&quot;page&quot;</span><span class="p">&gt;</span>Home<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>          <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;template_content1.psp&quot;</span><span class="p">&gt;</span>Content<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>          <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;template_about1.psp&quot;</span><span class="p">&gt;</span>About<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>          <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;template_dump1.psp&quot;</span><span class="p">&gt;</span>Dump<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    <span class="p">&lt;/</span><span class="nt">aside</span><span class="p">&gt;</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    <span class="p">&lt;</span><span class="nt">main</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;home&quot;</span> <span class="na">tabindex</span><span class="o">=</span><span class="s">&quot;-1&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;main-inner&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="p">&lt;</span><span class="nt">block</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;body&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>    Template Content
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>    <span class="p">&lt;/</span><span class="nt">block</span><span class="p">&gt;</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>    <span class="p">&lt;/</span><span class="nt">main</span><span class="p">&gt;</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    <span class="p">&lt;</span><span class="nt">footer</span><span class="p">&gt;</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&quot;footer-inner&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>        <span class="p">&lt;</span><span class="nt">small</span><span class="p">&gt;</span>Copyright 2025 Some Web Site. Built with WebDyne using pico.css<span class="p">&lt;/</span><span class="nt">small</span><span class="p">&gt;</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    <span class="p">&lt;/</span><span class="nt">footer</span><span class="p">&gt;</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="p">&lt;</span><span class="nt">end_html</span><span class="p">&gt;</span>
+</span></code></pre></div>
+<p><a href="https://demo.webdyne.org/template1.psp">Run</a></p>
+<p>The content, run to view resulting merge:</p>
+<div class="language-text highlight"><pre><span></span><code>&lt;start_html title=&quot;Home&quot;&gt;
+&lt;h1&gt;Home Content&lt;/h1&gt;
+&lt;p&gt;
+Home Page: &lt;? localtime ?&gt;
+&lt;p&gt;
+Click the content menu item to display demo data from the JSON example using an &amp;lt;include&amp;gt; tag
+__PERL__
+use WebDyne::Template qw(template1.psp);
+</code></pre></div>
+<p><a href="https://demo.webdyne.org/template_home1.psp">Run</a></p>
+<p>In real life it is not desirable to put the template name into every
+content file (as was done in the above example), nor would we want to
+have to "use WebDyne::Template" in every content file.</p>
+<p>To overcome this WebDyne::Template can read the template file name using
+the Apache <code>dir_config</code> function, and assign a template on a per
+location basis using the WebDyneTemplate directive. Here is a sample
+<code>httpd.conf</code> file:</p>
+<div class="language-text highlight"><pre><span></span><code>&lt;Location /&gt;
+
+PerlHandler     WebDyne::Chain
+PerlSetVar      WebDyneChain    &#39;WebDyne::Template&#39;
+PerlSetVar      WebDyneTemplate &#39;/path/to/template.psp&#39;
+
+&lt;/Location&gt;
+</code></pre></div>
+<p>Alternatively in a PSGI environment you can create a .webdyne.conf.pl
+file in the directory with the template directives as follows:</p>
+<div class="language-text highlight"><pre><span></span><code>$_={
+    &#39;WebDyne::Constant&#39; =&gt; {
+        WEBDYNE_DIR_CONFIG =&gt; {
+            &#39;&#39; =&gt; {
+                &#39;WebDyneHandler&#39;    =&gt; &#39;WebDyne::Chain&#39;,
+                &#39;WebDyneChain&#39;      =&gt; &#39;WebDyne::Template&#39;,
+                &#39;WebDyneTemplate&#39;   =&gt; &#39;template.psp&#39;
+            },
+        },
+    }
+}
+</code></pre></div>
 
 
 
@@ -1009,7 +1352,7 @@ other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../08_troubleshooting/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Troubleshooting">
+          <a href="../06_reference/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Reference">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1019,20 +1362,20 @@ other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Troubleshooting
+                Reference
               </div>
             </div>
           </a>
         
         
           
-          <a href="../10_additional_notes_additional_notes/" class="md-footer__link md-footer__link--next" aria-label="Next: Additional Notes">
+          <a href="../08_troubleshooting/" class="md-footer__link md-footer__link--next" aria-label="Next: Troubleshooting">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Additional Notes
+                Troubleshooting
               </div>
             </div>
             <div class="md-footer__button md-icon">

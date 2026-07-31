@@ -12,13 +12,13 @@
         <meta name="author" content="Andrew Speer">
       
       
-        <link rel="canonical" href="https://webdyne.org/09_credits/">
+        <link rel="canonical" href="https://webdyne.org/05_utilities/">
       
       
-        <link rel="prev" href="../08_troubleshooting/">
+        <link rel="prev" href="../04_error_handling_error_handling/">
       
       
-        <link rel="next" href="../10_additional_notes_additional_notes/">
+        <link rel="next" href="../06_reference/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Credits - WebDyne</title>
+        <title>Utilities - WebDyne</title>
       
     
     
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#credits" class="md-skip">
+        <a href="#utilities" class="md-skip">
           Skip to content
         </a>
       
@@ -126,7 +126,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Credits
+              Utilities
             
           </span>
         </div>
@@ -428,10 +428,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../05_utilities/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utilities
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -447,6 +474,37 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#command_line_utilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command Line Utilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -536,19 +594,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../09_credits/" class="md-nav__link">
         
   
   
@@ -564,7 +613,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -974,12 +1022,100 @@
   
 
 
-<h1 id="credits">Credits<a class="headerlink" href="#credits" title="Permanent link">&para;</a></h1>
-<p>WebDyne relies heavily on modules and code developed and open-sourced by
-other authors. Without Perl, and Perl modules such as <code>mod_perl/PSGI</code>,
-<code>HTML::Tiny</code>, <code>HTML::TreeBuilder</code>, <code>Storable</code> and many others, WebDyne
-would not be possible. To the authors of those modules - and all the
-other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
+<h1 id="utilities">Utilities<a class="headerlink" href="#utilities" title="Permanent link">&para;</a></h1>
+<h2 id="command_line_utilities">Command Line Utilities<a class="headerlink" href="#command_line_utilities" title="Permanent link">&para;</a></h2>
+<p>WebDyne installs several command line utilities for setup, local
+development and troubleshooting. Installation location will vary
+depending on your distribution - most will default to <code>/usr/local/bin</code>,
+but may be installed elsewhere in some cases, especially if you have
+nominated a <code>PREFIX</code> option when using CPAN. The commands provide their
+own help or manual output for detailed options.</p>
+<dl>
+<dt><code>wdapacheinit</code></dt>
+<dd>
+<p>Runs the WebDyne initialization routines, which create needed
+  directories, modify and create Apache .conf files etc.</p>
+</dd>
+</dl>
+<p><a href="../utilities/wdapacheinit/" rel="noopener" target="_blank">Full manual page</a></p>
+<dl>
+<dt><code>wdcompile</code></dt>
+<dd>
+<p>Usage: <code>wdcompile filename.psp</code>. Will compile a PSP file and use
+  Data::Dumper to display the WebDyne internal representation of the
+  page tree structure. Useful as a troubleshooting tool to see how
+  HTML::TreeBuilder has parsed your source file, and to show up any
+  misplaced tags etc.</p>
+</dd>
+</dl>
+<p><a href="../utilities/wdcompile/" rel="noopener" target="_blank">Full manual page</a></p>
+<dl>
+<dt><code>wdrender</code></dt>
+<dd>
+<p>Usage: <code>wdrender filename.psp</code>. Will attempt to render the source file
+  to screen using WebDyne. It is useful for testing page output from the
+  command line and can exercise fake, PSGI, PAGI and mod_perl style
+  request backends for troubleshooting.</p>
+</dd>
+</dl>
+<p><a href="../utilities/wdrender/" rel="noopener" target="_blank">Full manual page</a></p>
+<dl>
+<dt><code>wddump</code></dt>
+<dd>
+<p>Usage: <code>wddump filename</code>. Where filename is a compiled WebDyne source
+  file (usually in <code>/var/webdyne/cache</code>). Will dump out the saved data
+  structure of the compiled file.</p>
+</dd>
+</dl>
+<p><a href="../utilities/wddump/" rel="noopener" target="_blank">Full manual page</a></p>
+<dl>
+<dt><code>wddebug</code></dt>
+<dd>
+<p>Usage: <code>wddebug --status|--enable|--disable</code>. Enable/disable debugging
+  in the WebDyne code. This uses some pretty ugly methods to enable
+  debugging in already installed modules by editing the code on-disk to
+  re-enable debug calls - do not use in a production environment !</p>
+</dd>
+</dl>
+<p><a href="../utilities/wddebug/" rel="noopener" target="_blank">Full manual page</a></p>
+<dl>
+<dt><code>webdyne.psgi</code></dt>
+<dd>
+<p>Used to run WebDyne as a PSGI process- usually invoked by Plack via
+  <code>plackup</code> or <code>starman</code>, but can be run directly for development
+  purposes.</p>
+</dd>
+</dl>
+<p><a href="../utilities/webdyne.psgi/" rel="noopener" target="_blank">Full manual page</a></p>
+<dl>
+<dt><code>webdyne.pagi</code></dt>
+<dd>
+<p>Used to run WebDyne as a PAGI application. It can be run directly for
+  development or used as a PAGI application entry point, including PAGI
+  HTTP, SSE and WebSocket request handling where supported by the
+  server.</p>
+</dd>
+</dl>
+<p><a href="../utilities/webdyne.pagi/" rel="noopener" target="_blank">Full manual page</a></p>
+<dl>
+<dt><code>webdyne.apache</code></dt>
+<dd>
+<p>Starts a temporary Apache mod_perl instance for local development and
+  troubleshooting. It can serve a directory or a single PSP file without
+  installing a full system Apache configuration.</p>
+</dd>
+</dl>
+<p><a href="../utilities/webdyne.apache/" rel="noopener" target="_blank">Full manual page</a></p>
+<dl>
+<dt><code>wdlint</code></dt>
+<dd>
+<p>Run <code>perl -c -w</code> over code in __PERL__ sections on any PSP file to
+  check for syntax errors. Will automatically skip HTML code. It only
+  checks code in the __PERL__ area, and won't check syntax in
+  in-line perl, dynamic attributes etc.</p>
+</dd>
+</dl>
+<p><a href="../utilities/wdlint/" rel="noopener" target="_blank">Full manual page</a></p>
 
 
 
@@ -1009,7 +1145,7 @@ other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../08_troubleshooting/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Troubleshooting">
+          <a href="../04_error_handling_error_handling/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Error Handling">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1019,20 +1155,20 @@ other modules used to a lesser extent by WebDyne - I convey my thanks.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Troubleshooting
+                Error Handling
               </div>
             </div>
           </a>
         
         
           
-          <a href="../10_additional_notes_additional_notes/" class="md-footer__link md-footer__link--next" aria-label="Next: Additional Notes">
+          <a href="../06_reference/" class="md-footer__link md-footer__link--next" aria-label="Next: Reference">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Additional Notes
+                Reference
               </div>
             </div>
             <div class="md-footer__button md-icon">
