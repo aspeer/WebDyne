@@ -5183,9 +5183,25 @@ The standard &lt;input type="button"&gt; tag type.
 The standard &lt;input type="submit"&gt; tag type to initiate form
 submission.
 
+#### &lt;reset&gt; {#tag_reset}
+
+The standard &lt;input type="reset"&gt; tag type to reset form fields to
+their initial values.
+
+#### &lt;defaults&gt; {#tag_defaults}
+
+A CGI-style shortcut rendered as a submit input. It is supported for
+compatibility with CGI.pm-style form helpers.
+
 #### &lt;hidden&gt; {#tag_hidden}
 
-The standard &lt;input type="button"&gt; tag type.
+The standard &lt;input type="hidden"&gt; tag type.
+
+#### &lt;isindex&gt; {#tag_isindex}
+
+Legacy &lt;isindex&gt; output is supported for compatibility, but the HTML
+element is deprecated and should not be used for new pages. Prefer
+normal form tags such as &lt;start_form&gt;, &lt;textfield&gt;, and &lt;submit&gt;.
 
 #### &lt;start_form&gt; {#tag_start_form}
 
@@ -5518,6 +5534,14 @@ package namespace.
   for "use strict" equivalence in a Safe mode (checked under Perl 5.8.6
   only, results in earlier versions of Perl may vary).
 
+`$WEBDYNE_EVAL_PREPEND`
+
+: Perl source text prepended to generated eval code after
+  `$WEBDYNE_EVAL_USE_STRICT`. Defaults to an empty string. This can be
+  used to load helper modules or establish process-wide eval defaults,
+  but should be used conservatively because it affects interpreted `PSP`
+  code globally.
+
 `$WEBDYNE_STRICT_VARS`
 
 : Check if a var is declared in a render block (e.g. `${foo}`) but not
@@ -5534,9 +5558,43 @@ package namespace.
 : The DTD to place at the top of a rendered page. Defaults to:
   &lt;!DOCTYPE html&gt;
 
+`$WEBDYNE_HTML_CHARSET`
+
+: Default character set used when generating encoded content types and
+  default HTML metadata. Defaults to `UTF-8`.
+
+`$WEBDYNE_META`
+
+: Hash reference of default &lt;meta&gt; values emitted by &lt;start_html&gt;.
+  Defaults include a UTF-8 charset declaration and viewport metadata for
+  responsive rendering.
+
+`$WEBDYNE_CONTENT_TYPE_HTML_META`
+
+: When enabled, include a Content-Type &lt;meta&gt; tag in generated HTML
+  output. Defaults to 0.
+
 `$WEBDYNE_HTML_PARAM`
 
 : attributes for the &lt;html&gt; tag, default is { lang =&gt;'en' }
+
+`$WEBDYNE_START_HTML_PARAM`
+
+: Hash reference of default attributes applied to every &lt;start_html&gt;
+  tag, such as global scripts, styles, metadata, or include files.
+  Explicit &lt;start_html&gt; attributes can override these defaults.
+
+`$WEBDYNE_START_HTML_PARAM_STATIC`
+
+: Controls whether include-style values supplied through &lt;start_html&gt;
+  defaults are loaded at compile time and reused. Defaults to 1. Set to
+  0 or `undef` if included content should be re-read on each page load.
+
+`$WEBDYNE_START_HTML_SHORTCUT_HR`
+
+: Hash reference defining shortcut attributes for &lt;start_html&gt;.
+  Defaults include shortcuts such as pico, htmx, and alpine, which
+  expand to stylesheet or script includes.
 
 `$WEBDYNE_HEAD_INSERT`
 
@@ -5557,17 +5615,26 @@ package namespace.
 : Do not compact source file whitespace as per HTML::TreeBuilder
   no_space_compacting function. Defaults to 0
 
+`$WEBDYNE_COMPILE_P_STRICT`
+
+: Controls parser strictness for paragraph handling during compilation.
+  Defaults to 1.
+
+`$WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG`
+
+: Controls whether implicit paragraph tags are generated in body content
+  during compilation. Defaults to 1.
+
 `$WEBDYNE_STORE_COMMENTS`
 
-: By default comments are not rendered. Set to 1 to store and display
-  comments from source files. Defaults to 0
+: Controls whether comments from source files are stored and rendered.
+  Defaults to 1. Set to 0 to suppress comment output.
 
-`$WEBDYNE_DELAYED_BLOCK_RENDER`
+`$WEBDYNE_NO_CACHE`
 
-: By default WebDyne will render blocks targeted by a render_block()
-  call, even those that are outside the originating &lt;perl&gt;..&lt;/perl&gt;
-  section that made the call. Set to 0 to not render such blocks.
-  Defaults to 1
+: Controls whether WebDyne sends no-cache response headers. Defaults
+  to 1. This can be modified globally or cleared for a page through the
+  no_cache() method.
 
 `$WEBDYNE_WARNINGS_FATAL`
 
@@ -5585,11 +5652,31 @@ package namespace.
 
 : Maximum size of a POST request. Defaults to 512Kb
 
+`$WEBDYNE_CGI_PARAM_EXPAND`
+
+: Expands CGI parameter strings embedded in parameter values into
+  separate CGI parameters. Defaults to 1.
+
+`$WEBDYNE_CGI_AUTOESCAPE`
+
+: Controls automatic escaping of CGI form field values before they are
+  rendered back into generated form elements. Defaults to 0.
+
 `$WEBDYNE_JSON_CANONICAL`
 
 : Set is JSON encoding should be canonical, i.e. respect the order of
   supplied data (slightly slows down encoding). Defaults to 1 (true -
   preserve variable order)
+
+`$WEBDYNE_JSON_PRETTY`
+
+: Globally enables pretty-printed JSON output for &lt;json&gt; tags unless
+  overridden by a tag attribute. Defaults to 0.
+
+`$WEBDYNE_API_ENABLE`
+
+: Enables processing of &lt;api&gt; routes in PSGI request handling.
+  Defaults to 1. Set to 0 to disable API route dispatch.
 
 `$WEBDYNE_ERROR_TEXT`
 
@@ -5600,6 +5687,13 @@ package namespace.
 `$WEBDYNE_ERROR_SHOW`
 
 : Display the error message. Only applicable in the HTML error handler
+
+`$WEBDYNE_ERROR_SHOW_EXTENDED`
+
+: Enable extended HTML error output. When enabled, the granular
+  `$WEBDYNE_ERROR_*` display controls below determine which source,
+  backtrace, environment, CGI, and internal details are shown. Defaults
+  to 0.
 
 `$WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW`
 
@@ -5631,6 +5725,59 @@ package namespace.
 : Remove WebDyne internal modules from backtrace. Off by default, set to
   1 to enable.
 
+`$WEBDYNE_ERROR_SOURCE_FILENAME_SHOW`
+
+: Show the source filename in extended HTML error output. Defaults to 1.
+
+`$WEBDYNE_ERROR_SOURCE_FILENAME_FULL`
+
+: Show the full filesystem path for the source filename in extended HTML
+  error output. Defaults to 0.
+
+`$WEBDYNE_ERROR_BACKTRACE_FULL`
+
+: Show the full backtrace, including frames normally skipped such as
+  eval and anonymous subroutine frames. Defaults to 0.
+
+`$WEBDYNE_ERROR_EVAL_CONTEXT_SHOW`
+
+: Show the generated eval context around an error when extended HTML
+  error output is enabled. Defaults to 1.
+
+`$WEBDYNE_ERROR_CGI_PARAM_SHOW`
+
+: Show CGI parameters in extended HTML error output. Defaults to 1.
+
+`$WEBDYNE_ERROR_ENV_SHOW`
+
+: Show environment variables in extended HTML error output. Defaults to
+  1.
+
+`$WEBDYNE_ERROR_WEBDYNE_CONSTANT_SHOW`
+
+: Show WebDyne constants in extended HTML error output. Defaults to 1.
+
+`$WEBDYNE_ERROR_URI_SHOW`
+
+: Show request URI information in extended HTML error output. Defaults
+  to 1.
+
+`$WEBDYNE_ERROR_VERSION_SHOW`
+
+: Show WebDyne version information in extended HTML error output.
+  Defaults to 1.
+
+`$WEBDYNE_ERROR_INTERNAL_SHOW`
+
+: Show internal error-handler state in extended HTML error output.
+  Defaults to 0.
+
+`$WEBDYNE_ERROR_SHOW_ALTERNATE`
+
+: Alternate message displayed when HTML error display is disabled with
+  `$WEBDYNE_ERROR_SHOW`. Defaults to a short message directing the user
+  to enable error display or review the web server error log.
+
 `$WEBDYNE_AUTOLOAD_POLLUTE`
 
 : When a method is called from a &lt;perl&gt; routine the WebDyne AUTOLOAD
@@ -5642,6 +5789,21 @@ package namespace.
   name. In very strictly controlled environments - and even then only in
   some cases - it can result is faster throughput. Off by default, set
   to 1 to enable.
+
+`$WEBDYNE_HTML_DEFAULT_TITLE`
+
+: Default document title emitted by &lt;start_html&gt; when no title is
+  supplied. Defaults to `Untitled Document`.
+
+`$WEBDYNE_HTML_TINY_MODE`
+
+: Controls whether the HTML helper emits HTML-style or XML-style output.
+  Defaults to `html`.
+
+`$WEBDYNE_RELOAD`
+
+: Development-mode switch that forces cached compiled pages to be
+  recompiled. Defaults to 0.
 
 `$WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE`
 
@@ -5673,6 +5835,51 @@ package namespace.
   Equivalent to setting the force=1 attribute on all &lt;htmx&gt; tags.
   Defaults to 0 (do not render).
 
+`$WEBDYNE_PSP_EXT`
+
+: Default extension used to identify interpreted WebDyne PSP files.
+  Defaults to `.psp`.
+
+`$WEBDYNE_INDEX_EXT_ALLOWED_HR`
+
+: Hash reference of source-code file extensions that the default
+  directory indexer may open for viewing, in addition to recognised
+  static file types.
+
+`$WEBDYNE_INDEX_FN_ALLOWED_HR`
+
+: Hash reference of literal file names that the default directory
+  indexer may open for viewing, in addition to recognised static file
+  types.
+
+`$WEBDYNE_DIR_CONFIG`
+
+: Hash reference used by non-Apache request layers to provide
+  Apache-style directory configuration values such as `WebDyneHandler`,
+  `WebDyneChain`, and `WebDyneTemplate`.
+
+`$WEBDYNE_DIR_CONFIG_CWD_LOAD`
+
+: Controls whether PSGI-style local request handling attempts to load
+  `WEBDYNE_DIR_CONFIG` values from a `.webdyne.conf.pl` file in the
+  current PSP directory. Defaults to 1.
+
+`$WEBDYNE_CONF_FN`
+
+: Default configuration filename searched by local configuration
+  loading. Defaults to `webdyne.conf.pl`.
+
+`$WEBDYNE_HTML_TIDY`
+
+: Enables optional HTML::Tidy5 cleanup of rendered output where
+  supported by the rendering path. Defaults to 0 and requires
+  HTML::Tidy5 to be installed.
+
+`$WEBDYNE_HTML_TIDY_CONFIG_HR`
+
+: Hash reference of HTML::Tidy5 options used when `$WEBDYNE_HTML_TIDY`
+  is enabled.
+
 `$WEBDYNE_PSGI_STATIC`
 
 : Allow the `webdyne.psgi` Plack instance to serve static pages (non PSP
@@ -5681,6 +5888,34 @@ package namespace.
   uses `$WEBDYNE_PSGI_MIDDLEWARE_STATIC` to decide which files can be
   served directly.
 
+`$WEBDYNE_PSGI_INDEX`
+
+: Default index filename used by the PSGI request layer. Defaults to
+  `index.psp`.
+
+`$WEBDYNE_PSGI_MIDDLEWARE_STATIC`
+
+: Regular expression used by the default PSGI static middleware to
+  decide which non-PSP files can be served directly.
+
+`$WEBDYNE_PSGI_MIDDLEWARE`
+
+: Array reference describing the Plack middleware stack wrapped around
+  the WebDyne PSGI application. Middleware options may be supplied
+  directly or generated by a code reference that receives the resolved
+  wrapper options.
+
+`$WEBDYNE_PSGI_ENV_KEEP` / `$WEBDYNE_PSGI_ENV_SET`
+
+: Controls which environment variables are preserved or injected into
+  PSGI request handling. By default `DOCUMENT_ROOT` and
+  `DOCUMENT_DEFAULT` are preserved.
+
+`$WEBDYNE_PSGI_WARN_ON_ERROR`
+
+: Controls whether PSGI request handling emits warnings when errors are
+  encountered. Defaults to `undef`.
+
 `$WEBDYNE_PAGI_STATIC`
 
 : Allow the `webdyne.pagi` PAGI instance to serve static pages (non PSP
@@ -5688,6 +5923,34 @@ package namespace.
   (allow static pages to be served). The default PAGI static middleware
   uses `$WEBDYNE_PAGI_MIDDLEWARE_STATIC` to decide which files can be
   served directly.
+
+`$WEBDYNE_PAGI_MIDDLEWARE_STATIC`
+
+: Regular expression used by the default PAGI static middleware to
+  decide which non-PSP files can be served directly.
+
+`$WEBDYNE_PAGI_MIDDLEWARE`
+
+: Array reference describing the middleware stack wrapped around the
+  WebDyne PAGI application. Middleware options may be supplied directly
+  or generated by a code reference that receives the resolved wrapper
+  options.
+
+`$WEBDYNE_PAGI_ENV_KEEP` / `$WEBDYNE_PAGI_ENV_SET`
+
+: Controls which environment variables are preserved or injected into
+  PAGI request handling. By default `DOCUMENT_ROOT` and
+  `DOCUMENT_DEFAULT` are preserved.
+
+`$WEBDYNE_PAGI_WARN_ON_ERROR`
+
+: Controls whether PAGI request handling emits warnings when errors are
+  encountered. Defaults to `undef`.
+
+`$WEBDYNE_PAGI_EVAL_PREPEND`
+
+: PAGI-specific Perl source text prepended to generated eval code.
+  Defaults to loading async support used by PAGI execution.
 
 `$WEBDYNE_MIME_TYPE_HR`
 

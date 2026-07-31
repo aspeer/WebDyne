@@ -3631,12 +3631,40 @@ sub handler {
 
         </section>
 
+        <section xml:id="tag_reset">
+          <info>
+            <title><tag>&lt;reset&gt;</tag></title>
+          </info>
+
+          <para>The standard &lt;input type="reset"&gt; tag type to reset form fields to their initial values.</para>
+
+        </section>
+
+        <section xml:id="tag_defaults">
+          <info>
+            <title><tag>&lt;defaults&gt;</tag></title>
+          </info>
+
+          <para>A CGI-style shortcut rendered as a submit input. It is supported for compatibility with CGI.pm-style form helpers.</para>
+
+        </section>
+
         <section xml:id="tag_hidden">
           <info>
             <title><tag>&lt;hidden&gt;</tag></title>
           </info>
 
-          <para>The standard &lt;input type="button"&gt; tag type.</para>
+          <para>The standard &lt;input type="hidden"&gt; tag type.</para>
+
+        </section>
+
+        <section xml:id="tag_isindex">
+          <info>
+            <title><tag>&lt;isindex&gt;</tag></title>
+          </info>
+
+          <para>Legacy <tag>&lt;isindex&gt;</tag> output is supported for compatibility, but the HTML element is deprecated and should not be used for new pages. Prefer normal form tags such as
+          <tag>&lt;start_form&gt;</tag>, <tag>&lt;textfield&gt;</tag>, and <tag>&lt;submit&gt;</tag>.</para>
 
         </section>
 
@@ -4064,6 +4092,15 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
           </varlistentry>
 
           <varlistentry>
+            <term><varname>$WEBDYNE_EVAL_PREPEND</varname></term>
+
+            <listitem>
+              <para>Perl source text prepended to generated eval code after <varname>$WEBDYNE_EVAL_USE_STRICT</varname>. Defaults to an empty string. This can be used to load helper modules or
+              establish process-wide eval defaults, but should be used conservatively because it affects interpreted <filename>PSP</filename> code globally.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><varname>$WEBDYNE_STRICT_VARS</varname></term>
 
             <listitem>
@@ -4088,10 +4125,62 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
           </varlistentry>
 
           <varlistentry>
+            <term><varname>$WEBDYNE_HTML_CHARSET</varname></term>
+
+            <listitem>
+              <para>Default character set used when generating encoded content types and default HTML metadata. Defaults to <literal>UTF-8</literal>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_META</varname></term>
+
+            <listitem>
+              <para>Hash reference of default <tag>&lt;meta&gt;</tag> values emitted by <tag>&lt;start_html&gt;</tag>. Defaults include a UTF-8 charset declaration and viewport metadata for
+              responsive rendering.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_CONTENT_TYPE_HTML_META</varname></term>
+
+            <listitem>
+              <para>When enabled, include a Content-Type <tag>&lt;meta&gt;</tag> tag in generated HTML output. Defaults to 0.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><varname>$WEBDYNE_HTML_PARAM</varname></term>
 
             <listitem>
               <para>attributes for the &lt;html&gt; tag, default is { lang =&gt;'en' }</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_START_HTML_PARAM</varname></term>
+
+            <listitem>
+              <para>Hash reference of default attributes applied to every <tag>&lt;start_html&gt;</tag> tag, such as global scripts, styles, metadata, or include files. Explicit
+              <tag>&lt;start_html&gt;</tag> attributes can override these defaults.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_START_HTML_PARAM_STATIC</varname></term>
+
+            <listitem>
+              <para>Controls whether include-style values supplied through <tag>&lt;start_html&gt;</tag> defaults are loaded at compile time and reused. Defaults to 1. Set to 0 or
+              <literal>undef</literal> if included content should be re-read on each page load.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_START_HTML_SHORTCUT_HR</varname></term>
+
+            <listitem>
+              <para>Hash reference defining shortcut attributes for <tag>&lt;start_html&gt;</tag>. Defaults include shortcuts such as <property>pico</property>, <property>htmx</property>, and
+              <property>alpine</property>, which expand to stylesheet or script includes.</para>
             </listitem>
           </varlistentry>
 
@@ -4122,19 +4211,35 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
           </varlistentry>
 
           <varlistentry>
-            <term><varname>$WEBDYNE_STORE_COMMENTS</varname></term>
+            <term><varname>$WEBDYNE_COMPILE_P_STRICT</varname></term>
 
             <listitem>
-              <para>By default comments are not rendered. Set to 1 to store and display comments from source files. Defaults to 0</para>
+              <para>Controls parser strictness for paragraph handling during compilation. Defaults to 1.</para>
             </listitem>
           </varlistentry>
 
           <varlistentry>
-            <term><varname>$WEBDYNE_DELAYED_BLOCK_RENDER</varname></term>
+            <term><varname>$WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG</varname></term>
 
             <listitem>
-              <para>By default WebDyne will render blocks targeted by a render_block() call, even those that are outside the originating <tag>&lt;perl&gt;..&lt;/perl&gt;</tag> section that
-              made the call. Set to 0 to not render such blocks. Defaults to 1</para>
+              <para>Controls whether implicit paragraph tags are generated in body content during compilation. Defaults to 1.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_STORE_COMMENTS</varname></term>
+
+            <listitem>
+              <para>Controls whether comments from source files are stored and rendered. Defaults to 1. Set to 0 to suppress comment output.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_NO_CACHE</varname></term>
+
+            <listitem>
+              <para>Controls whether WebDyne sends no-cache response headers. Defaults to 1. This can be modified globally or cleared for a page through the <methodname>no_cache()</methodname>
+              method.</para>
             </listitem>
           </varlistentry>
 
@@ -4164,10 +4269,42 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
           </varlistentry>
 
           <varlistentry>
+            <term><varname>$WEBDYNE_CGI_PARAM_EXPAND</varname></term>
+
+            <listitem>
+              <para>Expands CGI parameter strings embedded in parameter values into separate CGI parameters. Defaults to 1.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_CGI_AUTOESCAPE</varname></term>
+
+            <listitem>
+              <para>Controls automatic escaping of CGI form field values before they are rendered back into generated form elements. Defaults to 0.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><varname>$WEBDYNE_JSON_CANONICAL</varname></term>
 
             <listitem>
               <para>Set is JSON encoding should be canonical, i.e. respect the order of supplied data (slightly slows down encoding). Defaults to 1 (true - preserve variable order)</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_JSON_PRETTY</varname></term>
+
+            <listitem>
+              <para>Globally enables pretty-printed JSON output for <tag>&lt;json&gt;</tag> tags unless overridden by a tag attribute. Defaults to 0.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_API_ENABLE</varname></term>
+
+            <listitem>
+              <para>Enables processing of <tag>&lt;api&gt;</tag> routes in PSGI request handling. Defaults to 1. Set to 0 to disable API route dispatch.</para>
             </listitem>
           </varlistentry>
 
@@ -4185,6 +4322,15 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
 
             <listitem>
               <para>Display the error message. Only applicable in the HTML error handler</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_SHOW_EXTENDED</varname></term>
+
+            <listitem>
+              <para>Enable extended HTML error output. When enabled, the granular <varname>$WEBDYNE_ERROR_*</varname> display controls below determine which source, backtrace, environment,
+              CGI, and internal details are shown. Defaults to 0.</para>
             </listitem>
           </varlistentry>
 
@@ -4238,6 +4384,95 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
           </varlistentry>
 
           <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_SOURCE_FILENAME_SHOW</varname></term>
+
+            <listitem>
+              <para>Show the source filename in extended HTML error output. Defaults to 1.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_SOURCE_FILENAME_FULL</varname></term>
+
+            <listitem>
+              <para>Show the full filesystem path for the source filename in extended HTML error output. Defaults to 0.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_BACKTRACE_FULL</varname></term>
+
+            <listitem>
+              <para>Show the full backtrace, including frames normally skipped such as eval and anonymous subroutine frames. Defaults to 0.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_EVAL_CONTEXT_SHOW</varname></term>
+
+            <listitem>
+              <para>Show the generated eval context around an error when extended HTML error output is enabled. Defaults to 1.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_CGI_PARAM_SHOW</varname></term>
+
+            <listitem>
+              <para>Show CGI parameters in extended HTML error output. Defaults to 1.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_ENV_SHOW</varname></term>
+
+            <listitem>
+              <para>Show environment variables in extended HTML error output. Defaults to 1.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_WEBDYNE_CONSTANT_SHOW</varname></term>
+
+            <listitem>
+              <para>Show WebDyne constants in extended HTML error output. Defaults to 1.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_URI_SHOW</varname></term>
+
+            <listitem>
+              <para>Show request URI information in extended HTML error output. Defaults to 1.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_VERSION_SHOW</varname></term>
+
+            <listitem>
+              <para>Show WebDyne version information in extended HTML error output. Defaults to 1.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_INTERNAL_SHOW</varname></term>
+
+            <listitem>
+              <para>Show internal error-handler state in extended HTML error output. Defaults to 0.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_ERROR_SHOW_ALTERNATE</varname></term>
+
+            <listitem>
+              <para>Alternate message displayed when HTML error display is disabled with <varname>$WEBDYNE_ERROR_SHOW</varname>. Defaults to a short message directing the user to enable error
+              display or review the web server error log.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><varname>$WEBDYNE_AUTOLOAD_POLLUTE</varname></term>
 
             <listitem>
@@ -4245,6 +4480,30 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
               Setting this flag to 1 will pollute the WebDyne name space with the method name so that <methodname>AUTOLOAD</methodname> is not called if that method is used again (for the
               duration of the Perl process, not just that call to the page). This is dangerous and can cause confusion if different modules use the same name. In very strictly controlled
               environments - and even then only in some cases - it can result is faster throughput. Off by default, set to 1 to enable.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_HTML_DEFAULT_TITLE</varname></term>
+
+            <listitem>
+              <para>Default document title emitted by <tag>&lt;start_html&gt;</tag> when no title is supplied. Defaults to <literal>Untitled Document</literal>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_HTML_TINY_MODE</varname></term>
+
+            <listitem>
+              <para>Controls whether the HTML helper emits HTML-style or XML-style output. Defaults to <literal>html</literal>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_RELOAD</varname></term>
+
+            <listitem>
+              <para>Development-mode switch that forces cached compiled pages to be recompiled. Defaults to 0.</para>
             </listitem>
           </varlistentry>
 
@@ -4281,6 +4540,72 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
           </varlistentry>
 
           <varlistentry>
+            <term><varname>$WEBDYNE_PSP_EXT</varname></term>
+
+            <listitem>
+              <para>Default extension used to identify interpreted WebDyne PSP files. Defaults to <literal>.psp</literal>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_INDEX_EXT_ALLOWED_HR</varname></term>
+
+            <listitem>
+              <para>Hash reference of source-code file extensions that the default directory indexer may open for viewing, in addition to recognised static file types.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_INDEX_FN_ALLOWED_HR</varname></term>
+
+            <listitem>
+              <para>Hash reference of literal file names that the default directory indexer may open for viewing, in addition to recognised static file types.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_DIR_CONFIG</varname></term>
+
+            <listitem>
+              <para>Hash reference used by non-Apache request layers to provide Apache-style directory configuration values such as <literal>WebDyneHandler</literal>,
+              <literal>WebDyneChain</literal>, and <literal>WebDyneTemplate</literal>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_DIR_CONFIG_CWD_LOAD</varname></term>
+
+            <listitem>
+              <para>Controls whether PSGI-style local request handling attempts to load <literal>WEBDYNE_DIR_CONFIG</literal> values from a <filename>.webdyne.conf.pl</filename> file in the
+              current PSP directory. Defaults to 1.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_CONF_FN</varname></term>
+
+            <listitem>
+              <para>Default configuration filename searched by local configuration loading. Defaults to <filename>webdyne.conf.pl</filename>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_HTML_TIDY</varname></term>
+
+            <listitem>
+              <para>Enables optional HTML::Tidy5 cleanup of rendered output where supported by the rendering path. Defaults to 0 and requires HTML::Tidy5 to be installed.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_HTML_TIDY_CONFIG_HR</varname></term>
+
+            <listitem>
+              <para>Hash reference of HTML::Tidy5 options used when <varname>$WEBDYNE_HTML_TIDY</varname> is enabled.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><varname>$WEBDYNE_PSGI_STATIC</varname></term>
 
             <listitem>
@@ -4290,11 +4615,95 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
           </varlistentry>
 
           <varlistentry>
+            <term><varname>$WEBDYNE_PSGI_INDEX</varname></term>
+
+            <listitem>
+              <para>Default index filename used by the PSGI request layer. Defaults to <filename>index.psp</filename>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_PSGI_MIDDLEWARE_STATIC</varname></term>
+
+            <listitem>
+              <para>Regular expression used by the default PSGI static middleware to decide which non-PSP files can be served directly.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_PSGI_MIDDLEWARE</varname></term>
+
+            <listitem>
+              <para>Array reference describing the Plack middleware stack wrapped around the WebDyne PSGI application. Middleware options may be supplied directly or generated by a code
+              reference that receives the resolved wrapper options.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_PSGI_ENV_KEEP</varname> / <varname>$WEBDYNE_PSGI_ENV_SET</varname></term>
+
+            <listitem>
+              <para>Controls which environment variables are preserved or injected into PSGI request handling. By default <envar>DOCUMENT_ROOT</envar> and
+              <envar>DOCUMENT_DEFAULT</envar> are preserved.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_PSGI_WARN_ON_ERROR</varname></term>
+
+            <listitem>
+              <para>Controls whether PSGI request handling emits warnings when errors are encountered. Defaults to <literal>undef</literal>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
             <term><varname>$WEBDYNE_PAGI_STATIC</varname></term>
 
             <listitem>
               <para>Allow the <command>webdyne.pagi</command> PAGI instance to serve static pages (non PSP pages) such as style sheets, javascript, images etc. Defaults to 1 (allow static
               pages to be served). The default PAGI static middleware uses <varname>$WEBDYNE_PAGI_MIDDLEWARE_STATIC</varname> to decide which files can be served directly.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_PAGI_MIDDLEWARE_STATIC</varname></term>
+
+            <listitem>
+              <para>Regular expression used by the default PAGI static middleware to decide which non-PSP files can be served directly.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_PAGI_MIDDLEWARE</varname></term>
+
+            <listitem>
+              <para>Array reference describing the middleware stack wrapped around the WebDyne PAGI application. Middleware options may be supplied directly or generated by a code reference that
+              receives the resolved wrapper options.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_PAGI_ENV_KEEP</varname> / <varname>$WEBDYNE_PAGI_ENV_SET</varname></term>
+
+            <listitem>
+              <para>Controls which environment variables are preserved or injected into PAGI request handling. By default <envar>DOCUMENT_ROOT</envar> and
+              <envar>DOCUMENT_DEFAULT</envar> are preserved.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_PAGI_WARN_ON_ERROR</varname></term>
+
+            <listitem>
+              <para>Controls whether PAGI request handling emits warnings when errors are encountered. Defaults to <literal>undef</literal>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><varname>$WEBDYNE_PAGI_EVAL_PREPEND</varname></term>
+
+            <listitem>
+              <para>PAGI-specific Perl source text prepended to generated eval code. Defaults to loading async support used by PAGI execution.</para>
             </listitem>
           </varlistentry>
 
