@@ -53,7 +53,7 @@ use WebDyne::Request::Fake;
 
 #  Version information
 #
-$VERSION='3';
+$VERSION='3.0.0';
 
 
 #  Debug load
@@ -569,7 +569,7 @@ The module initializes many additional normalized methods by delegating through 
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT #
+# LICENSE and COPYRIGHT
 
 This file is part of WebDyne.
 
@@ -581,6 +581,7 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
+
 
 =end markdown
 
