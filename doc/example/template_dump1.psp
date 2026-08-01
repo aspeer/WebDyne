@@ -1,0 +1,6 @@
+<start_html title="Dump">
+<h1>Dump Page</h1>
+Dump Info: <? localtime ?>
+<dump force all>
+__PERL__
+use WebDyne::Template qw(template1.psp);

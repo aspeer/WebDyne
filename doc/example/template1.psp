@@ -1,0 +1,43 @@
+<start_html title="Template" style="@{qw(https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css template1.css https://unpkg.com/gridjs/dist/theme/mermaid.min.css)}">
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="home.psp">
+          <div class="logo" aria-hidden="true">WS</div>
+          <span>Web Site</span>
+        </a>
+        <nav aria-label="Top">
+          <ul style="margin:0; padding:0; display:flex; gap:0.75rem; list-style:none;">
+            <li><a href="#" class="secondary" role="button" style="padding:0.45rem 0.75rem;">Sign in</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <aside class="sidebar" aria-label="Sidebar">
+      <div class="sidebar-inner">
+        <h6 style="margin-bottom:0.75rem;">Menu</h6>
+        <ul class="navlist">
+          <li><a href="template_home1.psp" aria-current="page">Home</a></li>
+          <li><a href="template_content1.psp">Content</a></li>
+          <li><a href="template_about1.psp">About</a></li>
+          <li><a href="template_dump1.psp">Dump</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <main id="home" tabindex="-1">
+      <div class="main-inner">
+	<block name="body">
+	Template Content
+	</block>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <small>Copyright 2025 Some Web Site. Built with WebDyne using pico.css</small>
+      </div>
+    </footer>
+  </div>
+<end_html>

@@ -1,0 +1,20 @@
+<start_html>
+<pre>
+
+<!-- No require or import attribute, done in __PERL__ section -->
+
+<perl>
+
+printf("MD5_HEX: %s, MD5_BASE64: %s", md5_hex(), md5_base64());
+
+</perl>
+
+<pre>
+<end_html>
+
+__PERL__
+
+#  Use modules here if more complex needs
+#
+use Digest::MD5 qw(md5_hex md5_base64);
+

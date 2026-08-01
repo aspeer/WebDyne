@@ -1,6 +1,10 @@
 requires 'Plack';
 requires 'Plack::Middleware::ForceEnv';
 requires 'Starman';
+requires 'PAGI::Server', '0.002006';
+requires 'PAGI::Tools', '0.002002';
+requires 'Future::XS';
+requires 'IO::Async::Loop::Epoll';
 requires 'CGI::Simple';
 requires 'Devel::Confess';
 requires 'Digest::MD5';

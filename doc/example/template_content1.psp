@@ -1,0 +1,6 @@
+<start_html title="Content">
+Display of Sales data from JSON example via include tag:
+<p>
+<include file="grid1.psp" body>
+__PERL__
+use WebDyne::Template qw(template1.psp);

@@ -1,0 +1,8 @@
+<start_html title="Home">
+<h1>Home Content</h1>
+<p>
+Home Page: <? localtime ?>
+<p>
+Click the content menu item to display demo data from the JSON example using an &lt;include&gt; tag
+__PERL__
+use WebDyne::Template qw(template1.psp);

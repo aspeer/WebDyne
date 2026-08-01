@@ -1,0 +1,17 @@
+<html>
+<head><title>Hello World</title></head>
+<body>
+<p>
+<pre>
+
+<!-- Perl tag with call to external module method -->
+
+<perl require="Digest::MD5" import="md5_hex">
+
+printf ("MD5_HEX: %s", md5_hex());
+
+</perl>
+
+</pre>
+</body>
+</html>

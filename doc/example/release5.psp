@@ -1,0 +1,16 @@
+<start_html title="Choose Country">
+<form>
+Your Country ?
+<popup_menu values="!{! &countries() !}"  default="Australia">
+</form>
+
+__PERL__
+
+use Locale::Country;
+
+sub countries {
+	
+	my @countries = sort { $a cmp $b } all_country_names();
+	return \@countries;
+
+}

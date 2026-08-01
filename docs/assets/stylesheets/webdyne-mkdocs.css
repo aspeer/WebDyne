@@ -1,0 +1,17 @@
+.md-content__inner.md-typeset dl dt {
+  display: inline-block;
+  margin-top: 0.85rem;
+  margin-bottom: 0.2rem;
+  padding: 0.08rem 0.34rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.15rem;
+  background: var(--md-code-bg-color);
+  color: var(--md-default-fg-color);
+  font-family: var(--md-code-font-family);
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.md-content__inner.md-typeset dl dd {
+  margin-top: 0.2rem;
+}

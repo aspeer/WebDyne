@@ -1,0 +1,69 @@
+# Perl / ExtUtils::MakeMaker build output
+/Makefile
+/Makefile.old
+/MYMETA.json
+/MYMETA.yml
+/META.json
+/META.yml
+/blib/
+/pm_to_blib
+/.pm_filter.pf
+/lib/WebDyne.pm.sha
+
+# Module::Build / local install output
+/Build
+/Build.bat
+/Build.COM
+/_build/
+/local/
+
+# Distribution artifacts
+/WebDyne-*.tar.gz
+/*.tar.gz
+/MANIFEST.bak
+
+# Test / coverage / profiling output
+/cover_db/
+/nytprof.out
+/nytprof/
+/t/error_handler_*.psp
+/t/error_format_*.psp
+/t/1
+/t/SMOKE
+/t/TEST
+/t/TEST.PL
+/t/conf/
+/t/htdocs/
+/t/logs/
+
+# Generated local artifacts seen in this worktree
+/packer/webdyne.par
+/wget-log
+/wget-log.*
+/lib/*.tmp
+/xaa
+
+# Possible generated/local artifacts; uncomment if they should not be tracked
+#/index.html
+#/docker/index.html
+#/t/index.html
+#/xsl-article2refentry/
+
+# Local OS/editor noise
+.DS_Store
+*~
+*.bak
+*.tmp
+*.swp
+*.swo
+
+# Build dir and dymanically built docs dir
+#
+/doc/build
+/docs/
+/site/
+__pycache__
+
+# Dynamically built markdown
+#
+/doc/webdyne.md

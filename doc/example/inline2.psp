@@ -1,0 +1,25 @@
+<html>
+<head><title>Hello World</title></head>
+<body>
+<p>
+<pre>
+
+<!-- Very quick and dirty block of perl code -->
+
+Copyright (C) <perl>(localtime())[5] + 1900</perl> Foobar Gherkin corp.
+
+<!-- Or -->
+
+Copyright (C) <perl require="Time::Piece" import="localtime"> localtime->year() </perl> Foobar Gherkin corp.
+
+<!-- Or -->
+
+Copyright (C) <perl require="POSIX"> POSIX::strftime("%Y", localtime) </perl> Foobar Gherkin corp.
+
+<!-- Or -->
+
+Copyright (C) <perl require="POSIX" import="strftime"> POSIX::strftime("%Y", localtime) </perl> Foobar Gherkin corp.
+
+</pre>
+</body>
+</html>

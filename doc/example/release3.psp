@@ -1,0 +1,17 @@
+<start_html>
+Mini Chart:
+<p>
+<canvas id="c" width="120" height="60"></canvas>
+<json id=data handler=chart/>
+<script>
+  let d = JSON.parse(data.textContent), x = c.getContext("2d");
+  x.fillStyle = "green";
+  d.forEach((v, i) => x.fillRect(i*30, 60 - v*5, 20, v*5));
+</script>
+
+__PERL__
+
+sub chart {
+    my @data=(5, 12, 9, 7);
+    return \@data
+}

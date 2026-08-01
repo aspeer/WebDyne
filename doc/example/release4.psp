@@ -1,0 +1,10 @@
+<api handler="change_case" pattern="/release4/{user}"/>
+__PERL__
+sub change_case {
+    my ($self, $api_hr)=@_;
+    my %data=(
+        uppercase => uc($api_hr->{'user'}),
+        lowercase => lc($api_hr->{'user'})
+    );
+    return \%data;
+}

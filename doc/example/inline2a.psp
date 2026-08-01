@@ -1,0 +1,26 @@
+<html>
+<head><title>Hello World</title></head>
+<body>
+<p>
+<pre>
+
+<!-- Import multiple function -->
+
+<perl require="Digest::MD5" import="md5_hex md5_base64" chomp>
+
+printf ("MD5_HEX: %s, MD5_BASE64: %s", md5_hex(), md5_base64());
+
+</perl>
+
+
+<!-- Or alternate attrribute syntax - see later section -->
+
+<perl require="Digest::MD5" import="@{qw(md5_hex md5_base64)}">
+
+printf ("MD5_HEX: %s, MD5_BASE64: %s", md5_hex(), md5_base64());
+
+</perl>
+
+</pre>
+</body>
+</html>

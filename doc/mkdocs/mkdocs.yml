@@ -1,0 +1,168 @@
+site_name: WebDyne
+site_url: https://aspeer.github.io/WebDyne/
+site_author: Andrew Speer
+site_description: Engine for creation of dynamic HTML pages with embedded Perl
+docs_dir: docs
+site_dir: site
+
+repo_name: aspeer/WebDyne
+repo_url: https://github.com/aspeer/WebDyne
+
+copyright: Copyright &copy; 2025 Andrew Speer
+
+nav:
+  - Introduction: 00_introduction.md
+  - Installation and Quickstart: 01_installation_and_quickstart_installation_quickstart.md
+  - Basic Usage: 02_basic_usage_examples.md
+  - Advanced Usage: 03_advanced_usage_advanced_usage.md
+  - Error Handling: 04_error_handling_error_handling.md
+  - Reference: 07_reference.md
+  - Extending WebDyne: 08_extending_webdyne_extending_webdyne.md
+  - Troubleshooting: 09_troubleshooting.md
+  - Credits: 10_credits.md
+  - Additional Notes: 11_additional_notes_additional_notes.md
+  - Legal Information: 12_legal_information_licensing_and_copyright_legal_information.md
+  - Utilities:
+      - Command Line Utilities: 05_utilities.md
+      - wdapacheinit: utilities/wdapacheinit.md
+      - wdcompile: utilities/wdcompile.md
+      - wddebug: utilities/wddebug.md
+      - wddump: utilities/wddump.md
+      - wdlint: utilities/wdlint.md
+      - wdrender: utilities/wdrender.md
+      - webdyne.apache: utilities/webdyne.apache.md
+      - webdyne.pagi: utilities/webdyne.pagi.md
+      - webdyne.psgi: utilities/webdyne.psgi.md
+  - Modules:
+      - Module Reference: 06_modules.md
+      - WebDyne: modules/WebDyne.md
+      - WebDyne::CGI: modules/WebDyne_CGI.md
+      - WebDyne::CGI::Simple: modules/WebDyne_CGI_Simple.md
+      - WebDyne::Cache: modules/WebDyne_Cache.md
+      - WebDyne::Chain: modules/WebDyne_Chain.md
+      - WebDyne::Chain::Constant: modules/WebDyne_Chain_Constant.md
+      - WebDyne::Compile: modules/WebDyne_Compile.md
+      - WebDyne::Constant: modules/WebDyne_Constant.md
+      - WebDyne::Err: modules/WebDyne_Err.md
+      - WebDyne::Err::Constant: modules/WebDyne_Err_Constant.md
+      - WebDyne::Filter: modules/WebDyne_Filter.md
+      - WebDyne::Filter::Constant: modules/WebDyne_Filter_Constant.md
+      - WebDyne::HTML::Tiny: modules/WebDyne_HTML_Tiny.md
+      - WebDyne::HTML::TreeBuilder: modules/WebDyne_HTML_TreeBuilder.md
+      - WebDyne::Handler: modules/WebDyne_Handler.md
+      - WebDyne::Install: modules/WebDyne_Install.md
+      - WebDyne::Install::Apache: modules/WebDyne_Install_Apache.md
+      - WebDyne::Install::Apache::Constant: modules/WebDyne_Install_Apache_Constant.md
+      - WebDyne::Install::Constant: modules/WebDyne_Install_Constant.md
+      - WebDyne::PAGI: modules/WebDyne_PAGI.md
+      - WebDyne::PAGI::Constant: modules/WebDyne_PAGI_Constant.md
+      - WebDyne::PSGI: modules/WebDyne_PSGI.md
+      - WebDyne::PSGI::Constant: modules/WebDyne_PSGI_Constant.md
+      - WebDyne::Request::Apache: modules/WebDyne_Request_Apache.md
+      - WebDyne::Request::Common: modules/WebDyne_Request_Common.md
+      - WebDyne::Request::Fake: modules/WebDyne_Request_Fake.md
+      - WebDyne::Request::PAGI: modules/WebDyne_Request_PAGI.md
+      - WebDyne::Request::PSGI: modules/WebDyne_Request_PSGI.md
+      - WebDyne::Request::PSGI::Constant: modules/WebDyne_Request_PSGI_Constant.md
+      - WebDyne::Request::PSGI::Static: modules/WebDyne_Request_PSGI_Static.md
+      - WebDyne::Session: modules/WebDyne_Session.md
+      - WebDyne::Session::Constant: modules/WebDyne_Session_Constant.md
+      - WebDyne::Static: modules/WebDyne_Static.md
+      - WebDyne::Template: modules/WebDyne_Template.md
+      - WebDyne::Util: modules/WebDyne_Util.md
+
+theme:
+  name: material
+  features:
+    - announce.dismiss
+    - content.code.copy
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - toc.integrate
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/link
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off
+        name: Switch to system preference
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: assets/images/favicon.png
+  icon:
+    logo: logo
+
+extra_css:
+  - assets/stylesheets/webdyne-mkdocs.css
+
+plugins:
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - mkdocs-simple-hooks:
+      hooks:
+        on_page_markdown: "doc.mkdocs.hooks.local_deploy:rewrite_md"
+  - redirects:
+      redirect_maps:
+        index.md: 00_introduction.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/aspeer/WebDyne
+      name: WebDyne on GitHub
+    - icon: fontawesome/solid/code
+      link: https://www.perl.org
+      name: Perl
+    - icon: fontawesome/brands/docker
+      link: https://github.com/aspeer/WebDyne/pkgs/container/webdyne
+      name: WebDyne container images
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: aspeer
+      repo: WebDyne
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
