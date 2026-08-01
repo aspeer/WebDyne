@@ -1,0 +1,2744 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Engine for creation of dynamic HTML pages with embedded Perl">
+      
+      
+        <meta name="author" content="Andrew Speer">
+      
+      
+        <link rel="canonical" href="https://webdyne.org/modules/WebDyne_Constant/">
+      
+      
+        <link rel="prev" href="../WebDyne_Compile/">
+      
+      
+        <link rel="next" href="../WebDyne_Err/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>WebDyne::Constant - WebDyne</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/webdyne-mkdocs.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+<script async src="https://plausible.io/js/pa-T3Ek4RCzv7GLTkk8BuWl5.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+</script>
+
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#webdyneconstant" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="WebDyne" class="md-header__button md-logo" aria-label="WebDyne" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 89 89">
+  <path d="M3.136,17.387l0,42.932l42.932,21.467l-42.932,-64.399Z" />
+  <path d="M21.91,8l42.933,64.398l-18.775,9.388l-42.932,-64.399l18.774,-9.387Z" style="fill-opacity: 0.5" />
+  <path d="M67.535,17.387l-27.262,18.156l21.878,32.818l5.384,2.691l0,-53.665Z" />
+  <path d="M67.535,17.387l0,53.666l18.774,-9.388l0,-53.665l-18.774,9.387Z" style="fill-opacity: 0.25" />
+</svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            WebDyne
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              WebDyne::Constant
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4a5 5 0 0 0 5-5 5 5 0 0 0-5-5"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5M7 15a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/aspeer/WebDyne" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    aspeer/WebDyne
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="WebDyne" class="md-nav__button md-logo" aria-label="WebDyne" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 89 89">
+  <path d="M3.136,17.387l0,42.932l42.932,21.467l-42.932,-64.399Z" />
+  <path d="M21.91,8l42.933,64.398l-18.775,9.388l-42.932,-64.399l18.774,-9.387Z" style="fill-opacity: 0.5" />
+  <path d="M67.535,17.387l-27.262,18.156l21.878,32.818l5.384,2.691l0,-53.665Z" />
+  <path d="M67.535,17.387l0,53.666l18.774,-9.388l0,-53.665l-18.774,9.387Z" style="fill-opacity: 0.25" />
+</svg>
+
+    </a>
+    WebDyne
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/aspeer/WebDyne" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    aspeer/WebDyne
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../00_introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01_installation_and_quickstart_installation_quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation and Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02_basic_usage_examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basic Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03_advanced_usage_advanced_usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../04_error_handling_error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05_utilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06_modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../07_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../08_extending_webdyne_extending_webdyne/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extending WebDyne
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09_troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../10_credits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Credits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../11_additional_notes_additional_notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Additional Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../12_legal_information_licensing_and_copyright_legal_information/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Legal Information - Licensing and Copyright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_14" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_14" id="__nav_14_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Modules
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_CGI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::CGI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_CGI_Simple/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::CGI::Simple
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Chain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Chain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Chain_Constant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Chain::Constant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Compile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Compile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Constant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Err/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Err
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Err_Constant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Err::Constant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Filter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Filter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Filter_Constant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Filter::Constant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_HTML_Tiny/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::HTML::Tiny
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_HTML_TreeBuilder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::HTML::TreeBuilder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Handler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Handler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Install_Apache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Install::Apache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Install_Apache_Constant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Install::Apache::Constant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Install_Constant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Install::Constant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_PAGI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::PAGI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_PAGI_Constant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::PAGI::Constant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_PSGI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::PSGI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_PSGI_Constant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::PSGI::Constant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Request_Apache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Request::Apache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Request_Common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Request::Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Request_Fake/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Request::Fake
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Request_PAGI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Request::PAGI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Request_PSGI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Request::PSGI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Request_PSGI_Constant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Request::PSGI::Constant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Request_PSGI_Static/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Request::PSGI::Static
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Session/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Session
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Session_Constant/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Session::Constant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Static/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Static
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebDyne_Util/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebDyne::Util
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_15" id="__nav_15_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utilities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Utilities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utilities/wdapacheinit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    wdapacheinit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utilities/wdcompile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    wdcompile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utilities/wddebug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    wddebug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utilities/wddump/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    wddump
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utilities/wdlint/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    wdlint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utilities/wdrender/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    wdrender
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utilities/webdyne.apache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    webdyne.apache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utilities/webdyne.pagi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    webdyne.pagi
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utilities/webdyne.psgi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    webdyne.psgi
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="webdyneconstant">WebDyne::Constant<a class="headerlink" href="#webdyneconstant" title="Permanent link">&para;</a></h1>
+<h1 id="name">NAME<a class="headerlink" href="#name" title="Permanent link">&para;</a></h1>
+<p>WebDyne::Constant - WebDyne module that sets constants and defaults for WebDyne processing</p>
+<h1 id="synopsis">SYNOPSIS<a class="headerlink" href="#synopsis" title="Permanent link">&para;</a></h1>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>#!/usr/bin/env perl
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>#
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>use WebDyne::Constant;
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>print $WEBDYNE_DTD
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code># Dump all constant settings for review
+#
+$ perl -MWebDyne::Constant=dump
+</code></pre></div>
+<h1 id="description">Description<a class="headerlink" href="#description" title="Permanent link">&para;</a></h1>
+<p>This module provides a list of configuration constants used in the WebDyne code. These constants are used to configure the behavior of the WebDyne module and can be accessed by importing the module and referencing the constants by name. Constants can be configured to different values by overriding values in local configuration files, setting environment
+ variables, command line options, or Apache directives.</p>
+<p>Common uses for modifying constant values allow for:</p>
+<ul>
+<li>
+<p>Changing default language from en-US to something else.</p>
+</li>
+<li>
+<p>Modifying or adding new meta-data or default headers to output</p>
+</li>
+<li>
+<p>Adding default style-sheets or other inclusions to all output files</p>
+</li>
+</ul>
+<p>Default values for these configuration constants can be updated the following locations:</p>
+<ol>
+<li>
+<p>/etc/webdyne.conf.pl</p>
+</li>
+<li>
+<p>$HOME/.webdyne.conf.pl</p>
+</li>
+<li>
+<p>$DOCUMENT_ROOT/.webdyne.conf.pl</p>
+</li>
+</ol>
+<p>As a special case when running under PSGI environments, if WEBDYNE_DIR_CONFIG_CWD_LOAD is true (which it is by default) then each directory that a .psp file is run from is checked for the .webdyne.conf.pl file - but only WEBDYNE_DIR_CONFIG entries from the file are loaded. This allows for configuration of settings such a WebDyneChain modules to load, WebDyneTemplate
+ configuration etc. on a per directory basis</p>
+<p>The WebDyne::Constant module is sub-classed by other WebDyne modules, and the values for any constants in the WebDyne::&lt;Module&gt;::Constant family of modules can be overridden by creating or updating one of the above configuration files. Here is a sample configuration file:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$_={
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    #  Update config constants for WebDyne::Constant module
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    #
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    &#39;WebDyne::Constant&#39; =&gt; {
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        #  Where the cache directory will live
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>        #
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        WEBDYNE_CACHE_DN            =&gt; &#39;/tmp&#39;,
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        #  The attributes below will be added to any &lt;start_html&gt; tag, effectively
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        #  adding two stylesheets to every page
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        #
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        WEBDYNE_START_HTML_PARAM    =&gt; {
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>          style =&gt; [qw(
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>            https://cdn.jsssdelivr.net/npm/@picocss/pico@2/css/pico.classless.m
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>            /style.css
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>          )]
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        },
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        #  Enable extended error display
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>        #
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>        WEBDYNE_ERROR_SHOW_EXTENDED =&gt; 1,
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>        #  Update CGI upload capacity to 2GB
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>        #
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>        WEBDYNE_CGI_POST_MAX        =&gt; (2048*1024),
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>        #  Handle examples directory differently
+</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>        #
+</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>        WEBDYNE_DIR_CONFIG =&gt; {
+</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>            &#39;/examples&#39; =&gt; {
+</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>                &#39;WebDyneHandler&#39;    =&gt; &#39;WebDyne::Chain&#39;,
+</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>                &#39;WebDyneChain&#39;      =&gt; &#39;WebDyne::Session&#39;,
+</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>            },
+</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>        },
+</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>
+</span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>  },
+</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>
+</span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>  #  And for WebDyne::Session module
+</span><span id="__span-1-41"><a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>  #
+</span><span id="__span-1-42"><a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>  &#39;WebDyne::Session::Constant&#39; =&gt; {
+</span><span id="__span-1-43"><a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>      WEBDYNE_SESSION_ID_COOKIE_NAME =&gt; &#39;mysession&#39;  
+</span><span id="__span-1-44"><a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>  },
+</span><span id="__span-1-45"><a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>};
+</span></code></pre></div>
+<blockquote>
+<p><strong>WARNING</strong></p>
+<p>Ensure the configuration file has the correct syntax by checking the Perl interpreter doesn&#39;t throw any errors. Use  <code>perl -c -w</code>  to check syntax:</p>
+<div class="language-text highlight"><pre><span></span><code># perl -c -w /etc/webdyne.conf.pl
+/etc/webdyne.conf.pl syntax OK
+# perl -c -w ~/.webdyne.conf.pl
+/home/&lt;user&gt;/.webdyne.conf.pl OK
+</code></pre></div>
+</blockquote>
+<h1 id="constants">CONSTANTS<a class="headerlink" href="#constants" title="Permanent link">&para;</a></h1>
+<p>The constants below are defined by <code>WebDyne::Constant</code>. The value shown in parentheses is the default. Unless marked read-only or internal, constants can be overridden through normal WebDyne configuration loading, environment variables, command line options, or Apache directives.</p>
+<ul>
+<li>
+<p><strong>WEBDYNE_NODE_NAME_IX (0)</strong></p>
+<p>Internal read-only index for the node name slot in WebDyne's compiled node array structure. Do not change.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_NODE_ATTR_IX (1)</strong></p>
+<p>Internal read-only index for the node attribute slot in WebDyne's compiled node array structure. Do not change.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_NODE_CHLD_IX (2)</strong></p>
+<p>Internal read-only index for the child-node slot in WebDyne's compiled node array structure. Do not change.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_NODE_SBST_IX (3)</strong></p>
+<p>Internal read-only index for the substitution slot in WebDyne's compiled node array structure. Do not change.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_NODE_LINE_IX (4)</strong></p>
+<p>Internal read-only index for the source line slot in WebDyne's compiled node array structure. Do not change.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_NODE_LINE_TAG_END_IX (5)</strong></p>
+<p>Internal read-only index for the source tag-end line slot in WebDyne's compiled node array structure. Do not change.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_NODE_SRCE_IX (6)</strong></p>
+<p>Internal read-only index for the source text slot in WebDyne's compiled node array structure. Do not change.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CONTAINER_META_IX (0)</strong></p>
+<p>Internal read-only index for the metadata slot in WebDyne's compiled page container structure. Do not change.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CONTAINER_DATA_IX (1)</strong></p>
+<p>Internal read-only index for the data slot in WebDyne's compiled page container structure. Do not change.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CACHE_DN (auto-detected)</strong></p>
+<p>Directory used to store compiled page cache files. Installer and server wrappers normally set this to a writable cache directory. If unset, WebDyne may fall back to runtime-specific temporary locations.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_STARTUP_CACHE_FLUSH (1)</strong></p>
+<p>Remove existing disk cache files at startup so PSP files are recompiled after restart. Set to 0 to keep disk cache files across restarts.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CACHE_CHECK_FREQ (256)</strong></p>
+<p>Per-process request interval used to trigger memory cache housekeeping.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CACHE_HIGH_WATER (64)</strong></p>
+<p>Maximum number of compiled pages to keep in memory before cache housekeeping removes entries.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CACHE_LOW_WATER (32)</strong></p>
+<p>Target number of compiled pages to retain after memory cache housekeeping runs.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CACHE_CLEAN_METHOD (1)</strong></p>
+<p>Memory cache cleanup method. <code>0</code> removes entries by oldest last-use time; <code>1</code> removes least-used entries first.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_EVAL_SAFE (0)</strong></p>
+<p>Run dynamic PSP code in a <code>Safe</code> compartment instead of direct Perl eval. Safe mode is experimental and not recommended as a security boundary.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_EVAL_USE_STRICT ('use strict qw(vars)')</strong></p>
+<p>Perl source prepended before generated eval code to enable strict variable checking. Set to <code>undef</code> to disable this strict pragma.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_EVAL_PREPEND ('')</strong></p>
+<p>Perl source text prepended to generated eval code after <code>WEBDYNE_EVAL_USE_STRICT</code>. Use conservatively because it affects interpreted PSP code globally.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_EVAL_SAFE_OPCODE_AR ([':default'])</strong></p>
+<p>Opcode set allowed when <code>WEBDYNE_EVAL_SAFE</code> is enabled. Ignored when direct eval mode is used.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_STRICT_VARS (1)</strong></p>
+<p>Check render variables referenced as <code>${name}</code> and raise an error when a referenced variable was not supplied to <code>render()</code> or <code>render_block()</code>.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_AUTOLOAD_POLLUTE (0)</strong></p>
+<p>Cache dynamically found method references in the <code>WebDyne</code> namespace to avoid repeated <code>AUTOLOAD</code> lookup. This can improve some workloads but risks method-name clashes, so it should only be used in controlled environments.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_DUMP_FLAG (0)</strong></p>
+<p>Enable output from the special <code>&lt;dump&gt;</code> tag, mainly for form and request debugging.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HTML_CHARSET ('UTF-8')</strong></p>
+<p>Default character set used for generated content types and default HTML metadata.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CONTENT_TYPE_HTML ('text/html')</strong></p>
+<p>Base content type for HTML responses.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CONTENT_TYPE_HTML_ENCODED ('text/html; charset=UTF-8')</strong></p>
+<p>Encoded HTML content type including the configured character set.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CONTENT_TYPE_TEXT ('text/plain')</strong></p>
+<p>Base content type for plain text responses.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CONTENT_TYPE_TEXT_ENCODED ('text/plain; charset=UTF-8')</strong></p>
+<p>Encoded plain text content type including the configured character set.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CONTENT_TYPE_JSON ('application/json')</strong></p>
+<p>Base content type for JSON responses.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CONTENT_TYPE_JSON_ENCODED ('application/json; charset=UTF-8')</strong></p>
+<p>Encoded JSON content type including the configured character set.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_SCRIPT_TYPE_EXECUTABLE_HR (<HashRef>)</strong></p>
+<p>Hash reference of script MIME types where WebDyne variable substitution is suppressed by default so JavaScript syntax such as <code>${name}</code> is not interpreted as WebDyne substitution.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_DTD ('&lt;!DOCTYPE html&gt;')</strong></p>
+<p>Document type emitted by generated HTML helpers.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_META (<HashRef>)</strong></p>
+<p>Default metadata emitted by <code>&lt;start_html&gt;</code>. Defaults include a UTF-8 charset declaration and a responsive viewport declaration.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CONTENT_TYPE_HTML_META (0)</strong></p>
+<p>Include a Content-Type <code>&lt;meta&gt;</code> tag in generated HTML output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HTML_PARAM ({ lang =&gt; 'en' })</strong></p>
+<p>Default attributes applied to the generated <code>&lt;html&gt;</code> tag.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_START_HTML_PARAM ({})</strong></p>
+<p>Hash reference of default attributes applied to every <code>&lt;start_html&gt;</code> tag, such as global scripts, styles, metadata, or include files. Explicit <code>&lt;start_html&gt;</code> attributes can override these defaults.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_START_HTML_PARAM_STATIC (1)</strong></p>
+<p>Controls whether include-style values supplied through <code>&lt;start_html&gt;</code> defaults are loaded at compile time and reused. Set to 0 or <code>undef</code> when included content should be re-read on each page load.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_START_HTML_SHORTCUT_HR (<HashRef>)</strong></p>
+<p>Shortcut attribute mappings for <code>&lt;start_html&gt;</code>. Defaults include <code>pico</code>, <code>htmx</code>, and <code>alpine</code>, which expand to stylesheet or script includes.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HEAD_INSERT (inline webdyne.css)</strong></p>
+<p>HTML inserted verbatim before <code>&lt;/head&gt;</code> in generated pages. By default WebDyne inlines its bundled <code>webdyne.css</code> stylesheet. Set to <code>undef</code> to disable default stylesheet insertion.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_COMPILE_IGNORE_WHITESPACE (1)</strong></p>
+<p>Ignore ignorable source whitespace during HTML tree compilation.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_COMPILE_NO_SPACE_COMPACTING (0)</strong></p>
+<p>Disable HTML::TreeBuilder-style source whitespace compacting during compilation.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_COMPILE_P_STRICT (1)</strong></p>
+<p>Controls parser strictness for paragraph handling during compilation.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG (1)</strong></p>
+<p>Controls whether implicit body and paragraph tags are generated during compilation.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_STORE_COMMENTS (1)</strong></p>
+<p>Store and render comments from source files. Set to 0 to suppress comment output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_NO_CACHE (1)</strong></p>
+<p>Send no-cache response headers by default. This can be changed globally or cleared for a page through the <code>no_cache()</code> method.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_WARNINGS_FATAL (0)</strong></p>
+<p>Treat Perl warnings from interpreted code as fatal WebDyne errors.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CGI_DISABLE_UPLOADS (0)</strong></p>
+<p>Disable CGI file uploads. Uploads are allowed by default.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CGI_POST_MAX (524288)</strong></p>
+<p>Maximum accepted POST body size for CGI processing, in bytes. The default is 512 KiB.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CGI_PARAM_EXPAND (1)</strong></p>
+<p>Expand CGI parameter strings embedded in parameter values into separate CGI parameters.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CGI_AUTOESCAPE (0)</strong></p>
+<p>Controls automatic escaping of CGI form field values before they are rendered back into generated form elements.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_TEXT (0)</strong></p>
+<p>Display simplified plain-text errors instead of the HTML error handler.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_SHOW (1)</strong></p>
+<p>Display the primary error message in the HTML error handler.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_SHOW_EXTENDED (0)</strong></p>
+<p>Enable extended HTML error output. The granular error constants below determine which source, backtrace, environment, CGI, and internal details are shown.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW (1)</strong></p>
+<p>Show a fragment of the PSP source file around the error location when extended HTML error output is enabled.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_PRE (4)</strong></p>
+<p>Number of source lines before the error location to show.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_POST (4)</strong></p>
+<p>Number of source lines after the error location to show.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_SOURCE_CONTEXT_LINE_FRAGMENT_MAX (80)</strong></p>
+<p>Maximum source line length to show in error output. Set to 0 for unlimited length.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_SOURCE_FILENAME_SHOW (1)</strong></p>
+<p>Show the source filename in extended HTML error output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_SOURCE_FILENAME_FULL (0)</strong></p>
+<p>Show the full filesystem path for the source filename in extended HTML error output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_BACKTRACE_SHOW (1)</strong></p>
+<p>Show a backtrace in extended HTML error output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_BACKTRACE_SHORT (0)</strong></p>
+<p>Remove WebDyne internal modules from the displayed backtrace.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_BACKTRACE_FULL (0)</strong></p>
+<p>Show the full backtrace, including frames normally skipped such as eval and anonymous subroutine frames.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_EVAL_CONTEXT_SHOW (1)</strong></p>
+<p>Show generated eval context around an error when extended HTML error output is enabled.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_CGI_PARAM_SHOW (1)</strong></p>
+<p>Show CGI parameters in extended HTML error output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_ENV_SHOW (1)</strong></p>
+<p>Show environment variables in extended HTML error output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_WEBDYNE_CONSTANT_SHOW (1)</strong></p>
+<p>Show WebDyne constants in extended HTML error output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_URI_SHOW (1)</strong></p>
+<p>Show request URI information in extended HTML error output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_VERSION_SHOW (1)</strong></p>
+<p>Show WebDyne version information in extended HTML error output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_INTERNAL_SHOW (0)</strong></p>
+<p>Show internal error-handler state in extended HTML error output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ERROR_SHOW_ALTERNATE ('error display disabled - enable WEBDYNE_ERROR_SHOW to show errors, or review web server error log.')</strong></p>
+<p>Alternate message displayed when HTML error display is disabled with <code>WEBDYNE_ERROR_SHOW</code>.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HTML_DEFAULT_TITLE ('Untitled Document')</strong></p>
+<p>Default document title emitted by <code>&lt;start_html&gt;</code> when no title is supplied.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HTML_TINY_MODE ('html')</strong></p>
+<p>Controls whether the HTML helper emits HTML-style or XML-style output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_RELOAD (0)</strong></p>
+<p>Development-mode switch that forces cached compiled pages to be recompiled.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_JSON_CANONICAL (1)</strong></p>
+<p>Enable canonical JSON output by default, preserving stable key ordering where the encoder supports it.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_JSON_PRETTY (0)</strong></p>
+<p>Enable pretty-printed JSON output for <code>&lt;json&gt;</code> tags unless overridden by a tag attribute.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_API_ENABLE (1)</strong></p>
+<p>Enable processing of <code>&lt;api&gt;</code> routes in PSGI request handling. Set to 0 to disable API route dispatch.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE ('x-on')</strong></p>
+<p>Rewrite shorthand attributes beginning with <code>@</code>, such as <code>@click</code>, into parser-safe attributes. The default rewrites them to Alpine-style <code>x-on:</code> attributes; set a different prefix such as <code>v-on:</code> for Vue-style output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HTTP_HEADER_AJAX_HR (<HashRef>)</strong></p>
+<p>Hash reference of HTTP request header names used to detect htmx or Alpine Ajax style partial requests.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HTTP_HEADER_AJAX_AR (<ArrayRef>)</strong></p>
+<p>Array reference form of the AJAX request header names derived from <code>WEBDYNE_HTTP_HEADER_AJAX_HR</code>.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HTMX_FORCE (0)</strong></p>
+<p>Force htmx-oriented partial rendering behaviour even when the request does not contain an AJAX request header.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HTTP_HEADER (<HashRef>)</strong></p>
+<p>Hash reference of default HTTP response headers sent with WebDyne responses. Defaults include Content-Type, Cache-Control, Pragma, Expires, X-Content-Type-Options, and X-Frame-Options.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_PSP_EXT ('.psp')</strong></p>
+<p>Default extension used to identify interpreted WebDyne PSP files.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_PSP_EXT_RE (<Regexp>)</strong></p>
+<p>Regular expression form of <code>WEBDYNE_PSP_EXT</code>, used internally for matching PSP filenames.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_MIME_TYPE_HR (<HashRef>)</strong></p>
+<p>Hash reference of file extensions and MIME types used when WebDyne identifies static file content types.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_INDEX_EXT_ALLOWED_HR (<HashRef>)</strong></p>
+<p>Hash reference of source-code file extensions that the default directory indexer may open for viewing, in addition to recognised static file types.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_INDEX_FN_ALLOWED_HR (<HashRef>)</strong></p>
+<p>Hash reference of literal file names that the default directory indexer may open for viewing, in addition to recognised static file types.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_DIR_CONFIG (undef)</strong></p>
+<p>Hash reference used by non-Apache request layers to provide Apache-style directory configuration values such as <code>WebDyneHandler</code>, <code>WebDyneChain</code>, and <code>WebDyneTemplate</code>.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_DIR_CONFIG_CWD_LOAD (1)</strong></p>
+<p>Controls whether PSGI-style local request handling attempts to load <code>WEBDYNE_DIR_CONFIG</code> values from a <code>.webdyne.conf.pl</code> file in the current PSP directory.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CONF_HR (undef)</strong></p>
+<p>Read-only marker populated by local configuration loading with information about configuration files that contributed constant values.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_CONF_FN ('webdyne.conf.pl')</strong></p>
+<p>Default configuration filename searched by local configuration loading.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HTML_TIDY (0)</strong></p>
+<p>Enable optional HTML::Tidy5 cleanup of rendered output where supported by the rendering path. Requires HTML::Tidy5 and its dependencies to be installed.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HTML_TIDY_CONFIG_HR (<HashRef>)</strong></p>
+<p>Hash reference of HTML::Tidy5 options used when <code>WEBDYNE_HTML_TIDY</code> is enabled.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_HTML_NEWLINE (0)</strong></p>
+<p>Add extra newline characters to generated HTML output.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_PAGI (auto-detected)</strong></p>
+<p>Read-only flag indicating whether the PAGI support module is loaded.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_PSGI (auto-detected)</strong></p>
+<p>Read-only flag indicating whether the PSGI support module is loaded.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_DEFAULT_TEST_FN (absolute path)</strong></p>
+<p>Absolute path to the built-in WebDyne test page.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_DEFAULT_INDEX_FN (absolute path)</strong></p>
+<p>Absolute path to the built-in WebDyne directory index page.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_DEFAULT_STYLE_FN (absolute path)</strong></p>
+<p>Absolute path to the bundled default <code>webdyne.css</code> stylesheet.</p>
+</li>
+<li>
+<p><strong>MP2 (auto-detected)</strong></p>
+<p>Read-only mod_perl major-version flag.</p>
+</li>
+<li>
+<p><strong>MOD_PERL (auto-detected)</strong></p>
+<p>Read-only mod_perl runtime version value.</p>
+</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../WebDyne_Compile/" class="md-footer__link md-footer__link--prev" aria-label="Previous: WebDyne::Compile">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                WebDyne::Compile
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../WebDyne_Err/" class="md-footer__link md-footer__link--next" aria-label="Next: WebDyne::Err">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                WebDyne::Err
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Andrew Speer
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/aspeer/WebDyne" target="_blank" rel="noopener" title="WebDyne on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://www.perl.org" target="_blank" rel="noopener" title="Perl" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M360.8 1.2c-17-4.9-34.7 5-39.6 22l-128 448c-4.9 17 5 34.7 22 39.6s34.7-5 39.6-22l128-448c4.9-17-5-34.7-22-39.6m64.6 136.1c-12.5 12.5-12.5 32.8 0 45.3l73.4 73.4-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l96-96c12.5-12.5 12.5-32.8 0-45.3l-96-96c-12.5-12.5-32.8-12.5-45.3 0zm-274.7 0c-12.5-12.5-32.8-12.5-45.3 0l-96 96c-12.5 12.5-12.5 32.8 0 45.3l96 96c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256l73.3-73.4c12.5-12.5 12.5-32.8 0-45.3z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/aspeer/WebDyne/pkgs/container/webdyne" target="_blank" rel="noopener" title="WebDyne container images" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M349.9 236.3h-66.1v-59.4h66.1zm0-204.3h-66.1v60.7h66.1zm78.2 144.8H362v59.4h66.1zm-156.3-72.1h-66.1v60.1h66.1zm78.1 0h-66.1v60.1h66.1zm276.8 100c-14.4-9.7-47.6-13.2-73.1-8.4-3.3-24-16.7-44.9-41.1-63.7l-14-9.3-9.3 14c-18.4 27.8-23.4 73.6-3.7 103.8-8.7 4.7-25.8 11.1-48.4 10.7H2.4c-8.7 50.8 5.8 116.8 44 162.1 37.1 43.9 92.7 66.2 165.4 66.2 157.4 0 273.9-72.5 328.4-204.2 21.4.4 67.6.1 91.3-45.2 1.5-2.5 6.6-13.2 8.5-17.1zm-511.1-27.9h-66v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1zm78.1 0h-66.1v59.4h66.1zm-78.1-72.1h-66.1v60.1h66.1z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["announce.dismiss", "content.code.copy", "navigation.footer", "navigation.indexes", "navigation.sections", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
