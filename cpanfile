@@ -61,6 +61,7 @@ on build => sub {
     requires 'Test::Exception';
     requires 'Test::More';
     requires 'Test::Simple', '0.44';
+    requires 'Test::Differences';
 };
 
 on test => sub {

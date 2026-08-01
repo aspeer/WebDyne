@@ -1,5 +1,12 @@
 # carton snapshot format: version 1.0
 DISTRIBUTIONS
+  Algorithm-Diff-1.201
+    pathname: R/RJ/RJBS/Algorithm-Diff-1.201.tar.gz
+    provides:
+      Algorithm::Diff 1.201
+      Algorithm::Diff::_impl 1.201
+    requirements:
+      ExtUtils::MakeMaker 0
   Apache-LogFormat-Compiler-0.36
     pathname: K/KA/KAZEBURO/Apache-LogFormat-Compiler-0.36.tar.gz
     provides:
@@ -699,6 +706,16 @@ DISTRIBUTIONS
       Test::Builder 0
       Test::More 0.96
       perl 5.012
+  Test-Differences-0.72
+    pathname: D/DC/DCANTRELL/Test-Differences-0.72.tar.gz
+    provides:
+      Test::Differences 0.72
+    requirements:
+      Capture::Tiny 0.24
+      Data::Dumper 2.126
+      ExtUtils::MakeMaker 0
+      Test::More 0.88
+      Text::Diff 1.43
   Test-Exception-0.43
     pathname: E/EX/EXODIST/Test-Exception-0.43.tar.gz
     provides:
@@ -755,6 +772,18 @@ DISTRIBUTIONS
       Test::SharedFork 0.29
       Time::HiRes 0
       perl 5.008001
+  Text-Diff-1.45
+    pathname: N/NE/NEILB/Text-Diff-1.45.tar.gz
+    provides:
+      Text::Diff 1.45
+      Text::Diff::Base 1.45
+      Text::Diff::Config 1.44
+      Text::Diff::Table 1.44
+    requirements:
+      Algorithm::Diff 1.19
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      perl 5.006
   Text-Template-1.61
     pathname: M/MS/MSCHOUT/Text-Template-1.61.tar.gz
     provides:
