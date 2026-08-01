@@ -34,7 +34,7 @@ use File::Spec;
 #  Version information in a formate suitable for CPAN etc. Must be
 #  all on one line
 #
-$VERSION='3.0.0';
+$VERSION='3.0.1_702';
 
 
 #  Debug
