@@ -415,7 +415,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Err(3pm)
+=head1 WebDyne::Err
 
 
 =head1 NAME

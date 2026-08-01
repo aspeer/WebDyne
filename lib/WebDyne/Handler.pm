@@ -133,7 +133,7 @@ WebDyne::Handler accepts an optional handler class name at import time. The foll
 
 # AUTHOR #
 
-Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and contributors.
+Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
 # LICENSE #
 
@@ -142,7 +142,7 @@ This library is free software; you can redistribute it and/or modify it under th
 =end markdown
 
 
-=head1 WebDyne::Handler(3pm)
+=head1 WebDyne::Handler
 
 
 =head1 NAME
@@ -235,7 +235,7 @@ Named form of the same option.
 
 =head1 AUTHOR
 
-Andrew Speer E<lt>andrew.speer@isolutions.com.auE<gt> and contributors.
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au> and contributors.
 
 
 =head1 LICENSE

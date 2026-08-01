@@ -194,7 +194,7 @@ Most other methods from CGI::Simple are also supported, including utility method
 
 # AUTHOR #
 
-Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and contributors.
+Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
 # LICENSE #
 
@@ -203,7 +203,7 @@ This library is free software; you can redistribute it and/or modify it under th
 =end markdown
 
 
-=head1 WebDyne::CGI(3pm)
+=head1 WebDyne::CGI
 
 
 =head1 NAME
@@ -363,7 +363,7 @@ C<$WEBDYNE_CGI_POST_MAX>
 
 =head1 AUTHOR
 
-Andrew Speer E<lt>andrew.speer@isolutions.com.auE<gt> and contributors.
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au> and contributors.
 
 
 =head1 LICENSE

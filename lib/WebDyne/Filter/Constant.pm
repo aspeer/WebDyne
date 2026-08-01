@@ -105,7 +105,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Filter::Constant(3pm)
+=head1 WebDyne::Filter::Constant
 
 
 =head1 NAME

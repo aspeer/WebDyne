@@ -133,7 +133,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Request::PSGI::Static(3pm)
+=head1 WebDyne::Request::PSGI::Static
 
 
 =head1 NAME

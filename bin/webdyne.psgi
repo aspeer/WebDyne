@@ -287,7 +287,9 @@ __END__
 
 =begin markdown
 
-# NAME
+# webdyne.psgi #
+
+# NAME #
 
 webdyne.psgi - PSGI application runner for WebDyne
 
@@ -408,7 +410,7 @@ This script is a frontend to the WebDyne PSGI stack. In addition to `Plack::Runn
 
 * **DOCUMENT_DEFAULT**
 
-    Supplies the default `index` value before `~/.webdyne.psgi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.psgi.opt` also overrides the environment.
+    Supplies the default `index` value before `~/.webdyne.psgi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.psgi.opt` also overrides the environment. When the script is loaded by `plackup` or `starman` instead of run directly, the PSGI constant layer default is `app.psp`.
 
 * **PLACK_ENV**
 
@@ -436,6 +438,9 @@ Full license text is available at:
 <http://dev.perl.org/licenses/>
 
 =end markdown
+
+
+=head1 webdyne.psgi
 
 
 =head1 NAME
@@ -635,7 +640,7 @@ Supplies the document root when neither C<--root> nor a final non-option documen
 
 B<DOCUMENT_DEFAULT>
 
-Supplies the default C<index> value before C<~/.webdyne.psgi.opt> and command-line options are applied. This means explicit CLI index options override the environment, and C<~/.webdyne.psgi.opt> also overrides the environment.
+Supplies the default C<index> value before C<~/.webdyne.psgi.opt> and command-line options are applied. This means explicit CLI index options override the environment, and C<~/.webdyne.psgi.opt> also overrides the environment. When the script is loaded by C<plackup> or C<starman> instead of run directly, the PSGI constant layer default is C<app.psp>.
 
 
 

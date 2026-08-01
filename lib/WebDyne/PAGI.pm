@@ -543,7 +543,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::PAGI(3pm)
+=head1 WebDyne::PAGI
 
 
 =head1 NAME

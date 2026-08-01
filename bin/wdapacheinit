@@ -131,7 +131,9 @@ __END__
 
 =begin markdown
 
-# NAME
+# wdapacheinit #
+
+# NAME #
 
 wdapacheinit - Install or uninstall WebDyne Apache configuration files
 
@@ -278,6 +280,9 @@ Full license text is available at:
 <http://dev.perl.org/licenses/>
 
 =end markdown
+
+
+=head1 wdapacheinit
 
 
 =head1 NAME

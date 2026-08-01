@@ -248,7 +248,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Session(3pm)
+=head1 WebDyne::Session
 
 
 =head1 NAME

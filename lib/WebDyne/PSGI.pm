@@ -426,7 +426,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::PSGI(3pm)
+=head1 WebDyne::PSGI
 
 
 =head1 NAME

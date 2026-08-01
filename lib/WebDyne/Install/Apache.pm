@@ -737,7 +737,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Install::Apache(3pm)
+=head1 WebDyne::Install::Apache
 
 
 =head1 NAME

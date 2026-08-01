@@ -235,7 +235,7 @@ sub cache {
 
 # AUTHOR #
 
-Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and contributors.
+Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
 # LICENSE and COPYRIGHT #
 
@@ -252,7 +252,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Cache(3pm)
+=head1 WebDyne::Cache
 
 
 =head1 NAME
@@ -440,7 +440,7 @@ Pages are cached to static HTML via their inode (UUID) value. You can change the
 
 =head1 AUTHOR
 
-Andrew Speer E<lt>andrew.speer@isolutions.com.auE<gt> and contributors.
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au> and contributors.
 
 
 =head1 LICENSE and COPYRIGHT

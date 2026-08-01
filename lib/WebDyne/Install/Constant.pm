@@ -131,7 +131,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Install::Constant(3pm)
+=head1 WebDyne::Install::Constant
 
 
 =head1 NAME

@@ -883,7 +883,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Util(3pm)
+=head1 WebDyne::Util
 
 
 =head1 NAME

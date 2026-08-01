@@ -957,6 +957,8 @@ __END__
 
 =begin markdown
 
+# wdrender #
+
 # NAME #
 
 wdrender - parse and render WebDyne files
@@ -1227,7 +1229,7 @@ wdrender --htmx --headers_in "X-Debug: 1" fragment.psp
 
 # AUTHOR #
 
-Written by Andrew Speer, <andrew@webdyne.org>
+Andrew Speer <andrew.speer@isolutions.com.au>
 
 # LICENSE AND COPYRIGHT #
 
@@ -1242,6 +1244,9 @@ Full license text is available at:
 <http://dev.perl.org/licenses/>
 
 =end markdown
+
+
+=head1 wdrender
 
 
 =head1 NAME
@@ -1742,7 +1747,7 @@ C<wdrender> aims to reproduce WebDyne output from the command line, but it canno
 
 =head1 AUTHOR
 
-Written by Andrew Speer, L<mailto:andrew@webdyne.org>
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
 
 
 =head1 LICENSE AND COPYRIGHT

@@ -585,7 +585,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Request::Apache(3pm)
+=head1 WebDyne::Request::Apache
 
 
 =head1 NAME

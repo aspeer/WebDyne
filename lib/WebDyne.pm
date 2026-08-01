@@ -4853,7 +4853,7 @@ The following options are the most commonly used with `html()` and `html_sr()`:
 
 # AUTHOR #
 
-Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and contributors.
+Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
 # LICENSE #
 
@@ -4862,7 +4862,7 @@ This library is free software; you can redistribute it and/or modify it under th
 =end markdown
 
 
-=head1 WebDyne(3pm)
+=head1 WebDyne
 
 
 =head1 NAME
@@ -5031,7 +5031,7 @@ L<Plack|https://metacpan.org/pod/Plack> L<Catalyst|https://metacpan.org/pod/Cata
 
 =head1 AUTHOR
 
-Andrew Speer E<lt>andrew.speer@isolutions.com.auE<gt> and contributors.
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au> and contributors.
 
 
 =head1 LICENSE

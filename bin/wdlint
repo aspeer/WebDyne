@@ -100,6 +100,8 @@ __END__
 
 =begin markdown
 
+# wdlint #
+
 # NAME #
 
 wdlint - check Perl syntax in the \_\_PERL\_\_ section of a  WebDyne file
@@ -191,7 +193,7 @@ Because the command relies on Perl's own parser, it is a good tool for catching 
 
 # Author #
 
- Written by Andrew Speer,  <andrew@webdyne.org>
+Andrew Speer <andrew.speer@isolutions.com.au>
 
 # LICENSE and COPYRIGHT #
 
@@ -206,6 +208,9 @@ Full license text is available at:
 <http://dev.perl.org/licenses/>
 
 =end markdown
+
+
+=head1 wdlint
 
 
 =head1 NAME
@@ -317,7 +322,7 @@ Because the command relies on Perl's own parser, it is a good tool for catching 
 
 =head1 Author
 
- Written by Andrew Speer,  L<mailto:andrew@webdyne.org>
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
 
 
 =head1 LICENSE and COPYRIGHT

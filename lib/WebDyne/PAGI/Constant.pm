@@ -196,7 +196,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::PAGI::Constant(3pm)
+=head1 WebDyne::PAGI::Constant
 
 
 =head1 NAME

@@ -315,7 +315,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Install(3pm)
+=head1 WebDyne::Install
 
 
 =head1 NAME

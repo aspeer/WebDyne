@@ -483,7 +483,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Template(3pm)
+=head1 WebDyne::Template
 
 
 =head1 NAME

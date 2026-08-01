@@ -818,7 +818,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Install::Apache::Constant(3pm)
+=head1 WebDyne::Install::Apache::Constant
 
 
 =head1 NAME

@@ -177,7 +177,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Request::PSGI::Constant(3pm)
+=head1 WebDyne::Request::PSGI::Constant
 
 
 =head1 NAME

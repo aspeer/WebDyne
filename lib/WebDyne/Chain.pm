@@ -600,7 +600,7 @@ WebDyne::Chain does not expose any options other than the names of modules to ad
 
 # AUTHOR #
 
-Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and contributors.
+Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
 # LICENSE #
 
@@ -609,7 +609,7 @@ This library is free software; you can redistribute it and/or modify it under th
 =end markdown
 
 
-=head1 WebDyne::Chain(3pm)
+=head1 WebDyne::Chain
 
 
 =head1 NAME
@@ -748,7 +748,7 @@ WebDyne::Chain does not expose any options other than the names of modules to ad
 
 =head1 AUTHOR
 
-Andrew Speer E<lt>andrew.speer@isolutions.com.auE<gt> and contributors.
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au> and contributors.
 
 
 =head1 LICENSE

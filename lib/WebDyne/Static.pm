@@ -117,7 +117,7 @@ WebDyne::Static does not expose any options to the import function when called v
 
 # AUTHOR #
 
-Andrew Speer &lt;andrew.speer@isolutions.com.au&gt; and contributors.
+Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
 # LICENSE and COPYRIGHT #
 
@@ -134,7 +134,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Static(3pm)
+=head1 WebDyne::Static
 
 
 =head1 NAME
@@ -192,7 +192,7 @@ WebDyne::Static does not expose any options to the import function when called v
 
 =head1 AUTHOR
 
-Andrew Speer E<lt>andrew.speer@isolutions.com.auE<gt> and contributors.
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au> and contributors.
 
 
 =head1 LICENSE and COPYRIGHT

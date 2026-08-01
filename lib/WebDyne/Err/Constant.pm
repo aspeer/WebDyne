@@ -141,7 +141,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Err::Constant(3pm)
+=head1 WebDyne::Err::Constant
 
 
 =head1 NAME

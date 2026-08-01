@@ -190,7 +190,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Filter(3pm)
+=head1 WebDyne::Filter
 
 
 =head1 NAME

@@ -1150,7 +1150,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Request::Fake(3pm)
+=head1 WebDyne::Request::Fake
 
 
 =head1 NAME

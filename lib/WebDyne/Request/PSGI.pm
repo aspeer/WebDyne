@@ -397,7 +397,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Request::PSGI(3pm)
+=head1 WebDyne::Request::PSGI
 
 
 =head1 NAME

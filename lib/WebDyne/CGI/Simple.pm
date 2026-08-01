@@ -307,7 +307,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::CGI::Simple(3pm)
+=head1 WebDyne::CGI::Simple
 
 
 =head1 NAME

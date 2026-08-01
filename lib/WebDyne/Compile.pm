@@ -1409,7 +1409,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Compile(3pm)
+=head1 WebDyne::Compile
 
 
 =head1 NAME

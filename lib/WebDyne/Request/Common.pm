@@ -343,7 +343,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Request::Common(3pm)
+=head1 WebDyne::Request::Common
 
 
 =head1 NAME

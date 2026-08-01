@@ -95,7 +95,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::Session::Constant(3pm)
+=head1 WebDyne::Session::Constant
 
 
 =head1 NAME

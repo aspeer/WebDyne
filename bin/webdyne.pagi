@@ -293,7 +293,9 @@ __END__
 
 =begin markdown
 
-# NAME
+# webdyne.pagi #
+
+# NAME #
 
 webdyne.pagi - PAGI application runner for WebDyne
 
@@ -438,7 +440,7 @@ This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configurati
 
 * **DOCUMENT_DEFAULT**
 
-    Supplies the default `index` value before `~/.webdyne.pagi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.pagi.opt` also overrides the environment.
+    Supplies the default `index` value before `~/.webdyne.pagi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.pagi.opt` also overrides the environment. When the script is loaded by `pagi-server` instead of run directly, the PAGI constant layer default is `app.psp`.
 
 * **PAGI_ENV**
 
@@ -486,6 +488,9 @@ Full license text is available at:
 <http://dev.perl.org/licenses/>
 
 =end markdown
+
+
+=head1 webdyne.pagi
 
 
 =head1 NAME
@@ -722,7 +727,7 @@ Supplies the document root when neither C<--root> nor a final non-option documen
 
 B<DOCUMENT_DEFAULT>
 
-Supplies the default C<index> value before C<~/.webdyne.pagi.opt> and command-line options are applied. This means explicit CLI index options override the environment, and C<~/.webdyne.pagi.opt> also overrides the environment.
+Supplies the default C<index> value before C<~/.webdyne.pagi.opt> and command-line options are applied. This means explicit CLI index options override the environment, and C<~/.webdyne.pagi.opt> also overrides the environment. When the script is loaded by C<pagi-server> instead of run directly, the PAGI constant layer default is C<app.psp>.
 
 
 

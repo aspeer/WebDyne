@@ -1024,6 +1024,7 @@ sub import {
 __END__
 
 =begin markdown
+
 # WebDyne::Constant #
 
 # NAME #
@@ -1809,7 +1810,7 @@ The constants below are defined by `WebDyne::Constant`. Each definition includes
 =end markdown
 
 
-=head1 WebDyne::Constant(3pm)
+=head1 WebDyne::Constant
 
 
 =head1 NAME
@@ -1949,8 +1950,1040 @@ Ensure the configuration file has the correct syntax by checking the Perl interp
 
 =head1 CONSTANTS
 
-The authoritative constants reference is maintained in the C<lib/WebDyne/Constant.pm.md> markdown sidecar and copied into the MkDocs module reference as C<docs/modules/WebDyne_Constant.md> during documentation generation.
+The constants below are defined by C<WebDyne::Constant>. Each definition includes a short default description. Unless marked read-only or internal, constants can be overridden through normal WebDyne configuration loading, environment variables, command line options, or Apache directives.
 
-Keep the constant descriptions there so the XML article, MkDocs module reference, and module source do not drift apart.
+=over
+
+=item *
+
+B<WEBDYNE_NODE_NAME_IX>
+
+B<Default:> C<0>
+
+Internal read-only index for the node name slot in WebDyne's compiled node array structure. Do not change.
+
+
+
+=item *
+
+B<WEBDYNE_NODE_ATTR_IX>
+
+B<Default:> C<1>
+
+Internal read-only index for the node attribute slot in WebDyne's compiled node array structure. Do not change.
+
+
+
+=item *
+
+B<WEBDYNE_NODE_CHLD_IX>
+
+B<Default:> C<2>
+
+Internal read-only index for the child-node slot in WebDyne's compiled node array structure. Do not change.
+
+
+
+=item *
+
+B<WEBDYNE_NODE_SBST_IX>
+
+B<Default:> C<3>
+
+Internal read-only index for the substitution slot in WebDyne's compiled node array structure. Do not change.
+
+
+
+=item *
+
+B<WEBDYNE_NODE_LINE_IX>
+
+B<Default:> C<4>
+
+Internal read-only index for the source line slot in WebDyne's compiled node array structure. Do not change.
+
+
+
+=item *
+
+B<WEBDYNE_NODE_LINE_TAG_END_IX>
+
+B<Default:> C<5>
+
+Internal read-only index for the source tag-end line slot in WebDyne's compiled node array structure. Do not change.
+
+
+
+=item *
+
+B<WEBDYNE_NODE_SRCE_IX>
+
+B<Default:> C<6>
+
+Internal read-only index for the source text slot in WebDyne's compiled node array structure. Do not change.
+
+
+
+=item *
+
+B<WEBDYNE_CONTAINER_META_IX>
+
+B<Default:> C<0>
+
+Internal read-only index for the metadata slot in WebDyne's compiled page container structure. Do not change.
+
+
+
+=item *
+
+B<WEBDYNE_CONTAINER_DATA_IX>
+
+B<Default:> C<1>
+
+Internal read-only index for the data slot in WebDyne's compiled page container structure. Do not change.
+
+
+
+=item *
+
+B<WEBDYNE_CACHE_DN>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_CACHE_DN
+Directory used to store compiled page cache files. Installer and server wrappers normally set this to a writable cache directory. The directory must exist and be writable by the web server process. If unset, WebDyne may fall back to runtime-specific temporary locations.
+
+
+
+=item *
+
+B<WEBDYNE_STARTUP_CACHE_FLUSH>
+
+B<Default:> C<1>
+
+Remove existing disk cache files at startup so PSP files are recompiled after restart and then cached again when first viewed. Set to 0 to keep disk cache files across restarts.
+
+
+
+=item *
+
+B<WEBDYNE_CACHE_CHECK_FREQ>
+
+B<Default:> C<256>
+
+Per-process request interval used to trigger memory cache housekeeping.
+
+
+
+=item *
+
+B<WEBDYNE_CACHE_HIGH_WATER>
+
+B<Default:> C<64>
+
+Maximum number of compiled pages to keep in memory before cache housekeeping removes entries.
+
+
+
+=item *
+
+B<WEBDYNE_CACHE_LOW_WATER>
+
+B<Default:> C<32>
+
+Target number of compiled pages to retain after memory cache housekeeping runs.
+
+
+
+=item *
+
+B<WEBDYNE_CACHE_CLEAN_METHOD>
+
+B<Default:> C<1>
+
+Memory cache cleanup method. C<0> removes entries by oldest last-use time; C<1> removes least-used entries first.
+
+
+
+=item *
+
+B<WEBDYNE_EVAL_SAFE>
+
+B<Default:> C<0>
+
+Run dynamic PSP code in a C<Safe> compartment instead of direct Perl eval. Safe mode is experimental and not recommended as a security boundary.
+
+
+
+=item *
+
+B<WEBDYNE_EVAL_USE_STRICT>
+
+B<Default:> C<'use strict qw(vars)'>
+
+Perl source prepended before generated eval code to enable strict variable checking. Set to C<undef> to disable this strict pragma. In Safe mode this behaves as a strict on/off flag rather than arbitrary source text.
+
+
+
+=item *
+
+B<WEBDYNE_EVAL_PREPEND>
+
+B<Default:> C<''>
+
+Perl source text prepended to generated eval code after C<WEBDYNE_EVAL_USE_STRICT>. Use conservatively because it affects interpreted PSP code globally.
+
+
+
+=item *
+
+B<WEBDYNE_EVAL_SAFE_OPCODE_AR>
+
+B<Default:> array reference containing C<:default>
+
+Opcode set allowed when C<WEBDYNE_EVAL_SAFE> is enabled. Ignored when direct eval mode is used. Use C<Opcode::full_opset()> for the full opcode set if Safe mode is enabled and you explicitly want to allow all Perl opcodes.
+
+
+
+=item *
+
+B<WEBDYNE_STRICT_VARS>
+
+B<Default:> C<1>
+
+Check render variables referenced as C<${name}> and raise an error when a referenced variable was not supplied to C<render()> or C<render_block()>, or was supplied as C<undef>.
+
+
+
+=item *
+
+B<WEBDYNE_AUTOLOAD_POLLUTE>
+
+B<Default:> C<0>
+
+Cache dynamically found method references in the C<WebDyne> namespace to avoid repeated C<AUTOLOAD> lookup. This can improve some workloads but risks method-name clashes, so it should only be used in controlled environments.
+
+
+
+=item *
+
+B<WEBDYNE_DUMP_FLAG>
+
+B<Default:> C<0>
+
+Enable output from the special C<<< <dump> >>> tag, mainly for form and request debugging.
+
+
+
+=item *
+
+B<WEBDYNE_HTML_CHARSET>
+
+B<Default:> C<'UTF-8'>
+
+Default character set used for generated content types and default HTML metadata.
+
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_HTML>
+
+B<Default:> C<'text/html'>
+
+Base content type for HTML responses.
+
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_HTML_ENCODED>
+
+B<Default:> C<'text/html; charset=UTF-8'>
+
+Encoded HTML content type including the configured character set.
+
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_TEXT>
+
+B<Default:> C<'text/plain'>
+
+Base content type for plain text responses.
+
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_TEXT_ENCODED>
+
+B<Default:> C<'text/plain; charset=UTF-8'>
+
+Encoded plain text content type including the configured character set.
+
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_JSON>
+
+B<Default:> C<'application/json'>
+
+Base content type for JSON responses.
+
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_JSON_ENCODED>
+
+B<Default:> C<'application/json; charset=UTF-8'>
+
+Encoded JSON content type including the configured character set.
+
+
+
+=item *
+
+B<WEBDYNE_SCRIPT_TYPE_EXECUTABLE_HR>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_SCRIPT_TYPE_EXECUTABLE_HR
+Hash reference of script MIME types where WebDyne variable substitution is suppressed by default so JavaScript syntax such as C<${name}> is not interpreted as WebDyne substitution.
+
+
+
+=item *
+
+B<WEBDYNE_DTD>
+
+B<Default:> C<<< '<!DOCTYPE html>' >>>
+
+Document type emitted by generated HTML helpers.
+
+
+
+=item *
+
+B<WEBDYNE_META>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_META
+Default metadata emitted by C<<< <start_html> >>>. Defaults include a UTF-8 charset declaration and a responsive viewport declaration.
+
+
+
+=item *
+
+B<WEBDYNE_CONTENT_TYPE_HTML_META>
+
+B<Default:> C<0>
+
+Include a Content-Type C<<< <meta> >>> tag in generated HTML output.
+
+
+
+=item *
+
+B<WEBDYNE_HTML_PARAM>
+
+B<Default:> hash reference containing C<<< lang => 'en' >>>
+
+Default attributes applied to the generated C<<< <html> >>> tag; the default contains C<<< lang => 'en' >>>.
+
+
+
+=item *
+
+B<WEBDYNE_START_HTML_PARAM>
+
+B<Default:> empty hash reference
+
+Hash reference of default attributes applied to every C<<< <start_html> >>> tag, such as global scripts, styles, metadata, or include files. Explicit C<<< <start_html> >>> attributes can override these defaults.
+
+
+
+=item *
+
+B<WEBDYNE_START_HTML_PARAM_STATIC>
+
+B<Default:> C<1>
+
+Controls whether include-style values supplied through C<<< <start_html> >>> defaults are loaded at compile time and reused. Set to 0 or C<undef> when included content should be re-read on each page load.
+
+
+
+=item *
+
+B<WEBDYNE_START_HTML_SHORTCUT_HR>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_START_HTML_SHORTCUT_HR
+Shortcut attribute mappings for C<<< <start_html> >>>. Defaults include C<pico>, C<htmx>, and C<alpine>, which expand to stylesheet or script includes.
+
+
+
+=item *
+
+B<WEBDYNE_HEAD_INSERT>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_HEAD_INSERT
+HTML inserted verbatim before C<<< </head> >>> in generated pages. The value must be valid HTML for the document head and is not interpreted, interpolated, or compiled by WebDyne. By default WebDyne inlines its bundled C<webdyne.css> stylesheet. Set to C<undef> to disable default stylesheet insertion.
+
+
+
+=item *
+
+B<WEBDYNE_COMPILE_IGNORE_WHITESPACE>
+
+B<Default:> C<1>
+
+Ignore ignorable source whitespace during HTML tree compilation, corresponding to the HTML::TreeBuilder C<ignore_ignorable_whitespace> behaviour.
+
+
+
+=item *
+
+B<WEBDYNE_COMPILE_NO_SPACE_COMPACTING>
+
+B<Default:> C<0>
+
+Disable HTML::TreeBuilder-style source whitespace compacting during compilation, corresponding to the HTML::TreeBuilder C<no_space_compacting> behaviour.
+
+
+
+=item *
+
+B<WEBDYNE_COMPILE_P_STRICT>
+
+B<Default:> C<1>
+
+Controls parser strictness for paragraph handling during compilation.
+
+
+
+=item *
+
+B<WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG>
+
+B<Default:> C<1>
+
+Controls whether implicit body and paragraph tags are generated during compilation.
+
+
+
+=item *
+
+B<WEBDYNE_STORE_COMMENTS>
+
+B<Default:> C<1>
+
+Store and render comments from source files. Set to 0 to suppress comment output.
+
+
+
+=item *
+
+B<WEBDYNE_NO_CACHE>
+
+B<Default:> C<1>
+
+Send no-cache response headers by default. This can be changed globally or cleared for a page through the C<no_cache()> method.
+
+
+
+=item *
+
+B<WEBDYNE_WARNINGS_FATAL>
+
+B<Default:> C<0>
+
+Treat Perl warnings from interpreted code as fatal WebDyne errors. When enabled, a C<warn()> behaves as if C<die()> had been called.
+
+
+
+=item *
+
+B<WEBDYNE_CGI_DISABLE_UPLOADS>
+
+B<Default:> C<0>
+
+Disable CGI file uploads. Uploads are allowed by default.
+
+
+
+=item *
+
+B<WEBDYNE_CGI_POST_MAX>
+
+B<Default:> C<524288>
+
+Maximum accepted POST body size for CGI processing, in bytes. The default is 512 KiB.
+
+
+
+=item *
+
+B<WEBDYNE_CGI_PARAM_EXPAND>
+
+B<Default:> C<1>
+
+Expand CGI parameter strings embedded in parameter values into separate CGI parameters.
+
+
+
+=item *
+
+B<WEBDYNE_CGI_AUTOESCAPE>
+
+B<Default:> C<0>
+
+Controls automatic escaping of CGI form field values before they are rendered back into generated form elements.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_TEXT>
+
+B<Default:> C<0>
+
+Display simplified plain-text errors instead of the HTML error handler. This is mainly useful for WebDyne development and command-line/server wrapper diagnostics.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_SHOW>
+
+B<Default:> C<1>
+
+Display the primary error message in the HTML error handler.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_SHOW_EXTENDED>
+
+B<Default:> C<0>
+
+Enable extended HTML error output. The granular error constants below determine which source, backtrace, environment, CGI, and internal details are shown.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW>
+
+B<Default:> C<1>
+
+Show a fragment of the PSP source file around the error location when extended HTML error output is enabled.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_PRE>
+
+B<Default:> C<4>
+
+Number of source lines before the error location to show.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_POST>
+
+B<Default:> C<4>
+
+Number of source lines after the error location to show.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_SOURCE_CONTEXT_LINE_FRAGMENT_MAX>
+
+B<Default:> C<80>
+
+Maximum source line length to show in error output. Set to 0 for unlimited length.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_SOURCE_FILENAME_SHOW>
+
+B<Default:> C<1>
+
+Show the source filename in extended HTML error output.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_SOURCE_FILENAME_FULL>
+
+B<Default:> C<0>
+
+Show the full filesystem path for the source filename in extended HTML error output.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_BACKTRACE_SHOW>
+
+B<Default:> C<1>
+
+Show a backtrace of modules through which the error propagated in extended HTML error output.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_BACKTRACE_SHORT>
+
+B<Default:> C<0>
+
+Remove WebDyne internal modules from the displayed backtrace.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_BACKTRACE_FULL>
+
+B<Default:> C<0>
+
+Show the full backtrace, including frames normally skipped such as eval and anonymous subroutine frames.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_EVAL_CONTEXT_SHOW>
+
+B<Default:> C<1>
+
+Show generated eval context around an error when extended HTML error output is enabled.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_CGI_PARAM_SHOW>
+
+B<Default:> C<1>
+
+Show CGI parameters in extended HTML error output.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_ENV_SHOW>
+
+B<Default:> C<1>
+
+Show environment variables in extended HTML error output.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_WEBDYNE_CONSTANT_SHOW>
+
+B<Default:> C<1>
+
+Show WebDyne constants in extended HTML error output.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_URI_SHOW>
+
+B<Default:> C<1>
+
+Show request URI information in extended HTML error output.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_VERSION_SHOW>
+
+B<Default:> C<1>
+
+Show WebDyne version information in extended HTML error output.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_INTERNAL_SHOW>
+
+B<Default:> C<0>
+
+Show internal error-handler state in extended HTML error output.
+
+
+
+=item *
+
+B<WEBDYNE_ERROR_SHOW_ALTERNATE>
+
+B<Default:> C<'error display disabled - enable WEBDYNE_ERROR_SHOW to show errors, or review web server error log.'>
+
+Alternate message displayed when HTML error display is disabled with C<WEBDYNE_ERROR_SHOW>.
+
+
+
+=item *
+
+B<WEBDYNE_HTML_DEFAULT_TITLE>
+
+B<Default:> C<'Untitled Document'>
+
+Default document title emitted by C<<< <start_html> >>> when no title is supplied.
+
+
+
+=item *
+
+B<WEBDYNE_HTML_TINY_MODE>
+
+B<Default:> C<'html'>
+
+Controls whether the HTML helper emits HTML-style or XML-style output.
+
+
+
+=item *
+
+B<WEBDYNE_RELOAD>
+
+B<Default:> C<0>
+
+Development-mode switch that forces cached compiled pages to be recompiled.
+
+
+
+=item *
+
+B<WEBDYNE_JSON_CANONICAL>
+
+B<Default:> C<1>
+
+Enable canonical JSON output by default, preserving stable key ordering where the encoder supports it. Canonical output can be slightly slower.
+
+
+
+=item *
+
+B<WEBDYNE_JSON_PRETTY>
+
+B<Default:> C<0>
+
+Enable pretty-printed JSON output for C<<< <json> >>> tags unless overridden by a tag attribute.
+
+
+
+=item *
+
+B<WEBDYNE_API_ENABLE>
+
+B<Default:> C<1>
+
+Enable processing of C<<< <api> >>> routes in PSGI request handling. Set to 0 to disable API route dispatch.
+
+
+
+=item *
+
+B<WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE>
+
+B<Default:> C<'x-on'>
+
+Rewrite shorthand attributes beginning with C<@>, such as C<@click>, into parser-safe attributes because the HTML parser does not recognise C<@> as a valid attribute character. The default rewrites them to Alpine-style C<x-on:> attributes; set a different prefix such as C<v-on:> for Vue-style output.
+
+
+
+=item *
+
+B<WEBDYNE_HTTP_HEADER_AJAX_HR>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_HTTP_HEADER_AJAX_HR
+Hash reference of HTTP request header names used to detect htmx or Alpine Ajax style partial requests. Matching requests can receive partial HTML output, such as the page body only or a matching C<<< <htmx> >>> fragment.
+
+
+
+=item *
+
+B<WEBDYNE_HTTP_HEADER_AJAX_AR>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_HTTP_HEADER_AJAX_AR
+Array reference form of the AJAX request header names derived from C<WEBDYNE_HTTP_HEADER_AJAX_HR>.
+
+
+
+=item *
+
+B<WEBDYNE_HTMX_FORCE>
+
+B<Default:> C<0>
+
+Force htmx-oriented partial rendering behaviour even when the request does not contain an AJAX request header. This is equivalent to setting C<force=1> on all C<<< <htmx> >>> tags.
+
+
+
+=item *
+
+B<WEBDYNE_HTTP_HEADER>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_HTTP_HEADER
+Hash reference of default HTTP response headers sent with WebDyne responses. Defaults include Content-Type, Cache-Control, Pragma, Expires, X-Content-Type-Options, and X-Frame-Options.
+
+
+
+=item *
+
+B<WEBDYNE_PSP_EXT>
+
+B<Default:> C<'.psp'>
+
+Default extension used to identify interpreted WebDyne PSP files.
+
+
+
+=item *
+
+B<WEBDYNE_PSP_EXT_RE>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_PSP_EXT_RE
+Regular expression form of C<WEBDYNE_PSP_EXT>, used internally for matching PSP filenames.
+
+
+
+=item *
+
+B<WEBDYNE_MIME_TYPE_HR>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_MIME_TYPE_HR
+Hash reference of file extensions and MIME types used when WebDyne identifies static file content types.
+
+
+
+=item *
+
+B<WEBDYNE_INDEX_EXT_ALLOWED_HR>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_INDEX_EXT_ALLOWED_HR
+Hash reference of source-code file extensions that the default directory indexer may open for viewing, in addition to recognised static file types.
+
+
+
+=item *
+
+B<WEBDYNE_INDEX_FN_ALLOWED_HR>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_INDEX_FN_ALLOWED_HR
+Hash reference of literal file names that the default directory indexer may open for viewing, in addition to recognised static file types.
+
+
+
+=item *
+
+B<WEBDYNE_DIR_CONFIG>
+
+B<Default:> C<undef>
+
+Hash reference used by non-Apache request layers to provide Apache-style directory configuration values such as C<WebDyneHandler>, C<WebDyneChain>, and C<WebDyneTemplate>.
+
+
+
+=item *
+
+B<WEBDYNE_DIR_CONFIG_CWD_LOAD>
+
+B<Default:> C<1>
+
+Controls whether PSGI-style local request handling attempts to load C<WEBDYNE_DIR_CONFIG> values from a C<.webdyne.conf.pl> file in the current PSP directory.
+
+
+
+=item *
+
+B<WEBDYNE_CONF_HR>
+
+B<Default:> C<undef>
+
+Read-only marker populated by local configuration loading with information about configuration files that contributed constant values.
+
+
+
+=item *
+
+B<WEBDYNE_CONF_FN>
+
+B<Default:> C<'webdyne.conf.pl'>
+
+Default configuration filename searched by local configuration loading.
+
+
+
+=item *
+
+B<WEBDYNE_HTML_TIDY>
+
+B<Default:> C<0>
+
+Enable optional HTML::Tidy5 cleanup of rendered output where supported by the rendering path. Requires HTML::Tidy5 and its dependencies to be installed.
+
+
+
+=item *
+
+B<WEBDYNE_HTML_TIDY_CONFIG_HR>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_HTML_TIDY_CONFIG_HR
+Hash reference of HTML::Tidy5 options used when C<WEBDYNE_HTML_TIDY> is enabled.
+
+
+
+=item *
+
+B<WEBDYNE_HTML_NEWLINE>
+
+B<Default:> C<0>
+
+Add extra newline characters to generated HTML output.
+
+
+
+=item *
+
+B<WEBDYNE_PAGI>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_PAGI
+Read-only flag indicating whether the PAGI support module is loaded.
+
+
+
+=item *
+
+B<WEBDYNE_PSGI>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_PSGI
+Read-only flag indicating whether the PSGI support module is loaded.
+
+
+
+=item *
+
+B<WEBDYNE_DEFAULT_TEST_FN>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_DEFAULT_TEST_FN
+Absolute path to the built-in WebDyne test page.
+
+
+
+=item *
+
+B<WEBDYNE_DEFAULT_INDEX_FN>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_DEFAULT_INDEX_FN
+Absolute path to the built-in WebDyne directory index page.
+
+
+
+=item *
+
+B<WEBDYNE_DEFAULT_STYLE_FN>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=WEBDYNE_DEFAULT_STYLE_FN
+Absolute path to the bundled default C<webdyne.css> stylesheet.
+
+
+
+=item *
+
+B<MP2>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=MP2
+Read-only mod_perl major-version flag.
+
+
+
+=item *
+
+B<MOD_PERL>
+
+B<Default:> See the command below for the value.
+
+
+ perl -MWebDyne::Constant=MOD_PERL
+Read-only mod_perl runtime version value.
+
+
+
+=back
 
 =cut

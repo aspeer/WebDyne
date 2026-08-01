@@ -1432,7 +1432,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 WebDyne::HTML::Tiny(3pm)
+=head1 WebDyne::HTML::Tiny
 
 
 =head1 NAME

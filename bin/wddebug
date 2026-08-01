@@ -307,7 +307,7 @@ __END__
 
 =begin markdown
 
-# wddebug(1) #
+# wddebug #
 
 # NAME #
 
@@ -436,7 +436,7 @@ WEBDYNE_DEBUG=render,compile wdrender time.psp
 
 # Author #
 
-Written by Andrew Speer,  <andrew@webdyne.org>
+Andrew Speer <andrew.speer@isolutions.com.au>
 
 # LICENSE and COPYRIGHT #
 
@@ -453,7 +453,7 @@ Full license text is available at:
 =end markdown
 
 
-=head1 wddebug(1)
+=head1 wddebug
 
 
 =head1 NAME
@@ -636,7 +636,7 @@ Setting C<WEBDYNE_DEBUG> to C<1> enables all debugging output. Setting it to a s
 
 =head1 Author
 
-Written by Andrew Speer,  L<mailto:andrew@webdyne.org>
+Andrew Speer L<mailto:andrew.speer@isolutions.com.au>
 
 
 =head1 LICENSE and COPYRIGHT
