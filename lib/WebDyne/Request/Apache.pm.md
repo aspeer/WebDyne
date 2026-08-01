@@ -1,4 +1,4 @@
-# WebDyne::Request::Apache(3pm) #
+# WebDyne::Request::Apache #
 
 # NAME #
 

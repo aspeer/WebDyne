@@ -507,7 +507,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Request::Apache(3pm) #
+# WebDyne::Request::Apache #
 
 # NAME #
 

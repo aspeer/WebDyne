@@ -1328,7 +1328,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Compile(3pm) #
+# WebDyne::Compile #
 
 # NAME #
 

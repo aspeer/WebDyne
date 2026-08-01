@@ -422,7 +422,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Template(3pm) #
+# WebDyne::Template #
 
 # NAME #
 

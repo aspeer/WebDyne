@@ -1,4 +1,4 @@
-# WebDyne::Request::PSGI::Static(3pm) #
+# WebDyne::Request::PSGI::Static #
 
 # NAME #
 

@@ -1,4 +1,4 @@
-# WebDyne::HTML::Tiny(3pm) #
+# WebDyne::HTML::Tiny #
 
 # NAME #
 

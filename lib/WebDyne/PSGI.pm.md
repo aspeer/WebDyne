@@ -1,4 +1,4 @@
-# WebDyne::PSGI(3pm) #
+# WebDyne::PSGI #
 
 # NAME #
 

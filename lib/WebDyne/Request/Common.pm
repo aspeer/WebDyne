@@ -283,7 +283,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Request::Common(3pm) #
+# WebDyne::Request::Common #
 
 # NAME #
 

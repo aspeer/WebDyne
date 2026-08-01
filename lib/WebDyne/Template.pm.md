@@ -1,4 +1,4 @@
-# WebDyne::Template(3pm) #
+# WebDyne::Template #
 
 # NAME #
 

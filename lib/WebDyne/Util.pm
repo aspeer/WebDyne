@@ -789,7 +789,7 @@ sub apache_shutdown {
 
 =begin markdown
 
-# WebDyne::Util(3pm) #
+# WebDyne::Util #
 
 # NAME #
 

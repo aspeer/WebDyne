@@ -85,7 +85,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Err::Constant(3pm) #
+# WebDyne::Err::Constant #
 
 # NAME #
 

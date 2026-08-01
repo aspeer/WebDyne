@@ -1,4 +1,4 @@
-# WebDyne::Handler(3pm) #
+# WebDyne::Handler #
 
 # NAME #
 

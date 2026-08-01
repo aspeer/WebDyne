@@ -191,7 +191,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Session(3pm) #
+# WebDyne::Session #
 
 # NAME #
 

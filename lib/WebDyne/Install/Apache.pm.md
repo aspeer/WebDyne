@@ -1,4 +1,4 @@
-# WebDyne::Install::Apache(3pm) #
+# WebDyne::Install::Apache #
 
 # NAME #
 

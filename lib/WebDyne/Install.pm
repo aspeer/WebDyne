@@ -256,7 +256,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Install(3pm) #
+# WebDyne::Install #
 
 # NAME #
 

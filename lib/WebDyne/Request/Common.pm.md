@@ -1,4 +1,4 @@
-# WebDyne::Request::Common(3pm) #
+# WebDyne::Request::Common #
 
 # NAME #
 

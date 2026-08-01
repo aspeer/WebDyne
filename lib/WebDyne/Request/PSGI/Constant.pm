@@ -111,7 +111,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Request::PSGI::Constant(3pm) #
+# WebDyne::Request::PSGI::Constant #
 
 # NAME #
 

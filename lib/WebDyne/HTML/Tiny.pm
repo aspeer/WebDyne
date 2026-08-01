@@ -1359,7 +1359,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::HTML::Tiny(3pm) #
+# WebDyne::HTML::Tiny #
 
 # NAME #
 

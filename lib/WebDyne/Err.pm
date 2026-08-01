@@ -358,7 +358,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Err(3pm) #
+# WebDyne::Err #
 
 # NAME #
 

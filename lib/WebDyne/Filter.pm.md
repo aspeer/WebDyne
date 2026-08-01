@@ -1,4 +1,4 @@
-# WebDyne::Filter(3pm) #
+# WebDyne::Filter #
 
 # NAME #
 

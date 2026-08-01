@@ -1,4 +1,4 @@
-# WebDyne::Session(3pm) #
+# WebDyne::Session #
 
 # NAME #
 

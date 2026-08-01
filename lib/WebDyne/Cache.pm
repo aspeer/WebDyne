@@ -82,7 +82,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Cache(3pm) #
+# WebDyne::Cache #
 
 # NAME #
 

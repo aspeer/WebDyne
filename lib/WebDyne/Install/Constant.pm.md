@@ -1,4 +1,4 @@
-# WebDyne::Install::Constant(3pm) #
+# WebDyne::Install::Constant #
 
 # NAME #
 

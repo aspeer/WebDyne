@@ -55,7 +55,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Filter::Constant(3pm) #
+# WebDyne::Filter::Constant #
 
 # NAME #
 

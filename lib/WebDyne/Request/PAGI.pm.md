@@ -1,4 +1,4 @@
-# WebDyne::Request::PAGI(3pm) #
+# WebDyne::Request::PAGI #
 
 # NAME #
 

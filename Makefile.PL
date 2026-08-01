@@ -219,6 +219,7 @@ TMP_DIR := $(SRC_DIR)/build
 PSP_DIR := $(SRC_DIR)/example
 PSP_FILES := $(shell find $(PSP_DIR) -type f -name '*.psp')
 BIN_DOC_FILES := $(wildcard bin/*.md)
+LIB_DOC_FILES := $(shell find lib -type f -name '*.md' | sort)
 
 DOC_DIR := docs
 SCRIPTS_DIR := scripts
@@ -228,7 +229,7 @@ DOCKER_IMAGE := webdyne-mkdocs:latest
 DOCKER_STAMP := $(DOCKER_DIR)/.built
 
 
-$(SRC_DIR)/webdyne.md : $(SRC_DIR)/webdyne.xml $(BIN_DOC_FILES)
+$(SRC_DIR)/webdyne.md : $(SRC_DIR)/webdyne.xml $(BIN_DOC_FILES) $(LIB_DOC_FILES)
 	mkdir -p $(TMP_DIR)
 	xmllint --xinclude --noent $< -o $(TMP_DIR)/$(notdir $<)
 	xsltproc $(SCRIPTS_DIR)/promote-title-ids.xsl $(TMP_DIR)/$(notdir $<) | sponge $(TMP_DIR)/$(notdir $<)
@@ -244,6 +245,9 @@ $(SRC_DIR)/webdyne.md : $(SRC_DIR)/webdyne.xml $(BIN_DOC_FILES)
 	mkdir -p $(DOC_DIR)/utilities
 	rm -f $(DOC_DIR)/utilities/*.md
 	cp $(BIN_DOC_FILES) $(DOC_DIR)/utilities/
+	rm -rf $(DOC_DIR)/modules
+	mkdir -p $(DOC_DIR)/modules
+	perl -MFile::Copy=copy -e 'for my $$src (@ARGV) { (my $$dst=$$src)=~s{^lib/}{}; $$dst=~s{\.pm\.md$$}{.md}; $$dst=~s{/}{_}g; $$dst="$(DOC_DIR)/modules/$$dst"; copy($$src,$$dst) or die "$$src -> $$dst: $$!" }' $(LIB_DOC_FILES)
 
 gh-deploy : $(SRC_DIR)/webdyne.md
 	mkdocs gh-deploy -f mkdocs.gh.yml

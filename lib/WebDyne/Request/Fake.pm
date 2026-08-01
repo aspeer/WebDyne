@@ -1059,7 +1059,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Request::Fake(3pm) #
+# WebDyne::Request::Fake #
 
 # NAME #
 

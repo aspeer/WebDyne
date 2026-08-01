@@ -53,7 +53,7 @@ $VERSION='2.088_630';
 
 =begin markdown
 
-# WebDyne::Session::Constant(3pm) #
+# WebDyne::Session::Constant #
 
 # NAME #
 

@@ -84,7 +84,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::CGI(3pm) #
+# WebDyne::CGI #
 
 # NAME #
 

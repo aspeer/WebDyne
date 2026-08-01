@@ -468,7 +468,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::PAGI(3pm) #
+# WebDyne::PAGI #
 
 # NAME #
 

@@ -48,7 +48,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Chain::Constant(3pm) #
+# WebDyne::Chain::Constant #
 
 # NAME #
 

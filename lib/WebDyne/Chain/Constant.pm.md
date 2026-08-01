@@ -1,4 +1,4 @@
-# WebDyne::Chain::Constant(3pm) #
+# WebDyne::Chain::Constant #
 
 # NAME #
 

@@ -1,4 +1,4 @@
-# WebDyne::CGI(3pm) #
+# WebDyne::CGI #
 
 # NAME #
 

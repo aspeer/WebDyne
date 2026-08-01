@@ -361,7 +361,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::PSGI(3pm) #
+# WebDyne::PSGI #
 
 # NAME #
 

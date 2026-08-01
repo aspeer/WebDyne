@@ -75,7 +75,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Static(3pm) #
+# WebDyne::Static #
 
 # NAME #
 

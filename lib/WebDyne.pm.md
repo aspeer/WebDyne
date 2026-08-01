@@ -1,4 +1,4 @@
-# WebDyne(3pm) #
+# WebDyne #
 
 # NAME #
 

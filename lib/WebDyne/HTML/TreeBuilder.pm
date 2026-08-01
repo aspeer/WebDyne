@@ -1279,7 +1279,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::HTML::TreeBuilder(3pm) #
+# WebDyne::HTML::TreeBuilder #
 
 # NAME #
 

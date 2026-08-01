@@ -4266,6 +4266,83 @@ own help or manual output for detailed options.
 
   [Full manual page](utilities/wdlint.md){target="_blank" rel="noopener"}
 
+# Modules
+
+The following module reference pages are generated from markdown sidecar
+files maintained beside the Perl modules in `lib`. They are copied into
+the MkDocs tree during documentation generation so the source module
+documentation only needs to be maintained in one place.
+
+- [`WebDyne`](modules/WebDyne.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::CGI`](modules/WebDyne_CGI.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::CGI::Simple`](modules/WebDyne_CGI_Simple.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Cache`](modules/WebDyne_Cache.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Chain`](modules/WebDyne_Chain.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Chain::Constant`](modules/WebDyne_Chain_Constant.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Compile`](modules/WebDyne_Compile.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Constant`](modules/WebDyne_Constant.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Err`](modules/WebDyne_Err.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Err::Constant`](modules/WebDyne_Err_Constant.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Filter`](modules/WebDyne_Filter.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Filter::Constant`](modules/WebDyne_Filter_Constant.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::HTML::Tiny`](modules/WebDyne_HTML_Tiny.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::HTML::TreeBuilder`](modules/WebDyne_HTML_TreeBuilder.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Handler`](modules/WebDyne_Handler.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Install`](modules/WebDyne_Install.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Install::Apache`](modules/WebDyne_Install_Apache.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Install::Apache::Constant`](modules/WebDyne_Install_Apache_Constant.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Install::Constant`](modules/WebDyne_Install_Constant.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::PAGI`](modules/WebDyne_PAGI.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::PAGI::Constant`](modules/WebDyne_PAGI_Constant.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::PSGI`](modules/WebDyne_PSGI.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::PSGI::Constant`](modules/WebDyne_PSGI_Constant.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Request::Apache`](modules/WebDyne_Request_Apache.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Request::Common`](modules/WebDyne_Request_Common.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Request::Fake`](modules/WebDyne_Request_Fake.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Request::PAGI`](modules/WebDyne_Request_PAGI.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Request::PSGI`](modules/WebDyne_Request_PSGI.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Request::PSGI::Constant`](modules/WebDyne_Request_PSGI_Constant.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Request::PSGI::Static`](modules/WebDyne_Request_PSGI_Static.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Session`](modules/WebDyne_Session.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Session::Constant`](modules/WebDyne_Session_Constant.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Static`](modules/WebDyne_Static.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Template`](modules/WebDyne_Template.md){target="_blank" rel="noopener"}
+
+- [`WebDyne::Util`](modules/WebDyne_Util.md){target="_blank" rel="noopener"}
+
 # Reference
 
 ## Tag Reference {#tag_reference}
@@ -5472,507 +5549,22 @@ use a &lt;Perl&gt;..&lt;/Perl&gt; section in the `httpd.conf` file, e.g.:
 
 #### Constants Reference
 
-The following constants can be altered to change the behaviour of the
-WebDyne package. All these constants reside in the
-[`WebDyne::Constant`](https://github.com/aspeer/WebDyne/blob/main/lib/WebDyne/Constant.pm)
-package namespace.
-
-`$WEBDYNE_CACHE_DN`
-
-: The name of the directory that will hold partially compiled WebDyne
-  cache files. Must exist and be writable by the Apache process
-
-`$WEBDYNE_STARTUP_CACHE_FLUSH`
-
-: Remove all existing disk cache files at Apache startup. 1=yes
-  (default), 0=no. By default all disk cache files are removed at
-  startup, and thus pages must be recompiled again the first time they
-  are viewed. If you set this to 0 (no) then disk cache files will be
-  saved between startups and pages will not need to be re-compiled if
-  Apache is restarted.
-
-`$WEBDYNE_CACHE_CHECK_FREQ`
-
-: Check the memory cache after this many request (per-process counter).
-  default=256. After this many requests a housekeeping function will
-  check compiled pages that are stored in memory and remove old ones
-  according to the criteria below.
-
-`$WEBDYNE_CACHE_HIGH_WATER`
-
-: Remove compiled from pages from memory when we have more than this
-  many. default=64
-
-`$WEBDYNE_CACHE_LOW_WATER`
-
-: After reaching HIGH_WATER delete until we get down to this amount.
-  default=32
-
-`$WEBDYNE_CACHE_CLEAN_METHOD`
-
-: Clean algorithm. default=1, means least used cleaned first, 0 means
-  oldest last view cleaned first
-
-`$WEBDYNE_EVAL_SAFE`
-
-: default=0 (no), If set to 1 means eval in a Safe.pm container.
-  Evaluating code in a Safe container is experimental and not supported
-  or recommended for general WebDyne use.
-
-`$WEBDYNE_EVAL_SAFE_OPCODE_AR`
-
-: The opcode set to use in Safe.pm evals (see the Safe man page).
-  Defaults to "\[':default'\]". Use \[&Opcode::full_opset()\] for the
-  full opset. CAUTION Use of WebDyne with Safe.pm not comprehensively
-  tested and considered experimental.
-
-`$WEBDYNE_EVAL_USE_STRICT`
-
-: The string to use before each eval. Defaults to "use strict
-  qw(vars);". Set to undef if you do not want strict.pm. In Safe mode
-  this becomes a flag only - set undef for "no strict", and non-undef
-  for "use strict" equivalence in a Safe mode (checked under Perl 5.8.6
-  only, results in earlier versions of Perl may vary).
-
-`$WEBDYNE_EVAL_PREPEND`
-
-: Perl source text prepended to generated eval code after
-  `$WEBDYNE_EVAL_USE_STRICT`. Defaults to an empty string. This can be
-  used to load helper modules or establish process-wide eval defaults,
-  but should be used conservatively because it affects interpreted `PSP`
-  code globally.
-
-`$WEBDYNE_STRICT_VARS`
-
-: Check if a var is declared in a render block (e.g. `${foo}`) but not
-  supplied as a render parameter. If so will throw an error. Set to 0 to
-  ignore. default=1
-
-`$WEBDYNE_DUMP_FLAG`
-
-: If 1, any instance of the special &lt;dump&gt; tag will print out results
-  from CGI-&gt;dump(). Use when debugging forms. default=0
-
-`$WEBDYNE_DTD`
-
-: The DTD to place at the top of a rendered page. Defaults to:
-  &lt;!DOCTYPE html&gt;
-
-`$WEBDYNE_HTML_CHARSET`
-
-: Default character set used when generating encoded content types and
-  default HTML metadata. Defaults to `UTF-8`.
-
-`$WEBDYNE_META`
-
-: Hash reference of default &lt;meta&gt; values emitted by &lt;start_html&gt;.
-  Defaults include a UTF-8 charset declaration and viewport metadata for
-  responsive rendering.
-
-`$WEBDYNE_CONTENT_TYPE_HTML_META`
-
-: When enabled, include a Content-Type &lt;meta&gt; tag in generated HTML
-  output. Defaults to 0.
-
-`$WEBDYNE_HTML_PARAM`
-
-: attributes for the &lt;html&gt; tag, default is { lang =&gt;'en' }
-
-`$WEBDYNE_START_HTML_PARAM`
-
-: Hash reference of default attributes applied to every &lt;start_html&gt;
-  tag, such as global scripts, styles, metadata, or include files.
-  Explicit &lt;start_html&gt; attributes can override these defaults.
-
-`$WEBDYNE_START_HTML_PARAM_STATIC`
-
-: Controls whether include-style values supplied through &lt;start_html&gt;
-  defaults are loaded at compile time and reused. Defaults to 1. Set to
-  0 or `undef` if included content should be re-read on each page load.
-
-`$WEBDYNE_START_HTML_SHORTCUT_HR`
-
-: Hash reference defining shortcut attributes for &lt;start_html&gt;.
-  Defaults include shortcuts such as pico, htmx, and alpine, which
-  expand to stylesheet or script includes.
-
-`$WEBDYNE_HEAD_INSERT`
-
-: Any HTML you want inserted before the closing &lt;/head&gt; tag, e.g.
-  stylesheet or script includes to be added to every `PSP` page. Must be
-  valid HTML &lt;head&gt; directives, not interpreted or compiled by
-  WebDyne, incorporated as-is. By default WebDyne inlines its bundled
-  `webdyne.css` stylesheet; set this item to `undef` to disable default
-  stylesheet insertion.
-
-`$WEBDYNE_COMPILE_IGNORE_WHITESPACE`
-
-: Ignore source file whitespace as per HTML::TreeBuilder
-  ignore_ignorable_whitespace function. Defaults to 1
-
-`$WEBDYNE_COMPILE_NO_SPACE_COMPACTING`
-
-: Do not compact source file whitespace as per HTML::TreeBuilder
-  no_space_compacting function. Defaults to 0
-
-`$WEBDYNE_COMPILE_P_STRICT`
-
-: Controls parser strictness for paragraph handling during compilation.
-  Defaults to 1.
-
-`$WEBDYNE_COMPILE_IMPLICIT_BODY_P_TAG`
-
-: Controls whether implicit paragraph tags are generated in body content
-  during compilation. Defaults to 1.
-
-`$WEBDYNE_STORE_COMMENTS`
-
-: Controls whether comments from source files are stored and rendered.
-  Defaults to 1. Set to 0 to suppress comment output.
-
-`$WEBDYNE_NO_CACHE`
-
-: Controls whether WebDyne sends no-cache response headers. Defaults
-  to 1. This can be modified globally or cleared for a page through the
-  no_cache() method.
-
-`$WEBDYNE_WARNINGS_FATAL`
-
-: If a programs issues a warning via warn() this constant determines if
-  it will be treated as a fatal error. Default is 0 (warnings not
-  fatal). Set to 1 if you want any warn() to behave as if die() had been
-  called..
-
-`$WEBDYNE_CGI_DISABLE_UPLOADS`
-
-: Disable CGI::Simple file uploads. Defaults to 0 (false - allow
-  uploads).
-
-`$WEBDYNE_CGI_POST_MAX`
-
-: Maximum size of a POST request. Defaults to 512Kb
-
-`$WEBDYNE_CGI_PARAM_EXPAND`
-
-: Expands CGI parameter strings embedded in parameter values into
-  separate CGI parameters. Defaults to 1.
-
-`$WEBDYNE_CGI_AUTOESCAPE`
-
-: Controls automatic escaping of CGI form field values before they are
-  rendered back into generated form elements. Defaults to 0.
-
-`$WEBDYNE_JSON_CANONICAL`
-
-: Set is JSON encoding should be canonical, i.e. respect the order of
-  supplied data (slightly slows down encoding). Defaults to 1 (true -
-  preserve variable order)
-
-`$WEBDYNE_JSON_PRETTY`
-
-: Globally enables pretty-printed JSON output for &lt;json&gt; tags unless
-  overridden by a tag attribute. Defaults to 0.
-
-`$WEBDYNE_API_ENABLE`
-
-: Enables processing of &lt;api&gt; routes in PSGI request handling.
-  Defaults to 1. Set to 0 to disable API route dispatch.
-
-`$WEBDYNE_ERROR_TEXT`
-
-: Display simplified errors in plain text rather than using HTML. Useful
-  in internal WebDyne development only. By default this is 0 =&gt; the
-  HTML error handler will be used.
-
-`$WEBDYNE_ERROR_SHOW`
-
-: Display the error message. Only applicable in the HTML error handler
-
-`$WEBDYNE_ERROR_SHOW_EXTENDED`
-
-: Enable extended HTML error output. When enabled, the granular
-  `$WEBDYNE_ERROR_*` display controls below determine which source,
-  backtrace, environment, CGI, and internal details are shown. Defaults
-  to 0.
-
-`$WEBDYNE_ERROR_SOURCE_CONTEXT_SHOW`
-
-: Display a fragment of the `PSP` source file around where the error
-  occurred to give some context of where the error happened. Set to 0 to
-  not display context.
-
-`$WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_PRE`
-
-: Number of lines of the source file before the error occurred to
-  display. Defaults to 4
-
-`$WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_POST`
-
-: Number of lines of the source file after the error occurred to
-  display. Defaults to 4
-
-`$WEBDYNE_ERROR_SOURCE_CONTEXT_LINE_FRAGMENT_MAX`
-
-: Max line length to show. Defaults to 80 characters.
-
-`$WEBDYNE_ERROR_BACKTRACE_SHOW`
-
-: Show a backtrace of modules through which the error propagated. On by
-  default, set to 0 to disable,
-
-`$WEBDYNE_ERROR_BACKTRACE_SHORT`
-
-: Remove WebDyne internal modules from backtrace. Off by default, set to
-  1 to enable.
-
-`$WEBDYNE_ERROR_SOURCE_FILENAME_SHOW`
-
-: Show the source filename in extended HTML error output. Defaults to 1.
-
-`$WEBDYNE_ERROR_SOURCE_FILENAME_FULL`
-
-: Show the full filesystem path for the source filename in extended HTML
-  error output. Defaults to 0.
-
-`$WEBDYNE_ERROR_BACKTRACE_FULL`
-
-: Show the full backtrace, including frames normally skipped such as
-  eval and anonymous subroutine frames. Defaults to 0.
-
-`$WEBDYNE_ERROR_EVAL_CONTEXT_SHOW`
-
-: Show the generated eval context around an error when extended HTML
-  error output is enabled. Defaults to 1.
-
-`$WEBDYNE_ERROR_CGI_PARAM_SHOW`
-
-: Show CGI parameters in extended HTML error output. Defaults to 1.
-
-`$WEBDYNE_ERROR_ENV_SHOW`
-
-: Show environment variables in extended HTML error output. Defaults to
-  1.
-
-`$WEBDYNE_ERROR_WEBDYNE_CONSTANT_SHOW`
-
-: Show WebDyne constants in extended HTML error output. Defaults to 1.
-
-`$WEBDYNE_ERROR_URI_SHOW`
-
-: Show request URI information in extended HTML error output. Defaults
-  to 1.
-
-`$WEBDYNE_ERROR_VERSION_SHOW`
-
-: Show WebDyne version information in extended HTML error output.
-  Defaults to 1.
-
-`$WEBDYNE_ERROR_INTERNAL_SHOW`
-
-: Show internal error-handler state in extended HTML error output.
-  Defaults to 0.
-
-`$WEBDYNE_ERROR_SHOW_ALTERNATE`
-
-: Alternate message displayed when HTML error display is disabled with
-  `$WEBDYNE_ERROR_SHOW`. Defaults to a short message directing the user
-  to enable error display or review the web server error log.
-
-`$WEBDYNE_AUTOLOAD_POLLUTE`
-
-: When a method is called from a &lt;perl&gt; routine the WebDyne AUTOLOAD
-  method must search multiple modules for the method owner. Setting this
-  flag to 1 will pollute the WebDyne name space with the method name so
-  that AUTOLOAD is not called if that method is used again (for the
-  duration of the Perl process, not just that call to the page). This is
-  dangerous and can cause confusion if different modules use the same
-  name. In very strictly controlled environments - and even then only in
-  some cases - it can result is faster throughput. Off by default, set
-  to 1 to enable.
-
-`$WEBDYNE_HTML_DEFAULT_TITLE`
-
-: Default document title emitted by &lt;start_html&gt; when no title is
-  supplied. Defaults to `Untitled Document`.
-
-`$WEBDYNE_HTML_TINY_MODE`
-
-: Controls whether the HTML helper emits HTML-style or XML-style output.
-  Defaults to `html`.
-
-`$WEBDYNE_RELOAD`
-
-: Development-mode switch that forces cached compiled pages to be
-  recompiled. Defaults to 0.
-
-`$WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE`
-
-: The HTML parser use by WebDyne does not recognise the @ symbol as a
-  valid attribute character, thus if using Alpine JS or Vue shortcuts in
-  attributes such as &lt;button \@click="open = true"&gt; the \@click
-  attribute won't be parsed corrected. The \@click attribute is a
-  shortcut to x-on, and thus the full attribute is &lt;button
-  x-on:click="open = true"&gt;. This config item defaults to converting
-  the "@" symbol in attributes to "x-on:". If using Vue change to
-  "v-on:"
-
-`$WEBDYNE_HTTP_HEADER_AJAX_HR`
-
-: A HASH reference of HTTP header names used to determine if a request
-  is interpreted as a [htmx](https://htmx.org) or[ Alpine
-  Ajax](https://alpine-ajax.js.org) type request, triggering only
-  partial HTML return (either the body only of a normal PSP page, or a
-  &lt;htmx&gt; tag fragment). Defaults to
-  `{qw(hx-request x-alpine-request)}`.
-
-`$WEBDYNE_HTMX_FORCE`
-
-: Under normal conditions a &lt;htmx&gt; tag isn't rendered unless the
-  request contains a HTTP header name designating it as an AJAX type
-  request from htmx or Alpine Ajax style libraries. Setting this config
-  item will force rendering of a &lt;htmx&gt; tags even if the request
-  doesn't contain a header designating it as a htmx style request.
-  Equivalent to setting the force=1 attribute on all &lt;htmx&gt; tags.
-  Defaults to 0 (do not render).
-
-`$WEBDYNE_PSP_EXT`
-
-: Default extension used to identify interpreted WebDyne PSP files.
-  Defaults to `.psp`.
-
-`$WEBDYNE_INDEX_EXT_ALLOWED_HR`
-
-: Hash reference of source-code file extensions that the default
-  directory indexer may open for viewing, in addition to recognised
-  static file types.
-
-`$WEBDYNE_INDEX_FN_ALLOWED_HR`
-
-: Hash reference of literal file names that the default directory
-  indexer may open for viewing, in addition to recognised static file
-  types.
-
-`$WEBDYNE_DIR_CONFIG`
-
-: Hash reference used by non-Apache request layers to provide
-  Apache-style directory configuration values such as `WebDyneHandler`,
-  `WebDyneChain`, and `WebDyneTemplate`.
-
-`$WEBDYNE_DIR_CONFIG_CWD_LOAD`
-
-: Controls whether PSGI-style local request handling attempts to load
-  `WEBDYNE_DIR_CONFIG` values from a `.webdyne.conf.pl` file in the
-  current PSP directory. Defaults to 1.
-
-`$WEBDYNE_CONF_FN`
-
-: Default configuration filename searched by local configuration
-  loading. Defaults to `webdyne.conf.pl`.
-
-`$WEBDYNE_HTML_TIDY`
-
-: Enables optional HTML::Tidy5 cleanup of rendered output where
-  supported by the rendering path. Defaults to 0 and requires
-  HTML::Tidy5 to be installed.
-
-`$WEBDYNE_HTML_TIDY_CONFIG_HR`
-
-: Hash reference of HTML::Tidy5 options used when `$WEBDYNE_HTML_TIDY`
-  is enabled.
-
-`$WEBDYNE_PSGI_STATIC`
-
-: Allow the `webdyne.psgi` Plack instance to serve static pages (non PSP
-  pages) such as style sheets, javascript, images etc. Defaults to 1
-  (allow static pages to be served). The default PSGI static middleware
-  uses `$WEBDYNE_PSGI_MIDDLEWARE_STATIC` to decide which files can be
-  served directly.
-
-`$WEBDYNE_PSGI_INDEX`
-
-: Default index filename used by the PSGI request layer. Defaults to
-  `index.psp`.
-
-`$WEBDYNE_PSGI_MIDDLEWARE_STATIC`
-
-: Regular expression used by the default PSGI static middleware to
-  decide which non-PSP files can be served directly.
-
-`$WEBDYNE_PSGI_MIDDLEWARE`
-
-: Array reference describing the Plack middleware stack wrapped around
-  the WebDyne PSGI application. Middleware options may be supplied
-  directly or generated by a code reference that receives the resolved
-  wrapper options.
-
-`$WEBDYNE_PSGI_ENV_KEEP` / `$WEBDYNE_PSGI_ENV_SET`
-
-: Controls which environment variables are preserved or injected into
-  PSGI request handling. By default `DOCUMENT_ROOT` and
-  `DOCUMENT_DEFAULT` are preserved.
-
-`$WEBDYNE_PSGI_WARN_ON_ERROR`
-
-: Controls whether PSGI request handling emits warnings when errors are
-  encountered. Defaults to `undef`.
-
-`$WEBDYNE_PAGI_STATIC`
-
-: Allow the `webdyne.pagi` PAGI instance to serve static pages (non PSP
-  pages) such as style sheets, javascript, images etc. Defaults to 1
-  (allow static pages to be served). The default PAGI static middleware
-  uses `$WEBDYNE_PAGI_MIDDLEWARE_STATIC` to decide which files can be
-  served directly.
-
-`$WEBDYNE_PAGI_MIDDLEWARE_STATIC`
-
-: Regular expression used by the default PAGI static middleware to
-  decide which non-PSP files can be served directly.
-
-`$WEBDYNE_PAGI_MIDDLEWARE`
-
-: Array reference describing the middleware stack wrapped around the
-  WebDyne PAGI application. Middleware options may be supplied directly
-  or generated by a code reference that receives the resolved wrapper
-  options.
-
-`$WEBDYNE_PAGI_ENV_KEEP` / `$WEBDYNE_PAGI_ENV_SET`
-
-: Controls which environment variables are preserved or injected into
-  PAGI request handling. By default `DOCUMENT_ROOT` and
-  `DOCUMENT_DEFAULT` are preserved.
-
-`$WEBDYNE_PAGI_WARN_ON_ERROR`
-
-: Controls whether PAGI request handling emits warnings when errors are
-  encountered. Defaults to `undef`.
-
-`$WEBDYNE_PAGI_EVAL_PREPEND`
-
-: PAGI-specific Perl source text prepended to generated eval code.
-  Defaults to loading async support used by PAGI execution.
-
-`$WEBDYNE_MIME_TYPE_HR`
-
-: Hash reference of file extensions and MIME types used when WebDyne
-  needs to identify static file content types. See source code of
-  [`WebDyne/Constant.pm`](https://github.com/aspeer/WebDyne/blob/main/lib/WebDyne/Constant.pm)
-  for defaults.
-
-`$WEBDYNE_HTTP_HEADER`
-
-: Hash reference of default HTTP headers name and values to be sent in
-  response to all WebDyne requests. See source code of
-  [`WebDyne/Constant.pm`](https://github.com/aspeer/WebDyne/blob/main/lib/WebDyne/Constant.pm)
-  for defaults.
+The authoritative reference for constants defined by `WebDyne::Constant`
+is maintained with the module sidecar documentation and copied into the
+MkDocs module reference during documentation generation.
+
+See [`WebDyne::Constant` module
+reference](modules/WebDyne_Constant.md){target="_blank" rel="noopener"} for the complete list of constants,
+defaults, and behaviour descriptions.
 
 !!! tip
 
-    Configuration items can be overridden by setting of environment
-    variables of the same name with the desired value.
+    Configuration items can be overridden by setting environment variables
+    of the same name with the desired value.
 
-Extension modules (e.g., WebDyne::Session) have their own constants -
-see each package for details.
+Extension modules, for example `WebDyne::Session`, may define their own
+constants in their own `WebDyne::*::Constant` packages. See the relevant
+module reference pages for details.
 
 ### Environment Variable Reference {#environment_variable_reference}
 

@@ -60,7 +60,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Handler(3pm) #
+# WebDyne::Handler #
 
 # NAME #
 

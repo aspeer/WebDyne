@@ -1,4 +1,4 @@
-# WebDyne::Static(3pm) #
+# WebDyne::Static #
 
 # NAME #
 

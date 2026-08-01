@@ -1,4 +1,4 @@
-# WebDyne::PAGI::Constant(3pm) #
+# WebDyne::PAGI::Constant #
 
 # NAME #
 

@@ -492,7 +492,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Chain.pm(3pm) #
+# WebDyne::Chain #
 
 # NAME #
 
@@ -609,7 +609,7 @@ This library is free software; you can redistribute it and/or modify it under th
 =end markdown
 
 
-=head1 WebDyne::Chain.pm(3pm)
+=head1 WebDyne::Chain(3pm)
 
 
 =head1 NAME

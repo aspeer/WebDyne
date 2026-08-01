@@ -1,4 +1,4 @@
-# WebDyne::Cache(3pm) #
+# WebDyne::Cache #
 
 # NAME #
 

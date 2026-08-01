@@ -1,4 +1,4 @@
-# WebDyne::HTML::TreeBuilder(3pm) #
+# WebDyne::HTML::TreeBuilder #
 
 # NAME #
 

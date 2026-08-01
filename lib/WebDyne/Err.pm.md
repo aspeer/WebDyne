@@ -1,4 +1,4 @@
-# WebDyne::Err(3pm) #
+# WebDyne::Err #
 
 # NAME #
 

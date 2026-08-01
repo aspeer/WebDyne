@@ -133,7 +133,7 @@ __END__
 
 =begin markdown
 
-# WebDyne::Filter(3pm) #
+# WebDyne::Filter #
 
 # NAME #
 

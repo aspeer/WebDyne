@@ -1,4 +1,4 @@
-# WebDyne::Request::Fake(3pm) #
+# WebDyne::Request::Fake #
 
 # NAME #
 
