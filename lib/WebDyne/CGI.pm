@@ -34,7 +34,7 @@ use Data::Dumper;
 
 #  Version information
 #
-$VERSION='3.004';
+$VERSION='3.005';
 
 
 #  Debug load
