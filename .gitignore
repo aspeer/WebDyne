@@ -57,6 +57,13 @@
 *.swp
 *.swo
 
-# Build dir
+# Build dir and dymanically built docs dir
 #
 /doc/build
+/docs/
+/site/
+__pycache__
+
+# Dynamically built markdown
+#
+/doc/webdyne.md
