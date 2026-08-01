@@ -36,7 +36,7 @@ use CGI::Simple;
 
 #  Version information
 #
-$VERSION='2.088_630';
+$VERSION='3';
 
 
 #  Shortcut error handler.
