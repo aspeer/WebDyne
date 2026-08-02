@@ -5,6 +5,7 @@ requires 'Devel::Confess';
 requires 'Digest::MD5';
 requires 'Env::Path';
 requires 'Future::XS';
+requires 'Future::IO';
 requires 'Hash::MultiValue';
 requires 'HTML::Tagset';
 requires 'HTML::Tiny';

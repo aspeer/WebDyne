@@ -276,6 +276,19 @@ DISTRIBUTIONS
       XS::Parse::Sublike 0.31
       XS::Parse::Sublike::Builder 0.31
       perl 5.016
+  Future-IO-0.23
+    pathname: P/PE/PEVANS/Future-IO-0.23.tar.gz
+    provides:
+      Future::IO 0.23
+      Future::IO::ImplBase 0.23
+      Future::IO::System 0.23
+    requirements:
+      Future 0
+      IO::Poll 0
+      Module::Build 0.4004
+      Struct::Dumb 0
+      Time::HiRes 0
+      perl 5.014
   Future-XS-0.15
     pathname: P/PE/PEVANS/Future-XS-0.15.tar.gz
     provides:
