@@ -38,7 +38,7 @@ case "$WEBDYNE_SERVER" in
     [ -n "$WEBDYNE_SERVER_PAGI_REQUEST_TIMEOUT" ] && pagi_args="$pagi_args --request-timeout $WEBDYNE_SERVER_PAGI_REQUEST_TIMEOUT"
     [ -n "$WEBDYNE_SERVER_PAGI_MAX_CONNECTIONS" ] && pagi_args="$pagi_args --max-connections $WEBDYNE_SERVER_PAGI_MAX_CONNECTIONS"
     [ -n "$WEBDYNE_SERVER_PAGI_MAX_BODY_SIZE" ] && pagi_args="$pagi_args --max-body-size $WEBDYNE_SERVER_PAGI_MAX_BODY_SIZE"
-    exec pagi-server -MWebDyne -E production --host 0.0.0.0 --port "$PORT" $pagi_args $PERL_CARTON_PATH/bin/webdyne.pagi
+    exec pagi-server -E production --host 0.0.0.0 --port "$PORT" $pagi_args $PERL_CARTON_PATH/bin/webdyne.pagi
     ;;
   *)
     echo "ERROR: unsupported WEBDYNE_SERVER '$WEBDYNE_SERVER' - expected 'psgi' or 'pagi'" >&2
