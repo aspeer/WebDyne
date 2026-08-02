@@ -16,6 +16,7 @@
 /Build.COM
 /_build/
 /local/
+/docker/local/
 
 # Distribution artifacts
 /WebDyne-*.tar.gz

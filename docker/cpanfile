@@ -1,26 +1,29 @@
-requires 'Plack';
-requires 'Plack::Middleware::ForceEnv';
-requires 'Starman';
-requires 'PAGI::Server', '0.002006';
-requires 'PAGI::Tools', '0.002002';
-requires 'Future::XS';
+requires 'perl', '5.006';
 requires 'CGI::Simple';
+requires 'Crypt::URandom';
 requires 'Devel::Confess';
 requires 'Digest::MD5';
 requires 'Env::Path';
+requires 'Future::XS';
+requires 'Hash::MultiValue';
 requires 'HTML::Tagset';
 requires 'HTML::Tiny';
 requires 'HTML::TreeBuilder';
+requires 'HTTP::AcceptLanguage';
+requires 'HTTP::Negotiate';
 requires 'HTTP::Status';
-requires 'Hash::MultiValue';
 requires 'IO::String';
 requires 'JSON';
+requires 'PAGI::Server', '0.002006';
+requires 'PAGI::Tools', '0.002002';
+requires 'Plack::Middleware::ForceEnv';
+requires 'Plack';
 requires 'Router::Simple';
+requires 'Starman';
 requires 'Storable';
 requires 'Text::Template';
 requires 'Tie::IxHash';
 requires 'Time::HiRes';
-requires 'perl', '5.006';
 
 on configure => sub {
     requires 'ExtUtils::MakeMaker';
@@ -29,8 +32,9 @@ on configure => sub {
 on build => sub {
     requires 'Capture::Tiny';
     requires 'Test::Deep';
+    requires 'Test::Differences';
     requires 'Test::Exception';
     requires 'Test::More';
+    requires 'Test::POD';
     requires 'Test::Simple', '0.44';
-    requires 'Test::Differences';
 };

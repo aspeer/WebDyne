@@ -148,7 +148,6 @@
       <title>Installation and Quickstart</title>
     </info>
 
-
     <section xml:id="prerequisites">
       <title>Prerequisites</title>
 
@@ -171,6 +170,7 @@
 
       <para>Docker containers with pre-built versions of WebDyne are also available.</para>
     </section>
+
     <section xml:id="quickstart">
       <title>Quickstart</title>
 
@@ -225,6 +225,7 @@ $ <command>cpanm Task::WebDyne::Plack</command>
 #
 $ <command>cpanm Task::WebDyne::Starman</command></screen>
     </section>
+
     <section xml:id="docker">
       <title>Docker</title>
 
@@ -454,6 +455,7 @@ COPY webdyne.conf.pl /etc</screen>
         </screenshot>
       </section>
     </section>
+
     <section xml:id="cpan_install">
       <title>CPAN or CPANMinus Install</title>
 
@@ -482,15 +484,16 @@ COPY webdyne.conf.pl /etc</screen>
 
       <para>If using Apache you will need to configure your system to use WebDyne to serve files with the <filename>.psp</filename> extension - see Apache install section.</para>
     </section>
+
     <section xml:id="runtime_choices">
       <title>Runtime Choices</title>
 
-    <section xml:id="psgi">
-      <title>PSGI</title>
+      <section xml:id="psgi">
+        <title>PSGI</title>
 
-      <para>Ensure that <productname>Plack</productname> is installed on your system via CPAN after installing WebDyne:</para>
+        <para>Ensure that <productname>Plack</productname> is installed on your system via CPAN after installing WebDyne:</para>
 
-      <screen># Via CPAN
+        <screen># Via CPAN
 #
 <command>perl -MCPAN -e 'install Plack'</command>
 
@@ -512,24 +515,24 @@ COPY webdyne.conf.pl /etc</screen>
 #
 <command>cpanm Task::WebDyne::Starman</command></screen>
 
-      <para>you can then start a basic WebDyne server by running the webdyne.psgi command with the --test parameter</para>
+        <para>you can then start a basic WebDyne server by running the webdyne.psgi command with the --test parameter</para>
 
-      <para><screen><command>webdyne.psgi --test</command></screen></para>
+        <para><screen><command>webdyne.psgi --test</command></screen></para>
 
-      <para>This will start a PSGI web server on your machine listening to port 5000 (or port 5001 on a Mac). Open a connection to http://127.0.0.1:5000/ or the IP address of your server in
-      your web browser to view the test page and validate the WebDyne is working correctly:</para>
+        <para>This will start a PSGI web server on your machine listening to port 5000 (or port 5001 on a Mac). Open a connection to http://127.0.0.1:5000/ or the IP address of your server in
+        your web browser to view the test page and validate the WebDyne is working correctly:</para>
 
-      <para><screenshot>
-          <mediaobject>
-            <imageobject>
-              <imagedata fileref="images/webdyne_psgi1.png" scale="30"/>
-            </imageobject>
-          </mediaobject>
-        </screenshot></para>
+        <para><screenshot>
+            <mediaobject>
+              <imageobject>
+                <imagedata fileref="images/webdyne_psgi1.png" scale="30"/>
+              </imageobject>
+            </mediaobject>
+          </screenshot></para>
 
-      <para>Once verified as working correctly you can serve WebDyne content from a particular directory - or from a single file - using the syntax:</para>
+        <para>Once verified as working correctly you can serve WebDyne content from a particular directory - or from a single file - using the syntax:</para>
 
-      <screen>#  To serve up all files in a directory. Directory requests use WebDyne's built-in
+        <screen>#  To serve up all files in a directory. Directory requests use WebDyne's built-in
 #  index page by default.
 #
 <command>$ webdyne.psgi &lt;directory&gt;</command>
@@ -543,15 +546,14 @@ COPY webdyne.conf.pl /etc</screen>
 #
 <command>$ webdyne.psgi /var/www/html/time.psp</command></screen>
 
-      <tip>
-        <para>Starting WebDyne this way enables wrapper-managed index handling and full error messages with code backtraces if any errors are encountered. Use
-        <option>--index=FILE</option> or <envar>DOCUMENT_DEFAULT</envar> to nominate a site-local default page, or <option>--no-index</option> to rely on the underlying request layer default
-        document behavior.</para>
-      </tip>
+        <tip>
+          <para>Starting WebDyne this way enables wrapper-managed index handling and full error messages with code backtraces if any errors are encountered. Use <option>--index=FILE</option>
+          or <envar>DOCUMENT_DEFAULT</envar> to nominate a site-local default page, or <option>--no-index</option> to rely on the underlying request layer default document behavior.</para>
+        </tip>
 
-      <para>To start with <command>plackup</command>:</para>
+        <para>To start with <command>plackup</command>:</para>
 
-      <screen>#  Start WebDyne via plackup in the current directory. A file named app.psp must exist,
+        <screen>#  Start WebDyne via plackup in the current directory. A file named app.psp must exist,
 #  directory indexing will not be performed.
 #
 <command>DOCUMENT_ROOT=. plackup `which webdyne.psgi`
@@ -564,34 +566,34 @@ COPY webdyne.conf.pl /etc</screen>
 #
 <command>DOCUMENT_ROOT=./time.psp  plackup -e 'enable Plack::Middleware::Debug' `which webdyne.psgi`</command></screen>
 
-      <para>The above starts a single-threaded web server using Plack. To start the more performant Starman server (assuming installed):</para>
+        <para>The above starts a single-threaded web server using Plack. To start the more performant Starman server (assuming installed):</para>
 
-      <screen>#  Start Starman instance. Substitute port + document root and location of webdyne.psgi
+        <screen>#  Start Starman instance. Substitute port + document root and location of webdyne.psgi
 #  as appropriate for your system.
 #
 $ <command>DOCUMENT_ROOT=/var/www/html starman --port 5001 /usr/local/bin/webdyne.psgi</command></screen>
 
-      <note>
-        <para>Plack (via <command>webdyne.psgi</command> or <command>plackup</command>) and Starman versions of WebDyne will serve basic static files such as css, js, jpg etc. If you want more
-        control over non PSP files you should use a traditional web server front end to serve those assets. Also note the Starman and plackup instances of WebDyne do not
-        support the --test option or indexing - it assumes you are running in a production environment and have checked everything with the Plack implementation of
-        <command>webdyne.psgi</command> first.</para>
-      </note>
+        <note>
+          <para>Plack (via <command>webdyne.psgi</command> or <command>plackup</command>) and Starman versions of WebDyne will serve basic static files such as css, js, jpg etc. If you want
+          more control over non PSP files you should use a traditional web server front end to serve those assets. Also note the Starman and plackup instances of WebDyne do not support the
+          --test option or indexing - it assumes you are running in a production environment and have checked everything with the Plack implementation of <command>webdyne.psgi</command>
+          first.</para>
+        </note>
 
-      <para>Numerous options can be set from the command line via environment variables, including WebDyne configuration. See relevant section for all WebDyne configuration options but
-      assuming a local file <filename>webdyne.conf.pl</filename>:</para>
+        <para>Numerous options can be set from the command line via environment variables, including WebDyne configuration. See relevant section for all WebDyne configuration options but
+        assuming a local file <filename>webdyne.conf.pl</filename>:</para>
 
-      <screen>#  Start instance webdyne.psgi using local config file
+        <screen>#  Start instance webdyne.psgi using local config file
 #
 $ <command>WEBDYNE_CONF=./webdyne.conf.pl webdyne.psgi --port=5012 .</command></screen>
 
-      <para>WebDyne can be incorporated into a traditional app.psgi startup file for PSGI in the following form. In this example any file with a .psp extension is routed to WebDyne for
-      rendering<example>
-          <info>
-            <title>PSGI Application Startup</title>
-          </info>
+        <para>WebDyne can be incorporated into a traditional app.psgi startup file for PSGI in the following form. In this example any file with a .psp extension is routed to WebDyne for
+        rendering<example>
+            <info>
+              <title>PSGI Application Startup</title>
+            </info>
 
-          <para><programlisting language="perl">#  Save as app.psgi
+            <para><programlisting language="perl">#  Save as app.psgi
 #
 use strict;
 use warnings;
@@ -630,14 +632,14 @@ plackup
 #  Or if named differently
 #
 plackup myapp.psgi</screen></para>
-        </example></para>
+          </example></para>
 
-      <para>Or you can mount all files from a particular directory against the WebDyne render engine.<example>
-          <info>
-            <title>PSGI Mount Startup</title>
-          </info>
+        <para>Or you can mount all files from a particular directory against the WebDyne render engine.<example>
+            <info>
+              <title>PSGI Mount Startup</title>
+            </info>
 
-          <para><programlisting language="perl">use strict;
+            <para><programlisting language="perl">use strict;
 use warnings;
 use Plack::Builder;
 use WebDyne::PSGI;
@@ -656,18 +658,18 @@ builder {
     mount '/'         =&gt; $home_app;
     mount '/webdyne'  =&gt; WebDyne::PSGI-&gt;new( root =&gt; '.')-&gt;to_app;
 };</programlisting></para>
-        </example></para>
-    </section>
+          </example></para>
+      </section>
 
-    <section xml:id="pagi">
-      <title>PAGI</title>
+      <section xml:id="pagi">
+        <title>PAGI</title>
 
-      <para>WebDyne can also run as a <productname>PAGI</productname> application. PAGI support covers normal HTTP requests and, when using a PAGI server with the relevant scope support,
-      server-sent events, WebSocket connections and application lifespan events.</para>
+        <para>WebDyne can also run as a <productname>PAGI</productname> application. PAGI support covers normal HTTP requests and, when using a PAGI server with the relevant scope support,
+        server-sent events, WebSocket connections and application lifespan events.</para>
 
-      <para>Ensure that <productname>PAGI</productname> is installed on your system via CPAN after installing WebDyne:</para>
+        <para>Ensure that <productname>PAGI</productname> is installed on your system via CPAN after installing WebDyne:</para>
 
-      <screen># Via CPAN
+        <screen># Via CPAN
 #
 <command>perl -MCPAN -e 'install PAGI'</command>
 
@@ -684,25 +686,25 @@ builder {
 <command>cpanm Task::WebDyne::PAGI
 </command></screen>
 
-      <para>you can then start a basic WebDyne server by running the webdyne.pagi command with the --test parameter</para>
+        <para>you can then start a basic WebDyne server by running the webdyne.pagi command with the --test parameter</para>
 
-      <para><screen><command>webdyne.pagi --test</command></screen></para>
+        <para><screen><command>webdyne.pagi --test</command></screen></para>
 
-      <para>This will start a PAGI web server on your machine listening to port 5000 (or port 5001 on a Mac). When started through <command>webdyne.pagi</command> the server binds to
-      <literal>0.0.0.0</literal> unless a host is specified on the command line. Open a connection to http://127.0.0.1:5000/ (or the IP address of your server) in your web browser to view the
-      test page and validate the WebDyne is working correctly:</para>
+        <para>This will start a PAGI web server on your machine listening to port 5000 (or port 5001 on a Mac). When started through <command>webdyne.pagi</command> the server binds to
+        <literal>0.0.0.0</literal> unless a host is specified on the command line. Open a connection to http://127.0.0.1:5000/ (or the IP address of your server) in your web browser to view
+        the test page and validate the WebDyne is working correctly:</para>
 
-      <para><screenshot>
-          <mediaobject>
-            <imageobject>
-              <imagedata fileref="images/webdyne_psgi1.png" scale="30"/>
-            </imageobject>
-          </mediaobject>
-        </screenshot></para>
+        <para><screenshot>
+            <mediaobject>
+              <imageobject>
+                <imagedata fileref="images/webdyne_psgi1.png" scale="30"/>
+              </imageobject>
+            </mediaobject>
+          </screenshot></para>
 
-      <para>Once verified as working correctly you can serve WebDyne content from a particular directory - or from a single file - using the syntax:</para>
+        <para>Once verified as working correctly you can serve WebDyne content from a particular directory - or from a single file - using the syntax:</para>
 
-      <screen>#  To serve up all files in a directory. Directory requests use WebDyne's built-in
+        <screen>#  To serve up all files in a directory. Directory requests use WebDyne's built-in
 #  index page by default.
 #
 <command>$ webdyne.pagi &lt;directory&gt;</command>
@@ -716,15 +718,14 @@ builder {
 #
 <command>$ webdyne.pagi /var/www/html/time.psp</command></screen>
 
-      <tip>
-        <para>Starting WebDyne this way enables wrapper-managed index handling and full error messages with code backtraces if any errors are encountered. Use
-        <option>--index=FILE</option> or <envar>DOCUMENT_DEFAULT</envar> to nominate a site-local default page, or <option>--no-index</option> to rely on the underlying request layer default
-        document behavior.</para>
-      </tip>
+        <tip>
+          <para>Starting WebDyne this way enables wrapper-managed index handling and full error messages with code backtraces if any errors are encountered. Use <option>--index=FILE</option>
+          or <envar>DOCUMENT_DEFAULT</envar> to nominate a site-local default page, or <option>--no-index</option> to rely on the underlying request layer default document behavior.</para>
+        </tip>
 
-      <para>To start with <command>pagi-server</command>:</para>
+        <para>To start with <command>pagi-server</command>:</para>
 
-      <screen>#  Start WebDyne via pagi-server in the current directory. A file named app.psp must exist,
+        <screen>#  Start WebDyne via pagi-server in the current directory. A file named app.psp must exist,
 #  directory indexing will not be performed.
 #
 <command>DOCUMENT_ROOT=. pagi-server --app `which webdyne.pagi` --port=5000 --host=0.0.0.0
@@ -735,27 +736,27 @@ builder {
 </command>
 </screen>
 
-      <para>The above starts a single-threaded web server using PAGI. </para>
+        <para>The above starts a single-threaded web server using PAGI.</para>
 
-      <note>
-        <para>PAGI (via <command>webdyne.pagi</command> or <command>pagi-server</command>) versions of WebDyne will serve basic static files such as css, js, jpg etc. If you want more control
-        over non PSP files you should use a traditional web server front end to serve those assets. </para>
-      </note>
+        <note>
+          <para>PAGI (via <command>webdyne.pagi</command> or <command>pagi-server</command>) versions of WebDyne will serve basic static files such as css, js, jpg etc. If you want more
+          control over non PSP files you should use a traditional web server front end to serve those assets.</para>
+        </note>
 
-      <para>Numerous options can be set from the command line via environment variables, including WebDyne configuration. See relevant section for all WebDyne configuration options but
-      assuming a local file <filename>webdyne.conf.pl</filename>:</para>
+        <para>Numerous options can be set from the command line via environment variables, including WebDyne configuration. See relevant section for all WebDyne configuration options but
+        assuming a local file <filename>webdyne.conf.pl</filename>:</para>
 
-      <screen>#  Start instance webdyne.pagi using local config file
+        <screen>#  Start instance webdyne.pagi using local config file
 #
 $ <command>WEBDYNE_CONF=./webdyne.conf.pl webdyne.pagi --port=5012 .</command></screen>
 
-      <para>WebDyne can be incorporated into a traditional app.pagi/app.pl startup file for PAGI in the following form. In this example any file with a .psp extension is routed to WebDyne for
-      rendering:<example>
-          <info>
-            <title>PAGI Application Startup</title>
-          </info>
+        <para>WebDyne can be incorporated into a traditional app.pagi/app.pl startup file for PAGI in the following form. In this example any file with a .psp extension is routed to WebDyne
+        for rendering:<example>
+            <info>
+              <title>PAGI Application Startup</title>
+            </info>
 
-          <para><programlisting language="perl">use strict;
+            <para><programlisting language="perl">use strict;
 use warnings;
 use Future::AsyncAwait;
 use experimental 'signatures';
@@ -796,17 +797,17 @@ builder {
     };
 };
 </programlisting></para>
-        </example></para>
-    </section>
+          </example></para>
+      </section>
 
-    <section xml:id="apache_mod_perl">
-      <title>Apache mod_perl</title>
+      <section xml:id="apache_mod_perl">
+        <title>Apache mod_perl</title>
 
-      <para>If using Apache with mod_perl you can initialise WebDyne using the <command>wdapacheinit</command> command. This will attempt to auto-discover where the Apache binary and
-      configuration files are, then add a suitable <filename>webdyne.conf</filename> file to the apache configuration. Apache will need to be restarted for the new configuration file to take
-      effect. This will need to be done as a the root user.</para>
+        <para>If using Apache with mod_perl you can initialise WebDyne using the <command>wdapacheinit</command> command. This will attempt to auto-discover where the Apache binary and
+        configuration files are, then add a suitable <filename>webdyne.conf</filename> file to the apache configuration. Apache will need to be restarted for the new configuration file to take
+        effect. This will need to be done as a the root user.</para>
 
-      <para><screen language="bash">[root@localhost ~]# <command>wdapacheinit</command>
+        <para><screen language="bash">[root@localhost ~]# <command>wdapacheinit</command>
 
 [install] - Installation source directory '/usr'.
 [install] - Creating cache directory '/var/cache/webdyne'.
@@ -819,29 +820,29 @@ builder {
 
 [root@localhost ~]# <command>systemctl restart httpd</command></screen></para>
 
-      <para>By default WebDyne will create a cache directory in <filename>/var/cache/webdyne</filename> on Linux systems when a default CPAN install is done (no PREFIX specified). If a PREFIX
-      is specified the cache directory will be created as <filename>$PREFIX/cache</filename>. Use the <command>wdapacheinit</command> <option>--cache</option> command-line option to specify an
-      alternate location.</para>
+        <para>By default WebDyne will create a cache directory in <filename>/var/cache/webdyne</filename> on Linux systems when a default CPAN install is done (no PREFIX specified). If a
+        PREFIX is specified the cache directory will be created as <filename>$PREFIX/cache</filename>. Use the <command>wdapacheinit</command> <option>--cache</option> command-line option to
+        specify an alternate location.</para>
 
-      <para>Once <command>wdapacheinit</command> has been run the Apache server should be reloaded or restarted. Use a method appropriate for your Linux distribution.</para>
+        <para>Once <command>wdapacheinit</command> has been run the Apache server should be reloaded or restarted. Use a method appropriate for your Linux distribution.</para>
 
-      <screen>
+        <screen>
 [root@localhost ~]# <command>systemctl httpd restart</command>
 Stopping httpd:                                            [  OK  ]
 Starting httpd:                                            [  OK  ]
 </screen>
 
-      <section>
-        <info>
-          <title>Manual Apache Configuration</title>
-        </info>
+        <section>
+          <info>
+            <title>Manual Apache Configuration</title>
+          </info>
 
-        <para>If the <command>wdapacheinit</command> command does not work as expected on your system then the Apache configuration files can be modified manually.</para>
+          <para>If the <command>wdapacheinit</command> command does not work as expected on your system then the Apache configuration files can be modified manually.</para>
 
-        <para>Include the following section in the Apache <filename>httpd.conf</filename> file (or create a <filename>webdyne.conf</filename> file if you distribution supports
-        <filename>conf.d</filename> style configuration files). The following configuration files are written with Apache 2.4 syntax - adjust path and syntax as required:</para>
+          <para>Include the following section in the Apache <filename>httpd.conf</filename> file (or create a <filename>webdyne.conf</filename> file if you distribution supports
+          <filename>conf.d</filename> style configuration files). The following configuration files are written with Apache 2.4 syntax - adjust path and syntax as required:</para>
 
-        <para><screen>#  Need mod_perl, load up if not already done. Adjust path according to your distro.
+          <para><screen>#  Need mod_perl, load up if not already done. Adjust path according to your distro.
 #
 &lt;IfModule !mod_perl.c&gt;
 LoadModule perl_module "/etc/httpd/modules/mod_perl.so"
@@ -887,31 +888,31 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
 
 </screen></para>
 
-        <important>
-          <para>Substitute directory paths in the above example for the relevant/correct/appropriate ones on your system.</para>
-        </important>
+          <important>
+            <para>Substitute directory paths in the above example for the relevant/correct/appropriate ones on your system.</para>
+          </important>
 
-        <para>Create the cache directory and assign ownership and permission appropriate for your distribution (group name will vary by distribution - locate the correct one for your
-        distribution)</para>
+          <para>Create the cache directory and assign ownership and permission appropriate for your distribution (group name will vary by distribution - locate the correct one for your
+          distribution)</para>
 
-        <screen>
+          <screen>
 [root@localhost ~]# <command>mkdir /opt/webdyne/cache
 </command>[root@localhost ~]# <command>chgrp apache /opt/webdyne/cache
 </command>[root@localhost ~]# <command>chmod 770 /opt/webdyne/cache
 </command></screen>
 
-        <para>Restart Apache and check for any errors.</para>
-      </section>
+          <para>Restart Apache and check for any errors.</para>
+        </section>
 
-      <section>
-        <info>
-          <title>Development Apache Runner</title>
-        </info>
+        <section>
+          <info>
+            <title>Development Apache Runner</title>
+          </info>
 
-        <para>A convenience utility <command>webdyne.apache</command> is supplied which starts a single-threaded instance of Apache on port 5000 to render WebDyne pages. It works in the same
-        way as the PSGI and PAGI startup scripts outlined later</para>
+          <para>A convenience utility <command>webdyne.apache</command> is supplied which starts a single-threaded instance of Apache on port 5000 to render WebDyne pages. It works in the same
+          way as the PSGI and PAGI startup scripts outlined later</para>
 
-        <para><screen>#  Start an Apache test instance on a single .psp file
+          <para><screen>#  Start an Apache test instance on a single .psp file
 #
 $ perl -Ilib bin/webdyne.apache ./time.psp
 /usr/sbin/httpd -D ONE_PROCESS -d /tmp/webdyne_apache_ol2EWnkb -f /tmp/webdyne_apache_ol2EWnkb/conf/httpd.conf -D APACHE2 -D APACHE2_4 -D PERL_USEITHREADS
@@ -931,8 +932,8 @@ $ perl -Ilib bin/webdyne.apache .
 
 
 </screen></para>
+        </section>
       </section>
-    </section>
     </section>
   </section>
 
@@ -1923,254 +1924,260 @@ END
     <section xml:id="dynamic_interfaces">
       <title>Dynamic Interfaces</title>
 
-    <section>
-      <title>JSON</title>
-
-      <para>WebDyne has a &lt;json&gt; tag that can be used to present JSON data objects to Javascript libraries in an output page. Here is a very simple example:</para>
-
-      <para><example>
-          <info>
-            <title>JSON Chart</title>
-          </info>
-
-          <para><programlisting language="html"><xi:include href="example/chart1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-          xlink:href="https://demo.webdyne.org/example/chart1.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
-        </example>If you run it and review the source HTML you will see the JSON data rendered into the page as <tag>&lt;script&gt;&lt;/script&gt;</tag> block of type application/json with an
-      id of "chartData". Any data returned by the perl routine nominated by the json tag is presented as JSON within that tag block, and available to Javascript libraries within the page. JSON
-      data is kept in canonical order by default, which can be adjusted with the WEBDYNE_JSON_CANONICAL variable if not desired/needed for a very small speed-up.</para>
-
-      <para>Another example demonstrating a table constructed with the Grid.js library</para>
-
-      <example>
-        <info>
-          <title>JSON Grid</title>
-        </info>
-
-        <para><programlisting language="html"><xi:include href="example/grid1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-        xlink:href="https://demo.webdyne.org/example/grid1.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
-      </example>
-    </section>
-    <section>
-      <info>
-        <title>API</title>
-      </info>
-
-      <para>WebDyne has the ability to make available a basic REST API facility using the <tag>&lt;api&gt;</tag> tag in conjunction with the Router::Simple CPAN module. Documents that utilise
-      the <tag>&lt;api&gt;</tag> tag are somewhat unique in that:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>There is no need for any other tags in the document besides the <tag>&lt;api&gt;</tag> tag. All other tags are ignored - in fact they are discarded.</para>
-        </listitem>
-
-        <listitem>
-          <para>Any PSP file file an <tag>&lt;api&gt;</tag> tag will only emit JSON data with a content type of "<type>application/json</type>"</para>
-        </listitem>
-
-        <listitem>
-          <para>The REST api path must correspond to a PSP file at some path level, e.g. if your path is <filename>/api/user/42</filename> you must have a file called either
-          "<filename>api.psp</filename>" or "<filename>api/user.psp</filename>" in your path.</para>
-        </listitem>
-
-        <listitem>
-          <para>A PSP file can contain multiple <tag>&lt;api&gt;</tag> tags corresponding to different <classname>Router::Simple</classname> routes</para>
-        </listitem>
-      </itemizedlist>
-
-      <para>Here is a very simple example. Note the format of the URL in the Run hyperlink:</para>
-
-      <example>
-        <info>
-          <title>API Example</title>
-        </info>
-
-        <para><programlisting language="html"><xi:include href="example/api.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-        xlink:href="https://demo.webdyne.org/example/api/uppercase/bob/42" xmlns:xlink="http://www.w3.org/1999/xlink">Run uppercase API example</link></para>
-
-        <para><link xlink:href="https://demo.webdyne.org/example/api/doublecase/bob/42" xmlns:xlink="http://www.w3.org/1999/xlink">Run doublecase API example</link></para>
-      </example>
-
-      <caution>
-        <para>The <tag>&lt;api&gt;</tag> tag is still somewhat experimental and is not intended to replace a full service API handler. Use with caution</para>
-      </caution>
-    </section>
-    <section>
-      <info>
-        <title>HTMX</title>
-      </info>
-
-      <para>WebDyne has support for <tag>&lt;htmx&gt;</tag> tags to supply fragmented HTML to pages using the <link xlink:href="https://htmx.org"
-      xmlns:xlink="http://www.w3.org/1999/xlink">HTMX Javascript Library</link> and similar libraries such as <link xlink:href="https://alpine-ajax.js.org"
-      xmlns:xlink="http://www.w3.org/1999/xlink">Alpine Ajax</link>. WebDyne can support just supplying HTML snippet to pages in response to htmx or similar calls. HTMX/Alpine Ajax and WebDyne
-      are complementary libraries which can be combined together to support dynamic pages with in-place updates from a WebDyne Perl backend. <important>
-          <para>The htmx javascript library must be activated in any file that utilises htmx calls (initiates a <command>hx-get</command> or similar operation). The javascript can be loaded in
-          any convenient way, via a <tag>&lt;start_html&gt;</tag> <property>script</property> attribute, traditional <tag>&lt;script&gt;</tag> tags etc.</para>
-        </important></para>
-
-      <para>Here is a simple HTML file (<filename>htmx_demo1.psp</filename>) incorporating HTMX calls to a backend file called <filename>htmx_time1.psp</filename>. Here is the display file,
-      <filename>htmx_demo1.psp</filename></para>
-
-      <para><example>
-          <info>
-            <title>HTMX Display Page</title>
-          </info>
-
-          <para><programlisting language="html"><xi:include href="example/htmx_demo1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-          xlink:href="https://demo.webdyne.org/example/htmx_demo1.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
-        </example>And the backend file which generates the HTMX data for the above page (<filename>htmx_time1.psp</filename>):</para>
-
-      <example>
-        <info>
-          <title>HTMX Backend Page</title>
-        </info>
-
-        <para><programlisting language="html"><xi:include href="example/htmx_time1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-        xlink:href="https://demo.webdyne.org/example/htmx_time1.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
-      </example>
-
-      <para>Note the <tag>&lt;htmx&gt;</tag> tags. You can run the above htmx resource file and it will render correctly as a full HTML page - however if WebDyne detects a
-      '<property>hx-request</property>' HTTP header it will only send the fragment back.</para>
-
-      <important>
-        <para>Only one <tag>&lt;htmx&gt;</tag> section from a file will ever be rendered. You can have multiple <tag>&lt;htmx&gt;</tag> sections in a PSP file however only one can be rendered
-        at any time. You can use the display attribute with dynamic matching (see later) to render different <tag>&lt;htmx&gt;</tag> sections in a PSP file, or you can keep them all in
-        different files (e.g. one <tag>&lt;htmx&gt;</tag> section per PSP file</para>
-      </important>
-
-      <important>
-        <para>Content in <tag>&lt;htmx&gt;</tag> tags will not be rendered unless a <property>hx-request</property> HTTP header is detected, or (as in the above example) the force attribute is
-        nominated.</para>
-      </important>
-
       <section>
-        <info>
-          <title>Using Perl within &lt;htmx&gt; tags</title>
-        </info>
+        <title>JSON</title>
 
-        <para><tag>&lt;htmx&gt;</tag> tags can be called with the same attributes as <tag>&lt;perl&gt;</tag> tags, including nominating a handler to generate data. See the following
-        example:</para>
+        <para>WebDyne has a &lt;json&gt; tag that can be used to present JSON data objects to Javascript libraries in an output page. Here is a very simple example:</para>
 
         <para><example>
             <info>
-              <title>HTMX Handler Display Page</title>
+              <title>JSON Chart</title>
             </info>
 
-            <para><programlisting language="html"><xi:include href="example/htmx_demo2.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-            xlink:href="https://demo.webdyne.org/example/htmx_demo2.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
-          </example>And the backend file which generates the HTMX data for the above page - now with the HTML fragment generated by Perl:<example>
+            <para><programlisting language="html"><xi:include href="example/chart1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+            xlink:href="https://demo.webdyne.org/example/chart1.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+          </example>If you run it and review the source HTML you will see the JSON data rendered into the page as <tag>&lt;script&gt;&lt;/script&gt;</tag> block of type application/json with
+        an id of "chartData". Any data returned by the perl routine nominated by the json tag is presented as JSON within that tag block, and available to Javascript libraries within the page.
+        JSON data is kept in canonical order by default, which can be adjusted with the WEBDYNE_JSON_CANONICAL variable if not desired/needed for a very small speed-up.</para>
+
+        <para>Another example demonstrating a table constructed with the Grid.js library</para>
+
+        <example>
+          <info>
+            <title>JSON Grid</title>
+          </info>
+
+          <para><programlisting language="html"><xi:include href="example/grid1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+          xlink:href="https://demo.webdyne.org/example/grid1.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+        </example>
+      </section>
+
+      <section>
+        <info>
+          <title>API</title>
+        </info>
+
+        <para>WebDyne has the ability to make available a basic REST API facility using the <tag>&lt;api&gt;</tag> tag in conjunction with the Router::Simple CPAN module. Documents that
+        utilise the <tag>&lt;api&gt;</tag> tag are somewhat unique in that:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>There is no need for any other tags in the document besides the <tag>&lt;api&gt;</tag> tag. All other tags are ignored - in fact they are discarded.</para>
+          </listitem>
+
+          <listitem>
+            <para>Any PSP file file an <tag>&lt;api&gt;</tag> tag will only emit JSON data with a content type of "<type>application/json</type>"</para>
+          </listitem>
+
+          <listitem>
+            <para>The REST api path must correspond to a PSP file at some path level, e.g. if your path is <filename>/api/user/42</filename> you must have a file called either
+            "<filename>api.psp</filename>" or "<filename>api/user.psp</filename>" in your path.</para>
+          </listitem>
+
+          <listitem>
+            <para>A PSP file can contain multiple <tag>&lt;api&gt;</tag> tags corresponding to different <classname>Router::Simple</classname> routes</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>Here is a very simple example. Note the format of the URL in the Run hyperlink:</para>
+
+        <example>
+          <info>
+            <title>API Example</title>
+          </info>
+
+          <para><programlisting language="html"><xi:include href="example/api.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+          xlink:href="https://demo.webdyne.org/example/api/uppercase/bob/42" xmlns:xlink="http://www.w3.org/1999/xlink">Run uppercase API example</link></para>
+
+          <para><link xlink:href="https://demo.webdyne.org/example/api/doublecase/bob/42" xmlns:xlink="http://www.w3.org/1999/xlink">Run doublecase API example</link></para>
+        </example>
+
+        <caution>
+          <para>The <tag>&lt;api&gt;</tag> tag is still somewhat experimental and is not intended to replace a full service API handler. Use with caution</para>
+        </caution>
+      </section>
+
+      <section>
+        <info>
+          <title>HTMX</title>
+        </info>
+
+        <para>WebDyne has support for <tag>&lt;htmx&gt;</tag> tags to supply fragmented HTML to pages using the <link xlink:href="https://htmx.org"
+        xmlns:xlink="http://www.w3.org/1999/xlink">HTMX Javascript Library</link> and similar libraries such as <link xlink:href="https://alpine-ajax.js.org"
+        xmlns:xlink="http://www.w3.org/1999/xlink">Alpine Ajax</link>. WebDyne can support just supplying HTML snippet to pages in response to htmx or similar calls. HTMX/Alpine Ajax and
+        WebDyne are complementary libraries which can be combined together to support dynamic pages with in-place updates from a WebDyne Perl backend. <important>
+            <para>The htmx javascript library must be activated in any file that utilises htmx calls (initiates a <command>hx-get</command> or similar operation). The javascript can be loaded
+            in any convenient way, via a <tag>&lt;start_html&gt;</tag> <property>script</property> attribute, traditional <tag>&lt;script&gt;</tag> tags etc.</para>
+          </important></para>
+
+        <para>Here is a simple HTML file (<filename>htmx_demo1.psp</filename>) incorporating HTMX calls to a backend file called <filename>htmx_time1.psp</filename>. Here is the display file,
+        <filename>htmx_demo1.psp</filename></para>
+
+        <para><example>
             <info>
-              <title>HTMX Handler Backend Page</title>
+              <title>HTMX Display Page</title>
             </info>
 
-            <para><programlisting language="html"><xi:include href="example/htmx_time2.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-            xlink:href="https://demo.webdyne.org/example/htmx_time2.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+            <para><programlisting language="html"><xi:include href="example/htmx_demo1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+            xlink:href="https://demo.webdyne.org/example/htmx_demo1.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+          </example>And the backend file which generates the HTMX data for the above page (<filename>htmx_time1.psp</filename>):</para>
+
+        <example>
+          <info>
+            <title>HTMX Backend Page</title>
+          </info>
+
+          <para><programlisting language="html"><xi:include href="example/htmx_time1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+          xlink:href="https://demo.webdyne.org/example/htmx_time1.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+        </example>
+
+        <para>Note the <tag>&lt;htmx&gt;</tag> tags. You can run the above htmx resource file and it will render correctly as a full HTML page - however if WebDyne detects a
+        '<property>hx-request</property>' HTTP header it will only send the fragment back.</para>
+
+        <important>
+          <para>Only one <tag>&lt;htmx&gt;</tag> section from a file will ever be rendered. You can have multiple <tag>&lt;htmx&gt;</tag> sections in a PSP file however only one can be
+          rendered at any time. You can use the display attribute with dynamic matching (see later) to render different <tag>&lt;htmx&gt;</tag> sections in a PSP file, or you can keep them all
+          in different files (e.g. one <tag>&lt;htmx&gt;</tag> section per PSP file</para>
+        </important>
+
+        <important>
+          <para>Content in <tag>&lt;htmx&gt;</tag> tags will not be rendered unless a <property>hx-request</property> HTTP header is detected, or (as in the above example) the force attribute
+          is nominated.</para>
+        </important>
+
+        <section>
+          <info>
+            <title>Using Perl within &lt;htmx&gt; tags</title>
+          </info>
+
+          <para><tag>&lt;htmx&gt;</tag> tags can be called with the same attributes as <tag>&lt;perl&gt;</tag> tags, including nominating a handler to generate data. See the following
+          example:</para>
+
+          <para><example>
+              <info>
+                <title>HTMX Handler Display Page</title>
+              </info>
+
+              <para><programlisting language="html"><xi:include href="example/htmx_demo2.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+              xlink:href="https://demo.webdyne.org/example/htmx_demo2.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+            </example>And the backend file which generates the HTMX data for the above page - now with the HTML fragment generated by Perl:<example>
+              <info>
+                <title>HTMX Handler Backend Page</title>
+              </info>
+
+              <para><programlisting language="html"><xi:include href="example/htmx_time2.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+              xlink:href="https://demo.webdyne.org/example/htmx_time2.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+            </example></para>
+        </section>
+
+        <section>
+          <title>Using multiple <tag>&lt;htmx&gt;</tag> tags in one PSP file</title>
+
+          <para>As is mentioned above only one <tag>&lt;htmx&gt;</tag> fragment can be returned by a PSP page at a time - but you can use techniques to select which tag should be rendered. The
+          <tag>&lt;htmx&gt;</tag> tag supports the display attribute. If this attribute exists and is a "true" value then the <tag>&lt;htmx&gt;</tag> fragment will be returned. At first this
+          doesn't seem very useful - but when combined with dynamic evaluation via either page query parameters or <code>!{! .. !}</code> evaluation it becomes more compelling. Take the
+          following two button example:</para>
+
+          <para><example>
+              <info>
+                <title>Multiple HTMX Fragment Display Page</title>
+              </info>
+
+              <para><programlisting language="html"><xi:include href="example/htmx_demo3.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+              xlink:href="https://demo.webdyne.org/example/htmx_demo3.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+            </example><important>
+              <para>WebDyne does not support single quoted tags - you can use them in PSP files, but the rendered HTML will always emit tag attributes as double quoted. For attributes such as
+              <property>hx-vals</property> it is not possible to supply JSON strings within single quotes, i.e. this will not work: <tag>&lt;button hx-vals='{ "foo" : "bar" }'&gt;</tag> - the
+              single quotes will be emitted as double quotes, causing the browser to misinterpret the tag. If you need to supply quoted keys uses the <code>js:{}</code> syntax above.</para>
+            </important>Here is the HTML page used by the above example to fetch the requested time. You can run it, however nothing will be emitted unless you supply a
+          <code>?time_local=1</code> or <code>?time_utc=1</code> query parameter in your browser.<example>
+              <info>
+                <title>Multiple HTMX Fragment Backend Page</title>
+              </info>
+
+              <para><programlisting language="html"><xi:include href="example/htmx_time3.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+              xlink:href="https://demo.webdyne.org/example/htmx_time3.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+            </example>Normally you would expect to have the hx-get attribute for each button go to a different PSP page. But in this instance they refer to the same page. So how do we
+          discriminate ? The key is in the supply of the hx-vals attribute, which allows us to send query strings to the htmx resource page. We can then use them to select which &lt;htmx&gt;
+          block is returned.</para>
+
+          <note>
+            <para>Note the use of <code>js:{ &lt;json&gt; }</code> notation in the <tag>&lt;htmx&gt;</tag> <parameter>hx-vals</parameter> attribute. It allows for easier supply of JSON data
+            without needed to manipulate/escape double-quotes in raw JSON data. You'll also note there is no <tag>&lt;start_html&gt;</tag> tag. It's not necessary for <tag>&lt;htmx&gt;</tag>
+            pages.</para>
+          </note>
+        </section>
+
+        <section>
+          <title>Putting everything in one file</title>
+
+          <para>Because &lt;htmx&gt; tag does not render unless a hx-request header is received we can serve htmx content from the same PSP file that calls it. Here is an example that brings
+          everything into one file:</para>
+
+          <example>
+            <info>
+              <title>Single-File HTMX Resource</title>
+            </info>
+
+            <para><programlisting language="html"><xi:include href="example/htmx_time4.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+            xlink:href="https://demo.webdyne.org/example/htmx_time4.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+          </example>
+
+          <para>Or the local/UTC time example converted to run everything from one file:</para>
+
+          <example>
+            <info>
+              <title>Single-File HTMX Demo</title>
+            </info>
+
+            <para><programlisting language="html"><xi:include href="example/htmx_demo4.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+            xlink:href="https://demo.webdyne.org/example/htmx_demo4.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+          </example>
+        </section>
+      </section>
+
+      <section>
+        <title>SSE</title>
+
+        <para>When run in a PAGI environment WebDyne supports Server-Sent Events (SSE). An async <function>sse</function> subroutine can be defined which will be called when an SSE event
+        stream is requested. The handler can access the underlying <classname>PAGI::SSE</classname> helper via <code>$self-&gt;r-&gt;sse()</code>. Here is an example. Note the
+        <parameter>sse</parameter> flag in the <tag>&lt;start_html&gt;</tag> tag to denote the use of SSE in the document:</para>
+
+        <para><example>
+            <info>
+              <title>SSE</title>
+            </info>
+
+            <para><programlisting language="html"><xi:include href="example/sse1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting></para>
+
+            <para><link xlink:href="https://demo.webdyne.org/example/progress.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
           </example></para>
+
+        <para>If you do not wish to use the <tag>&lt;start_html&gt;</tag> tag with the sse attribute you can use a meta tag to denote which subroutine to call for sse events, e.g.
+        <tag>&lt;meta name="WebDyne" content="sse=sse"&gt;</tag></para>
       </section>
 
       <section>
-        <title>Using multiple <tag>&lt;htmx&gt;</tag> tags in one PSP file</title>
+        <title>WebSockets</title>
 
-        <para>As is mentioned above only one <tag>&lt;htmx&gt;</tag> fragment can be returned by a PSP page at a time - but you can use techniques to select which tag should be rendered. The
-        <tag>&lt;htmx&gt;</tag> tag supports the display attribute. If this attribute exists and is a "true" value then the <tag>&lt;htmx&gt;</tag> fragment will be returned. At first this
-        doesn't seem very useful - but when combined with dynamic evaluation via either page query parameters or <code>!{! .. !}</code> evaluation it becomes more compelling. Take the
-        following two button example:</para>
+        <para>When run in a PAGI environment WebDyne supports WebSockets (WS). An async <function>ws</function> subroutine can be defined which will be called when a PAGI WebSocket connection
+        is opened. The request object exposes the underlying PAGI scope and send/receive callbacks, and the handler can use those to accept the connection and exchange WebSocket messages. Here
+        is an example. Note the <parameter>ws</parameter> flag in the <tag>&lt;start_html&gt;</tag> tag to denote the use of WebSockets in the document:</para>
 
         <para><example>
             <info>
-              <title>Multiple HTMX Fragment Display Page</title>
+              <title>WebSockets</title>
             </info>
 
-            <para><programlisting language="html"><xi:include href="example/htmx_demo3.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-            xlink:href="https://demo.webdyne.org/example/htmx_demo3.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
-          </example><important>
-            <para>WebDyne does not support single quoted tags - you can use them in PSP files, but the rendered HTML will always emit tag attributes as double quoted. For attributes such as
-            <property>hx-vals</property> it is not possible to supply JSON strings within single quotes, i.e. this will not work: <tag>&lt;button hx-vals='{ "foo" : "bar" }'&gt;</tag> - the
-            single quotes will be emitted as double quotes, causing the browser to misinterpret the tag. If you need to supply quoted keys uses the <code>js:{}</code> syntax above.</para>
-          </important>Here is the HTML page used by the above example to fetch the requested time. You can run it, however nothing will be emitted unless you supply a
-        <code>?time_local=1</code> or <code>?time_utc=1</code> query parameter in your browser.<example>
-            <info>
-              <title>Multiple HTMX Fragment Backend Page</title>
-            </info>
+            <para><programlisting language="html"><xi:include href="example/ws1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting></para>
+          </example></para>
 
-            <para><programlisting language="html"><xi:include href="example/htmx_time3.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-            xlink:href="https://demo.webdyne.org/example/htmx_time3.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
-          </example>Normally you would expect to have the hx-get attribute for each button go to a different PSP page. But in this instance they refer to the same page. So how do we
-        discriminate ? The key is in the supply of the hx-vals attribute, which allows us to send query strings to the htmx resource page. We can then use them to select which &lt;htmx&gt;
-        block is returned.</para>
+        <para><link xlink:href="https://demo.webdyne.org/example/ws.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
 
-        <note>
-          <para>Note the use of <code>js:{ &lt;json&gt; }</code> notation in the <tag>&lt;htmx&gt;</tag> <parameter>hx-vals</parameter> attribute. It allows for easier supply of JSON data
-          without needed to manipulate/escape double-quotes in raw JSON data. You'll also note there is no <tag>&lt;start_html&gt;</tag> tag. It's not necessary for <tag>&lt;htmx&gt;</tag>
-          pages.</para>
-        </note>
-      </section>
-
-      <section>
-        <title>Putting everything in one file</title>
-
-        <para>Because &lt;htmx&gt; tag does not render unless a hx-request header is received we can serve htmx content from the same PSP file that calls it. Here is an example that brings
-        everything into one file:</para>
-
-        <example>
-          <info>
-            <title>Single-File HTMX Resource</title>
-          </info>
-
-          <para><programlisting language="html"><xi:include href="example/htmx_time4.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-          xlink:href="https://demo.webdyne.org/example/htmx_time4.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
-        </example>
-
-        <para>Or the local/UTC time example converted to run everything from one file:</para>
-
-        <example>
-          <info>
-            <title>Single-File HTMX Demo</title>
-          </info>
-
-          <para><programlisting language="html"><xi:include href="example/htmx_demo4.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-          xlink:href="https://demo.webdyne.org/example/htmx_demo4.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
-        </example>
+        <para>If you do not wish to use the <tag>&lt;start_html&gt;</tag> tag with the ws attribute you can use a meta tag to denote which subroutine to call for WebSocket events, e.g.
+        <tag>&lt;meta name="WebDyne" content="ws=ws"&gt;</tag></para>
       </section>
     </section>
-    <section>
-      <title>SSE</title>
-
-      <para>When run in a PAGI environment WebDyne supports Server-Sent Events (SSE). An async <function>sse</function> subroutine can be defined which will be called when an SSE event stream
-      is requested. The handler can access the underlying <classname>PAGI::SSE</classname> helper via <code>$self-&gt;r-&gt;sse()</code>. Here is an example. Note the <parameter>sse</parameter>
-      flag in the <tag>&lt;start_html&gt;</tag> tag to denote the use of SSE in the document:</para>
-
-      <para><example>
-          <info>
-            <title>SSE</title>
-          </info>
-
-          <para><programlisting language="html"><xi:include href="example/sse1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting></para>
-        </example></para>
-
-      <para>If you do not wish to use the <tag>&lt;start_html&gt;</tag> tag with the sse attribute you can use a meta tag to denote which subroutine to call for sse events, e.g. <tag>&lt;meta
-      name="WebDyne" content="sse=sse"&gt;</tag></para>
-    </section>
-    <section>
-      <title>WebSockets</title>
-
-      <para>When run in a PAGI environment WebDyne supports WebSockets (WS). An async <function>ws</function> subroutine can be defined which will be called when a PAGI WebSocket connection is
-      opened. The request object exposes the underlying PAGI scope and send/receive callbacks, and the handler can use those to accept the connection and exchange WebSocket messages. Here is
-      an example. Note the <parameter>ws</parameter> flag in the <tag>&lt;start_html&gt;</tag> tag to denote the use of WebSockets in the document:</para>
-
-      <para><example>
-          <info>
-            <title>WebSockets</title>
-          </info>
-
-          <para><programlisting language="html"><xi:include href="example/ws1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting></para>
-        </example></para>
-
-      <para>If you do not wish to use the <tag>&lt;start_html&gt;</tag> tag with the ws attribute you can use a meta tag to denote which subroutine to call for WebSocket events, e.g. <tag>&lt;meta
-      name="WebDyne" content="ws=ws"&gt;</tag></para>
-    </section>
-    </section>
-
-
   </section>
 
   <section xml:id="error_handling">
@@ -2178,7 +2185,7 @@ END
       <title>Error Handling</title>
     </info>
 
-        <section xml:id="dump_tag">
+    <section xml:id="dump_tag">
       <info>
         <title>Dump</title>
       </info>
@@ -2212,7 +2219,8 @@ END
         xlink:href="https://demo.webdyne.org/example/dump2.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
       </example>
     </section>
-<section>
+
+    <section>
       <info>
         <title>Error Messages</title>
       </info>
@@ -2361,7 +2369,7 @@ sub hello {
           <listitem>
             <para>Runs the WebDyne initialization routines, which create needed directories, modify and create Apache .conf files etc.</para>
 
-            <para><link xlink:href="utilities/wdapacheinit.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
+            <para><link role="manual-page-new-tab" xlink:href="utilities/wdapacheinit.md" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
           </listitem>
         </varlistentry>
 
@@ -2372,7 +2380,7 @@ sub hello {
             <para>Usage: <command>wdcompile filename.psp</command>. Will compile a PSP file and use Data::Dumper to display the WebDyne internal representation of the page tree structure.
             Useful as a troubleshooting tool to see how HTML::TreeBuilder has parsed your source file, and to show up any misplaced tags etc.</para>
 
-            <para><link xlink:href="utilities/wdcompile.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
+            <para><link role="manual-page-new-tab" xlink:href="utilities/wdcompile.md" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
           </listitem>
         </varlistentry>
 
@@ -2383,7 +2391,7 @@ sub hello {
             <para>Usage: <command>wdrender filename.psp</command>. Will attempt to render the source file to screen using WebDyne. It is useful for testing page output from the command line
             and can exercise fake, PSGI, PAGI and mod_perl style request backends for troubleshooting.</para>
 
-            <para><link xlink:href="utilities/wdrender.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
+            <para><link role="manual-page-new-tab" xlink:href="utilities/wdrender.md" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
           </listitem>
         </varlistentry>
 
@@ -2394,7 +2402,7 @@ sub hello {
             <para>Usage: <command>wddump filename</command>. Where filename is a compiled WebDyne source file (usually in <filename>/var/webdyne/cache</filename>). Will dump out the saved data
             structure of the compiled file.</para>
 
-            <para><link xlink:href="utilities/wddump.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
+            <para><link role="manual-page-new-tab" xlink:href="utilities/wddump.md" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
           </listitem>
         </varlistentry>
 
@@ -2405,7 +2413,7 @@ sub hello {
             <para>Usage: <command>wddebug --status|--enable|--disable</command>. Enable/disable debugging in the WebDyne code. This uses some pretty ugly methods to enable debugging in already
             installed modules by editing the code on-disk to re-enable debug calls - do not use in a production environment !</para>
 
-            <para><link xlink:href="utilities/wddebug.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
+            <para><link role="manual-page-new-tab" xlink:href="utilities/wddebug.md" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
           </listitem>
         </varlistentry>
 
@@ -2416,7 +2424,7 @@ sub hello {
             <para>Used to run WebDyne as a PSGI process- usually invoked by Plack via <command>plackup</command> or <command>starman</command>, but can be run directly for development
             purposes.</para>
 
-            <para><link xlink:href="utilities/webdyne.psgi.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
+            <para><link role="manual-page-new-tab" xlink:href="utilities/webdyne.psgi.md" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
           </listitem>
         </varlistentry>
 
@@ -2427,7 +2435,7 @@ sub hello {
             <para>Used to run WebDyne as a PAGI application. It can be run directly for development or used as a PAGI application entry point, including PAGI HTTP, SSE and WebSocket request
             handling where supported by the server.</para>
 
-            <para><link xlink:href="utilities/webdyne.pagi.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
+            <para><link role="manual-page-new-tab" xlink:href="utilities/webdyne.pagi.md" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
           </listitem>
         </varlistentry>
 
@@ -2438,7 +2446,7 @@ sub hello {
             <para>Starts a temporary Apache mod_perl instance for local development and troubleshooting. It can serve a directory or a single PSP file without installing a full system Apache
             configuration.</para>
 
-            <para><link xlink:href="utilities/webdyne.apache.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
+            <para><link role="manual-page-new-tab" xlink:href="utilities/webdyne.apache.md" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
           </listitem>
         </varlistentry>
 
@@ -2449,13 +2457,13 @@ sub hello {
             <para>Run <command>perl -c -w</command> over code in <token>__PERL__</token> sections on any PSP file to check for syntax errors. Will automatically skip HTML code. It only checks
             code in the <token>__PERL__</token> area, and won't check syntax in in-line perl, dynamic attributes etc.</para>
 
-            <para><link xlink:href="utilities/wdlint.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
+            <para><link role="manual-page-new-tab" xlink:href="utilities/wdlint.md" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
           </listitem>
         </varlistentry>
       </variablelist>
     </section>
-
   </section>
+
   <section xml:id="modules">
     <info>
       <title>Modules</title>
@@ -2466,146 +2474,164 @@ sub hello {
 
     <itemizedlist>
       <listitem>
-        <para><link xlink:href="modules/WebDyne.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_CGI.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::CGI</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_CGI.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::CGI</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_CGI_Simple.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::CGI::Simple</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_CGI_Simple.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::CGI::Simple</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Cache.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Cache</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Cache.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Cache</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Chain.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Chain</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Chain.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Chain</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Chain_Constant.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Chain::Constant</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Chain_Constant.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Chain::Constant</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Compile.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Compile</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Compile.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Compile</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Constant.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Constant</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Constant.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Constant</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Err.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Err</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Err.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Err</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Err_Constant.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Err::Constant</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Err_Constant.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Err::Constant</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Filter.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Filter</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Filter.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Filter</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Filter_Constant.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Filter::Constant</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Filter_Constant.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Filter::Constant</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_HTML_Tiny.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::HTML::Tiny</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_HTML_Tiny.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::HTML::Tiny</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_HTML_TreeBuilder.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::HTML::TreeBuilder</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_HTML_TreeBuilder.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::HTML::TreeBuilder</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Handler.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Handler</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Handler.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Handler</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Install.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Install</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Install.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Install</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Install_Apache.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Install::Apache</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Install_Apache.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Install::Apache</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Install_Apache_Constant.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Install::Apache::Constant</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Install_Apache_Constant.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Install::Apache::Constant</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Install_Constant.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Install::Constant</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Install_Constant.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Install::Constant</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_PAGI.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::PAGI</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_PAGI.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::PAGI</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_PAGI_Constant.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::PAGI::Constant</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_PAGI_Constant.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::PAGI::Constant</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_PSGI.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::PSGI</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_PSGI.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::PSGI</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_PSGI_Constant.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::PSGI::Constant</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_PSGI_Constant.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::PSGI::Constant</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Request_Apache.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::Apache</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Request_Apache.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::Apache</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Request_Common.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::Common</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Request_Common.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::Common</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Request_Fake.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::Fake</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Request_Fake.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::Fake</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Request_PAGI.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::PAGI</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Request_PAGI.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::PAGI</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Request_PSGI.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::PSGI</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Request_PSGI.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::PSGI</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Request_PSGI_Constant.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::PSGI::Constant</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Request_PSGI_Constant.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::PSGI::Constant</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Request_PSGI_Static.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::PSGI::Static</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Request_PSGI_Static.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Request::PSGI::Static</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Session.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Session</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Session.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Session</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Session_Constant.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Session::Constant</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Session_Constant.md"
+        xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Session::Constant</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Static.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Static</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Static.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Static</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Template.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Template</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Template.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Template</classname></link></para>
       </listitem>
 
       <listitem>
-        <para><link xlink:href="modules/WebDyne_Util.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Util</classname></link></para>
+        <para><link role="manual-page-new-tab" xlink:href="modules/WebDyne_Util.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Util</classname></link></para>
       </listitem>
     </itemizedlist>
   </section>
+
   <section xml:id="reference">
     <info>
       <title>Reference</title>
@@ -2753,8 +2779,8 @@ sub hello {
               <term>file</term>
 
               <listitem>
-                <para>Boolean flag. Force package|require attribute value to be treated as a file, even if it appears to "look like" a module name to the loader. Rarely needed, use case
-                would be a Perl module in the current directory without an extension.</para>
+                <para>Boolean flag. Force package|require attribute value to be treated as a file, even if it appears to "look like" a module name to the loader. Rarely needed, use case would
+                be a Perl module in the current directory without an extension.</para>
               </listitem>
             </varlistentry>
 
@@ -2790,7 +2816,6 @@ sub hello {
               </listitem>
             </varlistentry>
           </variablelist>
-
         </section>
 
         <section xml:id="tag_json">
@@ -2799,9 +2824,9 @@ sub hello {
           </info>
 
           <para>Run Perl code similar to <tag>&lt;perl&gt;</tag> tag but expects code to return a HASH, ARRAY ref or plain scalar, which is encoded into JSON, outputting within a
-          &lt;script&gt; tag with <property>type="application/json"</property>. When supplied with an id attribute this data can be used by any Javascript function in the page. Takes the
-          same options as the <tag>&lt;perl&gt;</tag> tag and behaves similarly - if a <property>handler</property> attribute is given it is called, if the <property>perl</property>
-          attribute is given text between the <tag>&lt;json&gt;</tag> tags in treated as in-line perl code and executed.</para>
+          &lt;script&gt; tag with <property>type="application/json"</property>. When supplied with an id attribute this data can be used by any Javascript function in the page. Takes the same
+          options as the <tag>&lt;perl&gt;</tag> tag and behaves similarly - if a <property>handler</property> attribute is given it is called, if the <property>perl</property> attribute is
+          given text between the <tag>&lt;json&gt;</tag> tags in treated as in-line perl code and executed.</para>
 
           <programlisting language="html">&lt;json
   [id=NAME]
@@ -2869,7 +2894,6 @@ sub handler {
     return { enabled =&gt; JSON::true }
 }</programlisting>
           </note>
-
         </section>
 
         <section xml:id="tag_block">
@@ -2899,8 +2923,8 @@ sub handler {
               <term>display</term>
 
               <listitem>
-                <para>Boolean flag. Force display of this block even if not invoked by <methodname>render_block()</methodname> method in handler. Useful for prototyping or conditional
-                display. Any true value will force display, so this can be coupled with a form parameter to only show a block when a form has been submitted in a similar form to the
+                <para>Boolean flag. Force display of this block even if not invoked by <methodname>render_block()</methodname> method in handler. Useful for prototyping or conditional display.
+                Any true value will force display, so this can be coupled with a form parameter to only show a block when a form has been submitted in a similar form to the
                 <tag>&lt;perl&gt;</tag> tag <property>run</property> attribute.</para>
 
                 <programlisting language="html">#  Only show a block if a name parameter has been supplied
@@ -2919,7 +2943,6 @@ Thank you for registering +{name} !
               </listitem>
             </varlistentry>
           </variablelist>
-
         </section>
 
         <section xml:id="tag_include">
@@ -2927,8 +2950,8 @@ Thank you for registering +{name} !
             <title><tag>&lt;include&gt;</tag></title>
           </info>
 
-          <para>Include HTML, PSP or text from an external file. Capable of just pulling in just the <tag>&lt;head&gt;</tag>,<tag>&lt;body&gt;</tag> or a <tag>&lt;block&gt;</tag> section
-          from another HTML or PSP file. If pulled in from a PSP file it will compiled and interpreted in the context of the current page.</para>
+          <para>Include HTML, PSP or text from an external file. Capable of just pulling in just the <tag>&lt;head&gt;</tag>,<tag>&lt;body&gt;</tag> or a <tag>&lt;block&gt;</tag> section from
+          another HTML or PSP file. If pulled in from a PSP file it will compiled and interpreted in the context of the current page.</para>
 
           <programlisting language="html">&lt;include
   file=PATH
@@ -2992,7 +3015,6 @@ Thank you for registering +{name} !
               </listitem>
             </varlistentry>
           </variablelist>
-
         </section>
 
         <section xml:id="tag_api">
@@ -3001,8 +3023,8 @@ Thank you for registering +{name} !
           </info>
 
           <para>Respond to a JSON request made from a client. Takes the same options as the <tag>&lt;perl&gt;</tag> tag and behaves similarly - if a <property>handler</property> attribute is
-          given it is called, if the <property>perl</property> attribute is given text between the <tag>&lt;api&gt;</tag> tags in treated as in-line perl code and executed. Responses from
-          perl code are encoded as JSON and returned.</para>
+          given it is called, if the <property>perl</property> attribute is given text between the <tag>&lt;api&gt;</tag> tags in treated as in-line perl code and executed. Responses from perl
+          code are encoded as JSON and returned.</para>
 
           <programlisting language="html">&lt;api
   pattern=ROUTE
@@ -3035,7 +3057,6 @@ Thank you for registering +{name} !
                 </listitem>
               </varlistentry>
             </variablelist></para>
-
         </section>
 
         <section xml:id="tag_htmx">
@@ -3044,8 +3065,8 @@ Thank you for registering +{name} !
           </info>
 
           <para>Serve HTML fragments in response to <link xlink:href="https://htmx.org" xmlns:xlink="http://www.w3.org/1999/xlink">htmx</link> type requests (or similar clients). Takes the
-          same options as the <tag>&lt;perl&gt;</tag> tag and behaves similarly - if a <property>handler</property> attribute is given it is called, if the <property>perl</property>
-          attribute is given text between the <tag>&lt;api&gt;</tag> tags in treated as in-line perl code and executed.</para>
+          same options as the <tag>&lt;perl&gt;</tag> tag and behaves similarly - if a <property>handler</property> attribute is given it is called, if the <property>perl</property> attribute
+          is given text between the <tag>&lt;api&gt;</tag> tags in treated as in-line perl code and executed.</para>
 
           <programlisting language="html">&lt;htmx
   [handler=METHOD]
@@ -3095,8 +3116,8 @@ This is my output
                 <term>perl</term>
 
                 <listitem>
-                  <para>Boolean. Interpret content between starting and ending <tag>&lt;htmx&gt;</tag> tags as perl code and run it. Anything returned by the perl code will be sent as the
-                  HTML fragment.</para>
+                  <para>Boolean. Interpret content between starting and ending <tag>&lt;htmx&gt;</tag> tags as perl code and run it. Anything returned by the perl code will be sent as the HTML
+                  fragment.</para>
                 </listitem>
               </varlistentry>
 
@@ -3108,7 +3129,6 @@ This is my output
                 </listitem>
               </varlistentry>
             </variablelist></para>
-
         </section>
 
         <section xml:id="tag_dump">
@@ -3116,8 +3136,8 @@ This is my output
             <title><tag>&lt;dump&gt;</tag></title>
           </info>
 
-          <para>Display CGI and other parameters in <classname>Data::Dumper</classname> dump format. Useful for debugging. Only rendered if <varname>$WEBDYNE_DUMP_FLAG</varname> global set
-          to 1 in WebDyne constants or the <property>display|force</property> attribute specified (see below). Useful while troubleshooting or debugging pages.</para>
+          <para>Display CGI and other parameters in <classname>Data::Dumper</classname> dump format. Useful for debugging. Only rendered if <varname>$WEBDYNE_DUMP_FLAG</varname> global set to
+          1 in WebDyne constants or the <property>display|force</property> attribute specified (see below). Useful while troubleshooting or debugging pages.</para>
 
           <programlisting language="html">&lt;dump
   [display]
@@ -3178,7 +3198,6 @@ This is my output
               </listitem>
             </varlistentry>
           </variablelist>
-
         </section>
 
         <section xml:id="tag_start_html">
@@ -3342,7 +3361,6 @@ This is my output
               </listitem>
             </varlistentry>
           </variablelist>
-
         </section>
 
         <section xml:id="tag_end_html">
@@ -3350,9 +3368,8 @@ This is my output
             <title><tag>&lt;end_html&gt;</tag></title>
           </info>
 
-          <para>End a HTML page. This will produce the <tag>&lt;/body&gt;&lt;/html&gt;</tag> tags. It is not strictly necessary as the parser will automatically close dangling tags if it
-          gets to the end of the file without seeing them, however is provided for completeness.</para>
-
+          <para>End a HTML page. This will produce the <tag>&lt;/body&gt;&lt;/html&gt;</tag> tags. It is not strictly necessary as the parser will automatically close dangling tags if it gets
+          to the end of the file without seeing them, however is provided for completeness.</para>
         </section>
       </section>
 
@@ -3427,7 +3444,6 @@ This is my output
               </listitem>
             </varlistentry>
           </variablelist>
-
         </section>
 
         <section xml:id="tag_radio_group">
@@ -3487,7 +3503,6 @@ This is my output
               </listitem>
             </varlistentry>
           </variablelist>
-
         </section>
 
         <section xml:id="tag_checkbox_group">
@@ -3546,7 +3561,6 @@ This is my output
               </listitem>
             </varlistentry>
           </variablelist>
-
         </section>
 
         <section xml:id="tag_checkbox">
@@ -3589,12 +3603,11 @@ This is my output
           </variablelist>
 
           <note>
-            <para>In order to retain state all checkbox form items will present a hidden parameter with the same name as the checkbox. This is notable because querying the parameter
-            associated with a checkbox component will always return a <classname>Hash::MultiValue</classname> object with two items, the last of which is the checkbox value. When using
+            <para>In order to retain state all checkbox form items will present a hidden parameter with the same name as the checkbox. This is notable because querying the parameter associated
+            with a checkbox component will always return a <classname>Hash::MultiValue</classname> object with two items, the last of which is the checkbox value. When using
             <code>$self-&gt;CGI-&gt;param(&lt;checkbox name&gt;)</code> form of query, or <code>$_{&lt;checkbox name&gt;}</code> the user selected checkbox value will always be returned as a
             boolean or scalar value.</para>
           </note>
-
         </section>
 
         <section xml:id="tag_scrolling_list">
@@ -3656,7 +3669,6 @@ This is my output
               <para>selected|defaults|default=VALUE | ARRAYREF</para>
             </listitem>
           </itemizedlist>
-
         </section>
 
         <section xml:id="tag_textarea">
@@ -3699,7 +3711,6 @@ This is my output
               </listitem>
             </varlistentry>
           </variablelist>
-
         </section>
 
         <section xml:id="tag_textfield">
@@ -3707,9 +3718,8 @@ This is my output
             <title><tag>&lt;textfield&gt;</tag></title>
           </info>
 
-          <para>The standard &lt;input type="text"&gt; tag type. User input with this tag is persistent. All standard &lt;input&gt; tag attributes are supported. The
-          <property>name</property> and <property>force</property> attributes are supported as per other tags.</para>
-
+          <para>The standard &lt;input type="text"&gt; tag type. User input with this tag is persistent. All standard &lt;input&gt; tag attributes are supported. The <property>name</property>
+          and <property>force</property> attributes are supported as per other tags.</para>
         </section>
 
         <section xml:id="tag_password_field">
@@ -3719,7 +3729,6 @@ This is my output
 
           <para>The standard &lt;input type="password"&gt; tag type. User input with this tag is persistent. The <property>name</property> and <property>force</property> attributes are
           supported as per other tags.</para>
-
         </section>
 
         <section xml:id="tag_filefield">
@@ -3751,7 +3760,6 @@ sub handler {
     return Dumper($cgi_or-&gt;uploads()-&gt;flatten);
 
 }</programlisting>
-
         </section>
 
         <section xml:id="tag_image_button">
@@ -3760,7 +3768,6 @@ sub handler {
           </info>
 
           <para>The standard &lt;input type="image"&gt; tag type.</para>
-
         </section>
 
         <section xml:id="tag_button">
@@ -3769,7 +3776,6 @@ sub handler {
           </info>
 
           <para>The standard &lt;input type="button"&gt; tag type.</para>
-
         </section>
 
         <section xml:id="tag_submit">
@@ -3778,7 +3784,6 @@ sub handler {
           </info>
 
           <para>The standard &lt;input type="submit"&gt; tag type to initiate form submission.</para>
-
         </section>
 
         <section xml:id="tag_reset">
@@ -3787,7 +3792,6 @@ sub handler {
           </info>
 
           <para>The standard &lt;input type="reset"&gt; tag type to reset form fields to their initial values.</para>
-
         </section>
 
         <section xml:id="tag_defaults">
@@ -3796,7 +3800,6 @@ sub handler {
           </info>
 
           <para>A CGI-style shortcut rendered as a submit input. It is supported for compatibility with CGI.pm-style form helpers.</para>
-
         </section>
 
         <section xml:id="tag_hidden">
@@ -3805,7 +3808,6 @@ sub handler {
           </info>
 
           <para>The standard &lt;input type="hidden"&gt; tag type.</para>
-
         </section>
 
         <section xml:id="tag_isindex">
@@ -3813,9 +3815,8 @@ sub handler {
             <title><tag>&lt;isindex&gt;</tag></title>
           </info>
 
-          <para>Legacy <tag>&lt;isindex&gt;</tag> output is supported for compatibility, but the HTML element is deprecated and should not be used for new pages. Prefer normal form tags such as
-          <tag>&lt;start_form&gt;</tag>, <tag>&lt;textfield&gt;</tag>, and <tag>&lt;submit&gt;</tag>.</para>
-
+          <para>Legacy <tag>&lt;isindex&gt;</tag> output is supported for compatibility, but the HTML element is deprecated and should not be used for new pages. Prefer normal form tags such
+          as <tag>&lt;start_form&gt;</tag>, <tag>&lt;textfield&gt;</tag>, and <tag>&lt;submit&gt;</tag>.</para>
         </section>
 
         <section xml:id="tag_start_form">
@@ -3824,7 +3825,6 @@ sub handler {
           </info>
 
           <para>Start a form with <property>method=POST</property> and encoding type <property>enctype="application/x-www-form-urlencoded"</property> (implicit)</para>
-
         </section>
 
         <section xml:id="tag_start_multipart_form">
@@ -3833,7 +3833,6 @@ sub handler {
           </info>
 
           <para>Start a form with method=POST and encoding type <property>enctype="multipart/form-data"</property></para>
-
         </section>
       </section>
     </section>
@@ -3895,9 +3894,9 @@ sub handler {
 
           <listitem>
             <para>Called to render a block of text or HTML between &lt;block&gt;..&lt;/block&gt; tags. Optional key and value pairs will be substituted into the output as per the variable
-            section. Returns scalar ref of resulting HTML if called with from &lt;perl&gt;..&lt;/perl&gt; section containing the block to be rendered, or true (<code>\undef</code>) if the block is not
-            within the &lt;perl&gt;..&lt;/perl&gt; section (e.g. further into the document, see the block section for an example). Rendered blocks must be "published' if visibility required
-            via return as array, or return of <code>$self-&gt;render()</code>.</para>
+            section. Returns scalar ref of resulting HTML if called with from &lt;perl&gt;..&lt;/perl&gt; section containing the block to be rendered, or true (<code>\undef</code>) if the
+            block is not within the &lt;perl&gt;..&lt;/perl&gt; section (e.g. further into the document, see the block section for an example). Rendered blocks must be "published' if
+            visibility required via return as array, or return of <code>$self-&gt;render()</code>.</para>
           </listitem>
         </varlistentry>
 
@@ -3924,8 +3923,8 @@ sub handler {
 
           <listitem>
             <para>Returns the page unique ID (UID). Called inode for legacy reasons, as that is what the UID used to be based on. If a seed value is supplied a new UID will be generated based
-            on an MD5 of the seed(s) combined with other information (such as <code>$r-&gt;location</code>) to generate a unique UUID. Seed only needs to be supplied if using cache handlers, see the "<link
-            linkend="caching_section">Caching</link>" section</para>
+            on an MD5 of the seed(s) combined with other information (such as <code>$r-&gt;location</code>) to generate a unique UUID. Seed only needs to be supplied if using cache handlers,
+            see the "<link linkend="caching_section">Caching</link>" section</para>
           </listitem>
         </varlistentry>
 
@@ -4003,8 +4002,8 @@ sub handler {
           <term>autonewline()</term>
 
           <listitem>
-            <para>Get or set the autonewline flag. If set will add a new line automatically when using <methodname>print()</methodname> or <code>$self-&gt;print()</code>, essentially emulating say(). Supply undef or 0 to
-            clear.</para>
+            <para>Get or set the autonewline flag. If set will add a new line automatically when using <methodname>print()</methodname> or <code>$self-&gt;print()</code>, essentially emulating
+            say(). Supply undef or 0 to clear.</para>
           </listitem>
         </varlistentry>
 
@@ -4030,23 +4029,23 @@ sub handler {
     <section xml:id="configuration_reference">
       <title>Configuration Reference</title>
 
-    <section xml:id="webdyne_constants">
-      <info>
-        <title>Constants</title>
-      </info>
-
-      <para>Constants defined in the WebDyne::Constant package control various aspects of how WebDyne behaves. Constants can be modified globally by altering a global configuration file
-      (<filename>/etc/webdyne.conf.pl</filename> under Linux distros), setting environment variable or by altering configuration parameters within the Apache web server config.</para>
-
-      <section>
+      <section xml:id="webdyne_constants">
         <info>
-          <title>Global constants file</title>
+          <title>Constants</title>
         </info>
 
-        <para>WebDyne will look for a system constants file under <filename>/etc/webdyne.conf.pl</filename> and set package variables according to values found in that file. The file is in
-        Perl Data::Dumper format, and takes the format:</para>
+        <para>Constants defined in the WebDyne::Constant package control various aspects of how WebDyne behaves. Constants can be modified globally by altering a global configuration file
+        (<filename>/etc/webdyne.conf.pl</filename> under Linux distros), setting environment variable or by altering configuration parameters within the Apache web server config.</para>
 
-        <programlisting># sample /etc/webdyne.conf.pl file
+        <section>
+          <info>
+            <title>Global constants file</title>
+          </info>
+
+          <para>WebDyne will look for a system constants file under <filename>/etc/webdyne.conf.pl</filename> and set package variables according to values found in that file. The file is in
+          Perl Data::Dumper format, and takes the format:</para>
+
+          <programlisting># sample /etc/webdyne.conf.pl file
 #
 $VAR1={
         WebDyne::Constant =&gt; {
@@ -4066,22 +4065,22 @@ $VAR1={
 
 };</programlisting>
 
-        <para>The file is not present by default and should be created if you wish to change any of the WebDyne constants from their default values.</para>
+          <para>The file is not present by default and should be created if you wish to change any of the WebDyne constants from their default values.</para>
 
-        <important>
-          <para>Always check the syntax of the <filename>/etc/webdyne.conf.pl</filename> file after editing by running <command>perl -c -w /etc/webdyne.conf.pl</command> to check that the file
-          is readable by Perl. Files with syntax errors will fail silently and the variables will revert to module defaults.</para>
-        </important>
-      </section>
+          <important>
+            <para>Always check the syntax of the <filename>/etc/webdyne.conf.pl</filename> file after editing by running <command>perl -c -w /etc/webdyne.conf.pl</command> to check that the
+            file is readable by Perl. Files with syntax errors will fail silently and the variables will revert to module defaults.</para>
+          </important>
+        </section>
 
-      <section>
-        <info>
-          <title>Setting WebDyne constants in Apache</title>
-        </info>
+        <section>
+          <info>
+            <title>Setting WebDyne constants in Apache</title>
+          </info>
 
-        <para>WebDyne constants can be set in an Apache httpd.conf file using the PerlSetVar directive:</para>
+          <para>WebDyne constants can be set in an Apache httpd.conf file using the PerlSetVar directive:</para>
 
-        <para><programlisting>
+          <para><programlisting>
 PerlHandler     WebDyne
 PerlSetVar      WEBDYNE_CACHE_DN                '/data1/webdyne/cache'
 PerlSetVar      WEBDYNE_STORE_COMMENTS          1
@@ -4092,28 +4091,13 @@ PerlSetVar      WEBDYNE_SESSION_ID_COOKIE_NAME  'session_cookie'
 
 </programlisting></para>
 
-        <para><important>
-            <para>WebDyne constants cannot be set on a per-location or per-directory basis - they are read from the top level of the config file and set globally.</para>
+          <para><important>
+              <para>WebDyne constants cannot be set on a per-location or per-directory basis - they are read from the top level of the config file and set globally.</para>
 
-            <para>Some 1.x versions of mod_perl do not read PerlSetVar variables correctly. If you encounter this problem use a <tag>&lt;Perl&gt;..&lt;/Perl&gt;</tag> section in the
-            <filename>httpd.conf</filename> file, e.g.:</para>
+              <para>Some 1.x versions of mod_perl do not read PerlSetVar variables correctly. If you encounter this problem use a <tag>&lt;Perl&gt;..&lt;/Perl&gt;</tag> section in the
+              <filename>httpd.conf</filename> file, e.g.:</para>
 
-            <programlisting># Mod_perl 1.x
-
-PerlHandler     WebDyne
-&lt;Perl&gt;
-$WebDyne::Constant::WEBDYNE_CACHE_DN='/data1/webdyne/cache';
-$WebDyne::Constant::WEBDYNE_STORE_COMMENTS=1;
-$WebDyne::Session::Constant::WEBDYNE_SESSION_ID_COOKIE_NAME='session_cookie';
-&lt;/Perl&gt;
-
-</programlisting>
-          </important></para>
-
-        <para>Where you need to set variables without simple string content you can use a <tag>&lt;Perl&gt;..&lt;/Perl&gt;</tag> section in the <filename>httpd.conf</filename> file,
-        e.g.:</para>
-
-        <programlisting># Setting more complex variables
+              <programlisting># Mod_perl 1.x
 
 PerlHandler     WebDyne
 &lt;Perl&gt;
@@ -4123,19 +4107,34 @@ $WebDyne::Session::Constant::WEBDYNE_SESSION_ID_COOKIE_NAME='session_cookie';
 &lt;/Perl&gt;
 
 </programlisting>
+            </important></para>
 
-        <warning>
-          <para>The letsencrypt <command>certbot</command> utility will error out when trying to update any Apache config file with <code>&lt;Perl&gt;</code> sections. To avoid this you put
-          the variables in a separate file and include them, e.g. in the <filename>apache.conf</filename> file:</para>
+          <para>Where you need to set variables without simple string content you can use a <tag>&lt;Perl&gt;..&lt;/Perl&gt;</tag> section in the <filename>httpd.conf</filename> file,
+          e.g.:</para>
 
-          <para><programlisting># Some config setting defaults. See documentation for full range.
+          <programlisting># Setting more complex variables
+
+PerlHandler     WebDyne
+&lt;Perl&gt;
+$WebDyne::Constant::WEBDYNE_CACHE_DN='/data1/webdyne/cache';
+$WebDyne::Constant::WEBDYNE_STORE_COMMENTS=1;
+$WebDyne::Session::Constant::WEBDYNE_SESSION_ID_COOKIE_NAME='session_cookie';
+&lt;/Perl&gt;
+
+</programlisting>
+
+          <warning>
+            <para>The letsencrypt <command>certbot</command> utility will error out when trying to update any Apache config file with <code>&lt;Perl&gt;</code> sections. To avoid this you put
+            the variables in a separate file and include them, e.g. in the <filename>apache.conf</filename> file:</para>
+
+            <para><programlisting># Some config setting defaults. See documentation for full range.
 # Commented out # options represent defaults
 #
 PerlRequire conf.d/webdyne_constant.pl</programlisting></para>
 
-          <para>And then in the webdyne_constant.pl file:</para>
+            <para>And then in the webdyne_constant.pl file:</para>
 
-          <para><programlisting>use WebDyne;
+            <para><programlisting>use WebDyne;
 use WebDyne::Constant;
 
 #  Error display/extended display on/off. More granular options below.
@@ -4150,25 +4149,28 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
 #  $WebDyne::WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_PRE=4;
 #  $WebDyne::WEBDYNE_ERROR_SOURCE_CONTEXT_LINES_POST=4;
 </programlisting></para>
-        </warning>
+          </warning>
+        </section>
+
+        <section>
+          <info>
+            <title>Constants Reference</title>
+          </info>
+
+          <para>The authoritative reference for constants defined by <classname>WebDyne::Constant</classname> is maintained with the module sidecar documentation and copied into the MkDocs
+          module reference during documentation generation.</para>
+
+          <para>See <link role="manual-page-new-tab" xlink:href="modules/WebDyne_Constant.md" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Constant</classname> module
+          reference</link> for the complete list of constants, defaults, and behaviour descriptions.</para>
+
+          <tip>
+            <para>Configuration items can be overridden by setting environment variables of the same name with the desired value.</para>
+          </tip>
+
+          <para>Extension modules, for example <classname>WebDyne::Session</classname>, may define their own constants in their own <classname>WebDyne::*::Constant</classname> packages. See
+          the relevant module reference pages for details.</para>
+        </section>
       </section>
-
-      <section>
-        <info>
-          <title>Constants Reference</title>
-        </info>
-
-        <para>The authoritative reference for constants defined by <classname>WebDyne::Constant</classname> is maintained with the module sidecar documentation and copied into the MkDocs module reference during documentation generation.</para>
-
-        <para>See <link xlink:href="modules/WebDyne_Constant.md" role="manual-page-new-tab" xmlns:xlink="http://www.w3.org/1999/xlink"><classname>WebDyne::Constant</classname> module reference</link> for the complete list of constants, defaults, and behaviour descriptions.</para>
-
-        <tip>
-          <para>Configuration items can be overridden by setting environment variables of the same name with the desired value.</para>
-        </tip>
-
-        <para>Extension modules, for example <classname>WebDyne::Session</classname>, may define their own constants in their own <classname>WebDyne::*::Constant</classname> packages. See the relevant module reference pages for details.</para>
-      </section>
-    </section>
 
       <section xml:id="environment_variable_reference">
         <title>Environment Variable Reference</title>
@@ -4241,27 +4243,28 @@ $ WEBDYNE_DEBUG=perl perl -Ilib bin/wdrender time.psp
           <para>When debugging enabled only output debug information that matches the regex given by this environment variable. Useful to further filter down to areas of interest.</para>
         </section>
       </section>
-    <section xml:id="webdyne_directives">
-      <info>
-        <title>Directives</title>
-      </info>
 
-      <para>A limited number of directives are are available which change the way WebDyne processes pages. Directives are set in either the Apache .conf files and can be set differently per
-      location. At this stage only one directive applies to the core WebDyne module:</para>
+      <section xml:id="webdyne_directives">
+        <info>
+          <title>Directives</title>
+        </info>
 
-      <variablelist>
-        <varlistentry>
-          <term><varname>WebDyneHandler</varname></term>
+        <para>A limited number of directives are are available which change the way WebDyne processes pages. Directives are set in either the Apache .conf files and can be set differently per
+        location. At this stage only one directive applies to the core WebDyne module:</para>
 
-          <listitem>
-            <para>The name of the handler that WebDyne should invoke instead of handling the page internally. The only other handler available today is WebDyne::Chain.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
+        <variablelist>
+          <varlistentry>
+            <term><varname>WebDyneHandler</varname></term>
 
-      <para>This directive exists primarily to allow PSGI to invoke WebDyne::Chain as the primary handler. It can be used in Apache httpd.conf files, but is not very efficient:</para>
+            <listitem>
+              <para>The name of the handler that WebDyne should invoke instead of handling the page internally. The only other handler available today is WebDyne::Chain.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
 
-      <para><programlisting>
+        <para>This directive exists primarily to allow PSGI to invoke WebDyne::Chain as the primary handler. It can be used in Apache httpd.conf files, but is not very efficient:</para>
+
+        <para><programlisting>
 #  This will work, but is not very efficient
 #
 &lt;location /shop/&gt;
@@ -4280,8 +4283,9 @@ PerlSetVar      WebDyneChain                 'WebDyne::Session'
 
 
 </programlisting></para>
+      </section>
     </section>
-    </section>
+
     <section xml:id="file_locations">
       <info>
         <title>File Locations</title>
@@ -4297,9 +4301,7 @@ PerlSetVar      WebDyneChain                 'WebDyne::Session'
         </varlistentry>
       </variablelist>
     </section>
-
   </section>
-
 
   <section xml:id="extending_webdyne">
     <info>
@@ -4669,8 +4671,8 @@ sub server_time {
       <title>Use of hash characters for comments in PSP files</title>
 
       <para>Any # characters at the very start of a PSP file (before a <tag>&lt;html&gt;</tag> or <tag>&lt;start_html&gt;</tag>) tag are treated as comments and discarded - they will not be
-      stored or displayed (they are <emphasis role="bold">not</emphasis> translated into HTML comments). This allows easy to read comments at the start of PSP files. Any # characters after
-      the first valid tag are not treated specially - they will be rendered as normal HTML:</para>
+      stored or displayed (they are <emphasis role="bold">not</emphasis> translated into HTML comments). This allows easy to read comments at the start of PSP files. Any # characters after the
+      first valid tag are not treated specially - they will be rendered as normal HTML:</para>
 
       <programlisting language="html">#  This is my server time display file
 #
@@ -4692,10 +4694,10 @@ Server local time is: &lt;? localtime ?&gt;</programlisting>
     <section xml:id="additional_notes_about_documentation">
       <title>About this documentation</title>
 
-      <para>This documentation is written with the <link xlink:href="https://www.xmlmind.com/xmleditor/" xmlns:xlink="http://www.w3.org/1999/xlink">XMLMind XML Editor</link>, then converted
-      to Markdown with <link xlink:href="https://pandoc.org" xmlns:xlink="http://www.w3.org/1999/xlink">pandoc</link> and displayed using <link
-      xlink:href="https://www.mkdocs.org" xmlns:xlink="http://www.w3.org/1999/xlink">MKdocs</link>. The documentation for WebDyne is maintained on a <link
-      xlink:href="https://github.com/aspeer/WebDyne" xmlns:xlink="http://www.w3.org/1999/xlink">Github repository</link>.</para>
+      <para>This documentation is written with the <link xlink:href="https://www.xmlmind.com/xmleditor/" xmlns:xlink="http://www.w3.org/1999/xlink">XMLMind XML Editor</link>, then converted to
+      Markdown with <link xlink:href="https://pandoc.org" xmlns:xlink="http://www.w3.org/1999/xlink">pandoc</link> and displayed using <link xlink:href="https://www.mkdocs.org"
+      xmlns:xlink="http://www.w3.org/1999/xlink">MKdocs</link>. The documentation for WebDyne is maintained on a <link xlink:href="https://github.com/aspeer/WebDyne"
+      xmlns:xlink="http://www.w3.org/1999/xlink">Github repository</link>.</para>
     </section>
   </section>
 

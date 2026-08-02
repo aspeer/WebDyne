@@ -111,6 +111,7 @@ jobs:
           #    ${{ steps.meta.outputs.labels }}
           #annotations: |
           #    org.opencontainers.image.description=Simple self-contained WebDyne demonstration application 
+          cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: ${{ matrix.platform }}
           
