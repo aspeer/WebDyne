@@ -35,6 +35,6 @@ on build => sub {
     requires 'Test::Differences';
     requires 'Test::Exception';
     requires 'Test::More';
-    requires 'Test::POD';
+    requires 'Test::Pod';
     requires 'Test::Simple', '0.44';
 };

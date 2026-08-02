@@ -88,6 +88,18 @@ DISTRIBUTIONS
       overload 0
       strict 0
       warnings 0
+  Crypt-URandom-0.55
+    pathname: D/DD/DDICK/Crypt-URandom-0.55.tar.gz
+    provides:
+      Crypt::URandom 0.55
+    requirements:
+      Carp 1.26
+      English 0
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      FileHandle 0
+      constant 0
+      perl 5.006
   Data-Dump-1.25
     pathname: G/GA/GARU/Data-Dump-1.25.tar.gz
     provides:
@@ -157,6 +169,47 @@ DISTRIBUTIONS
       ExtUtils::CBuilder 0
       Module::Build 0.4004
       perl 5.014
+  ExtUtils-Config-0.010
+    pathname: L/LE/LEONT/ExtUtils-Config-0.010.tar.gz
+    provides:
+      ExtUtils::Config 0.010
+      ExtUtils::Config::MakeMaker 0.010
+    requirements:
+      Data::Dumper 0
+      ExtUtils::MakeMaker 0
+      ExtUtils::MakeMaker::Config 0
+      perl 5.006
+      strict 0
+      warnings 0
+  ExtUtils-Helpers-0.028
+    pathname: L/LE/LEONT/ExtUtils-Helpers-0.028.tar.gz
+    provides:
+      ExtUtils::Helpers 0.028
+      ExtUtils::Helpers::Unix 0.028
+      ExtUtils::Helpers::VMS 0.028
+      ExtUtils::Helpers::Windows 0.028
+    requirements:
+      Carp 0
+      Exporter 5.57
+      ExtUtils::MakeMaker 0
+      File::Basename 0
+      File::Copy 0
+      File::Spec::Functions 0
+      Text::ParseWords 3.24
+      strict 0
+      warnings 0
+  ExtUtils-InstallPaths-0.015
+    pathname: L/LE/LEONT/ExtUtils-InstallPaths-0.015.tar.gz
+    provides:
+      ExtUtils::InstallPaths 0.015
+    requirements:
+      Carp 0
+      ExtUtils::Config 0.009
+      ExtUtils::MakeMaker 0
+      File::Spec 0
+      perl 5.008
+      strict 0
+      warnings 0
   File-ShareDir-1.118
     pathname: R/RE/REHSACK/File-ShareDir-1.118.tar.gz
     provides:
@@ -289,6 +342,13 @@ DISTRIBUTIONS
       base 0
       integer 0
       perl 5.008
+  HTTP-AcceptLanguage-0.02
+    pathname: Y/YA/YAPPO/HTTP-AcceptLanguage-0.02.tar.gz
+    provides:
+      HTTP::AcceptLanguage 0.02
+    requirements:
+      Module::Build::Tiny 0.027
+      perl 5.008005
   HTTP-Date-6.06
     pathname: O/OA/OALDERS/HTTP-Date-6.06.tar.gz
     provides:
@@ -376,6 +436,14 @@ DISTRIBUTIONS
       Test::Deep 0
       Test::More 0.88
       perl 5.008001
+  HTTP-Negotiate-6.01
+    pathname: G/GA/GAAS/HTTP-Negotiate-6.01.tar.gz
+    provides:
+      HTTP::Negotiate 6.01
+    requirements:
+      ExtUtils::MakeMaker 0
+      HTTP::Headers 6
+      perl 5.008001
   HTTP-Parser-XS-0.17
     pathname: K/KA/KAZUHO/HTTP-Parser-XS-0.17.tar.gz
     provides:
@@ -444,6 +512,16 @@ DISTRIBUTIONS
       Struct::Dumb 0
       Time::HiRes 0
       perl 5.014
+  IO-Async-Loop-Epoll-0.23
+    pathname: P/PE/PEVANS/IO-Async-Loop-Epoll-0.23.tar.gz
+    provides:
+      IO::Async::Loop::Epoll 0.23
+    requirements:
+      IO::Async 0.24
+      Linux::Epoll 0.005
+      Module::Build 0.4004
+      Struct::Dumb 0
+      perl 5.014
   IO-HTML-1.004
     pathname: C/CJ/CJM/IO-HTML-1.004.tar.gz
     provides:
@@ -500,6 +578,23 @@ DISTRIBUTIONS
       Scalar::Util 0
       perl 5.006002
       strict 0
+  Linux-Epoll-0.019
+    pathname: L/LE/LEONT/Linux-Epoll-0.019.tar.gz
+    provides:
+      Linux::Epoll 0.019
+    requirements:
+      ExtUtils::CBuilder 0
+      IO::Handle 0
+      Module::Build 0.28
+      POSIX 0
+      Scalar::Util 0
+      Socket 0
+      Test::More 0
+      Time::HiRes 0
+      parent 0
+      perl 5.010
+      strict 0
+      warnings 0
   MIME-Base32-1.303
     pathname: R/RE/REHSACK/MIME-Base32-1.303.tar.gz
     provides:
@@ -554,6 +649,31 @@ DISTRIBUTIONS
       Text::ParseWords 0
       perl 5.006001
       version 0.87
+  Module-Build-Tiny-0.053
+    pathname: L/LE/LEONT/Module-Build-Tiny-0.053.tar.gz
+    provides:
+      Module::Build::Tiny 0.053
+    requirements:
+      CPAN::Meta 0
+      DynaLoader 0
+      Exporter 5.57
+      ExtUtils::CBuilder 0
+      ExtUtils::Config 0.003
+      ExtUtils::Helpers 0.020
+      ExtUtils::Install 0
+      ExtUtils::InstallPaths 0.002
+      ExtUtils::ParseXS 0
+      File::Basename 0
+      File::Find 0
+      File::Path 0
+      File::Spec::Functions 0
+      Getopt::Long 2.36
+      JSON::PP 2
+      Pod::Man 0
+      TAP::Harness::Env 0
+      perl 5.006
+      strict 0
+      warnings 0
   Net-Server-2.014
     pathname: R/RH/RHANDOM/Net-Server-2.014.tar.gz
     provides:
@@ -1019,6 +1139,17 @@ DISTRIBUTIONS
       Try::Tiny 0.07
       strict 0
       warnings 0
+  Test-Pod-1.52
+    pathname: E/ET/ETHER/Test-Pod-1.52.tar.gz
+    provides:
+      Test::Pod 1.52
+    requirements:
+      ExtUtils::MakeMaker 0
+      File::Find 0
+      Pod::Simple 3.05
+      Test::Builder::Tester 1.02
+      Test::More 0.62
+      perl 5.008
   Test-SharedFork-0.35
     pathname: E/EX/EXODIST/Test-SharedFork-0.35.tar.gz
     provides:
