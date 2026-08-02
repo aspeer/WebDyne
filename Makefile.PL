@@ -131,6 +131,9 @@ my %WriteMakefile=(
                 type => 'git',
                 url  => 'https://github.com/aspeer/WebDyne.git',
                 web  => 'https://github.com/aspeer/WebDyne'
+            }, 
+            bugtracker => {
+                web => 'https://github.com/aspeer/WebDyne/issues'
             }
         },
         x_authority => 'cpan:ASPEER'

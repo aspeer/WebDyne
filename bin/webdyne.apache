@@ -238,7 +238,9 @@ sub request_mod_perl_postamble {
     
     #  Might as well keep for reference
     #
-    if (my $out = qx{bash -c 'ulimit -c unlimited 2>&1'}) {
+    # Use the POSIX shell available on Alpine and other minimal systems;
+    # Bash is not required by WebDyne or Apache.
+    if (my $out = qx{sh -c 'ulimit -c unlimited 2>&1'}) {
         my $rc  = $? >> 8;
         if ($rc != 0) {
             print STDERR "unable alter ulimit, stubbing Apache::TestRun::ulimit\n";

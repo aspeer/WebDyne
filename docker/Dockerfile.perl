@@ -75,13 +75,17 @@ COPY . .
 #
 WORKDIR docker.template
 COPY docker/cpanfile docker/cpanfile.snapshot ./
+
 RUN carton install --deployment
+
 
 
 # Now install main WebDyne module
 #
 WORKDIR ..
 RUN carton exec -- cpanm --local-lib-contained=${PERL_CARTON_PATH} .
+
+
 
 
 # Load in digest file. Should be done by carton when Makefile.PL run but doesn't work

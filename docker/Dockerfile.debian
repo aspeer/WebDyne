@@ -84,13 +84,25 @@ COPY . .
 #
 WORKDIR docker.template
 COPY docker/cpanfile docker/cpanfile.snapshot ./
+
+COPY docker/cpanfile-epoll docker/cpanfile-epoll.snapshot ./
+
 RUN carton install --deployment
+
+# Install the optional epoll backend only on glibc-based Linux images.
+# Alpine uses the portable IO::Async loop because Linux::Epoll is not
+# compatible with musl libc.
+#
+RUN carton install --cpanfile=cpanfile-epoll --deployment 
+
 
 
 # Now install main WebDyne module
 #
 WORKDIR ..
 RUN carton exec -- cpanm --local-lib-contained=${PERL_CARTON_PATH} .
+
+
 
 
 # Load in digest file. Should be done by carton when Makefile.PL run but doesn't work

@@ -16,6 +16,8 @@ bin/webdyne.pagi
 bin/webdyne.pagi.md
 bin/webdyne.psgi
 bin/webdyne.psgi.md
+Changes
+Changes.md
 cpanfile
 cpanfile.snapshot                        
 doc/webdyne.md
