@@ -1,0 +1,151 @@
+# carton snapshot format: version 1.0
+DISTRIBUTIONS
+  Future-0.52
+    pathname: P/PE/PEVANS/Future-0.52.tar.gz
+    provides:
+      Future 0.52
+      Future::Exception 0.52
+      Future::Mutex 0.52
+      Future::PP 0.52
+      Future::Utils 0.52
+      Test::Future 0.52
+      Test::Future::Deferred 0.52
+    requirements:
+      Carp 1.25
+      List::Util 1.29
+      Module::Build 0.4004
+      Test::Builder::Module 0
+      Time::HiRes 0
+      perl 5.014
+  IO-Async-0.805
+    pathname: P/PE/PEVANS/IO-Async-0.805.tar.gz
+    provides:
+      Future::IO::Impl::IOAsync 0.805
+      IO::Async 0.805
+      IO::Async::Channel 0.805
+      IO::Async::Debug 0.805
+      IO::Async::File 0.805
+      IO::Async::FileStream 0.805
+      IO::Async::Function 0.805
+      IO::Async::Future 0.805
+      IO::Async::Handle 0.805
+      IO::Async::Internals::ChildManager 0.805
+      IO::Async::Internals::FunctionWorker 0.805
+      IO::Async::Listener 0.805
+      IO::Async::Loop 0.805
+      IO::Async::Loop::Poll 0.805
+      IO::Async::Loop::Select 0.805
+      IO::Async::LoopTests 0.805
+      IO::Async::Metrics 0.805
+      IO::Async::Notifier 0.805
+      IO::Async::OS 0.805
+      IO::Async::OS::MSWin32 0.805
+      IO::Async::OS::cygwin 0.805
+      IO::Async::OS::linux 0.805
+      IO::Async::PID 0.805
+      IO::Async::Process 0.805
+      IO::Async::Protocol 0.805
+      IO::Async::Protocol::LineStream 0.805
+      IO::Async::Protocol::Stream 0.805
+      IO::Async::Resolver 0.805
+      IO::Async::Routine 0.805
+      IO::Async::Signal 0.805
+      IO::Async::Socket 0.805
+      IO::Async::Stream 0.805
+      IO::Async::Test 0.805
+      IO::Async::Timer 0.805
+      IO::Async::Timer::Absolute 0.805
+      IO::Async::Timer::Countdown 0.805
+      IO::Async::Timer::Periodic 0.805
+    requirements:
+      Exporter 5.57
+      File::stat 0
+      Future 0.44
+      Future::Utils 0.18
+      IO::Poll 0
+      List::Util 0
+      Module::Build 0.4004
+      Socket 2.007
+      Storable 0
+      Struct::Dumb 0
+      Time::HiRes 0
+      perl 5.014
+  IO-Async-Loop-Epoll-0.23
+    pathname: P/PE/PEVANS/IO-Async-Loop-Epoll-0.23.tar.gz
+    provides:
+      IO::Async::Loop::Epoll 0.23
+    requirements:
+      IO::Async 0.24
+      Linux::Epoll 0.005
+      Module::Build 0.4004
+      Struct::Dumb 0
+      perl 5.014
+  Linux-Epoll-0.019
+    pathname: L/LE/LEONT/Linux-Epoll-0.019.tar.gz
+    provides:
+      Linux::Epoll 0.019
+    requirements:
+      ExtUtils::CBuilder 0
+      IO::Handle 0
+      Module::Build 0.28
+      POSIX 0
+      Scalar::Util 0
+      Socket 0
+      Test::More 0
+      Time::HiRes 0
+      parent 0
+      perl 5.010
+      strict 0
+      warnings 0
+  Module-Build-0.4234
+    pathname: L/LE/LEONT/Module-Build-0.4234.tar.gz
+    provides:
+      Module::Build 0.4234
+      Module::Build::Base 0.4234
+      Module::Build::Compat 0.4234
+      Module::Build::Config 0.4234
+      Module::Build::Cookbook 0.4234
+      Module::Build::Dumper 0.4234
+      Module::Build::Notes 0.4234
+      Module::Build::PPMMaker 0.4234
+      Module::Build::Platform::Default 0.4234
+      Module::Build::Platform::MacOS 0.4234
+      Module::Build::Platform::Unix 0.4234
+      Module::Build::Platform::VMS 0.4234
+      Module::Build::Platform::VOS 0.4234
+      Module::Build::Platform::Windows 0.4234
+      Module::Build::Platform::aix 0.4234
+      Module::Build::Platform::cygwin 0.4234
+      Module::Build::Platform::darwin 0.4234
+      Module::Build::Platform::os2 0.4234
+      Module::Build::PodParser 0.4234
+    requirements:
+      CPAN::Meta 2.142060
+      Cwd 0
+      Data::Dumper 0
+      ExtUtils::CBuilder 0.27
+      ExtUtils::Install 0
+      ExtUtils::Manifest 0
+      ExtUtils::Mkbootstrap 0
+      ExtUtils::ParseXS 2.21
+      File::Basename 0
+      File::Compare 0
+      File::Copy 0
+      File::Find 0
+      File::Path 0
+      File::Spec 0.82
+      Getopt::Long 0
+      Module::Metadata 1.000002
+      Perl::OSType 1
+      TAP::Harness 3.29
+      Text::Abbrev 0
+      Text::ParseWords 0
+      perl 5.006001
+      version 0.87
+  Struct-Dumb-0.16
+    pathname: P/PE/PEVANS/Struct-Dumb-0.16.tar.gz
+    provides:
+      Struct::Dumb 0.16
+    requirements:
+      Module::Build 0.4004
+      perl 5.014
