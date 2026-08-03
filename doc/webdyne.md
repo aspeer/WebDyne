@@ -2932,7 +2932,7 @@ Hello World
 
 <!-- A normal dynamic section - code is run each time page is loaded -->
 
-<perl handler="localtime">
+<perl handler="server_time">
 Current time: ${time}
 </perl>
 <hr>
@@ -2950,7 +2950,7 @@ Current time: ${time}
 __PERL__
 
 
-sub localtime {
+sub server_time {
 
     shift()->render(time=>scalar localtime);
 
@@ -2995,7 +2995,7 @@ Hello World
 <!-- A normal dynamic section, but because of the meta tag it will be frozen
     at compile time -->
 
-<perl handler="localtime">
+<perl handler="server_time">
 Current time: ${time}
 </perl>
 
@@ -3014,7 +3014,7 @@ Current time: ${time}
 __PERL__
 
 
-sub localtime {
+sub server_time {
 
     shift()->render(time=>scalar localtime);
 
@@ -3051,7 +3051,7 @@ effect:
 Hello World
 <hr>
 
-<perl handler="localtime">
+<perl handler="server_time">
 Current time: ${time}
 </perl>
 
@@ -3072,7 +3072,7 @@ __PERL__
 use WebDyne::Static;
 
 
-sub localtime {
+sub server_time {
 
     shift()->render(time=>scalar localtime);
 
@@ -3518,6 +3518,11 @@ that:
 - A PSP file can contain multiple &lt;api&gt; tags corresponding to
   different `Router::Simple` routes
 
+- PSGI and PAGI maintain a basic in-process cache of discovered API PSP
+  filenames to avoid repeated filesystem checks. If API filenames or API
+  path structure are changed, a server restart may be required for the
+  changes to be discovered.
+
 Here is a very simple example. Note the format of the URL in the Run
 hyperlink:
 
@@ -3560,6 +3565,16 @@ example](https://demo.webdyne.org/example/api/doublecase/bob/42)
 
     The &lt;api&gt; tag is still somewhat experimental and is not intended to
     replace a full service API handler. Use with caution
+
+!!! note
+
+    The REST-style API route fallback described above is implemented for the
+    PSGI and PAGI adapters. Apache mod_perl does not currently perform this
+    automatic route-prefix discovery because WebDyne is invoked only after
+    Apache has resolved a request to a `.psp` file. The &lt;api&gt; tag can
+    still be processed under Apache when a `.psp` request is explicitly
+    routed to WebDyne, but extensionless API paths require suitable Apache
+    rewrite or routing configuration.
 
 ### HTMX
 
