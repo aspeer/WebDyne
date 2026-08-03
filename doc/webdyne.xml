@@ -667,11 +667,6 @@ builder {
         <para>WebDyne can also run as a <productname>PAGI</productname> application. PAGI support covers normal HTTP requests and, when using a PAGI server with the relevant scope support,
         server-sent events, WebSocket connections and application lifespan events.</para>
 
-        <note>
-          <para>The <tag>&lt;api&gt;</tag> tag and REST-style API route fallback are not currently supported through the PAGI adapter. Use the PSGI path with Plack or
-          <command>Starman</command> for the API examples.</para>
-        </note>
-
         <para>Ensure that <productname>PAGI</productname> is installed on your system via CPAN after installing WebDyne:</para>
 
         <screen># Via CPAN
@@ -1982,6 +1977,10 @@ END
           <listitem>
             <para>A PSP file can contain multiple <tag>&lt;api&gt;</tag> tags corresponding to different <classname>Router::Simple</classname> routes</para>
           </listitem>
+
+          <listitem>
+            <para>PSGI and PAGI maintain a basic in-process cache of discovered API PSP filenames to avoid repeated filesystem checks. If API filenames or API path structure are changed, a server restart may be required for the changes to be discovered.</para>
+          </listitem>
         </itemizedlist>
 
         <para>Here is a very simple example. Note the format of the URL in the Run hyperlink:</para>
@@ -2002,8 +2001,10 @@ END
         </caution>
 
         <note>
-          <para>The API route fallback described above is currently implemented for the PSGI path only. <productname>WebDyne::PAGI</productname> does not yet provide the
-          route resolution and path mapping required by <classname>Router::Simple</classname>.</para>
+          <para>The REST-style API route fallback described above is implemented for the PSGI and PAGI adapters. Apache mod_perl does not currently perform this
+          automatic route-prefix discovery because WebDyne is invoked only after Apache has resolved a request to a <filename>.psp</filename> file. The
+          <tag>&lt;api&gt;</tag> tag can still be processed under Apache when a <filename>.psp</filename> request is explicitly routed to WebDyne, but extensionless
+          API paths require suitable Apache rewrite or routing configuration.</para>
         </note>
       </section>
 
