@@ -62,6 +62,7 @@
 # Build dir and dymanically built docs dir
 #
 /doc/build
+/doc/docker/.built
 /docs/
 /site/
 __pycache__

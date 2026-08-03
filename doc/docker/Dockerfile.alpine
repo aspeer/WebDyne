@@ -1,0 +1,38 @@
+#  ** BUILD STAGE **
+#
+FROM ghcr.io/aspeer/webdyne:latest
+
+
+#  Work directory
+#
+WORKDIR /app
+
+
+#  Build
+#
+COPY doc/docker/webdyne.conf.pl /etc
+COPY doc/docker/cpanfile .
+COPY doc/example/*.psp .
+COPY doc/example/*.css .
+COPY doc/example/*.js .
+
+
+#  Install example dependencies
+#
+RUN cpanm --notest --installdeps .
+
+
+# Expose port 8080
+#
+EXPOSE 8080
+
+
+# Set an environment variable (can be overridden at runtime)
+#
+ENV DOCUMENT_ROOT=/app
+ENV WEBDYNE_SERVER=pagi
+
+
+# Run the binary with the environment variable
+#
+#CMD []
