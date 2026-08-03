@@ -7,7 +7,7 @@ Hello World
 
 <!-- A normal dynamic section - code is run each time page is loaded -->
 
-<perl handler="localtime">
+<perl handler="server_time">
 Current time: ${time} 
 </perl>
 <hr>
@@ -25,7 +25,7 @@ Current time: ${time}
 __PERL__
 
 
-sub localtime {
+sub server_time {
 
 	shift()->render(time=>scalar localtime);
 

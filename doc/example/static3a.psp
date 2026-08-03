@@ -7,7 +7,7 @@
 Hello World
 <hr>
 
-<perl handler="localtime">
+<perl handler="server_time">
 Current time: ${time} 
 </perl>
 
@@ -28,7 +28,7 @@ __PERL__
 use WebDyne::Static;
 
 
-sub localtime {
+sub server_time {
 
 	shift()->render(time=>scalar localtime);
 

@@ -15,7 +15,7 @@ Hello World
 <!-- A normal dynamic section, but because of the meta tag it will be frozen 
 	at compile time -->
 
-<perl handler="localtime">
+<perl handler="server_time">
 Current time: ${time} 
 </perl>
 
@@ -34,7 +34,7 @@ Current time: ${time}
 __PERL__
 
 
-sub localtime {
+sub server_time {
 
 	shift()->render(time=>scalar localtime);
 

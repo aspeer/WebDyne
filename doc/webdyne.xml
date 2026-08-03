@@ -667,6 +667,11 @@ builder {
         <para>WebDyne can also run as a <productname>PAGI</productname> application. PAGI support covers normal HTTP requests and, when using a PAGI server with the relevant scope support,
         server-sent events, WebSocket connections and application lifespan events.</para>
 
+        <note>
+          <para>The <tag>&lt;api&gt;</tag> tag and REST-style API route fallback are not currently supported through the PAGI adapter. Use the PSGI path with Plack or
+          <command>Starman</command> for the API examples.</para>
+        </note>
+
         <para>Ensure that <productname>PAGI</productname> is installed on your system via CPAN after installing WebDyne:</para>
 
         <screen># Via CPAN
@@ -1995,6 +2000,11 @@ END
         <caution>
           <para>The <tag>&lt;api&gt;</tag> tag is still somewhat experimental and is not intended to replace a full service API handler. Use with caution</para>
         </caution>
+
+        <note>
+          <para>The API route fallback described above is currently implemented for the PSGI path only. <productname>WebDyne::PAGI</productname> does not yet provide the
+          route resolution and path mapping required by <classname>Router::Simple</classname>.</para>
+        </note>
       </section>
 
       <section>
