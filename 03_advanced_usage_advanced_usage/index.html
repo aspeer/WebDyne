@@ -437,6 +437,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#deploying-webdyne-apps-with-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deploying WebDyne apps with Docker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#blocks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -565,10 +576,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#sse" class="md-nav__link">
+  <a href="#server-sent-events-sse" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SSE
+        Server-Sent Events (SSE)
       
     </span>
   </a>
@@ -2314,6 +2325,63 @@
 <p>A lot of tasks can be achieved just using the basic features detailed
 above. However there are more advanced features that can make life even
 easier</p>
+<h2 id="deploying-webdyne-apps-with-docker">Deploying WebDyne apps with Docker<a class="headerlink" href="#deploying-webdyne-apps-with-docker" title="Permanent link">&para;</a></h2>
+<p>After validating a WebDyne application locally, the published WebDyne
+container can be used as a base image for packaging the application and
+its Perl dependencies.</p>
+<p>The WebDyne container can be used as the basis for new docker images
+containing your application files. Consider the following directory
+structure (available from Github as
+<a href="https://github.com/aspeer/psp-WebDyne-Fortune">aspeer/psp-WebDyne-Fortune</a>:</p>
+<div class="language-text highlight"><pre><span></span><code>psp-WebDyne-Fortune/
+├── app.pm
+├── app.psp
+├── cpanfile
+├── Dockerfile
+└── webdyne.conf.pl
+</code></pre></div>
+<p>Where:</p>
+<dl>
+<dt>app.psp</dt>
+<dd>
+<p>The main and default psp file</p>
+</dd>
+<dt>app.pm</dt>
+<dd>
+<p>Perl code used in the psp file</p>
+</dd>
+<dt>cpanfile</dt>
+<dd>
+<p>A list of Perl modules to be installed in the docker container by
+  cpanm</p>
+</dd>
+<dt>Dockerfile</dt>
+<dd>
+<p>The docker build file</p>
+</dd>
+<dt>webdyne.conf.pl</dt>
+<dd>
+<p>Any variables to be set for the WebDyne environment</p>
+</dd>
+</dl>
+<p>Constitute all the files needed to stand up a WebDyne based application
+in a Docker container. The contents of the Dockerfile are minimal:</p>
+<div class="language-text highlight"><pre><span></span><code>FROM webdyne:latest
+WORKDIR /app
+# Debian packages needed for this app
+RUN apt-get update &amp;&amp; apt-get -y install fortunes
+COPY app.* .
+COPY cpanfile .
+COPY webdyne.conf.pl /etc
+</code></pre></div>
+<p>Build the Docker container:</p>
+<div class="language-text highlight"><pre><span></span><code>docker build  -t webdyne-app-fortune -f ./Dockerfile .
+</code></pre></div>
+<p>And run it:</p>
+<div class="language-text highlight"><pre><span></span><code>$ docker run -e PORT=5010 -p 5010:5010 --name=webdyne-app-fortune webdyne-app-fortune
+</code></pre></div>
+<p>Your application should now be available:</p>
+<p><img alt="" src="../images/webdyne-app-fortune1.png" /></p>
 <h2 id="blocks">Blocks<a class="headerlink" href="#blocks" title="Permanent link">&para;</a></h2>
 <p>Blocks are a powerful dynamic content generation tool. WebDyne can
 render arbitrary blocks of text or HTML within a page, which makes
@@ -3569,13 +3637,23 @@ Here is an example that brings everything into one file:</p>
 </span><span id="__span-29-36"><a id="__codelineno-29-36" name="__codelineno-29-36" href="#__codelineno-29-36"></a><span class="p">&lt;</span><span class="nt">htmx</span> <span class="na">display</span><span class="o">=</span><span class="s">&quot;+{time_utc}&quot;</span><span class="p">&gt;</span> Time UTC: <span class="cp">&lt;? gmtime() ?&gt;</span><span class="p">&lt;/</span><span class="nt">htmx</span><span class="p">&gt;</span>
 </span></code></pre></div>
 <p><a href="https://demo.webdyne.org/htmx_demo4.psp">Run</a></p>
-<h3 id="sse">SSE<a class="headerlink" href="#sse" title="Permanent link">&para;</a></h3>
+<h3 id="server-sent-events-sse">Server-Sent Events (SSE)<a class="headerlink" href="#server-sent-events-sse" title="Permanent link">&para;</a></h3>
 <p>When run in a PAGI environment WebDyne supports Server-Sent Events
 (SSE). An async <code>sse</code> subroutine can be defined which will be called
 when an SSE event stream is requested. The handler can access the
-underlying <code>PAGI::SSE</code> helper via <code>$self-&gt;r-&gt;sse()</code>. Here is an example.
-Note the <code>sse</code> flag in the &lt;start_html&gt; tag to denote the use of SSE
-in the document:</p>
+underlying <code>PAGI::SSE</code> helper via <code>$self-&gt;r-&gt;sse()</code>.</p>
+<p>SSE pages normally declare their event handler through the
+&lt;start_html&gt; tag. The bare sse attribute is equivalent to sse=sse, so
+WebDyne will call an async subroutine named <code>sse</code>. To use a different
+handler name, supply it as the attribute value, for example &lt;start_html
+sse="my_sse_handler"&gt;.</p>
+<p>The following example also uses h3, hr and alpine on &lt;start_html&gt;. The
+heading and rule attributes are syntactic shortcuts for simple page
+formatting, while alpine is a shortcut that loads the Alpine.js
+JavaScript library. See the &lt;start_html&gt; tag reference for the
+complete list of shortcuts and options. Longer form HTML, such as
+writing a normal &lt;script&gt; tag to load a JavaScript library yourself,
+is still supported.</p>
 <div class="language-html highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Progress Bar&quot;</span> <span class="na">h3</span> <span class="na">hr</span> <span class="na">alpine</span> <span class="na">sse</span><span class="p">&gt;</span>
 </span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="p">&lt;</span><span class="nt">progress</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;bar&quot;</span> <span class="na">value</span><span class="o">=</span><span class="s">&quot;0&quot;</span> <span class="na">max</span><span class="o">=</span><span class="s">&quot;100&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">progress</span><span class="p">&gt;</span>
 </span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="p">&lt;</span><span class="nt">span</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;pct&quot;</span><span class="p">&gt;</span>0%<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
@@ -3639,16 +3717,24 @@ in the document:</p>
 </span></code></pre></div>
 <p><a href="https://demo.webdyne.org/progress.psp">Run</a></p>
 <p>If you do not wish to use the &lt;start_html&gt; tag with the sse attribute
-you can use a meta tag to denote which subroutine to call for sse
-events, e.g. &lt;meta name="WebDyne" content="sse=sse"&gt;</p>
+you can use a meta tag to denote which subroutine to call for SSE
+events, e.g. &lt;meta name="WebDyne" content="sse=sse"&gt;.</p>
 <h3 id="websockets">WebSockets<a class="headerlink" href="#websockets" title="Permanent link">&para;</a></h3>
 <p>When run in a PAGI environment WebDyne supports WebSockets (WS). An
 async <code>ws</code> subroutine can be defined which will be called when a PAGI
 WebSocket connection is opened. The request object exposes the
 underlying PAGI scope and send/receive callbacks, and the handler can
-use those to accept the connection and exchange WebSocket messages. Here
-is an example. Note the <code>ws</code> flag in the &lt;start_html&gt; tag to denote
-the use of WebSockets in the document:</p>
+use those to accept the connection and exchange WebSocket messages.</p>
+<p>WebSocket pages normally declare their event handler through the
+&lt;start_html&gt; tag. The bare ws attribute is equivalent to ws=ws, so
+WebDyne will call an async subroutine named <code>ws</code>. To use a different
+handler name, supply it as the attribute value, for example &lt;start_html
+ws="my_ws_handler"&gt;.</p>
+<p>As with SSE pages, &lt;start_html&gt; can also use formatting and framework
+shortcuts such as h3, hr and alpine. The alpine shortcut loads the
+Alpine.js JavaScript library; normal HTML &lt;script&gt; tags can still be
+used instead when you want to load JavaScript in the traditional manner.
+See the &lt;start_html&gt; tag reference for details.</p>
 <div class="language-html highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">ws</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;WebSocket Demo&quot;</span> <span class="na">h3</span><span class="p">&gt;</span>
 </span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="p">&lt;</span><span class="nt">input</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;msg&quot;</span> <span class="na">value</span><span class="o">=</span><span class="s">&quot;Hello from browser&quot;</span><span class="p">&gt;</span>
 </span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="p">&lt;</span><span class="nt">button</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;send&quot;</span><span class="p">&gt;</span>Send<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
@@ -3713,7 +3799,7 @@ the use of WebSockets in the document:</p>
 <p><a href="https://demo.webdyne.org/ws.psp">Run</a></p>
 <p>If you do not wish to use the &lt;start_html&gt; tag with the ws attribute
 you can use a meta tag to denote which subroutine to call for WebSocket
-events, e.g. &lt;meta name="WebDyne" content="ws=ws"&gt;</p>
+events, e.g. &lt;meta name="WebDyne" content="ws=ws"&gt;.</p>
 
 
 

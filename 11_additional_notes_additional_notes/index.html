@@ -599,6 +599,28 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#additional_notes_handler_attribute_shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        About handler and method calling attributes in tags
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional_notes_start_html_shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        About &lt;start_html&gt; shortcuts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#additional_notes_check_psp_syntax" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2212,18 +2234,80 @@
 
 <h1 id="additional_notes">Additional Notes<a class="headerlink" href="#additional_notes" title="Permanent link">&para;</a></h1>
 <p>Things to note or information not otherwise contained elsewhere:</p>
+<h2 id="additional_notes_handler_attribute_shortcuts">About handler and method calling attributes in tags<a class="headerlink" href="#additional_notes_handler_attribute_shortcuts" title="Permanent link">&para;</a></h2>
+<p>Some WebDyne attributes name a Perl subroutine to call. In PSP syntax an
+attribute with no explicit value is treated as having the attribute name
+as its value, so &lt;perl handler&gt; is a shortcut for &lt;perl
+handler="handler"&gt;. Defining a <code>handler</code> subroutine in the __PERL__
+section is therefore the shortest way to make a simple PSP file call
+server-side Perl code:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="p">&lt;</span><span class="nt">perl</span> <span class="na">handler</span><span class="p">/&gt;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>__PERL__
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>sub handler {
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    my $self=shift();
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    return &quot;Hello from a handler&quot;;
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>}
+</span></code></pre></div>
+<p>For clarity, or where a page has more than one callable routine, the
+longer form can be used instead. For example &lt;perl
+handler="my_handler"&gt; calls <code>my_handler</code> and behaves the same way; it
+just takes more typing:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">&lt;</span><span class="nt">perl</span> <span class="na">handler</span><span class="o">=</span><span class="s">&quot;my_handler&quot;</span><span class="p">/&gt;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>__PERL__
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>sub my_handler {
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    my $self=shift();
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    return &quot;Hello from my_handler&quot;;
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>}
+</span></code></pre></div>
+<p>The same bare-attribute convention applies to other handler-style
+attributes in the context where those attributes are valid. In &lt;perl&gt;,
+&lt;api&gt; and &lt;htmx&gt;, handler names the Perl routine to call. In
+&lt;start_html&gt;, sse and ws name the PAGI Server-Sent Events and
+WebSocket handlers, so &lt;start_html sse&gt; means &lt;start_html
+sse="sse"&gt;, and &lt;start_html ws&gt; means &lt;start_html ws="ws"&gt;. The
+cache attribute on &lt;start_html&gt; similarly names the cache handler used
+by the caching layer. The method attribute is accepted as a
+compatibility synonym for handler on &lt;perl&gt;-style calls, but handler
+is preferred in new examples.</p>
+<h2 id="additional_notes_start_html_shortcuts">About &lt;start_html&gt; shortcuts<a class="headerlink" href="#additional_notes_start_html_shortcuts" title="Permanent link">&para;</a></h2>
+<p>The &lt;start_html&gt; tag exists as a convenience for common page setup. It
+expands to normal HTML, including the document type, opening &lt;html&gt;
+and &lt;body&gt; tags, and a generated &lt;head&gt; section. It is not a
+separate client-side technology; the browser receives ordinary HTML
+output.</p>
+<p>Some &lt;start_html&gt; attributes are small formatting shortcuts intended
+for quick page construction. For example h1 through h6 insert a heading
+based on the page title, and hr adds a horizontal rule after that
+generated heading. These are useful for quick examples, diagnostics and
+small tools, but they can always be replaced with explicit HTML in the
+body of the page.</p>
+<p>Other &lt;start_html&gt; shortcuts load common frontend libraries or
+stylesheets. The built-in shortcuts include pico for Pico CSS, htmx for
+htmx, and alpine for Alpine.js. They exist to keep small PSP examples
+readable and to avoid repeating common CDN &lt;link&gt; or &lt;script&gt; tags.
+For example &lt;start_html alpine&gt; loads the configured Alpine.js script.
+Longer form HTML is still supported, so you can load JavaScript or CSS
+in the traditional way with explicit &lt;script&gt; and &lt;link&gt; tags, or by
+using the script and style attributes documented in the &lt;start_html&gt;
+tag reference.</p>
 <h2 id="additional_notes_check_psp_syntax">How to check syntax of a PSP file<a class="headerlink" href="#additional_notes_check_psp_syntax" title="Permanent link">&para;</a></h2>
 <p>To check the syntax of a PSP file - or more specifically any Perl code
 in the __PERL__ section - you can use the <code>wdlint</code> command. Take
 this file with an assignment syntax error in the server_time() routine:</p>
-<div class="language-html highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Hello World <span class="cp">&lt;? server_time() ?&gt;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>__PERL__
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>#!perl
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>sub server_time {
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    my 2==1; #Error here
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>}
+<div class="language-html highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Hello World <span class="cp">&lt;? server_time() ?&gt;</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>__PERL__
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>#!perl
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>sub server_time {
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    my 2==1; #Error here
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>}
 </span></code></pre></div>
 <p>Run the command<code>wdlint &lt;filename.psp&gt;</code> to check for syntax error and
 report back:</p>
@@ -2236,19 +2320,19 @@ check.psp had compilation errors.
 will not pass the WebDyne object ref through to your code. You can pass
 it by supplying @_ as a parameter, or just shift() and your own
 parameters:</p>
-<div class="language-html highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>Hello World <span class="cp">&lt;? server_time(@_) ?&gt;</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Hello World <span class="cp">&lt;? server_time(shift(), &#39;UTC&#39; ?&gt;</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>Hello World <span class="p">&lt;</span><span class="nt">perl</span> <span class="na">handler</span><span class="o">=</span><span class="s">&quot;server_time&quot;</span> <span class="na">param</span><span class="o">=</span><span class="s">&quot;UTC&quot;</span><span class="p">/&gt;</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>__PERL__
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>sub server_time {
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    #  Now we can get self ref
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    my ($self, $timezone)=@_;
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    #  Do something and return
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    $self-&gt;do_something()
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>}
+<div class="language-html highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>Hello World <span class="cp">&lt;? server_time(@_) ?&gt;</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Hello World <span class="cp">&lt;? server_time(shift(), &#39;UTC&#39; ?&gt;</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>Hello World <span class="p">&lt;</span><span class="nt">perl</span> <span class="na">handler</span><span class="o">=</span><span class="s">&quot;server_time&quot;</span> <span class="na">param</span><span class="o">=</span><span class="s">&quot;UTC&quot;</span><span class="p">/&gt;</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>__PERL__
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>sub server_time {
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    #  Now we can get self ref
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    my ($self, $timezone)=@_;
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    #  Do something and return
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    $self-&gt;do_something()
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>}
 </span></code></pre></div>
 <h2 id="additional_notes_hash_comment_characters">Use of hash characters for comments in PSP files<a class="headerlink" href="#additional_notes_hash_comment_characters" title="Permanent link">&para;</a></h2>
 <p>Any # characters at the very start of a PSP file (before a &lt;html&gt; or
@@ -2257,12 +2341,12 @@ not be stored or displayed (they are <strong>not</strong> translated into HTML
 comments). This allows easy to read comments at the start of PSP files.
 Any # characters after the first valid tag are not treated specially -
 they will be rendered as normal HTML:</p>
-<div class="language-html highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>#  This is my server time display file
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>#
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>#  VERSION=1.23
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>#
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>Server local time is: <span class="cp">&lt;? localtime ?&gt;</span>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>#  This is my server time display file
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>#
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>#  VERSION=1.23
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>#
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">&lt;</span><span class="nt">start_html</span><span class="p">&gt;</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>Server local time is: <span class="cp">&lt;? localtime ?&gt;</span>
 </span></code></pre></div>
 <h2 id="additional_notes_checkbox_hidden_field">The &lt;checkbox&gt; tag will always set a hidden form field<a class="headerlink" href="#additional_notes_checkbox_hidden_field" title="Permanent link">&para;</a></h2>
 <p>The &lt;checkbox&gt; tag is unusual in that it adds a hidden field (with the

@@ -984,6 +984,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#docker_runtime_server_tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Runtime Server Tuning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#webdyne_directives" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2693,11 +2704,13 @@ within the handler.</p>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  <span class="err">[</span><span class="na">import</span><span class="o">=</span><span class="s">FUNCTION</span> <span class="err">[,</span> <span class="na">FUNCTION</span> <span class="err">...]]</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  <span class="err">[</span><span class="na">param</span><span class="o">=</span><span class="s">SCALAR</span> <span class="err">|</span> <span class="na">HASHREF</span><span class="err">]</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  <span class="err">[</span><span class="na">run</span><span class="err">]</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  <span class="err">[</span><span class="na">file</span><span class="err">]</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  <span class="err">[</span><span class="na">hidden</span><span class="err">]</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  <span class="err">[</span><span class="na">chomp</span><span class="err">]</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  <span class="err">[</span><span class="na">autonewline</span><span class="err">]</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">&gt;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  <span class="err">[</span><span class="na">static</span><span class="err">]</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  <span class="err">[</span><span class="na">file</span><span class="err">]</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  <span class="err">[</span><span class="na">hidden</span><span class="err">]</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  <span class="err">[</span><span class="na">display</span><span class="o">=</span><span class="s">0]</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>  <span class="err">[</span><span class="na">chomp</span><span class="err">]</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>  <span class="err">[</span><span class="na">autonewline</span><span class="err">]</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">&gt;</span>
 </span></code></pre></div>
 <dl>
 <dt>handler=METHOD</dt>
@@ -2726,7 +2739,7 @@ within the handler.</p>
 <dd>
 <p>Load a Perl module or file needed to support a method call. E.g.
   &lt;perl require="Digest::MD5"/&gt; to load the <code>Digest::MD5</code> module.
-  Anything with a [./\] character is treated as file patch to a Perl
+  Anything with a [./\] character is treated as a file path to a Perl
   file (e.g. "<code>/home/user/module.pm</code>"), otherwise it is treated as
   module name ("<code>Digest::MD5</code>")</p>
 </dd>
@@ -2775,9 +2788,9 @@ within the handler.</p>
 <dl>
 <dt>static</dt>
 <dd>
-<p>Boolean flag. The Perl code to be run once only and the output cached
-  for all subsequent requests. If omitted the code is not cached (i.e.
-  it is run each time). If omitted the page is</p>
+<p>Boolean flag. The Perl code is run once only and the output cached for
+  all subsequent requests. If omitted the code is not cached (i.e. it is
+  run each time).</p>
 </dd>
 <dt>run</dt>
 <dd>
@@ -2807,12 +2820,24 @@ within the handler.</p>
 </dd>
 <dt>hidden</dt>
 <dd>
-<p>Boolean flag. The output from the Perl module will be hidden and no
+<p>Boolean flag. The output from the Perl module will be hidden and not
   rendered to the page.</p>
 </dd>
 <dt>display=0</dt>
 <dd>
 <p>Equivalent to setting hidden attribute.</p>
+</dd>
+<dt>method=METHOD</dt>
+<dd>
+<p>Compatibility alias for handler. Prefer handler in new documentation
+  and examples.</p>
+</dd>
+<dt>package=PACKAGE</dt>
+<dd>
+<p>Optional package component used when constructing a fully qualified
+  handler call. Prefer a fully qualified handler value unless separating
+  the package and method names is useful for compatibility with older
+  PSP files.</p>
 </dd>
 <dt>chomp</dt>
 <dd>
@@ -2857,7 +2882,7 @@ executed.</p>
 </dd>
 <dt>canonical</dt>
 <dd>
-<p>Boolean flah. Use the JSON canonical() method to sort JSON data.
+<p>Boolean flag. Use the JSON canonical() method to sort JSON data.
   Enabled by default, disable using canonical=0 attribute value or via
   <code>$WEBDYNE_JSON_CANONICAL=0</code> configuration setting.</p>
 </dd>
@@ -2926,24 +2951,25 @@ render_block() Webdyne method:</p>
 </dd>
 </dl>
 <h4 id="tag_include">&lt;include&gt;<a class="headerlink" href="#tag_include" title="Permanent link">&para;</a></h4>
-<p>Include HTML, PSP or text from an external file. Capable of just pulling
-in just the &lt;head&gt;,&lt;body&gt; or a &lt;block&gt; section from another HTML
-or PSP file. If pulled in from a PSP file it will compiled and
-interpreted in the context of the current page.</p>
+<p>Include HTML, PSP or text from an external file. Can pull in just the
+&lt;head&gt;, &lt;body&gt; or a &lt;block&gt; section from another HTML or PSP file.
+If pulled in from a PSP file it will be compiled and interpreted in the
+context of the current page.</p>
 <div class="language-html highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">&lt;</span><span class="nt">include</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  <span class="na">file</span><span class="o">=</span><span class="s">PATH</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  <span class="na">file</span><span class="o">=</span><span class="s">PATH</span> <span class="err">|</span> <span class="na">ARRAYREF</span>
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>  <span class="err">[</span><span class="na">block</span><span class="o">=</span><span class="s">NAME]</span>
 </span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>  <span class="err">[</span><span class="na">wrap</span><span class="o">=</span><span class="s">TAG]</span>
 </span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>  <span class="err">[</span><span class="na">head</span><span class="err">]</span>
 </span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>  <span class="err">[</span><span class="na">body</span><span class="err">]</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>  <span class="err">[</span><span class="na">nocache</span><span class="err">]</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="p">&gt;</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>  <span class="err">[</span><span class="na">param</span><span class="o">=</span><span class="s">HASHREF]</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>  <span class="err">[</span><span class="na">nocache</span><span class="err">]</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="p">&gt;</span>
 </span></code></pre></div>
 <dl>
-<dt>file=PATH</dt>
+<dt>file=PATH | ARRAYREF</dt>
 <dd>
-<p><em>Mandatory</em>. Name of file we want to include. Can be relative to
-  current directory or absolute path.</p>
+<p><em>Mandatory</em>. Name of file or files we want to include. Can be relative
+  to current directory or absolute path.</p>
 </dd>
 <dt>head</dt>
 <dd>
@@ -2962,8 +2988,10 @@ interpreted in the context of the current page.</p>
 </dd>
 <dt>wrap=TAG</dt>
 <dd>
-<p>Wrap the text from the included file in the nominated tag. Do not use
-  &lt;&gt; symbols, just the plain tag name:</p>
+<p>Wrap the text from a plain file include in the nominated tag. Do not
+  use &lt;&gt; symbols, just the plain tag name. This option applies when
+  including a file directly, not when extracting head, body, or block
+  content from another HTML or PSP file.</p>
 </dd>
 </dl>
 <div class="language-html highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>#  Include the protocols file and wrap in <span class="p">&lt;</span><span class="nt">pre</span><span class="p">&gt;</span>
@@ -2971,6 +2999,12 @@ interpreted in the context of the current page.</p>
 </span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="p">&lt;</span><span class="nt">include</span><span class="err">=&quot;/</span><span class="na">etc</span><span class="err">/</span><span class="na">protocols</span><span class="err">&quot;</span> <span class="na">wrap</span><span class="o">=</span><span class="s">&quot;pre&quot;</span><span class="p">&gt;</span>
 </span></code></pre></div>
 <dl>
+<dt>param=HASHREF</dt>
+<dd>
+<p>Parameter hash supplied while rendering included PSP content. This is
+  used when extracting a head, body, or named block from another PSP
+  file.</p>
+</dd>
 <dt>nocache</dt>
 <dd>
 <p>Don't cache the results of the include, bring them in off disk each
@@ -2980,37 +3014,45 @@ interpreted in the context of the current page.</p>
 <h4 id="tag_api">&lt;api&gt;<a class="headerlink" href="#tag_api" title="Permanent link">&para;</a></h4>
 <p>Respond to a JSON request made from a client. Takes the same options as
 the &lt;perl&gt; tag and behaves similarly - if a handler attribute is given
-it is called, if the perl attribute is given text between the &lt;api&gt;
-tags in treated as in-line perl code and executed. Responses from perl
-code are encoded as JSON and returned.</p>
+it is called, if the perl attribute is given the text between the
+&lt;api&gt; tags is treated as in-line perl code and executed. Responses
+from perl code are encoded as JSON and returned.</p>
 <div class="language-html highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">&lt;</span><span class="nt">api</span>
 </span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>  <span class="na">pattern</span><span class="o">=</span><span class="s">ROUTE</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>  <span class="err">[</span><span class="na">destination</span><span class="o">=</span><span class="s">HASHREF</span> <span class="err">|</span> <span class="na">dest</span><span class="o">=</span><span class="s">HASHREF</span> <span class="err">|</span> <span class="na">data</span><span class="o">=</span><span class="s">HASHREF]</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>  <span class="err">[</span><span class="na">option</span><span class="o">=</span><span class="s">HASHREF]</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="p">&gt;</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>  <span class="err">[</span><span class="na">match</span><span class="o">=</span><span class="s">ROUTE]</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>  <span class="err">[</span><span class="na">destination</span><span class="o">=</span><span class="s">HASHREF</span> <span class="err">|</span> <span class="na">dest</span><span class="o">=</span><span class="s">HASHREF</span> <span class="err">|</span> <span class="na">data</span><span class="o">=</span><span class="s">HASHREF]</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>  <span class="err">[</span><span class="na">option</span><span class="o">=</span><span class="s">HASHREF</span> <span class="err">|</span> <span class="na">options</span><span class="o">=</span><span class="s">HASHREF</span> <span class="err">|</span> <span class="na">constraint</span><span class="o">=</span><span class="s">HASHREF</span> <span class="err">|</span> <span class="na">constraints</span><span class="o">=</span><span class="s">HASHREF]</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>  <span class="err">[</span><span class="na">canonical</span><span class="err">]</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="p">&gt;</span>
 </span></code></pre></div>
 <dl>
 <dt>pattern=ROUTE</dt>
 <dd>
 <p><em>Mandatory</em>. Name of <code>Router::Simple</code> pattern we want to serve, e.g.
-  /api/{user}/:id</p>
+  /api/{user}/:id. The match attribute is accepted as an alias.</p>
 </dd>
-<dt>destination=HASHREF</dt>
+<dt>destination=HASHREF | dest=HASHREF | data=HASHREF</dt>
 <dd>
 <p>Hash we want to supply to perl routine if match made. See
-  <code>Route::Simple</code></p>
+  <code>Router::Simple</code></p>
 </dd>
-<dt>option=HASHREF</dt>
+<dt>option=HASHREF | options=HASHREF | constraint=HASHREF | constraints=HASHREF</dt>
 <dd>
 <p>Match options, GET, PUT etc. <code>Router::Simple</code></p>
+</dd>
+<dt>canonical</dt>
+<dd>
+<p>Boolean flag. Use the JSON canonical() method to sort JSON response
+  data. Enabled by default, disable using canonical=0 attribute value or
+  via <code>$WEBDYNE_JSON_CANONICAL=0</code> configuration setting.</p>
 </dd>
 </dl>
 <h4 id="tag_htmx">&lt;htmx&gt;<a class="headerlink" href="#tag_htmx" title="Permanent link">&para;</a></h4>
 <p>Serve HTML fragments in response to <a href="https://htmx.org">htmx</a> type
 requests (or similar clients). Takes the same options as the &lt;perl&gt;
 tag and behaves similarly - if a handler attribute is given it is
-called, if the perl attribute is given text between the &lt;api&gt; tags in
-treated as in-line perl code and executed.</p>
+called, if the perl attribute is given the text between the &lt;htmx&gt;
+tags is treated as in-line perl code and executed.</p>
 <div class="language-html highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">&lt;</span><span class="nt">htmx</span>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  <span class="err">[</span><span class="na">handler</span><span class="o">=</span><span class="s">METHOD]</span>
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>  <span class="err">[</span><span class="na">perl</span><span class="err">]</span>
@@ -3078,9 +3120,11 @@ Useful while troubleshooting or debugging pages.</p>
 </span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>  <span class="err">[</span><span class="na">all</span><span class="err">]</span>
 </span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>  <span class="err">[</span><span class="na">cgi</span><span class="err">]</span>
 </span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>  <span class="err">[</span><span class="na">env</span><span class="err">]</span>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>  <span class="err">[</span><span class="na">constant</span><span class="err">]</span>
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>  <span class="err">[</span><span class="na">version</span><span class="err">]</span>
-</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="p">&gt;</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>  <span class="err">[</span><span class="na">lib</span> <span class="err">|</span> <span class="na">inc</span><span class="err">]</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>  <span class="err">[</span><span class="na">constant</span><span class="err">]</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>  <span class="err">[</span><span class="na">dir_config</span><span class="err">]</span>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>  <span class="err">[</span><span class="na">version</span><span class="err">]</span>
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="p">&gt;</span>
 </span></code></pre></div>
 <dl>
 <dt>display|force</dt>
@@ -3093,19 +3137,29 @@ Useful while troubleshooting or debugging pages.</p>
 </dd>
 <dt>cgi</dt>
 <dd>
-<p>Boolean. Display CGI parameters and query strings</p>
+<p>CGI parameters and query strings are always displayed once dump output
+  is enabled.</p>
 </dd>
 <dt>env</dt>
 <dd>
 <p>Boolean. Display environment variables</p>
 </dd>
+<dt>lib | inc</dt>
+<dd>
+<p>Boolean. Display the Perl include paths and loaded module table
+  (<code>@INC</code> and <code>%INC</code>).</p>
+</dd>
 <dt>constant</dt>
 <dd>
-<p>Boolean. Display Webdyne configurationconstants</p>
+<p>Boolean. Display WebDyne configuration constants.</p>
+</dd>
+<dt>dir_config</dt>
+<dd>
+<p>Boolean. Display WebDyne request directory configuration.</p>
 </dd>
 <dt>version</dt>
 <dd>
-<p>Boolean. Display version strings</p>
+<p>Version strings are always displayed once dump output is enabled.</p>
 </dd>
 </dl>
 <h4 id="tag_start_html">&lt;start_html&gt;<a class="headerlink" href="#tag_start_html" title="Permanent link">&para;</a></h4>
@@ -3121,13 +3175,27 @@ output:</p>
 </span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>  <span class="err">[</span><span class="na">script</span><span class="o">=</span><span class="s">URL</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
 </span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>  <span class="err">[</span><span class="na">base</span><span class="o">=</span><span class="s">URL]</span>
 </span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>  <span class="err">[</span><span class="na">target</span><span class="o">=</span><span class="s">TARGET]</span>
-</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>  <span class="err">[</span><span class="na">include</span><span class="o">=</span><span class="s">PATH</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
-</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>  <span class="err">[</span><span class="na">include_script</span><span class="o">=</span><span class="s">PATH</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
-</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>  <span class="err">[</span><span class="na">include_style</span><span class="o">=</span><span class="s">PATH</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
-</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>  <span class="err">[</span><span class="na">static</span><span class="err">]</span>
-</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>  <span class="err">[</span><span class="na">cache</span><span class="o">=</span><span class="s">METHOD]</span>
-</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="p">&gt;</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>  <span class="err">[</span><span class="na">author</span><span class="o">=</span><span class="s">EMAIL]</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>  <span class="err">[</span><span class="na">include</span><span class="o">=</span><span class="s">PATH</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>  <span class="err">[</span><span class="na">include_script</span><span class="o">=</span><span class="s">PATH</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>  <span class="err">[</span><span class="na">include_style</span><span class="o">=</span><span class="s">PATH</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>  <span class="err">[</span><span class="na">static</span><span class="err">]</span>
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>  <span class="err">[</span><span class="na">cache</span><span class="o">=</span><span class="s">METHOD]</span>
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>  <span class="err">[</span><span class="na">handler</span><span class="o">=</span><span class="s">METHOD]</span>
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>  <span class="err">[</span><span class="na">h1</span> <span class="err">|</span> <span class="na">h2</span> <span class="err">|</span> <span class="na">h3</span> <span class="err">|</span> <span class="na">h4</span> <span class="err">|</span> <span class="na">h5</span> <span class="err">|</span> <span class="na">h6</span><span class="err">]</span>
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>  <span class="err">[</span><span class="na">hr</span><span class="err">]</span>
+</span><span id="__span-18-17"><a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>  <span class="err">[</span><span class="na">sse</span><span class="o">=</span><span class="s">METHOD]</span>
+</span><span id="__span-18-18"><a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>  <span class="err">[</span><span class="na">ws</span><span class="o">=</span><span class="s">METHOD]</span>
+</span><span id="__span-18-19"><a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>  <span class="err">[</span><span class="na">pico</span><span class="err">]</span>
+</span><span id="__span-18-20"><a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a>  <span class="err">[</span><span class="na">htmx</span><span class="err">]</span>
+</span><span id="__span-18-21"><a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a>  <span class="err">[</span><span class="na">alpine</span><span class="err">]</span>
+</span><span id="__span-18-22"><a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a><span class="p">&gt;</span>
 </span></code></pre></div>
+<p>Any attributes not listed here are passed through to the generated
+&lt;html&gt; tag after WebDyne has consumed the page-control attributes. The
+shortcut attributes <code>pico</code>, <code>htmx</code>, and <code>alpine</code> are defined by
+<code>WEBDYNE_START_HTML_SHORTCUT_HR</code> and can be changed or extended in
+WebDyne configuration.</p>
 <dl>
 <dt>title=TEXT</dt>
 <dd>
@@ -3206,6 +3274,12 @@ output:</p>
 <div class="language-html highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="p">&lt;</span><span class="nt">base</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://example.com/&quot;</span> <span class="na">target</span><span class="o">=</span><span class="s">&quot;_blank&quot;</span><span class="p">&gt;</span>
 </span></code></pre></div>
 <dl>
+<dt>author=EMAIL</dt>
+<dd>
+<p>Generate an author link in the &lt;head&gt; section. The supplied value is
+  URL encoded and emitted as a &lt;link rel="author" href="mailto:..."&gt;
+  tag.</p>
+</dd>
 <dt>include=PATH | ARRAYREF</dt>
 <dd>
 <p>Will include the raw text from the nominated file (supplied as the
@@ -3239,6 +3313,89 @@ output:</p>
 </dl>
 <div class="language-html highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">cache</span><span class="o">=</span><span class="s">&quot;&amp;cache&quot;</span><span class="p">&gt;</span>
 </span></code></pre></div>
+<dl>
+<dt>handler=METHOD</dt>
+<dd>
+<p>Store a page handler method in the compiled page metadata. This is
+  used by WebDyne's request dispatch path when a page needs to nominate
+  a handler from the &lt;start_html&gt; tag instead of relying on
+  surrounding server configuration.</p>
+</dd>
+<dt>h1 | h2 | h3 | h4 | h5 | h6</dt>
+<dd>
+<p>Boolean heading shortcut. If one of these attributes is present and a
+  title is available, WebDyne inserts a heading of the requested level
+  at the start of the generated &lt;body&gt; using the page title text.</p>
+</dd>
+</dl>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Hello World&quot;</span> <span class="na">h1</span><span class="p">&gt;</span>
+</span></code></pre></div>
+<dl>
+<dt>hr</dt>
+<dd>
+<p>Boolean heading companion shortcut. When used with one of <code>h1</code> through
+  <code>h6</code>, WebDyne inserts an &lt;hr&gt; immediately after the generated
+  heading.</p>
+</dd>
+</dl>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Hello World&quot;</span> <span class="na">h1</span> <span class="na">hr</span><span class="p">&gt;</span>
+</span></code></pre></div>
+<dl>
+<dt>sse=METHOD</dt>
+<dd>
+<p>Mark the page as providing Server-Sent Events when run through the
+  PAGI request layer. The value is stored in WebDyne page metadata and
+  names the async subroutine to call for SSE requests. If used as a bare
+  boolean attribute, the method name defaults to <code>sse</code>.</p>
+</dd>
+</dl>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">sse</span><span class="p">&gt;</span>
+</span></code></pre></div>
+<dl>
+<dt>ws=METHOD</dt>
+<dd>
+<p>Mark the page as providing WebSocket handling when run through the
+  PAGI request layer. The value is stored in WebDyne page metadata and
+  names the async subroutine to call for WebSocket requests. If used as
+  a bare boolean attribute, the method name defaults to <code>ws</code>.</p>
+</dd>
+</dl>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">ws</span><span class="p">&gt;</span>
+</span></code></pre></div>
+<dl>
+<dt>pico</dt>
+<dd>
+<p>Framework shortcut defined by <code>WEBDYNE_START_HTML_SHORTCUT_HR</code>. Adds
+  Pico CSS to the style list, using
+  <code>https://cdn.jsdelivr.net/npm/@picocss/pico@latest/css/pico.min.css</code>
+  by default.</p>
+</dd>
+</dl>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">pico</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Pico Example&quot;</span><span class="p">&gt;</span>
+</span></code></pre></div>
+<dl>
+<dt>htmx</dt>
+<dd>
+<p>Framework shortcut defined by <code>WEBDYNE_START_HTML_SHORTCUT_HR</code>. Adds
+  htmx to the script list, using
+  <code>https://cdn.jsdelivr.net/npm/htmx.org@latest/dist/htmx.min.js</code> by
+  default.</p>
+</dd>
+</dl>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">htmx</span><span class="p">&gt;</span>
+</span></code></pre></div>
+<dl>
+<dt>alpine</dt>
+<dd>
+<p>Framework shortcut defined by <code>WEBDYNE_START_HTML_SHORTCUT_HR</code>. Adds
+  Alpine.js to the script list, using
+  <code>https://cdn.jsdelivr.net/npm/alpinejs@latest/dist/cdn.min.js#defer</code>
+  by default. The URL fragment is interpreted as script attributes, so
+  the generated &lt;script&gt; tag includes defer.</p>
+</dd>
+</dl>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">alpine</span><span class="p">&gt;</span>
+</span></code></pre></div>
 <h4 id="tag_end_html">&lt;end_html&gt;<a class="headerlink" href="#tag_end_html" title="Permanent link">&para;</a></h4>
 <p>End a HTML page. This will produce the &lt;/body&gt;&lt;/html&gt; tags. It is
 not strictly necessary as the parser will automatically close dangling
@@ -3246,15 +3403,21 @@ tags if it gets to the end of the file without seeing them, however is
 provided for completeness.</p>
 <h3 id="tag_reference_forms">Form Tags<a class="headerlink" href="#tag_reference_forms" title="Permanent link">&para;</a></h3>
 <h4 id="tag_popup_menu">&lt;popup_menu&gt;<a class="headerlink" href="#tag_popup_menu" title="Permanent link">&para;</a></h4>
-<p>Provided a drop-down menu of options for user to select from.</p>
-<div class="language-html highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="p">&lt;</span><span class="nt">popup_menu</span>
-</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
-</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>  <span class="na">values</span><span class="o">=</span><span class="s">ARRAYREF</span> <span class="err">|</span> <span class="na">HASHREF</span>
-</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>  <span class="err">[</span><span class="na">labels</span><span class="o">=</span><span class="s">HASHREF]</span>
-</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>  <span class="err">[</span><span class="na">multiple</span><span class="err">]</span>
-</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>  <span class="err">[</span><span class="na">disabled</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
-</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>  <span class="err">[</span><span class="na">selected</span><span class="err">|</span><span class="na">defaults</span><span class="err">|</span><span class="na">default</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
-</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="p">&gt;</span>
+<p>Provide a drop-down menu of options for a user to select from. Other
+standard HTML &lt;select&gt; attributes are passed through to the generated
+element.</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="p">&lt;</span><span class="nt">popup_menu</span>
+</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
+</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>  <span class="na">values</span><span class="o">=</span><span class="s">ARRAYREF</span> <span class="err">|</span> <span class="na">HASHREF</span>
+</span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a>  <span class="err">[</span><span class="na">labels</span><span class="o">=</span><span class="s">HASHREF]</span>
+</span><span id="__span-39-5"><a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a>  <span class="err">[</span><span class="na">attributes</span><span class="o">=</span><span class="s">HASHREF]</span>
+</span><span id="__span-39-6"><a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a>  <span class="err">[</span><span class="na">label</span><span class="o">=</span><span class="s">TEXT]</span>
+</span><span id="__span-39-7"><a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a>  <span class="err">[</span><span class="na">multiple</span><span class="err">]</span>
+</span><span id="__span-39-8"><a id="__codelineno-39-8" name="__codelineno-39-8" href="#__codelineno-39-8"></a>  <span class="err">[</span><span class="na">disabled</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
+</span><span id="__span-39-9"><a id="__codelineno-39-9" name="__codelineno-39-9" href="#__codelineno-39-9"></a>  <span class="err">[</span><span class="na">selected</span> <span class="err">|</span> <span class="na">defaults</span> <span class="err">|</span> <span class="na">default</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
+</span><span id="__span-39-10"><a id="__codelineno-39-10" name="__codelineno-39-10" href="#__codelineno-39-10"></a>  <span class="err">[</span><span class="na">force</span><span class="err">]</span>
+</span><span id="__span-39-11"><a id="__codelineno-39-11" name="__codelineno-39-11" href="#__codelineno-39-11"></a>  <span class="err">(</span><span class="na">standard</span> <span class="na">HTML</span> <span class="err">&lt;</span><span class="na">select</span><span class="p">&gt;</span> attributes)
+</span><span id="__span-39-12"><a id="__codelineno-39-12" name="__codelineno-39-12" href="#__codelineno-39-12"></a>&gt;
 </span></code></pre></div>
 <dl>
 <dt>name=NAME</dt>
@@ -3266,12 +3429,23 @@ provided for completeness.</p>
 <dd>
 <p>List of items to be presented in the drop down. If an array ref labels
   will be the same as values. If a hash ref the value will be the hash
-  key, the label the hash label.</p>
+  key, the label the hash label. If predictable display order matters,
+  use an array ref for values and a separate labels hash ref.</p>
 </dd>
 <dt>labels=HASHREF</dt>
 <dd>
 <p>If values is presented as an array ref, a hash ref of labels to be
   associated with each value can be supplied.</p>
+</dd>
+<dt>attributes=HASHREF</dt>
+<dd>
+<p>Hash reference of additional attributes to apply to individual
+  &lt;option&gt; elements, keyed by option value.</p>
+</dd>
+<dt>label=TEXT</dt>
+<dd>
+<p>Wrap the generated &lt;select&gt; element in a &lt;label&gt; element using the
+  supplied text.</p>
 </dd>
 <dt>multiple</dt>
 <dd>
@@ -3288,17 +3462,26 @@ provided for completeness.</p>
 <p>Single (string scalar) item or multiple (array ref) items which should
   be pre-selected in menu options.</p>
 </dd>
+<dt>force</dt>
+<dd>
+<p>By default selected values are stateful, and submitted values for this
+  field override the configured default or selected values. Setting
+  force always uses the configured default or selected values.</p>
+</dd>
 </dl>
 <h4 id="tag_radio_group">&lt;radio_group&gt;<a class="headerlink" href="#tag_radio_group" title="Permanent link">&para;</a></h4>
 <p>Provide a grouped list of radio buttons for a user to choose from. Only
 one radio button item can be selected.</p>
-<div class="language-html highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="p">&lt;</span><span class="nt">radio_group</span>
-</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
-</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>  <span class="na">values</span><span class="o">=</span><span class="s">ARRAYREF</span> <span class="err">|</span> <span class="na">HASHREF</span>
-</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>  <span class="err">[</span><span class="na">labels</span><span class="o">=</span><span class="s">HASHREF]</span>
-</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>  <span class="err">[</span><span class="na">disabled</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
-</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>  <span class="err">[</span><span class="na">checked</span><span class="err">|</span><span class="na">defaults</span><span class="err">|</span><span class="na">default</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
-</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="p">&gt;</span>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="p">&lt;</span><span class="nt">radio_group</span>
+</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
+</span><span id="__span-40-3"><a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a>  <span class="na">values</span><span class="o">=</span><span class="s">ARRAYREF</span> <span class="err">|</span> <span class="na">HASHREF</span>
+</span><span id="__span-40-4"><a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a>  <span class="err">[</span><span class="na">labels</span><span class="o">=</span><span class="s">HASHREF]</span>
+</span><span id="__span-40-5"><a id="__codelineno-40-5" name="__codelineno-40-5" href="#__codelineno-40-5"></a>  <span class="err">[</span><span class="na">attributes</span><span class="o">=</span><span class="s">HASHREF]</span>
+</span><span id="__span-40-6"><a id="__codelineno-40-6" name="__codelineno-40-6" href="#__codelineno-40-6"></a>  <span class="err">[</span><span class="na">disabled</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
+</span><span id="__span-40-7"><a id="__codelineno-40-7" name="__codelineno-40-7" href="#__codelineno-40-7"></a>  <span class="err">[</span><span class="na">checked</span> <span class="err">|</span> <span class="na">defaults</span> <span class="err">|</span> <span class="na">default</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
+</span><span id="__span-40-8"><a id="__codelineno-40-8" name="__codelineno-40-8" href="#__codelineno-40-8"></a>  <span class="err">[</span><span class="na">linebreak</span><span class="err">]</span>
+</span><span id="__span-40-9"><a id="__codelineno-40-9" name="__codelineno-40-9" href="#__codelineno-40-9"></a>  <span class="err">[</span><span class="na">force</span><span class="err">]</span>
+</span><span id="__span-40-10"><a id="__codelineno-40-10" name="__codelineno-40-10" href="#__codelineno-40-10"></a><span class="p">&gt;</span>
 </span></code></pre></div>
 <dl>
 <dt>name=NAME</dt>
@@ -3309,13 +3492,20 @@ one radio button item can be selected.</p>
 <dt>values=ARRAYREF | HASHREF</dt>
 <dd>
 <p>List of items to be presented. If an array reference, labels will be
-  the same as values. If a hash refence the value will be the hash key,
-  the label the hash value.</p>
+  the same as values. If a hash reference the value will be the hash
+  key, the label the hash value. If predictable display order matters,
+  use an array reference for values and a separate labels hash
+  reference.</p>
 </dd>
 <dt>labels=HASHREF</dt>
 <dd>
 <p>If values is presented as an array ref a hash ref of labels to be
   associated with each value can be supplied.</p>
+</dd>
+<dt>attributes=HASHREF</dt>
+<dd>
+<p>Hash reference of additional attributes to apply to individual &lt;input
+  type="radio"&gt; elements, keyed by radio value.</p>
 </dd>
 <dt>disabled=VALUE | ARRAYREF</dt>
 <dd>
@@ -3324,20 +3514,35 @@ one radio button item can be selected.</p>
 </dd>
 <dt>checked | defaults | default=VALUE | ARRAYREF</dt>
 <dd>
-<p>Single (string) or multiple (array ref) items which shoul be
-  pre-selected in radio group items.</p>
+<p>Single (string) or multiple (array ref) items which should be
+  pre-selected in radio group items. Radio groups can only select one
+  value; if multiple defaults are supplied, the first value in sorted
+  order is used.</p>
+</dd>
+<dt>linebreak</dt>
+<dd>
+<p>Separate generated radio items with &lt;br&gt; tags.</p>
+</dd>
+<dt>force</dt>
+<dd>
+<p>By default checked values are stateful, and submitted values for this
+  field override the configured defaults. Setting force always uses the
+  configured defaults.</p>
 </dd>
 </dl>
 <h4 id="tag_checkbox_group">&lt;checkbox_group&gt;<a class="headerlink" href="#tag_checkbox_group" title="Permanent link">&para;</a></h4>
-<p>Provide a grouped list of checkbox items for a user to choose form.
+<p>Provide a grouped list of checkbox items for a user to choose from.
 Multiple checkboxes can be selected.</p>
-<div class="language-html highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="p">&lt;</span><span class="nt">checkbox_group</span>
-</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
-</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>  <span class="na">values</span><span class="o">=</span><span class="s">ARRAYREF</span> <span class="err">|</span> <span class="na">HASHREF</span>
-</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>  <span class="err">[</span><span class="na">labels</span><span class="o">=</span><span class="s">HASHREF]</span>
-</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>  <span class="err">[</span><span class="na">disabled</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
-</span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a>  <span class="err">[</span><span class="na">checked</span><span class="err">|</span><span class="na">defaults</span><span class="err">|</span><span class="na">default</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
-</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a><span class="p">&gt;</span>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="p">&lt;</span><span class="nt">checkbox_group</span>
+</span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
+</span><span id="__span-41-3"><a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a>  <span class="na">values</span><span class="o">=</span><span class="s">ARRAYREF</span> <span class="err">|</span> <span class="na">HASHREF</span>
+</span><span id="__span-41-4"><a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a>  <span class="err">[</span><span class="na">labels</span><span class="o">=</span><span class="s">HASHREF]</span>
+</span><span id="__span-41-5"><a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a>  <span class="err">[</span><span class="na">attributes</span><span class="o">=</span><span class="s">HASHREF]</span>
+</span><span id="__span-41-6"><a id="__codelineno-41-6" name="__codelineno-41-6" href="#__codelineno-41-6"></a>  <span class="err">[</span><span class="na">disabled</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
+</span><span id="__span-41-7"><a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a>  <span class="err">[</span><span class="na">checked</span> <span class="err">|</span> <span class="na">defaults</span> <span class="err">|</span> <span class="na">default</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
+</span><span id="__span-41-8"><a id="__codelineno-41-8" name="__codelineno-41-8" href="#__codelineno-41-8"></a>  <span class="err">[</span><span class="na">linebreak</span><span class="err">]</span>
+</span><span id="__span-41-9"><a id="__codelineno-41-9" name="__codelineno-41-9" href="#__codelineno-41-9"></a>  <span class="err">[</span><span class="na">force</span><span class="err">]</span>
+</span><span id="__span-41-10"><a id="__codelineno-41-10" name="__codelineno-41-10" href="#__codelineno-41-10"></a><span class="p">&gt;</span>
 </span></code></pre></div>
 <dl>
 <dt>name=NAME</dt>
@@ -3350,31 +3555,50 @@ Multiple checkboxes can be selected.</p>
 <dd>
 <p>List of items to be presented. If an array ref labels will be the same
   as values. If a hash ref the value will be the hash key, the label the
-  hash label.</p>
+  hash label. If predictable display order matters, use an array ref for
+  values and a separate labels hash ref.</p>
 </dd>
 <dt>labels=HASHREF</dt>
 <dd>
 <p>If values is presented as an array ref a hash ref of labels to be
   associated with each value can be supplied.</p>
 </dd>
+<dt>attributes=HASHREF</dt>
+<dd>
+<p>Hash reference of additional attributes to apply to individual &lt;input
+  type="checkbox"&gt; elements, keyed by checkbox value.</p>
+</dd>
 <dt>disabled=VALUE | ARRAYREF</dt>
 <dd>
 <p>Single (string) or multiple (array ref) items which should be greyed
   out (not selectable) in checkbox group items.</p>
 </dd>
-<dt>checked|defaults|default=VALUE | ARRAYREF</dt>
+<dt>checked | defaults | default=VALUE | ARRAYREF</dt>
 <dd>
 <p>Single (scalar) or multiple (array ref) items which should be
   pre-selected in checkbox group items.</p>
 </dd>
+<dt>linebreak</dt>
+<dd>
+<p>Separate generated checkbox items with &lt;br&gt; tags.</p>
+</dd>
+<dt>force</dt>
+<dd>
+<p>By default checked values are stateful, and submitted values for this
+  field override the configured defaults. Setting force always uses the
+  configured defaults.</p>
+</dd>
 </dl>
 <h4 id="tag_checkbox">&lt;checkbox&gt;<a class="headerlink" href="#tag_checkbox" title="Permanent link">&para;</a></h4>
 <p>Single checkbox for a user to select or clear.</p>
-<div class="language-html highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="p">&lt;</span><span class="nt">checkbox</span>
-</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
-</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>  <span class="err">[</span><span class="na">value</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">BOOLEAN</span><span class="err">]</span>
-</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>  <span class="err">[</span><span class="na">disabled</span><span class="err">]</span>
-</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a><span class="p">&gt;</span>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="p">&lt;</span><span class="nt">checkbox</span>
+</span><span id="__span-42-2"><a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
+</span><span id="__span-42-3"><a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a>  <span class="err">[</span><span class="na">value</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">BOOLEAN</span><span class="err">]</span>
+</span><span id="__span-42-4"><a id="__codelineno-42-4" name="__codelineno-42-4" href="#__codelineno-42-4"></a>  <span class="err">[</span><span class="na">checked</span><span class="err">]</span>
+</span><span id="__span-42-5"><a id="__codelineno-42-5" name="__codelineno-42-5" href="#__codelineno-42-5"></a>  <span class="err">[</span><span class="na">disabled</span><span class="err">]</span>
+</span><span id="__span-42-6"><a id="__codelineno-42-6" name="__codelineno-42-6" href="#__codelineno-42-6"></a>  <span class="err">[</span><span class="na">label</span><span class="o">=</span><span class="s">TEXT]</span>
+</span><span id="__span-42-7"><a id="__codelineno-42-7" name="__codelineno-42-7" href="#__codelineno-42-7"></a>  <span class="err">(</span><span class="na">standard</span> <span class="na">HTML</span> <span class="err">&lt;</span><span class="na">input</span><span class="p">&gt;</span> attributes)
+</span><span id="__span-42-8"><a id="__codelineno-42-8" name="__codelineno-42-8" href="#__codelineno-42-8"></a>&gt;
 </span></code></pre></div>
 <dl>
 <dt>name=NAME</dt>
@@ -3391,6 +3615,17 @@ Multiple checkboxes can be selected.</p>
 <dd>
 <p>If present the checkbox will be displayed but cannot be selected.</p>
 </dd>
+<dt>checked</dt>
+<dd>
+<p>If present the checkbox is initially selected. For the default boolean
+  value path, submitted values for the field are stateful and override
+  this initial setting.</p>
+</dd>
+<dt>label=TEXT</dt>
+<dd>
+<p>Wrap the generated checkbox in a &lt;label&gt; element using the supplied
+  text.</p>
+</dd>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -3400,61 +3635,37 @@ querying the parameter associated with a checkbox component will always
 return a <code>Hash::MultiValue</code> object with two items, the last of which is
 the checkbox value. When using <code>$self-&gt;CGI-&gt;param(&lt;checkbox name&gt;)</code> form
 of query, or <code>$_{&lt;checkbox name&gt;}</code> the user selected checkbox value will
-always be returned as a boolean or scalar value.</p>
+always be returned as a boolean or scalar value. This automatic
+hidden-field and persistence behaviour applies when no explicit value is
+supplied.</p>
 </div>
 <h4 id="tag_scrolling_list">&lt;scrolling_list&gt;<a class="headerlink" href="#tag_scrolling_list" title="Permanent link">&para;</a></h4>
-<p>Presents a scrolling list of options for a user to choose from.
-Attributes are identical to those of the &lt;popup_menu&gt; tag with the
-addition of a size attribute.</p>
-<div class="language-html highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="p">&lt;</span><span class="nt">scrolling_list</span>
-</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
-</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>  <span class="na">size</span><span class="o">=</span><span class="s">ROWS</span>
-</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a>  <span class="na">values</span><span class="o">=</span><span class="s">ARRAYREF</span> <span class="err">|</span> <span class="na">HASHREF</span>
-</span><span id="__span-36-5"><a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a>  <span class="err">[</span><span class="na">labels</span><span class="o">=</span><span class="s">HASHREF]</span>
-</span><span id="__span-36-6"><a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a>  <span class="err">[</span><span class="na">multiple</span><span class="err">]</span>
-</span><span id="__span-36-7"><a id="__codelineno-36-7" name="__codelineno-36-7" href="#__codelineno-36-7"></a>  <span class="err">[</span><span class="na">disabled</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
-</span><span id="__span-36-8"><a id="__codelineno-36-8" name="__codelineno-36-8" href="#__codelineno-36-8"></a>  <span class="err">[</span><span class="na">selected</span><span class="err">|</span><span class="na">defaults</span><span class="err">|</span><span class="na">default</span><span class="o">=</span><span class="s">VALUE</span> <span class="err">|</span> <span class="na">ARRAYREF</span><span class="err">]</span>
-</span><span id="__span-36-9"><a id="__codelineno-36-9" name="__codelineno-36-9" href="#__codelineno-36-9"></a><span class="p">&gt;</span>
+<p>Presents a scrolling list of options for a user to choose from. It uses
+the same attributes as &lt;popup_menu&gt; with the addition of a size
+attribute.</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="p">&lt;</span><span class="nt">scrolling_list</span>
+</span><span id="__span-43-2"><a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a>  <span class="err">(</span><span class="na">same</span> <span class="na">attributes</span> <span class="na">as</span> <span class="err">&lt;</span><span class="na">popup_menu</span><span class="p">&gt;</span>)
+</span><span id="__span-43-3"><a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a>  [size=ROWS]
+</span><span id="__span-43-4"><a id="__codelineno-43-4" name="__codelineno-43-4" href="#__codelineno-43-4"></a>&gt;
 </span></code></pre></div>
 <dl>
-<dt>name=NAME</dt>
-<dd>
-<p>The name associated with this form component. This is the CGI
-  parameter to be interrogated for value(s) once the form is submitted.</p>
-</dd>
 <dt>size=ROWS</dt>
 <dd>
-<p>Number of rows to make visible in user interface for the scrolling
-  list.</p>
+<p>Number of rows to make visible in the user interface for the scrolling
+  list. If omitted, WebDyne sets this to the number of configured
+  values.</p>
 </dd>
 </dl>
-<p>The following attributes behave identically to &lt;popup_menu&gt;:</p>
-<ul>
-<li>
-<p>values=ARRAYREF | HASHREF</p>
-</li>
-<li>
-<p>labels=HASHREF</p>
-</li>
-<li>
-<p>multiple</p>
-</li>
-<li>
-<p>disabled=VALUE | ARRAYREF</p>
-</li>
-<li>
-<p>selected|defaults|default=VALUE | ARRAYREF</p>
-</li>
-</ul>
 <h4 id="tag_textarea">&lt;textarea&gt;<a class="headerlink" href="#tag_textarea" title="Permanent link">&para;</a></h4>
 <p>A text box for freeform text entry. All attributes are the same as the
 HTML standard &lt;textarea&gt; tag with attributes:</p>
-<div class="language-html highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="p">&lt;</span><span class="nt">textarea</span>
-</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
-</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>  <span class="err">[</span><span class="na">default</span><span class="o">=</span><span class="s">TEXT]</span>
-</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a>  <span class="err">[</span><span class="na">force</span><span class="err">]</span>
-</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a>  <span class="err">(</span><span class="na">all</span> <span class="na">standard</span> <span class="na">HTML</span> <span class="err">&lt;</span><span class="na">textarea</span><span class="p">&gt;</span> attributes)
-</span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a>&gt;
+<div class="language-html highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a><span class="p">&lt;</span><span class="nt">textarea</span>
+</span><span id="__span-44-2"><a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
+</span><span id="__span-44-3"><a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a>  <span class="err">[</span><span class="na">default</span><span class="o">=</span><span class="s">TEXT]</span>
+</span><span id="__span-44-4"><a id="__codelineno-44-4" name="__codelineno-44-4" href="#__codelineno-44-4"></a>  <span class="err">[</span><span class="na">label</span><span class="o">=</span><span class="s">TEXT]</span>
+</span><span id="__span-44-5"><a id="__codelineno-44-5" name="__codelineno-44-5" href="#__codelineno-44-5"></a>  <span class="err">[</span><span class="na">force</span><span class="err">]</span>
+</span><span id="__span-44-6"><a id="__codelineno-44-6" name="__codelineno-44-6" href="#__codelineno-44-6"></a>  <span class="err">(</span><span class="na">all</span> <span class="na">standard</span> <span class="na">HTML</span> <span class="err">&lt;</span><span class="na">textarea</span><span class="p">&gt;</span> attributes)
+</span><span id="__span-44-7"><a id="__codelineno-44-7" name="__codelineno-44-7" href="#__codelineno-44-7"></a>&gt;
 </span></code></pre></div>
 <dl>
 <dt>name=NAME</dt>
@@ -3466,6 +3677,11 @@ HTML standard &lt;textarea&gt; tag with attributes:</p>
 <dd>
 <p>The default content to be pre-filled out in the &lt;textarea&gt; component</p>
 </dd>
+<dt>label=TEXT</dt>
+<dd>
+<p>Wrap the generated &lt;textarea&gt; element in a &lt;label&gt; element using
+  the supplied text.</p>
+</dd>
 <dt>force</dt>
 <dd>
 <p>By default the component is stateful, and user entered text will
@@ -3475,65 +3691,106 @@ HTML standard &lt;textarea&gt; tag with attributes:</p>
 </dl>
 <h4 id="tag_textfield">&lt;textfield&gt;<a class="headerlink" href="#tag_textfield" title="Permanent link">&para;</a></h4>
 <p>The standard &lt;input type="text"&gt; tag type. User input with this tag is
-persistent. All standard &lt;input&gt; tag attributes are supported. The
-name and force attributes are supported as per other tags.</p>
+persistent. Other standard HTML &lt;input&gt; attributes are passed through
+to the generated element.</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a><span class="p">&lt;</span><span class="nt">textfield</span>
+</span><span id="__span-45-2"><a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a>  <span class="na">name</span><span class="o">=</span><span class="s">NAME</span>
+</span><span id="__span-45-3"><a id="__codelineno-45-3" name="__codelineno-45-3" href="#__codelineno-45-3"></a>  <span class="err">[</span><span class="na">value</span><span class="o">=</span><span class="s">TEXT]</span>
+</span><span id="__span-45-4"><a id="__codelineno-45-4" name="__codelineno-45-4" href="#__codelineno-45-4"></a>  <span class="err">[</span><span class="na">label</span><span class="o">=</span><span class="s">TEXT]</span>
+</span><span id="__span-45-5"><a id="__codelineno-45-5" name="__codelineno-45-5" href="#__codelineno-45-5"></a>  <span class="err">[</span><span class="na">force</span><span class="err">]</span>
+</span><span id="__span-45-6"><a id="__codelineno-45-6" name="__codelineno-45-6" href="#__codelineno-45-6"></a>  <span class="err">(</span><span class="na">standard</span> <span class="na">HTML</span> <span class="err">&lt;</span><span class="na">input</span><span class="p">&gt;</span> attributes)
+</span><span id="__span-45-7"><a id="__codelineno-45-7" name="__codelineno-45-7" href="#__codelineno-45-7"></a>&gt;
+</span></code></pre></div>
+<dl>
+<dt>label=TEXT</dt>
+<dd>
+<p>Wrap the generated input in a &lt;label&gt; element using the supplied
+  text.</p>
+</dd>
+<dt>force</dt>
+<dd>
+<p>By default the field is stateful, and submitted values override the
+  configured value. Setting force always uses the configured value.</p>
+</dd>
+</dl>
 <h4 id="tag_password_field">&lt;password_field&gt;<a class="headerlink" href="#tag_password_field" title="Permanent link">&para;</a></h4>
-<p>The standard &lt;input type="password"&gt; tag type. User input with this
-tag is persistent. The name and force attributes are supported as per
-other tags.</p>
+<p>The standard &lt;input type="password"&gt; tag type. It uses the same
+attributes as &lt;textfield&gt;, with the generated input type set to
+<code>password</code>.</p>
 <h4 id="tag_filefield">&lt;filefield&gt;<a class="headerlink" href="#tag_filefield" title="Permanent link">&para;</a></h4>
-<p>The standard &lt;input type="file"&gt; tag type. User input with this tag is
-persistent. When querying this parameter after form submission responses
-will be in the form of a Plack::Request::Upload object. User input with
-this tag is persistent. Example to demonstrate minimal file upload
-facility:</p>
-<div class="language-html highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;File Upload&quot;</span><span class="p">&gt;</span>
-</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="p">&lt;</span><span class="nt">start_multipart_form</span><span class="p">&gt;</span>
-</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="p">&lt;</span><span class="nt">filefield</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;file&quot;</span> <span class="na">multiple</span> <span class="na">required</span><span class="p">&gt;</span>
-</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>
-</span><span id="__span-38-5"><a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a><span class="p">&lt;</span><span class="nt">submit</span> <span class="na">name</span><span class="o">=</span><span class="s">Upload</span><span class="p">&gt;</span>
-</span><span id="__span-38-6"><a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a><span class="p">&lt;</span><span class="nt">end_form</span><span class="p">&gt;</span>
-</span><span id="__span-38-7"><a id="__codelineno-38-7" name="__codelineno-38-7" href="#__codelineno-38-7"></a>
-</span><span id="__span-38-8"><a id="__codelineno-38-8" name="__codelineno-38-8" href="#__codelineno-38-8"></a><span class="p">&lt;</span><span class="nt">pre</span><span class="p">&gt;</span>
-</span><span id="__span-38-9"><a id="__codelineno-38-9" name="__codelineno-38-9" href="#__codelineno-38-9"></a><span class="p">&lt;</span><span class="nt">perl</span> <span class="na">handler</span><span class="p">/&gt;</span>
-</span><span id="__span-38-10"><a id="__codelineno-38-10" name="__codelineno-38-10" href="#__codelineno-38-10"></a><span class="p">&lt;/</span><span class="nt">pre</span><span class="p">&gt;</span>
-</span><span id="__span-38-11"><a id="__codelineno-38-11" name="__codelineno-38-11" href="#__codelineno-38-11"></a>
-</span><span id="__span-38-12"><a id="__codelineno-38-12" name="__codelineno-38-12" href="#__codelineno-38-12"></a>__PERL__
-</span><span id="__span-38-13"><a id="__codelineno-38-13" name="__codelineno-38-13" href="#__codelineno-38-13"></a>
-</span><span id="__span-38-14"><a id="__codelineno-38-14" name="__codelineno-38-14" href="#__codelineno-38-14"></a>use Data::Dumper;
-</span><span id="__span-38-15"><a id="__codelineno-38-15" name="__codelineno-38-15" href="#__codelineno-38-15"></a>sub handler {
-</span><span id="__span-38-16"><a id="__codelineno-38-16" name="__codelineno-38-16" href="#__codelineno-38-16"></a>
-</span><span id="__span-38-17"><a id="__codelineno-38-17" name="__codelineno-38-17" href="#__codelineno-38-17"></a>    my $self=shift();
-</span><span id="__span-38-18"><a id="__codelineno-38-18" name="__codelineno-38-18" href="#__codelineno-38-18"></a>    my $cgi_or=$self-&gt;CGI();
-</span><span id="__span-38-19"><a id="__codelineno-38-19" name="__codelineno-38-19" href="#__codelineno-38-19"></a>    return Dumper($cgi_or-&gt;uploads()-&gt;flatten);
-</span><span id="__span-38-20"><a id="__codelineno-38-20" name="__codelineno-38-20" href="#__codelineno-38-20"></a>
-</span><span id="__span-38-21"><a id="__codelineno-38-21" name="__codelineno-38-21" href="#__codelineno-38-21"></a>}
+<p>The standard &lt;input type="file"&gt; tag type. It uses the same attributes
+as &lt;textfield&gt;, with the generated input type set to <code>file</code>. When
+querying this parameter after form submission responses will be in the
+form of a Plack::Request::Upload object. Example to demonstrate minimal
+file upload facility:</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;File Upload&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-46-2"><a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a><span class="p">&lt;</span><span class="nt">start_multipart_form</span><span class="p">&gt;</span>
+</span><span id="__span-46-3"><a id="__codelineno-46-3" name="__codelineno-46-3" href="#__codelineno-46-3"></a><span class="p">&lt;</span><span class="nt">filefield</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;file&quot;</span> <span class="na">multiple</span> <span class="na">required</span><span class="p">&gt;</span>
+</span><span id="__span-46-4"><a id="__codelineno-46-4" name="__codelineno-46-4" href="#__codelineno-46-4"></a><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>
+</span><span id="__span-46-5"><a id="__codelineno-46-5" name="__codelineno-46-5" href="#__codelineno-46-5"></a><span class="p">&lt;</span><span class="nt">submit</span> <span class="na">name</span><span class="o">=</span><span class="s">Upload</span><span class="p">&gt;</span>
+</span><span id="__span-46-6"><a id="__codelineno-46-6" name="__codelineno-46-6" href="#__codelineno-46-6"></a><span class="p">&lt;</span><span class="nt">end_form</span><span class="p">&gt;</span>
+</span><span id="__span-46-7"><a id="__codelineno-46-7" name="__codelineno-46-7" href="#__codelineno-46-7"></a>
+</span><span id="__span-46-8"><a id="__codelineno-46-8" name="__codelineno-46-8" href="#__codelineno-46-8"></a><span class="p">&lt;</span><span class="nt">pre</span><span class="p">&gt;</span>
+</span><span id="__span-46-9"><a id="__codelineno-46-9" name="__codelineno-46-9" href="#__codelineno-46-9"></a><span class="p">&lt;</span><span class="nt">perl</span> <span class="na">handler</span><span class="p">/&gt;</span>
+</span><span id="__span-46-10"><a id="__codelineno-46-10" name="__codelineno-46-10" href="#__codelineno-46-10"></a><span class="p">&lt;/</span><span class="nt">pre</span><span class="p">&gt;</span>
+</span><span id="__span-46-11"><a id="__codelineno-46-11" name="__codelineno-46-11" href="#__codelineno-46-11"></a>
+</span><span id="__span-46-12"><a id="__codelineno-46-12" name="__codelineno-46-12" href="#__codelineno-46-12"></a>__PERL__
+</span><span id="__span-46-13"><a id="__codelineno-46-13" name="__codelineno-46-13" href="#__codelineno-46-13"></a>
+</span><span id="__span-46-14"><a id="__codelineno-46-14" name="__codelineno-46-14" href="#__codelineno-46-14"></a>use Data::Dumper;
+</span><span id="__span-46-15"><a id="__codelineno-46-15" name="__codelineno-46-15" href="#__codelineno-46-15"></a>sub handler {
+</span><span id="__span-46-16"><a id="__codelineno-46-16" name="__codelineno-46-16" href="#__codelineno-46-16"></a>
+</span><span id="__span-46-17"><a id="__codelineno-46-17" name="__codelineno-46-17" href="#__codelineno-46-17"></a>    my $self=shift();
+</span><span id="__span-46-18"><a id="__codelineno-46-18" name="__codelineno-46-18" href="#__codelineno-46-18"></a>    my $cgi_or=$self-&gt;CGI();
+</span><span id="__span-46-19"><a id="__codelineno-46-19" name="__codelineno-46-19" href="#__codelineno-46-19"></a>    return Dumper($cgi_or-&gt;uploads()-&gt;flatten);
+</span><span id="__span-46-20"><a id="__codelineno-46-20" name="__codelineno-46-20" href="#__codelineno-46-20"></a>
+</span><span id="__span-46-21"><a id="__codelineno-46-21" name="__codelineno-46-21" href="#__codelineno-46-21"></a>}
 </span></code></pre></div>
 <h4 id="tag_image_button">&lt;image_button&gt;<a class="headerlink" href="#tag_image_button" title="Permanent link">&para;</a></h4>
-<p>The standard &lt;input type="image"&gt; tag type.</p>
+<p>The standard &lt;input type="image"&gt; tag type. It accepts standard HTML
+&lt;input&gt; attributes and supports label wrapping using the same
+behaviour as &lt;textfield&gt;.</p>
 <h4 id="tag_button">&lt;button&gt;<a class="headerlink" href="#tag_button" title="Permanent link">&para;</a></h4>
-<p>The standard &lt;input type="button"&gt; tag type.</p>
+<p>The standard HTML &lt;button&gt; element. Standard button attributes and
+enclosed content are passed through to the generated element.</p>
 <h4 id="tag_submit">&lt;submit&gt;<a class="headerlink" href="#tag_submit" title="Permanent link">&para;</a></h4>
 <p>The standard &lt;input type="submit"&gt; tag type to initiate form
-submission.</p>
+submission. It accepts standard HTML &lt;input&gt; attributes and supports
+label wrapping using the same behaviour as &lt;textfield&gt;.</p>
 <h4 id="tag_reset">&lt;reset&gt;<a class="headerlink" href="#tag_reset" title="Permanent link">&para;</a></h4>
 <p>The standard &lt;input type="reset"&gt; tag type to reset form fields to
-their initial values.</p>
+their initial values. It accepts standard HTML &lt;input&gt; attributes and
+supports label wrapping using the same behaviour as &lt;textfield&gt;.</p>
 <h4 id="tag_defaults">&lt;defaults&gt;<a class="headerlink" href="#tag_defaults" title="Permanent link">&para;</a></h4>
 <p>A CGI-style shortcut rendered as a submit input. It is supported for
-compatibility with CGI.pm-style form helpers.</p>
+compatibility with CGI.pm-style form helpers and uses the same
+attributes as &lt;submit&gt;.</p>
 <h4 id="tag_hidden">&lt;hidden&gt;<a class="headerlink" href="#tag_hidden" title="Permanent link">&para;</a></h4>
-<p>The standard &lt;input type="hidden"&gt; tag type.</p>
+<p>The standard &lt;input type="hidden"&gt; tag type. Standard HTML &lt;input&gt;
+attributes are passed through to the generated element.</p>
 <h4 id="tag_isindex">&lt;isindex&gt;<a class="headerlink" href="#tag_isindex" title="Permanent link">&para;</a></h4>
 <p>Legacy &lt;isindex&gt; output is supported for compatibility, but the HTML
 element is deprecated and should not be used for new pages. Prefer
 normal form tags such as &lt;start_form&gt;, &lt;textfield&gt;, and &lt;submit&gt;.</p>
 <h4 id="tag_start_form">&lt;start_form&gt;<a class="headerlink" href="#tag_start_form" title="Permanent link">&para;</a></h4>
-<p>Start a form with method=POST and encoding type
-enctype="application/x-www-form-urlencoded" (implicit)</p>
+<p>Start a form with method=POST. Other standard HTML &lt;form&gt; attributes
+are passed through to the generated element.</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="p">&lt;</span><span class="nt">start_form</span>
+</span><span id="__span-47-2"><a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a>  <span class="err">[</span><span class="na">method</span><span class="o">=</span><span class="s">METHOD]</span>
+</span><span id="__span-47-3"><a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a>  <span class="err">(</span><span class="na">standard</span> <span class="na">HTML</span> <span class="err">&lt;</span><span class="na">form</span><span class="p">&gt;</span> attributes)
+</span><span id="__span-47-4"><a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a>&gt;
+</span></code></pre></div>
 <h4 id="tag_start_multipart_form">&lt;start_multipart_form&gt;<a class="headerlink" href="#tag_start_multipart_form" title="Permanent link">&para;</a></h4>
-<p>Start a form with method=POST and encoding type
-enctype="multipart/form-data"</p>
+<p>Start a form with method=POST and enctype="multipart/form-data". Other
+standard HTML &lt;form&gt; attributes are passed through to the generated
+element. The enctype attribute can be overridden because form attributes
+are passed through, but this is normally only useful if you are
+deliberately replacing multipart form encoding.</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="p">&lt;</span><span class="nt">start_multipart_form</span>
+</span><span id="__span-48-2"><a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a>  <span class="err">[</span><span class="na">method</span><span class="o">=</span><span class="s">METHOD]</span>
+</span><span id="__span-48-3"><a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a>  <span class="err">[</span><span class="na">enctype</span><span class="o">=</span><span class="s">ENCODING]</span>
+</span><span id="__span-48-4"><a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a>  <span class="err">(</span><span class="na">standard</span> <span class="na">HTML</span> <span class="err">&lt;</span><span class="na">form</span><span class="p">&gt;</span> attributes)
+</span><span id="__span-48-5"><a id="__codelineno-48-5" name="__codelineno-48-5" href="#__codelineno-48-5"></a>&gt;
+</span></code></pre></div>
 <h2 id="method_reference">Method Reference<a class="headerlink" href="#method_reference" title="Permanent link">&para;</a></h2>
 <p>When running Perl code within a WebDyne page the very first parameter
 passed to any routine (in-line or in a __PERL__ block) is an
@@ -3834,24 +4091,80 @@ WebDyne's built-in index page by default unless <code>DOCUMENT_DEFAULT</code>,
 <p>When debugging enabled in modules only (see Troubleshooting). Set to 1
 to enable all debugging (extremely verbose), or set to module/subroutine
 name to filter down to that area. e.g.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>#  Debug the internal perl routine in WebDyne
-</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>#
-</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>$ WEBDYNE_DEBUG=perl perl -Ilib bin/wdrender time.psp
-</span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a>[23:28:24.699358 WebDyne (perl)] WebDyne=HASH(0x561d4a271a28) rendering perl tag in block ARRAY(0x561d4aaace20), attr $VAR1 = {
-</span><span id="__span-39-5"><a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a>  &#39;inline&#39; =&gt; 1,
-</span><span id="__span-39-6"><a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a>  &#39;perl&#39; =&gt; &#39; localtime() &#39;
-</span><span id="__span-39-7"><a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a>};
-</span><span id="__span-39-8"><a id="__codelineno-39-8" name="__codelineno-39-8" href="#__codelineno-39-8"></a>
-</span><span id="__span-39-9"><a id="__codelineno-39-9" name="__codelineno-39-9" href="#__codelineno-39-9"></a>[23:28:24.699490 WebDyne (perl)] found inline perl code $VAR1 = \&#39; localtime() &#39;;
-</span><span id="__span-39-10"><a id="__codelineno-39-10" name="__codelineno-39-10" href="#__codelineno-39-10"></a>, param $VAR2 = undef;
-</span><span id="__span-39-11"><a id="__codelineno-39-11" name="__codelineno-39-11" href="#__codelineno-39-11"></a>
-</span><span id="__span-39-12"><a id="__codelineno-39-12" name="__codelineno-39-12" href="#__codelineno-39-12"></a>&lt;!DOCTYPE html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;title&gt;Untitled Document&lt;/title&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta content=&quot;width=device-width, initial-scale=1.0&quot; name=&quot;viewport&quot;&gt;&lt;link href=&quot;https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css&quot; rel=&quot;stylesheet&quot;&gt;&lt;link href=&quot;/style.css&quot; rel=&quot;stylesheet&quot;&gt;&lt;/head&gt;
-</span><span id="__span-39-13"><a id="__codelineno-39-13" name="__codelineno-39-13" href="#__codelineno-39-13"></a>&lt;body&gt;&lt;h1&gt;Example File&lt;/h1&gt;&lt;p&gt; The current server time is: Sun Jan 11 23:28:24 2026&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a>#  Debug the internal perl routine in WebDyne
+</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a>#
+</span><span id="__span-49-3"><a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a>$ WEBDYNE_DEBUG=perl perl -Ilib bin/wdrender time.psp
+</span><span id="__span-49-4"><a id="__codelineno-49-4" name="__codelineno-49-4" href="#__codelineno-49-4"></a>[23:28:24.699358 WebDyne (perl)] WebDyne=HASH(0x561d4a271a28) rendering perl tag in block ARRAY(0x561d4aaace20), attr $VAR1 = {
+</span><span id="__span-49-5"><a id="__codelineno-49-5" name="__codelineno-49-5" href="#__codelineno-49-5"></a>  &#39;inline&#39; =&gt; 1,
+</span><span id="__span-49-6"><a id="__codelineno-49-6" name="__codelineno-49-6" href="#__codelineno-49-6"></a>  &#39;perl&#39; =&gt; &#39; localtime() &#39;
+</span><span id="__span-49-7"><a id="__codelineno-49-7" name="__codelineno-49-7" href="#__codelineno-49-7"></a>};
+</span><span id="__span-49-8"><a id="__codelineno-49-8" name="__codelineno-49-8" href="#__codelineno-49-8"></a>
+</span><span id="__span-49-9"><a id="__codelineno-49-9" name="__codelineno-49-9" href="#__codelineno-49-9"></a>[23:28:24.699490 WebDyne (perl)] found inline perl code $VAR1 = \&#39; localtime() &#39;;
+</span><span id="__span-49-10"><a id="__codelineno-49-10" name="__codelineno-49-10" href="#__codelineno-49-10"></a>, param $VAR2 = undef;
+</span><span id="__span-49-11"><a id="__codelineno-49-11" name="__codelineno-49-11" href="#__codelineno-49-11"></a>
+</span><span id="__span-49-12"><a id="__codelineno-49-12" name="__codelineno-49-12" href="#__codelineno-49-12"></a>&lt;!DOCTYPE html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;title&gt;Untitled Document&lt;/title&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta content=&quot;width=device-width, initial-scale=1.0&quot; name=&quot;viewport&quot;&gt;&lt;link href=&quot;https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css&quot; rel=&quot;stylesheet&quot;&gt;&lt;link href=&quot;/style.css&quot; rel=&quot;stylesheet&quot;&gt;&lt;/head&gt;
+</span><span id="__span-49-13"><a id="__codelineno-49-13" name="__codelineno-49-13" href="#__codelineno-49-13"></a>&lt;body&gt;&lt;h1&gt;Example File&lt;/h1&gt;&lt;p&gt; The current server time is: Sun Jan 11 23:28:24 2026&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
 </span></code></pre></div>
 <h4 id="env_webdyne_debug_filter">WEBDYNE_DEBUG_FILTER<a class="headerlink" href="#env_webdyne_debug_filter" title="Permanent link">&para;</a></h4>
 <p>When debugging enabled only output debug information that matches the
 regex given by this environment variable. Useful to further filter down
 to areas of interest.</p>
+<h3 id="docker_runtime_server_tuning">Docker Runtime Server Tuning<a class="headerlink" href="#docker_runtime_server_tuning" title="Permanent link">&para;</a></h3>
+<p>The published WebDyne Docker images expose server tuning options through
+environment variables understood by the default container entrypoint.</p>
+<p>Runtime server tuning options can also be supplied through environment
+variables. If these variables are not set, the underlying server
+defaults are used.</p>
+<dl>
+<dt><code>WEBDYNE_SERVER_PSGI_WORKERS</code></dt>
+<dd>
+<p>Sets the <code>starman</code> <code>--workers</code> option.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER_PSGI_MAX_REQUESTS</code></dt>
+<dd>
+<p>Sets the <code>starman</code> <code>--max-requests</code> option.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER_PSGI_BACKLOG</code></dt>
+<dd>
+<p>Sets the <code>starman</code> <code>--backlog</code> option.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER_PSGI_KEEPALIVE_TIMEOUT</code></dt>
+<dd>
+<p>Sets the <code>starman</code> <code>--keepalive-timeout</code> option.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER_PSGI_READ_TIMEOUT</code></dt>
+<dd>
+<p>Sets the <code>starman</code> <code>--read-timeout</code> option.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER_PAGI_WORKERS</code></dt>
+<dd>
+<p>Sets the <code>pagi-server</code> <code>--workers</code> option.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER_PAGI_MAX_REQUESTS</code></dt>
+<dd>
+<p>Sets the <code>pagi-server</code> <code>--max-requests</code> option.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER_PAGI_LISTENER_BACKLOG</code></dt>
+<dd>
+<p>Sets the <code>pagi-server</code> <code>--listener-backlog</code> option.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER_PAGI_TIMEOUT</code></dt>
+<dd>
+<p>Sets the <code>pagi-server</code> <code>--timeout</code> option.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER_PAGI_REQUEST_TIMEOUT</code></dt>
+<dd>
+<p>Sets the <code>pagi-server</code> <code>--request-timeout</code> option.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER_PAGI_MAX_CONNECTIONS</code></dt>
+<dd>
+<p>Sets the <code>pagi-server</code> <code>--max-connections</code> option.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER_PAGI_MAX_BODY_SIZE</code></dt>
+<dd>
+<p>Sets the <code>pagi-server</code> <code>--max-body-size</code> option.</p>
+</dd>
+</dl>
 <h3 id="webdyne_directives">Directives<a class="headerlink" href="#webdyne_directives" title="Permanent link">&para;</a></h3>
 <p>A limited number of directives are are available which change the way
 WebDyne processes pages. Directives are set in either the Apache .conf

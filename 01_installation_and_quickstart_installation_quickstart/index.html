@@ -383,17 +383,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prerequisites
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#quickstart" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -401,34 +390,6 @@
       
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#docker" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docker
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Docker">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#deploying-webdyne-apps-with-docker" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deploying WebDyne apps with Docker
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -518,6 +479,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2295,7 +2267,6 @@
 
 
 <h1 id="installation_quickstart">Installation and Quickstart<a class="headerlink" href="#installation_quickstart" title="Permanent link">&para;</a></h1>
-<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <p>WebDyne will install and run on any modern Linux system that has a
 recent version of Perl installed and is capable of installing Perl
 modules via CPAN. Installation via Docker is also supported.</p>
@@ -2363,153 +2334,6 @@ $ cpanm Task::WebDyne::Plack
 #
 $ cpanm Task::WebDyne::Starman
 </code></pre></div>
-<h2 id="docker">Docker<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h2>
-<p>Docker containers are available from the <a href="https://github.com/aspeer/WebDyne/pkgs/container/webdyne">Github Container
-Registry</a>.
-Install the default Docker container (based on Debian) via:</p>
-<div class="language-text highlight"><pre><span></span><code>#  Default debian version
-#
-$ docker pull ghcr.io/aspeer/webdyne:latest
-
-#  Or Alpine/Fedora/Perl versions
-#
-# docker pull ghcr.io/aspeer/webdyne:alpine
-# docker pull ghcr.io/aspeer/webdyne:fedora
-</code></pre></div>
-<p>Start the docker container with the command:</p>
-<div class="language-text highlight"><pre><span></span><code>$ docker run -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest
-</code></pre></div>
-<p>This will start WebDyne running on port 5002 on the host. Connecting to
-that location should show the server <em>localtime</em> test page</p>
-<p>By default the container starts WebDyne with <code>starman</code> using the PSGI
-runner. The server implementation can be selected with the
-<code>WEBDYNE_SERVER</code> environment variable. Supported values are <code>psgi</code> and
-<code>pagi</code>. If <code>WEBDYNE_SERVER</code> is not set, <code>psgi</code> is used.</p>
-<div class="language-text highlight"><pre><span></span><code>#  Run with the default PSGI/Starman server
-#
-$ docker run -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest
-
-#  Run with the PAGI server
-#
-$ docker run -e WEBDYNE_SERVER=pagi -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest
-</code></pre></div>
-<p>To mount a local page and serve it through the docker container use the
-command:</p>
-<div class="language-text highlight"><pre><span></span><code>$ docker run -v $(pwd):/app:ro -e PORT=5011 -e DOCUMENT_ROOT=/app -p 5011:5011 --name webdyne ghcr.io/aspeer/webdyne:latest
-</code></pre></div>
-<p>This will tell docker to mount the local directory into the docker
-container. Because the container starts WebDyne through <code>starman</code> or
-<code>pagi-server</code>, the default document is <code>app.psp</code> unless
-<code>DOCUMENT_DEFAULT</code> is set. If there is a <code>cpanfile</code> in the mount
-directory any modules will be installed into the docker container
-automatically.</p>
-<p>Runtime server tuning options can also be supplied through environment
-variables. If these variables are not set, the underlying server
-defaults are used.</p>
-<dl>
-<dt><code>WEBDYNE_SERVER_PSGI_WORKERS</code></dt>
-<dd>
-<p>Sets the <code>starman</code> <code>--workers</code> option.</p>
-</dd>
-<dt><code>WEBDYNE_SERVER_PSGI_MAX_REQUESTS</code></dt>
-<dd>
-<p>Sets the <code>starman</code> <code>--max-requests</code> option.</p>
-</dd>
-<dt><code>WEBDYNE_SERVER_PSGI_BACKLOG</code></dt>
-<dd>
-<p>Sets the <code>starman</code> <code>--backlog</code> option.</p>
-</dd>
-<dt><code>WEBDYNE_SERVER_PSGI_KEEPALIVE_TIMEOUT</code></dt>
-<dd>
-<p>Sets the <code>starman</code> <code>--keepalive-timeout</code> option.</p>
-</dd>
-<dt><code>WEBDYNE_SERVER_PSGI_READ_TIMEOUT</code></dt>
-<dd>
-<p>Sets the <code>starman</code> <code>--read-timeout</code> option.</p>
-</dd>
-<dt><code>WEBDYNE_SERVER_PAGI_WORKERS</code></dt>
-<dd>
-<p>Sets the <code>pagi-server</code> <code>--workers</code> option.</p>
-</dd>
-<dt><code>WEBDYNE_SERVER_PAGI_MAX_REQUESTS</code></dt>
-<dd>
-<p>Sets the <code>pagi-server</code> <code>--max-requests</code> option.</p>
-</dd>
-<dt><code>WEBDYNE_SERVER_PAGI_LISTENER_BACKLOG</code></dt>
-<dd>
-<p>Sets the <code>pagi-server</code> <code>--listener-backlog</code> option.</p>
-</dd>
-<dt><code>WEBDYNE_SERVER_PAGI_TIMEOUT</code></dt>
-<dd>
-<p>Sets the <code>pagi-server</code> <code>--timeout</code> option.</p>
-</dd>
-<dt><code>WEBDYNE_SERVER_PAGI_REQUEST_TIMEOUT</code></dt>
-<dd>
-<p>Sets the <code>pagi-server</code> <code>--request-timeout</code> option.</p>
-</dd>
-<dt><code>WEBDYNE_SERVER_PAGI_MAX_CONNECTIONS</code></dt>
-<dd>
-<p>Sets the <code>pagi-server</code> <code>--max-connections</code> option.</p>
-</dd>
-<dt><code>WEBDYNE_SERVER_PAGI_MAX_BODY_SIZE</code></dt>
-<dd>
-<p>Sets the <code>pagi-server</code> <code>--max-body-size</code> option.</p>
-</dd>
-</dl>
-<h3 id="deploying-webdyne-apps-with-docker">Deploying WebDyne apps with Docker<a class="headerlink" href="#deploying-webdyne-apps-with-docker" title="Permanent link">&para;</a></h3>
-<p>The WebDyne container can be used as the basis for new docker images
-containing your application files. Consider the following directory
-structure (available from Github as
-<a href="https://github.com/aspeer/psp-WebDyne-Fortune">aspeer/psp-WebDyne-Fortune</a>:</p>
-<div class="language-text highlight"><pre><span></span><code>psp-WebDyne-Fortune/
-├── app.pm
-├── app.psp
-├── cpanfile
-├── Dockerfile
-└── webdyne.conf.pl
-</code></pre></div>
-<p>Where:</p>
-<dl>
-<dt>app.psp</dt>
-<dd>
-<p>The main and default psp file</p>
-</dd>
-<dt>app.pm</dt>
-<dd>
-<p>Perl code used in the psp file</p>
-</dd>
-<dt>cpanfile</dt>
-<dd>
-<p>A list of Perl modules to be installed in the docker container by
-  cpanm</p>
-</dd>
-<dt>Dockerfile</dt>
-<dd>
-<p>The docker build file</p>
-</dd>
-<dt>webdyne.conf.pl</dt>
-<dd>
-<p>Any variables to be set for the WebDyne environment</p>
-</dd>
-</dl>
-<p>Constitute all the files needed to stand up a WebDyne based application
-in a Docker container. The contents of the Dockerfile are minimal:</p>
-<div class="language-text highlight"><pre><span></span><code>FROM webdyne:latest
-WORKDIR /app
-# Debian packages needed for this app
-RUN apt-get update &amp;&amp; apt-get -y install fortunes
-COPY app.* .
-COPY cpanfile .
-COPY webdyne.conf.pl /etc
-</code></pre></div>
-<p>Build the Docker container:</p>
-<div class="language-text highlight"><pre><span></span><code>docker build  -t webdyne-app-fortune -f ./Dockerfile .
-</code></pre></div>
-<p>And run it:</p>
-<div class="language-text highlight"><pre><span></span><code>$ docker run -e PORT=5010 -p 5010:5010 --name=webdyne-app-fortune webdyne-app-fortune
-</code></pre></div>
-<p>Your application should now be available:</p>
-<p><img alt="" src="../images/webdyne-app-fortune1.png" /></p>
 <h2 id="cpan_install">CPAN or CPANMinus Install<a class="headerlink" href="#cpan_install" title="Permanent link">&para;</a></h2>
 <p>Install from the Perl CPAN library using <code>cpan</code> or <code>cpanm</code> utilities.
 Installs dependencies if required (also from CPAN).</p>
@@ -2944,6 +2768,94 @@ server localhost:5000 started
 #
 $ perl -Ilib bin/webdyne.apache .
 </code></pre></div>
+<h2 id="docker">Docker<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h2>
+<p>Docker containers are available from the <a href="https://github.com/aspeer/WebDyne/pkgs/container/webdyne">Github Container
+Registry</a>.
+Install the default Docker container (based on Debian) via:</p>
+<div class="language-text highlight"><pre><span></span><code>#  Default debian version
+#
+$ docker pull ghcr.io/aspeer/webdyne:latest
+
+#  Or Alpine/Fedora/Perl versions
+#
+# docker pull ghcr.io/aspeer/webdyne:alpine
+# docker pull ghcr.io/aspeer/webdyne:fedora
+</code></pre></div>
+<p>Start the docker container with the command:</p>
+<div class="language-text highlight"><pre><span></span><code>$ docker run -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest
+</code></pre></div>
+<p>This will start WebDyne running on port 5002 on the host. Connecting to
+that location should show the server <em>localtime</em> test page</p>
+<p>By default the container starts WebDyne with <code>starman</code> using the PSGI
+runner. The server implementation can be selected with the
+<code>WEBDYNE_SERVER</code> environment variable.</p>
+<div class="language-text highlight"><pre><span></span><code>#  Run with the default PSGI/Starman server
+#
+$ docker run -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest
+
+#  Run with the PAGI server
+#
+$ docker run -e WEBDYNE_SERVER=pagi -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest
+</code></pre></div>
+<p>To mount a local page and serve it through the docker container use the
+command:</p>
+<div class="language-text highlight"><pre><span></span><code>$ docker run -v $(pwd):/app:ro -e PORT=5011 -e DOCUMENT_ROOT=/app -p 5011:5011 --name webdyne ghcr.io/aspeer/webdyne:latest
+</code></pre></div>
+<p>This will tell docker to mount the local directory into the docker
+container. Because the container starts WebDyne through <code>starman</code> or
+<code>pagi-server</code>, the default document is <code>app.psp</code> unless
+<code>DOCUMENT_DEFAULT</code> is set. If there is a <code>cpanfile</code> in the mount
+directory any modules will be installed into the docker container
+automatically.</p>
+<p>When the container is started without an explicit command, the default
+entrypoint uses the following environment variables:</p>
+<dl>
+<dt><code>PORT</code></dt>
+<dd>
+<p>The TCP port the selected server listens on inside the container. If
+  omitted, the entrypoint uses <code>8080</code>. The docker <code>-p</code> mapping should
+  map the same container port, for example <code>-e PORT=5002 -p 5002:5002</code>.</p>
+</dd>
+<dt><code>WEBDYNE_SERVER</code></dt>
+<dd>
+<p>Selects the server used by the default container command. Supported
+  values are <code>psgi</code> and <code>pagi</code>. If omitted, <code>psgi</code> is used. <code>psgi</code> runs
+  <code>starman -MWebDyne</code> with <code>webdyne.psgi</code>. <code>pagi</code> runs <code>pagi-server</code>
+  with <code>webdyne.pagi</code>, enabling PAGI request handling such as SSE and
+  WebSocket support where the application uses those features. Any other
+  value causes the entrypoint to exit with an error.</p>
+</dd>
+<dt><code>DOCUMENT_ROOT</code></dt>
+<dd>
+<p>The WebDyne document root passed through to <code>webdyne.psgi</code> or
+  <code>webdyne.pagi</code>. The published images default this to <code>/app</code>. Override
+  it when mounting application files somewhere else in the container.</p>
+</dd>
+<dt><code>DOCUMENT_DEFAULT</code></dt>
+<dd>
+<p>The default document to serve from <code>DOCUMENT_ROOT</code>. If omitted, the
+  command wrappers enable WebDyne's built-in default index behavior,
+  which uses <code>app.psp</code> in the published Docker images.</p>
+</dd>
+<dt><code>WEBDYNE_CACHE_DN</code></dt>
+<dd>
+<p>The WebDyne compile/cache directory. The published images set this to
+  <code>/opt/webdyne/cache</code> by default via the image's <code>PERL_CARTON_PATH</code>.
+  Override it if the cache should live on a mounted volume or another
+  writable directory.</p>
+</dd>
+<dt><code>PERL_CARTON_PATH</code></dt>
+<dd>
+<p>The local Perl installation prefix inside the image. The published
+  images default this to <code>/opt/webdyne</code> and use it to set <code>PERL5LIB</code>,
+  <code>PATH</code>, the default <code>WEBDYNE_CACHE_DN</code>, and the path to the bundled
+  <code>webdyne.psgi</code> and <code>webdyne.pagi</code> wrappers. This is normally only
+  changed when building a custom image.</p>
+</dd>
+</dl>
+<p>See the <a href="../07_reference/#docker_runtime_server_tuning">Docker Runtime Server Tuning</a>
+reference section for server worker, timeout and connection limit
+environment variables.</p>
 
 
 
