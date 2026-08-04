@@ -148,28 +148,24 @@
       <title>Installation and Quickstart</title>
     </info>
 
-    <section xml:id="prerequisites">
-      <title>Prerequisites</title>
+    <para>WebDyne will install and run on any modern Linux system that has a recent version of Perl installed and is capable of installing Perl modules via CPAN. Installation via Docker is
+    also supported.</para>
 
-      <para>WebDyne will install and run on any modern Linux system that has a recent version of Perl installed and is capable of installing Perl modules via CPAN. Installation via Docker is
-      also supported.</para>
+    <para>When installing WebDyne there are two components which are required before you can begin serving PSP files:</para>
 
-      <para>When installing WebDyne there are two components which are required before you can begin serving PSP files:</para>
+    <itemizedlist>
+      <listitem>
+        <para>The core WebDyne Perl modules</para>
+      </listitem>
 
-      <itemizedlist>
-        <listitem>
-          <para>The core WebDyne Perl modules</para>
-        </listitem>
+      <listitem>
+        <para>A web server or application configured to use WebDyne.</para>
+      </listitem>
+    </itemizedlist>
 
-        <listitem>
-          <para>A web server or application configured to use WebDyne.</para>
-        </listitem>
-      </itemizedlist>
+    <para>WebDyne will work with Apache mod_perl, PAGI or PSGI compatible web servers (such as Plack, Starman etc.).</para>
 
-      <para>WebDyne will work with Apache mod_perl, PAGI or PSGI compatible web servers (such as Plack, Starman etc.).</para>
-
-      <para>Docker containers with pre-built versions of WebDyne are also available.</para>
-    </section>
+    <para>Docker containers with pre-built versions of WebDyne are also available.</para>
 
     <section xml:id="quickstart">
       <title>Quickstart</title>
@@ -226,235 +222,6 @@ $ <command>cpanm Task::WebDyne::Plack</command>
 $ <command>cpanm Task::WebDyne::Starman</command></screen>
     </section>
 
-    <section xml:id="docker">
-      <title>Docker</title>
-
-      <para>Docker containers are available from the <link xlink:href="https://github.com/aspeer/WebDyne/pkgs/container/webdyne" xmlns:xlink="http://www.w3.org/1999/xlink">Github Container
-      Registry</link>. Install the default Docker container (based on Debian) via:</para>
-
-      <screen>#  Default debian version
-#
-$ <command>docker pull ghcr.io/aspeer/webdyne:latest</command>
-
-#  Or Alpine/Fedora/Perl versions
-#
-# docker pull ghcr.io/aspeer/webdyne:alpine
-# docker pull ghcr.io/aspeer/webdyne:fedora
-</screen>
-
-      <para>Start the docker container with the command:</para>
-
-      <screen>$ <command>docker run -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest</command></screen>
-
-      <para>This will start WebDyne running on port 5002 on the host. Connecting to that location should show the server <emphasis>localtime</emphasis> test page</para>
-
-      <para>By default the container starts WebDyne with <command>starman</command> using the PSGI runner. The server implementation can be selected with the <envar>WEBDYNE_SERVER</envar>
-      environment variable. Supported values are <literal>psgi</literal> and <literal>pagi</literal>. If <envar>WEBDYNE_SERVER</envar> is not set, <literal>psgi</literal> is used.</para>
-
-      <screen>#  Run with the default PSGI/Starman server
-#
-$ <command>docker run -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest</command>
-
-#  Run with the PAGI server
-#
-$ <command>docker run -e WEBDYNE_SERVER=pagi -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest</command></screen>
-
-      <para>To mount a local page and serve it through the docker container use the command:</para>
-
-      <screen>$ <command>docker run -v $(pwd):/app:ro -e PORT=5011 -e DOCUMENT_ROOT=/app -p 5011:5011 --name webdyne ghcr.io/aspeer/webdyne:latest</command></screen>
-
-      <para>This will tell docker to mount the local directory into the docker container. Because the container starts WebDyne through <command>starman</command> or
-      <command>pagi-server</command>, the default document is <filename>app.psp</filename> unless <envar>DOCUMENT_DEFAULT</envar> is set. If there is a <filename>cpanfile</filename> in the
-      mount directory any modules will be installed into the docker container automatically.</para>
-
-      <para>Runtime server tuning options can also be supplied through environment variables. If these variables are not set, the underlying server defaults are used.</para>
-
-      <variablelist>
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PSGI_WORKERS</envar></term>
-
-          <listitem>
-            <para>Sets the <command>starman</command> <option>--workers</option> option.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PSGI_MAX_REQUESTS</envar></term>
-
-          <listitem>
-            <para>Sets the <command>starman</command> <option>--max-requests</option> option.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PSGI_BACKLOG</envar></term>
-
-          <listitem>
-            <para>Sets the <command>starman</command> <option>--backlog</option> option.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PSGI_KEEPALIVE_TIMEOUT</envar></term>
-
-          <listitem>
-            <para>Sets the <command>starman</command> <option>--keepalive-timeout</option> option.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PSGI_READ_TIMEOUT</envar></term>
-
-          <listitem>
-            <para>Sets the <command>starman</command> <option>--read-timeout</option> option.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PAGI_WORKERS</envar></term>
-
-          <listitem>
-            <para>Sets the <command>pagi-server</command> <option>--workers</option> option.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PAGI_MAX_REQUESTS</envar></term>
-
-          <listitem>
-            <para>Sets the <command>pagi-server</command> <option>--max-requests</option> option.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PAGI_LISTENER_BACKLOG</envar></term>
-
-          <listitem>
-            <para>Sets the <command>pagi-server</command> <option>--listener-backlog</option> option.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PAGI_TIMEOUT</envar></term>
-
-          <listitem>
-            <para>Sets the <command>pagi-server</command> <option>--timeout</option> option.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PAGI_REQUEST_TIMEOUT</envar></term>
-
-          <listitem>
-            <para>Sets the <command>pagi-server</command> <option>--request-timeout</option> option.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PAGI_MAX_CONNECTIONS</envar></term>
-
-          <listitem>
-            <para>Sets the <command>pagi-server</command> <option>--max-connections</option> option.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><envar>WEBDYNE_SERVER_PAGI_MAX_BODY_SIZE</envar></term>
-
-          <listitem>
-            <para>Sets the <command>pagi-server</command> <option>--max-body-size</option> option.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
-
-      <section>
-        <title>Deploying WebDyne apps with Docker</title>
-
-        <para>The WebDyne container can be used as the basis for new docker images containing your application files. Consider the following directory structure (available from Github as <link
-        xlink:href="https://github.com/aspeer/psp-WebDyne-Fortune" xmlns:xlink="http://www.w3.org/1999/xlink">aspeer/psp-WebDyne-Fortune</link>:</para>
-
-        <screen>psp-WebDyne-Fortune/
-├── app.pm
-├── app.psp
-├── cpanfile
-├── Dockerfile
-└── webdyne.conf.pl
-
-</screen>
-
-        <para>Where:</para>
-
-        <variablelist>
-          <varlistentry>
-            <term>app.psp</term>
-
-            <listitem>
-              <para>The main and default psp file</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term>app.pm</term>
-
-            <listitem>
-              <para>Perl code used in the psp file</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term>cpanfile</term>
-
-            <listitem>
-              <para>A list of Perl modules to be installed in the docker container by cpanm</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term>Dockerfile</term>
-
-            <listitem>
-              <para>The docker build file</para>
-            </listitem>
-          </varlistentry>
-
-          <varlistentry>
-            <term>webdyne.conf.pl</term>
-
-            <listitem>
-              <para>Any variables to be set for the WebDyne environment</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
-
-        <para>Constitute all the files needed to stand up a WebDyne based application in a Docker container. The contents of the Dockerfile are minimal:</para>
-
-        <screen>FROM webdyne:latest
-WORKDIR /app
-# Debian packages needed for this app
-RUN apt-get update &amp;&amp; apt-get -y install fortunes
-COPY app.* .
-COPY cpanfile .
-COPY webdyne.conf.pl /etc</screen>
-
-        <para>Build the Docker container:</para>
-
-        <screen>docker build  -t webdyne-app-fortune -f ./Dockerfile .</screen>
-
-        <para>And run it:</para>
-
-        <screen>$ <command>docker run -e PORT=5010 -p 5010:5010 --name=webdyne-app-fortune webdyne-app-fortune</command></screen>
-
-        <para>Your application should now be available:</para>
-
-        <screenshot>
-          <mediaobject>
-            <imageobject>
-              <imagedata fileref="images/webdyne-app-fortune1.png" scale="30"/>
-            </imageobject>
-          </mediaobject>
-        </screenshot>
-      </section>
-    </section>
 
     <section xml:id="cpan_install">
       <title>CPAN or CPANMinus Install</title>
@@ -934,6 +701,112 @@ $ perl -Ilib bin/webdyne.apache .
 </screen></para>
         </section>
       </section>
+    </section>
+
+    <section xml:id="docker">
+      <title>Docker</title>
+
+      <para>Docker containers are available from the <link xlink:href="https://github.com/aspeer/WebDyne/pkgs/container/webdyne" xmlns:xlink="http://www.w3.org/1999/xlink">Github Container
+      Registry</link>. Install the default Docker container (based on Debian) via:</para>
+
+      <screen>#  Default debian version
+#
+$ <command>docker pull ghcr.io/aspeer/webdyne:latest</command>
+
+#  Or Alpine/Fedora/Perl versions
+#
+# docker pull ghcr.io/aspeer/webdyne:alpine
+# docker pull ghcr.io/aspeer/webdyne:fedora
+</screen>
+
+      <para>Start the docker container with the command:</para>
+
+      <screen>$ <command>docker run -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest</command></screen>
+
+      <para>This will start WebDyne running on port 5002 on the host. Connecting to that location should show the server <emphasis>localtime</emphasis> test page</para>
+
+      <para>By default the container starts WebDyne with <command>starman</command> using the PSGI runner. The server implementation can be selected with the <envar>WEBDYNE_SERVER</envar>
+      environment variable.</para>
+
+      <screen>#  Run with the default PSGI/Starman server
+#
+$ <command>docker run -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest</command>
+
+#  Run with the PAGI server
+#
+$ <command>docker run -e WEBDYNE_SERVER=pagi -e PORT=5002 -p 5002:5002 --name=webdyne ghcr.io/aspeer/webdyne:latest</command></screen>
+
+      <para>To mount a local page and serve it through the docker container use the command:</para>
+
+      <screen>$ <command>docker run -v $(pwd):/app:ro -e PORT=5011 -e DOCUMENT_ROOT=/app -p 5011:5011 --name webdyne ghcr.io/aspeer/webdyne:latest</command></screen>
+
+      <para>This will tell docker to mount the local directory into the docker container. Because the container starts WebDyne through <command>starman</command> or
+      <command>pagi-server</command>, the default document is <filename>app.psp</filename> unless <envar>DOCUMENT_DEFAULT</envar> is set. If there is a <filename>cpanfile</filename> in the
+      mount directory any modules will be installed into the docker container automatically.</para>
+
+      <para>When the container is started without an explicit command, the default entrypoint uses the following environment variables:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term><envar>PORT</envar></term>
+
+          <listitem>
+            <para>The TCP port the selected server listens on inside the container. If omitted, the entrypoint uses <literal>8080</literal>. The docker <option>-p</option> mapping should map the
+            same container port, for example <option>-e PORT=5002 -p 5002:5002</option>.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><envar>WEBDYNE_SERVER</envar></term>
+
+          <listitem>
+            <para>Selects the server used by the default container command. Supported values are <literal>psgi</literal> and <literal>pagi</literal>. If omitted, <literal>psgi</literal> is used.
+            <literal>psgi</literal> runs <command>starman -MWebDyne</command> with <command>webdyne.psgi</command>. <literal>pagi</literal> runs <command>pagi-server</command> with
+            <command>webdyne.pagi</command>, enabling PAGI request handling such as SSE and WebSocket support where the application uses those features. Any other value causes the entrypoint to
+            exit with an error.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><envar>DOCUMENT_ROOT</envar></term>
+
+          <listitem>
+            <para>The WebDyne document root passed through to <command>webdyne.psgi</command> or <command>webdyne.pagi</command>. The published images default this to <filename>/app</filename>.
+            Override it when mounting application files somewhere else in the container.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><envar>DOCUMENT_DEFAULT</envar></term>
+
+          <listitem>
+            <para>The default document to serve from <envar>DOCUMENT_ROOT</envar>. If omitted, the command wrappers enable WebDyne's built-in default index behavior, which uses
+            <filename>app.psp</filename> in the published Docker images.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><envar>WEBDYNE_CACHE_DN</envar></term>
+
+          <listitem>
+            <para>The WebDyne compile/cache directory. The published images set this to <filename>/opt/webdyne/cache</filename> by default via the image's
+            <envar>PERL_CARTON_PATH</envar>. Override it if the cache should live on a mounted volume or another writable directory.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><envar>PERL_CARTON_PATH</envar></term>
+
+          <listitem>
+            <para>The local Perl installation prefix inside the image. The published images default this to <filename>/opt/webdyne</filename> and use it to set <envar>PERL5LIB</envar>,
+            <envar>PATH</envar>, the default <envar>WEBDYNE_CACHE_DN</envar>, and the path to the bundled <command>webdyne.psgi</command> and <command>webdyne.pagi</command> wrappers. This is
+            normally only changed when building a custom image.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>See the <link linkend="docker_runtime_server_tuning">Docker Runtime Server Tuning</link> reference section for server worker, timeout and connection limit environment variables.</para>
+
     </section>
   </section>
 
@@ -1629,6 +1502,96 @@ END
     <para>A lot of tasks can be achieved just using the basic features detailed above. However there are more advanced features that can make life even easier</para>
 
     <section>
+      <title>Deploying WebDyne apps with Docker</title>
+
+      <para>After validating a WebDyne application locally, the published WebDyne container can be used as a base image for packaging the application and its Perl dependencies.</para>
+
+      <para>The WebDyne container can be used as the basis for new docker images containing your application files. Consider the following directory structure (available from Github as <link
+      xlink:href="https://github.com/aspeer/psp-WebDyne-Fortune" xmlns:xlink="http://www.w3.org/1999/xlink">aspeer/psp-WebDyne-Fortune</link>:</para>
+
+      <screen>psp-WebDyne-Fortune/
+├── app.pm
+├── app.psp
+├── cpanfile
+├── Dockerfile
+└── webdyne.conf.pl
+
+</screen>
+
+      <para>Where:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>app.psp</term>
+
+          <listitem>
+            <para>The main and default psp file</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>app.pm</term>
+
+          <listitem>
+            <para>Perl code used in the psp file</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>cpanfile</term>
+
+          <listitem>
+            <para>A list of Perl modules to be installed in the docker container by cpanm</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>Dockerfile</term>
+
+          <listitem>
+            <para>The docker build file</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>webdyne.conf.pl</term>
+
+          <listitem>
+            <para>Any variables to be set for the WebDyne environment</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>Constitute all the files needed to stand up a WebDyne based application in a Docker container. The contents of the Dockerfile are minimal:</para>
+
+      <screen>FROM webdyne:latest
+WORKDIR /app
+# Debian packages needed for this app
+RUN apt-get update &amp;&amp; apt-get -y install fortunes
+COPY app.* .
+COPY cpanfile .
+COPY webdyne.conf.pl /etc</screen>
+
+      <para>Build the Docker container:</para>
+
+      <screen>docker build  -t webdyne-app-fortune -f ./Dockerfile .</screen>
+
+      <para>And run it:</para>
+
+      <screen>$ <command>docker run -e PORT=5010 -p 5010:5010 --name=webdyne-app-fortune webdyne-app-fortune</command></screen>
+
+      <para>Your application should now be available:</para>
+
+      <screenshot>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/webdyne-app-fortune1.png" scale="30"/>
+          </imageobject>
+        </mediaobject>
+      </screenshot>
+    </section>
+
+    <section>
       <info>
         <title>Blocks</title>
       </info>
@@ -2148,11 +2111,19 @@ END
       </section>
 
       <section>
-        <title>SSE</title>
+        <title>Server-Sent Events (SSE)</title>
 
         <para>When run in a PAGI environment WebDyne supports Server-Sent Events (SSE). An async <function>sse</function> subroutine can be defined which will be called when an SSE event
-        stream is requested. The handler can access the underlying <classname>PAGI::SSE</classname> helper via <code>$self-&gt;r-&gt;sse()</code>. Here is an example. Note the
-        <parameter>sse</parameter> flag in the <tag>&lt;start_html&gt;</tag> tag to denote the use of SSE in the document:</para>
+        stream is requested. The handler can access the underlying <classname>PAGI::SSE</classname> helper via <code>$self-&gt;r-&gt;sse()</code>.</para>
+
+        <para>SSE pages normally declare their event handler through the <tag>&lt;start_html&gt;</tag> tag. The bare <property>sse</property> attribute is equivalent to
+        <property>sse=sse</property>, so WebDyne will call an async subroutine named <function>sse</function>. To use a different handler name, supply it as the attribute value, for example
+        <tag>&lt;start_html sse="my_sse_handler"&gt;</tag>.</para>
+
+        <para>The following example also uses <property>h3</property>, <property>hr</property> and <property>alpine</property> on <tag>&lt;start_html&gt;</tag>. The heading and rule attributes
+        are syntactic shortcuts for simple page formatting, while <property>alpine</property> is a shortcut that loads the Alpine.js JavaScript library. See the <tag>&lt;start_html&gt;</tag>
+        tag reference for the complete list of shortcuts and options. Longer form HTML, such as writing a normal <tag>&lt;script&gt;</tag> tag to load a JavaScript library yourself, is still
+        supported.</para>
 
         <para><example>
             <info>
@@ -2164,16 +2135,23 @@ END
             <para><link xlink:href="https://demo.webdyne.org/example/progress.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
           </example></para>
 
-        <para>If you do not wish to use the <tag>&lt;start_html&gt;</tag> tag with the sse attribute you can use a meta tag to denote which subroutine to call for sse events, e.g.
-        <tag>&lt;meta name="WebDyne" content="sse=sse"&gt;</tag></para>
+        <para>If you do not wish to use the <tag>&lt;start_html&gt;</tag> tag with the sse attribute you can use a meta tag to denote which subroutine to call for SSE events, e.g.
+        <tag>&lt;meta name="WebDyne" content="sse=sse"&gt;</tag>.</para>
       </section>
 
       <section>
         <title>WebSockets</title>
 
         <para>When run in a PAGI environment WebDyne supports WebSockets (WS). An async <function>ws</function> subroutine can be defined which will be called when a PAGI WebSocket connection
-        is opened. The request object exposes the underlying PAGI scope and send/receive callbacks, and the handler can use those to accept the connection and exchange WebSocket messages. Here
-        is an example. Note the <parameter>ws</parameter> flag in the <tag>&lt;start_html&gt;</tag> tag to denote the use of WebSockets in the document:</para>
+        is opened. The request object exposes the underlying PAGI scope and send/receive callbacks, and the handler can use those to accept the connection and exchange WebSocket messages.</para>
+
+        <para>WebSocket pages normally declare their event handler through the <tag>&lt;start_html&gt;</tag> tag. The bare <property>ws</property> attribute is equivalent to
+        <property>ws=ws</property>, so WebDyne will call an async subroutine named <function>ws</function>. To use a different handler name, supply it as the attribute value, for example
+        <tag>&lt;start_html ws="my_ws_handler"&gt;</tag>.</para>
+
+        <para>As with SSE pages, <tag>&lt;start_html&gt;</tag> can also use formatting and framework shortcuts such as <property>h3</property>, <property>hr</property> and
+        <property>alpine</property>. The <property>alpine</property> shortcut loads the Alpine.js JavaScript library; normal HTML <tag>&lt;script&gt;</tag> tags can still be used instead when
+        you want to load JavaScript in the traditional manner. See the <tag>&lt;start_html&gt;</tag> tag reference for details.</para>
 
         <para><example>
             <info>
@@ -2186,7 +2164,7 @@ END
         <para><link xlink:href="https://demo.webdyne.org/example/ws.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
 
         <para>If you do not wish to use the <tag>&lt;start_html&gt;</tag> tag with the ws attribute you can use a meta tag to denote which subroutine to call for WebSocket events, e.g.
-        <tag>&lt;meta name="WebDyne" content="ws=ws"&gt;</tag></para>
+        <tag>&lt;meta name="WebDyne" content="ws=ws"&gt;</tag>.</para>
       </section>
     </section>
   </section>
@@ -2676,8 +2654,10 @@ sub hello {
   [import=FUNCTION [, FUNCTION ...]]
   [param=SCALAR | HASHREF]
   [run]
+  [static]
   [file]
   [hidden]
+  [display=0]
   [chomp]
   [autonewline]
 &gt;</programlisting>
@@ -2710,7 +2690,7 @@ sub hello {
 
               <listitem>
                 <para>Load a Perl module or file needed to support a method call. E.g. <tag>&lt;perl require="Digest::MD5"/&gt;</tag> to load the <classname>Digest::MD5</classname> module.
-                Anything with a [./\] character is treated as file patch to a Perl file (e.g. "<filename>/home/user/module.pm</filename>"), otherwise it is treated as module name
+                Anything with a [./\] character is treated as a file path to a Perl file (e.g. "<filename>/home/user/module.pm</filename>"), otherwise it is treated as module name
                 ("<classname>Digest::MD5</classname>")</para>
 
                 <programlisting language="html">#  Load a module
@@ -2762,8 +2742,7 @@ sub hello {
               <term>static</term>
 
               <listitem>
-                <para>Boolean flag. The Perl code to be run once only and the output cached for all subsequent requests. If omitted the code is not cached (i.e. it is run each time). If
-                omitted the page is</para>
+                <para>Boolean flag. The Perl code is run once only and the output cached for all subsequent requests. If omitted the code is not cached (i.e. it is run each time).</para>
               </listitem>
             </varlistentry>
 
@@ -2799,7 +2778,7 @@ sub hello {
               <term>hidden</term>
 
               <listitem>
-                <para>Boolean flag. The output from the Perl module will be hidden and no rendered to the page.</para>
+                <para>Boolean flag. The output from the Perl module will be hidden and not rendered to the page.</para>
               </listitem>
             </varlistentry>
 
@@ -2808,6 +2787,23 @@ sub hello {
 
               <listitem>
                 <para>Equivalent to setting hidden attribute.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>method=METHOD</term>
+
+              <listitem>
+                <para>Compatibility alias for <property>handler</property>. Prefer <property>handler</property> in new documentation and examples.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>package=PACKAGE</term>
+
+              <listitem>
+                <para>Optional package component used when constructing a fully qualified handler call. Prefer a fully qualified <property>handler</property> value unless separating the package
+                and method names is useful for compatibility with older PSP files.</para>
               </listitem>
             </varlistentry>
 
@@ -2870,7 +2866,7 @@ sub hello {
               <term>canonical</term>
 
               <listitem>
-                <para>Boolean flah. Use the JSON <methodname>canonical()</methodname> method to sort JSON data. Enabled by default, disable using <property>canonical=0</property> attribute
+                <para>Boolean flag. Use the JSON <methodname>canonical()</methodname> method to sort JSON data. Enabled by default, disable using <property>canonical=0</property> attribute
                 value or via <varname>$WEBDYNE_JSON_CANONICAL=0</varname> configuration setting.</para>
               </listitem>
             </varlistentry>
@@ -2961,24 +2957,25 @@ Thank you for registering +{name} !
             <title><tag>&lt;include&gt;</tag></title>
           </info>
 
-          <para>Include HTML, PSP or text from an external file. Capable of just pulling in just the <tag>&lt;head&gt;</tag>,<tag>&lt;body&gt;</tag> or a <tag>&lt;block&gt;</tag> section from
-          another HTML or PSP file. If pulled in from a PSP file it will compiled and interpreted in the context of the current page.</para>
+          <para>Include HTML, PSP or text from an external file. Can pull in just the <tag>&lt;head&gt;</tag>, <tag>&lt;body&gt;</tag> or a <tag>&lt;block&gt;</tag> section from another HTML
+          or PSP file. If pulled in from a PSP file it will be compiled and interpreted in the context of the current page.</para>
 
           <programlisting language="html">&lt;include
-  file=PATH
+  file=PATH | ARRAYREF
   [block=NAME]
   [wrap=TAG]
   [head]
   [body]
+  [param=HASHREF]
   [nocache]
 &gt;</programlisting>
 
           <variablelist>
             <varlistentry>
-              <term>file=PATH</term>
+              <term>file=PATH | ARRAYREF</term>
 
               <listitem>
-                <para><emphasis>Mandatory</emphasis>. Name of file we want to include. Can be relative to current directory or absolute path.</para>
+                <para><emphasis>Mandatory</emphasis>. Name of file or files we want to include. Can be relative to current directory or absolute path.</para>
               </listitem>
             </varlistentry>
 
@@ -3010,11 +3007,21 @@ Thank you for registering +{name} !
               <term>wrap=TAG</term>
 
               <listitem>
-                <para>Wrap the text from the included file in the nominated tag. Do not use &lt;&gt; symbols, just the plain tag name:</para>
+                <para>Wrap the text from a plain file include in the nominated tag. Do not use &lt;&gt; symbols, just the plain tag name. This option applies when including a file directly, not
+                when extracting <property>head</property>, <property>body</property>, or <property>block</property> content from another HTML or PSP file.</para>
 
                 <programlisting language="html">#  Include the protocols file and wrap in &lt;pre&gt;
 #
 &lt;include="/etc/protocols" wrap="pre"&gt;</programlisting>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>param=HASHREF</term>
+
+              <listitem>
+                <para>Parameter hash supplied while rendering included PSP content. This is used when extracting a <property>head</property>, <property>body</property>, or named
+                <property>block</property> from another PSP file.</para>
               </listitem>
             </varlistentry>
 
@@ -3034,13 +3041,15 @@ Thank you for registering +{name} !
           </info>
 
           <para>Respond to a JSON request made from a client. Takes the same options as the <tag>&lt;perl&gt;</tag> tag and behaves similarly - if a <property>handler</property> attribute is
-          given it is called, if the <property>perl</property> attribute is given text between the <tag>&lt;api&gt;</tag> tags in treated as in-line perl code and executed. Responses from perl
-          code are encoded as JSON and returned.</para>
+          given it is called, if the <property>perl</property> attribute is given the text between the <tag>&lt;api&gt;</tag> tags is treated as in-line perl code and executed. Responses from
+          perl code are encoded as JSON and returned.</para>
 
           <programlisting language="html">&lt;api
   pattern=ROUTE
+  [match=ROUTE]
   [destination=HASHREF | dest=HASHREF | data=HASHREF]
-  [option=HASHREF]
+  [option=HASHREF | options=HASHREF | constraint=HASHREF | constraints=HASHREF]
+  [canonical]
 &gt;</programlisting>
 
           <para><variablelist>
@@ -3048,23 +3057,33 @@ Thank you for registering +{name} !
                 <term>pattern=ROUTE</term>
 
                 <listitem>
-                  <para><emphasis>Mandatory</emphasis>. Name of <classname>Router::Simple</classname> pattern we want to serve, e.g. /api/{user}/:id</para>
+                  <para><emphasis>Mandatory</emphasis>. Name of <classname>Router::Simple</classname> pattern we want to serve, e.g. /api/{user}/:id. The <property>match</property>
+                  attribute is accepted as an alias.</para>
                 </listitem>
               </varlistentry>
 
               <varlistentry>
-                <term>destination=HASHREF</term>
+                <term>destination=HASHREF | dest=HASHREF | data=HASHREF</term>
 
                 <listitem>
-                  <para>Hash we want to supply to perl routine if match made. See <classname>Route::Simple</classname></para>
+                  <para>Hash we want to supply to perl routine if match made. See <classname>Router::Simple</classname></para>
                 </listitem>
               </varlistentry>
 
               <varlistentry>
-                <term>option=HASHREF</term>
+                <term>option=HASHREF | options=HASHREF | constraint=HASHREF | constraints=HASHREF</term>
 
                 <listitem>
                   <para>Match options, GET, PUT etc. <classname>Router::Simple</classname></para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>canonical</term>
+
+                <listitem>
+                  <para>Boolean flag. Use the JSON <methodname>canonical()</methodname> method to sort JSON response data. Enabled by default, disable using <property>canonical=0</property>
+                  attribute value or via <varname>$WEBDYNE_JSON_CANONICAL=0</varname> configuration setting.</para>
                 </listitem>
               </varlistentry>
             </variablelist></para>
@@ -3077,7 +3096,7 @@ Thank you for registering +{name} !
 
           <para>Serve HTML fragments in response to <link xlink:href="https://htmx.org" xmlns:xlink="http://www.w3.org/1999/xlink">htmx</link> type requests (or similar clients). Takes the
           same options as the <tag>&lt;perl&gt;</tag> tag and behaves similarly - if a <property>handler</property> attribute is given it is called, if the <property>perl</property> attribute
-          is given text between the <tag>&lt;api&gt;</tag> tags in treated as in-line perl code and executed.</para>
+          is given the text between the <tag>&lt;htmx&gt;</tag> tags is treated as in-line perl code and executed.</para>
 
           <programlisting language="html">&lt;htmx
   [handler=METHOD]
@@ -3156,7 +3175,9 @@ This is my output
   [all]
   [cgi]
   [env]
+  [lib | inc]
   [constant]
+  [dir_config]
   [version]
 &gt;</programlisting>
 
@@ -3181,7 +3202,7 @@ This is my output
               <term>cgi</term>
 
               <listitem>
-                <para>Boolean. Display CGI parameters and query strings</para>
+                <para>CGI parameters and query strings are always displayed once dump output is enabled.</para>
               </listitem>
             </varlistentry>
 
@@ -3194,10 +3215,26 @@ This is my output
             </varlistentry>
 
             <varlistentry>
+              <term>lib | inc</term>
+
+              <listitem>
+                <para>Boolean. Display the Perl include paths and loaded module table (<varname>@INC</varname> and <varname>%INC</varname>).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term>constant</term>
 
               <listitem>
-                <para>Boolean. Display Webdyne configurationconstants</para>
+                <para>Boolean. Display WebDyne configuration constants.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>dir_config</term>
+
+              <listitem>
+                <para>Boolean. Display WebDyne request directory configuration.</para>
               </listitem>
             </varlistentry>
 
@@ -3205,7 +3242,7 @@ This is my output
               <term>version</term>
 
               <listitem>
-                <para>Boolean. Display version strings</para>
+                <para>Version strings are always displayed once dump output is enabled.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -3226,12 +3263,25 @@ This is my output
   [script=URL | ARRAYREF]
   [base=URL]
   [target=TARGET]
+  [author=EMAIL]
   [include=PATH | ARRAYREF]
   [include_script=PATH | ARRAYREF]
   [include_style=PATH | ARRAYREF]
   [static]
   [cache=METHOD]
+  [handler=METHOD]
+  [h1 | h2 | h3 | h4 | h5 | h6]
+  [hr]
+  [sse=METHOD]
+  [ws=METHOD]
+  [pico]
+  [htmx]
+  [alpine]
 &gt;</programlisting>
+
+          <para>Any attributes not listed here are passed through to the generated <tag>&lt;html&gt;</tag> tag after WebDyne has consumed the page-control attributes. The shortcut attributes
+          <parameter>pico</parameter>, <parameter>htmx</parameter>, and <parameter>alpine</parameter> are defined by <varname>WEBDYNE_START_HTML_SHORTCUT_HR</varname> and can be changed or
+          extended in WebDyne configuration.</para>
 
           <variablelist>
             <varlistentry>
@@ -3327,6 +3377,15 @@ This is my output
             </varlistentry>
 
             <varlistentry>
+              <term>author=EMAIL</term>
+
+              <listitem>
+                <para>Generate an author link in the <tag>&lt;head&gt;</tag> section. The supplied value is URL encoded and emitted as a <tag>&lt;link rel="author"
+                href="mailto:..."&gt;</tag> tag.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term>include=PATH | ARRAYREF</term>
 
               <listitem>
@@ -3371,6 +3430,93 @@ This is my output
                 <programlisting language="html">&lt;start_html cache="&amp;cache"&gt;</programlisting>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>handler=METHOD</term>
+
+              <listitem>
+                <para>Store a page handler method in the compiled page metadata. This is used by WebDyne's request dispatch path when a page needs to nominate a handler from the
+                <tag>&lt;start_html&gt;</tag> tag instead of relying on surrounding server configuration.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>h1 | h2 | h3 | h4 | h5 | h6</term>
+
+              <listitem>
+                <para>Boolean heading shortcut. If one of these attributes is present and a title is available, WebDyne inserts a heading of the requested level at the start of the generated
+                <tag>&lt;body&gt;</tag> using the page title text.</para>
+
+                <programlisting language="html">&lt;start_html title="Hello World" h1&gt;</programlisting>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>hr</term>
+
+              <listitem>
+                <para>Boolean heading companion shortcut. When used with one of <parameter>h1</parameter> through <parameter>h6</parameter>, WebDyne inserts an <tag>&lt;hr&gt;</tag> immediately
+                after the generated heading.</para>
+
+                <programlisting language="html">&lt;start_html title="Hello World" h1 hr&gt;</programlisting>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>sse=METHOD</term>
+
+              <listitem>
+                <para>Mark the page as providing Server-Sent Events when run through the PAGI request layer. The value is stored in WebDyne page metadata and names the async subroutine to call
+                for SSE requests. If used as a bare boolean attribute, the method name defaults to <function>sse</function>.</para>
+
+                <programlisting language="html">&lt;start_html sse&gt;</programlisting>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>ws=METHOD</term>
+
+              <listitem>
+                <para>Mark the page as providing WebSocket handling when run through the PAGI request layer. The value is stored in WebDyne page metadata and names the async subroutine to call
+                for WebSocket requests. If used as a bare boolean attribute, the method name defaults to <function>ws</function>.</para>
+
+                <programlisting language="html">&lt;start_html ws&gt;</programlisting>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>pico</term>
+
+              <listitem>
+                <para>Framework shortcut defined by <varname>WEBDYNE_START_HTML_SHORTCUT_HR</varname>. Adds Pico CSS to the <property>style</property> list, using
+                <literal>https://cdn.jsdelivr.net/npm/@picocss/pico@latest/css/pico.min.css</literal> by default.</para>
+
+                <programlisting language="html">&lt;start_html pico title="Pico Example"&gt;</programlisting>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>htmx</term>
+
+              <listitem>
+                <para>Framework shortcut defined by <varname>WEBDYNE_START_HTML_SHORTCUT_HR</varname>. Adds htmx to the <property>script</property> list, using
+                <literal>https://cdn.jsdelivr.net/npm/htmx.org@latest/dist/htmx.min.js</literal> by default.</para>
+
+                <programlisting language="html">&lt;start_html htmx&gt;</programlisting>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>alpine</term>
+
+              <listitem>
+                <para>Framework shortcut defined by <varname>WEBDYNE_START_HTML_SHORTCUT_HR</varname>. Adds Alpine.js to the <property>script</property> list, using
+                <literal>https://cdn.jsdelivr.net/npm/alpinejs@latest/dist/cdn.min.js#defer</literal> by default. The URL fragment is interpreted as script attributes, so the generated
+                <tag>&lt;script&gt;</tag> tag includes <property>defer</property>.</para>
+
+                <programlisting language="html">&lt;start_html alpine&gt;</programlisting>
+              </listitem>
+            </varlistentry>
           </variablelist>
         </section>
 
@@ -3394,15 +3540,19 @@ This is my output
             <title><tag>&lt;popup_menu&gt;</tag></title>
           </info>
 
-          <para>Provided a drop-down menu of options for user to select from.</para>
+          <para>Provide a drop-down menu of options for a user to select from. Other standard HTML <tag>&lt;select&gt;</tag> attributes are passed through to the generated element.</para>
 
           <programlisting language="html">&lt;popup_menu
   name=NAME
   values=ARRAYREF | HASHREF
   [labels=HASHREF]
+  [attributes=HASHREF]
+  [label=TEXT]
   [multiple]
   [disabled=VALUE | ARRAYREF]
-  [selected|defaults|default=VALUE | ARRAYREF]
+  [selected | defaults | default=VALUE | ARRAYREF]
+  [force]
+  (standard HTML &lt;select&gt; attributes)
 &gt;</programlisting>
 
           <variablelist>
@@ -3419,7 +3569,7 @@ This is my output
 
               <listitem>
                 <para>List of items to be presented in the drop down. If an array ref labels will be the same as values. If a hash ref the value will be the hash key, the label the hash
-                label.</para>
+                label. If predictable display order matters, use an array ref for <property>values</property> and a separate <property>labels</property> hash ref.</para>
               </listitem>
             </varlistentry>
 
@@ -3428,6 +3578,22 @@ This is my output
 
               <listitem>
                 <para>If values is presented as an array ref, a hash ref of labels to be associated with each value can be supplied.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>attributes=HASHREF</term>
+
+              <listitem>
+                <para>Hash reference of additional attributes to apply to individual <tag>&lt;option&gt;</tag> elements, keyed by option value.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>label=TEXT</term>
+
+              <listitem>
+                <para>Wrap the generated <tag>&lt;select&gt;</tag> element in a <tag>&lt;label&gt;</tag> element using the supplied text.</para>
               </listitem>
             </varlistentry>
 
@@ -3454,6 +3620,15 @@ This is my output
                 <para>Single (string scalar) item or multiple (array ref) items which should be pre-selected in menu options.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>force</term>
+
+              <listitem>
+                <para>By default selected values are stateful, and submitted values for this field override the configured default or selected values. Setting <property>force</property> always
+                uses the configured default or selected values.</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
         </section>
 
@@ -3468,8 +3643,11 @@ This is my output
   name=NAME
   values=ARRAYREF | HASHREF
   [labels=HASHREF]
+  [attributes=HASHREF]
   [disabled=VALUE | ARRAYREF]
-  [checked|defaults|default=VALUE | ARRAYREF]
+  [checked | defaults | default=VALUE | ARRAYREF]
+  [linebreak]
+  [force]
 &gt;</programlisting>
 
           <variablelist>
@@ -3485,8 +3663,8 @@ This is my output
               <term>values=ARRAYREF | HASHREF</term>
 
               <listitem>
-                <para>List of items to be presented. If an array reference, labels will be the same as values. If a hash refence the value will be the hash key, the label the hash
-                value.</para>
+                <para>List of items to be presented. If an array reference, labels will be the same as values. If a hash reference the value will be the hash key, the label the hash value. If
+                predictable display order matters, use an array reference for <property>values</property> and a separate <property>labels</property> hash reference.</para>
               </listitem>
             </varlistentry>
 
@@ -3495,6 +3673,14 @@ This is my output
 
               <listitem>
                 <para>If values is presented as an array ref a hash ref of labels to be associated with each value can be supplied.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>attributes=HASHREF</term>
+
+              <listitem>
+                <para>Hash reference of additional attributes to apply to individual <tag>&lt;input type="radio"&gt;</tag> elements, keyed by radio value.</para>
               </listitem>
             </varlistentry>
 
@@ -3510,7 +3696,25 @@ This is my output
               <term>checked | defaults | default=VALUE | ARRAYREF</term>
 
               <listitem>
-                <para>Single (string) or multiple (array ref) items which shoul be pre-selected in radio group items.</para>
+                <para>Single (string) or multiple (array ref) items which should be pre-selected in radio group items. Radio groups can only select one value; if multiple defaults are supplied,
+                the first value in sorted order is used.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>linebreak</term>
+
+              <listitem>
+                <para>Separate generated radio items with <tag>&lt;br&gt;</tag> tags.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>force</term>
+
+              <listitem>
+                <para>By default checked values are stateful, and submitted values for this field override the configured defaults. Setting <property>force</property> always uses the
+                configured defaults.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -3521,14 +3725,17 @@ This is my output
             <title><tag>&lt;checkbox_group&gt;</tag></title>
           </info>
 
-          <para>Provide a grouped list of checkbox items for a user to choose form. Multiple checkboxes can be selected.</para>
+          <para>Provide a grouped list of checkbox items for a user to choose from. Multiple checkboxes can be selected.</para>
 
           <programlisting language="html">&lt;checkbox_group
   name=NAME
   values=ARRAYREF | HASHREF
   [labels=HASHREF]
+  [attributes=HASHREF]
   [disabled=VALUE | ARRAYREF]
-  [checked|defaults|default=VALUE | ARRAYREF]
+  [checked | defaults | default=VALUE | ARRAYREF]
+  [linebreak]
+  [force]
 &gt;</programlisting>
 
           <variablelist>
@@ -3544,7 +3751,8 @@ This is my output
               <term>values=ARRAYREF | HASHREF</term>
 
               <listitem>
-                <para>List of items to be presented. If an array ref labels will be the same as values. If a hash ref the value will be the hash key, the label the hash label.</para>
+                <para>List of items to be presented. If an array ref labels will be the same as values. If a hash ref the value will be the hash key, the label the hash label. If predictable
+                display order matters, use an array ref for <property>values</property> and a separate <property>labels</property> hash ref.</para>
               </listitem>
             </varlistentry>
 
@@ -3557,6 +3765,14 @@ This is my output
             </varlistentry>
 
             <varlistentry>
+              <term>attributes=HASHREF</term>
+
+              <listitem>
+                <para>Hash reference of additional attributes to apply to individual <tag>&lt;input type="checkbox"&gt;</tag> elements, keyed by checkbox value.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term>disabled=VALUE | ARRAYREF</term>
 
               <listitem>
@@ -3565,10 +3781,27 @@ This is my output
             </varlistentry>
 
             <varlistentry>
-              <term>checked|defaults|default=VALUE | ARRAYREF</term>
+              <term>checked | defaults | default=VALUE | ARRAYREF</term>
 
               <listitem>
                 <para>Single (scalar) or multiple (array ref) items which should be pre-selected in checkbox group items.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>linebreak</term>
+
+              <listitem>
+                <para>Separate generated checkbox items with <tag>&lt;br&gt;</tag> tags.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>force</term>
+
+              <listitem>
+                <para>By default checked values are stateful, and submitted values for this field override the configured defaults. Setting <property>force</property> always uses the
+                configured defaults.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -3584,7 +3817,10 @@ This is my output
           <programlisting language="html">&lt;checkbox
   name=NAME
   [value=VALUE | BOOLEAN]
+  [checked]
   [disabled]
+  [label=TEXT]
+  (standard HTML &lt;input&gt; attributes)
 &gt;</programlisting>
 
           <variablelist>
@@ -3611,13 +3847,29 @@ This is my output
                 <para>If present the checkbox will be displayed but cannot be selected.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>checked</term>
+
+              <listitem>
+                <para>If present the checkbox is initially selected. For the default boolean value path, submitted values for the field are stateful and override this initial setting.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>label=TEXT</term>
+
+              <listitem>
+                <para>Wrap the generated checkbox in a <tag>&lt;label&gt;</tag> element using the supplied text.</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
 
           <note>
             <para>In order to retain state all checkbox form items will present a hidden parameter with the same name as the checkbox. This is notable because querying the parameter associated
             with a checkbox component will always return a <classname>Hash::MultiValue</classname> object with two items, the last of which is the checkbox value. When using
             <code>$self-&gt;CGI-&gt;param(&lt;checkbox name&gt;)</code> form of query, or <code>$_{&lt;checkbox name&gt;}</code> the user selected checkbox value will always be returned as a
-            boolean or scalar value.</para>
+            boolean or scalar value. This automatic hidden-field and persistence behaviour applies when no explicit <property>value</property> is supplied.</para>
           </note>
         </section>
 
@@ -3626,60 +3878,23 @@ This is my output
             <title><tag>&lt;scrolling_list&gt;</tag></title>
           </info>
 
-          <para>Presents a scrolling list of options for a user to choose from. Attributes are identical to those of the <tag>&lt;popup_menu&gt;</tag> tag with the addition of a
+          <para>Presents a scrolling list of options for a user to choose from. It uses the same attributes as <tag>&lt;popup_menu&gt;</tag> with the addition of a
           <property>size</property> attribute.</para>
 
           <programlisting language="html">&lt;scrolling_list
-  name=NAME
-  size=ROWS
-  values=ARRAYREF | HASHREF
-  [labels=HASHREF]
-  [multiple]
-  [disabled=VALUE | ARRAYREF]
-  [selected|defaults|default=VALUE | ARRAYREF]
+  (same attributes as &lt;popup_menu&gt;)
+  [size=ROWS]
 &gt;</programlisting>
 
           <variablelist>
             <varlistentry>
-              <term>name=NAME</term>
-
-              <listitem>
-                <para>The name associated with this form component. This is the CGI parameter to be interrogated for value(s) once the form is submitted.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
               <term>size=ROWS</term>
 
               <listitem>
-                <para>Number of rows to make visible in user interface for the scrolling list.</para>
+                <para>Number of rows to make visible in the user interface for the scrolling list. If omitted, WebDyne sets this to the number of configured values.</para>
               </listitem>
             </varlistentry>
           </variablelist>
-
-          <para>The following attributes behave identically to &lt;popup_menu&gt;:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>values=ARRAYREF | HASHREF</para>
-            </listitem>
-
-            <listitem>
-              <para>labels=HASHREF</para>
-            </listitem>
-
-            <listitem>
-              <para>multiple</para>
-            </listitem>
-
-            <listitem>
-              <para>disabled=VALUE | ARRAYREF</para>
-            </listitem>
-
-            <listitem>
-              <para>selected|defaults|default=VALUE | ARRAYREF</para>
-            </listitem>
-          </itemizedlist>
         </section>
 
         <section xml:id="tag_textarea">
@@ -3692,6 +3907,7 @@ This is my output
           <programlisting language="html">&lt;textarea
   name=NAME
   [default=TEXT]
+  [label=TEXT]
   [force]
   (all standard HTML &lt;textarea&gt; attributes)
 &gt;</programlisting>
@@ -3714,6 +3930,14 @@ This is my output
             </varlistentry>
 
             <varlistentry>
+              <term>label=TEXT</term>
+
+              <listitem>
+                <para>Wrap the generated <tag>&lt;textarea&gt;</tag> element in a <tag>&lt;label&gt;</tag> element using the supplied text.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term>force</term>
 
               <listitem>
@@ -3729,8 +3953,34 @@ This is my output
             <title><tag>&lt;textfield&gt;</tag></title>
           </info>
 
-          <para>The standard &lt;input type="text"&gt; tag type. User input with this tag is persistent. All standard &lt;input&gt; tag attributes are supported. The <property>name</property>
-          and <property>force</property> attributes are supported as per other tags.</para>
+          <para>The standard <tag>&lt;input type="text"&gt;</tag> tag type. User input with this tag is persistent. Other standard HTML <tag>&lt;input&gt;</tag> attributes are passed through to
+          the generated element.</para>
+
+          <programlisting language="html">&lt;textfield
+  name=NAME
+  [value=TEXT]
+  [label=TEXT]
+  [force]
+  (standard HTML &lt;input&gt; attributes)
+&gt;</programlisting>
+
+          <variablelist>
+            <varlistentry>
+              <term>label=TEXT</term>
+
+              <listitem>
+                <para>Wrap the generated input in a <tag>&lt;label&gt;</tag> element using the supplied text.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>force</term>
+
+              <listitem>
+                <para>By default the field is stateful, and submitted values override the configured value. Setting <property>force</property> always uses the configured value.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
         </section>
 
         <section xml:id="tag_password_field">
@@ -3738,8 +3988,8 @@ This is my output
             <title><tag>&lt;password_field&gt;</tag></title>
           </info>
 
-          <para>The standard &lt;input type="password"&gt; tag type. User input with this tag is persistent. The <property>name</property> and <property>force</property> attributes are
-          supported as per other tags.</para>
+          <para>The standard <tag>&lt;input type="password"&gt;</tag> tag type. It uses the same attributes as <tag>&lt;textfield&gt;</tag>, with the generated input type set to
+          <literal>password</literal>.</para>
         </section>
 
         <section xml:id="tag_filefield">
@@ -3747,8 +3997,9 @@ This is my output
             <title><tag>&lt;filefield&gt;</tag></title>
           </info>
 
-          <para>The standard &lt;input type="file"&gt; tag type. User input with this tag is persistent. When querying this parameter after form submission responses will be in the form of a
-          Plack::Request::Upload object. User input with this tag is persistent. Example to demonstrate minimal file upload facility:</para>
+          <para>The standard <tag>&lt;input type="file"&gt;</tag> tag type. It uses the same attributes as <tag>&lt;textfield&gt;</tag>, with the generated input type set to
+          <literal>file</literal>. When querying this parameter after form submission responses will be in the form of a Plack::Request::Upload object. Example to demonstrate minimal file
+          upload facility:</para>
 
           <programlisting language="html">&lt;start_html title="File Upload"&gt;
 &lt;start_multipart_form&gt;
@@ -3778,7 +4029,8 @@ sub handler {
             <title><tag>&lt;image_button&gt;</tag></title>
           </info>
 
-          <para>The standard &lt;input type="image"&gt; tag type.</para>
+          <para>The standard <tag>&lt;input type="image"&gt;</tag> tag type. It accepts standard HTML <tag>&lt;input&gt;</tag> attributes and supports <property>label</property> wrapping using
+          the same behaviour as <tag>&lt;textfield&gt;</tag>.</para>
         </section>
 
         <section xml:id="tag_button">
@@ -3786,7 +4038,7 @@ sub handler {
             <title><tag>&lt;button&gt;</tag></title>
           </info>
 
-          <para>The standard &lt;input type="button"&gt; tag type.</para>
+          <para>The standard HTML <tag>&lt;button&gt;</tag> element. Standard button attributes and enclosed content are passed through to the generated element.</para>
         </section>
 
         <section xml:id="tag_submit">
@@ -3794,7 +4046,8 @@ sub handler {
             <title><tag>&lt;submit&gt;</tag></title>
           </info>
 
-          <para>The standard &lt;input type="submit"&gt; tag type to initiate form submission.</para>
+          <para>The standard <tag>&lt;input type="submit"&gt;</tag> tag type to initiate form submission. It accepts standard HTML <tag>&lt;input&gt;</tag> attributes and supports
+          <property>label</property> wrapping using the same behaviour as <tag>&lt;textfield&gt;</tag>.</para>
         </section>
 
         <section xml:id="tag_reset">
@@ -3802,7 +4055,8 @@ sub handler {
             <title><tag>&lt;reset&gt;</tag></title>
           </info>
 
-          <para>The standard &lt;input type="reset"&gt; tag type to reset form fields to their initial values.</para>
+          <para>The standard <tag>&lt;input type="reset"&gt;</tag> tag type to reset form fields to their initial values. It accepts standard HTML <tag>&lt;input&gt;</tag> attributes and
+          supports <property>label</property> wrapping using the same behaviour as <tag>&lt;textfield&gt;</tag>.</para>
         </section>
 
         <section xml:id="tag_defaults">
@@ -3810,7 +4064,7 @@ sub handler {
             <title><tag>&lt;defaults&gt;</tag></title>
           </info>
 
-          <para>A CGI-style shortcut rendered as a submit input. It is supported for compatibility with CGI.pm-style form helpers.</para>
+          <para>A CGI-style shortcut rendered as a submit input. It is supported for compatibility with CGI.pm-style form helpers and uses the same attributes as <tag>&lt;submit&gt;</tag>.</para>
         </section>
 
         <section xml:id="tag_hidden">
@@ -3818,7 +4072,7 @@ sub handler {
             <title><tag>&lt;hidden&gt;</tag></title>
           </info>
 
-          <para>The standard &lt;input type="hidden"&gt; tag type.</para>
+          <para>The standard <tag>&lt;input type="hidden"&gt;</tag> tag type. Standard HTML <tag>&lt;input&gt;</tag> attributes are passed through to the generated element.</para>
         </section>
 
         <section xml:id="tag_isindex">
@@ -3835,7 +4089,12 @@ sub handler {
             <title><tag>&lt;start_form&gt;</tag></title>
           </info>
 
-          <para>Start a form with <property>method=POST</property> and encoding type <property>enctype="application/x-www-form-urlencoded"</property> (implicit)</para>
+          <para>Start a form with <property>method=POST</property>. Other standard HTML <tag>&lt;form&gt;</tag> attributes are passed through to the generated element.</para>
+
+          <programlisting language="html">&lt;start_form
+  [method=METHOD]
+  (standard HTML &lt;form&gt; attributes)
+&gt;</programlisting>
         </section>
 
         <section xml:id="tag_start_multipart_form">
@@ -3843,7 +4102,15 @@ sub handler {
             <title><tag>&lt;start_multipart_form&gt;</tag></title>
           </info>
 
-          <para>Start a form with method=POST and encoding type <property>enctype="multipart/form-data"</property></para>
+          <para>Start a form with <property>method=POST</property> and <property>enctype="multipart/form-data"</property>. Other standard HTML <tag>&lt;form&gt;</tag> attributes are passed
+          through to the generated element. The <property>enctype</property> attribute can be overridden because form attributes are passed through, but this is normally only useful if you are
+          deliberately replacing multipart form encoding.</para>
+
+          <programlisting language="html">&lt;start_multipart_form
+  [method=METHOD]
+  [enctype=ENCODING]
+  (standard HTML &lt;form&gt; attributes)
+&gt;</programlisting>
         </section>
       </section>
     </section>
@@ -4255,6 +4522,112 @@ $ WEBDYNE_DEBUG=perl perl -Ilib bin/wdrender time.psp
         </section>
       </section>
 
+      <section xml:id="docker_runtime_server_tuning">
+        <title>Docker Runtime Server Tuning</title>
+
+        <para>The published WebDyne Docker images expose server tuning options through environment variables understood by the default container entrypoint.</para>
+
+        <para>Runtime server tuning options can also be supplied through environment variables. If these variables are not set, the underlying server defaults are used.</para>
+
+        <variablelist>
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PSGI_WORKERS</envar></term>
+
+            <listitem>
+              <para>Sets the <command>starman</command> <option>--workers</option> option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PSGI_MAX_REQUESTS</envar></term>
+
+            <listitem>
+              <para>Sets the <command>starman</command> <option>--max-requests</option> option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PSGI_BACKLOG</envar></term>
+
+            <listitem>
+              <para>Sets the <command>starman</command> <option>--backlog</option> option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PSGI_KEEPALIVE_TIMEOUT</envar></term>
+
+            <listitem>
+              <para>Sets the <command>starman</command> <option>--keepalive-timeout</option> option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PSGI_READ_TIMEOUT</envar></term>
+
+            <listitem>
+              <para>Sets the <command>starman</command> <option>--read-timeout</option> option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PAGI_WORKERS</envar></term>
+
+            <listitem>
+              <para>Sets the <command>pagi-server</command> <option>--workers</option> option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PAGI_MAX_REQUESTS</envar></term>
+
+            <listitem>
+              <para>Sets the <command>pagi-server</command> <option>--max-requests</option> option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PAGI_LISTENER_BACKLOG</envar></term>
+
+            <listitem>
+              <para>Sets the <command>pagi-server</command> <option>--listener-backlog</option> option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PAGI_TIMEOUT</envar></term>
+
+            <listitem>
+              <para>Sets the <command>pagi-server</command> <option>--timeout</option> option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PAGI_REQUEST_TIMEOUT</envar></term>
+
+            <listitem>
+              <para>Sets the <command>pagi-server</command> <option>--request-timeout</option> option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PAGI_MAX_CONNECTIONS</envar></term>
+
+            <listitem>
+              <para>Sets the <command>pagi-server</command> <option>--max-connections</option> option.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term><envar>WEBDYNE_SERVER_PAGI_MAX_BODY_SIZE</envar></term>
+
+            <listitem>
+              <para>Sets the <command>pagi-server</command> <option>--max-body-size</option> option.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </section>
+
       <section xml:id="webdyne_directives">
         <info>
           <title>Directives</title>
@@ -4634,6 +5007,61 @@ PerlSetVar      WebDyneTemplate '/path/to/template.psp'
     </info>
 
     <para>Things to note or information not otherwise contained elsewhere:</para>
+
+    <section xml:id="additional_notes_handler_attribute_shortcuts">
+      <title>About handler and method calling attributes in tags</title>
+
+      <para>Some WebDyne attributes name a Perl subroutine to call. In PSP syntax an attribute with no explicit value is treated as having the attribute name as its value, so
+      <tag>&lt;perl handler&gt;</tag> is a shortcut for <tag>&lt;perl handler="handler"&gt;</tag>. Defining a <function>handler</function> subroutine in the <token>__PERL__</token> section is
+      therefore the shortest way to make a simple PSP file call server-side Perl code:</para>
+
+      <programlisting language="html">&lt;start_html&gt;
+&lt;perl handler/&gt;
+
+__PERL__
+
+sub handler {
+    my $self=shift();
+    return "Hello from a handler";
+}</programlisting>
+
+      <para>For clarity, or where a page has more than one callable routine, the longer form can be used instead. For example <tag>&lt;perl handler="my_handler"&gt;</tag> calls
+      <function>my_handler</function> and behaves the same way; it just takes more typing:</para>
+
+      <programlisting language="html">&lt;start_html&gt;
+&lt;perl handler="my_handler"/&gt;
+
+__PERL__
+
+sub my_handler {
+    my $self=shift();
+    return "Hello from my_handler";
+}</programlisting>
+
+      <para>The same bare-attribute convention applies to other handler-style attributes in the context where those attributes are valid. In <tag>&lt;perl&gt;</tag>, <tag>&lt;api&gt;</tag> and
+      <tag>&lt;htmx&gt;</tag>, <property>handler</property> names the Perl routine to call. In <tag>&lt;start_html&gt;</tag>, <property>sse</property> and <property>ws</property> name the PAGI
+      Server-Sent Events and WebSocket handlers, so <tag>&lt;start_html sse&gt;</tag> means <tag>&lt;start_html sse="sse"&gt;</tag>, and <tag>&lt;start_html ws&gt;</tag> means
+      <tag>&lt;start_html ws="ws"&gt;</tag>. The <property>cache</property> attribute on <tag>&lt;start_html&gt;</tag> similarly names the cache handler used by the caching layer. The
+      <property>method</property> attribute is accepted as a compatibility synonym for <property>handler</property> on <tag>&lt;perl&gt;</tag>-style calls, but
+      <property>handler</property> is preferred in new examples.</para>
+    </section>
+
+    <section xml:id="additional_notes_start_html_shortcuts">
+      <title>About <tag>&lt;start_html&gt;</tag> shortcuts</title>
+
+      <para>The <tag>&lt;start_html&gt;</tag> tag exists as a convenience for common page setup. It expands to normal HTML, including the document type, opening <tag>&lt;html&gt;</tag> and
+      <tag>&lt;body&gt;</tag> tags, and a generated <tag>&lt;head&gt;</tag> section. It is not a separate client-side technology; the browser receives ordinary HTML output.</para>
+
+      <para>Some <tag>&lt;start_html&gt;</tag> attributes are small formatting shortcuts intended for quick page construction. For example <property>h1</property> through
+      <property>h6</property> insert a heading based on the page title, and <property>hr</property> adds a horizontal rule after that generated heading. These are useful for quick examples,
+      diagnostics and small tools, but they can always be replaced with explicit HTML in the body of the page.</para>
+
+      <para>Other <tag>&lt;start_html&gt;</tag> shortcuts load common frontend libraries or stylesheets. The built-in shortcuts include <property>pico</property> for Pico CSS,
+      <property>htmx</property> for htmx, and <property>alpine</property> for Alpine.js. They exist to keep small PSP examples readable and to avoid repeating common CDN
+      <tag>&lt;link&gt;</tag> or <tag>&lt;script&gt;</tag> tags. For example <tag>&lt;start_html alpine&gt;</tag> loads the configured Alpine.js script. Longer form HTML is still supported, so
+      you can load JavaScript or CSS in the traditional way with explicit <tag>&lt;script&gt;</tag> and <tag>&lt;link&gt;</tag> tags, or by using the <property>script</property> and
+      <property>style</property> attributes documented in the <tag>&lt;start_html&gt;</tag> tag reference.</para>
+    </section>
 
     <section xml:id="additional_notes_check_psp_syntax">
       <title>How to check syntax of a PSP file</title>
