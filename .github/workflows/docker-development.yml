@@ -40,7 +40,7 @@ jobs:
         #  Checkout repo to start build
         #
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
 
         #  Apparently need QEMU for some reason even though using Buildx
