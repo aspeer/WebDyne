@@ -60,32 +60,19 @@ ENV PERL5LIB=${PERL_CARTON_PATH}/lib/perl5
 ENV PATH=${PERL_CARTON_PATH}/bin:$PATH
 
 
-# Set up app
+# Install CPAN modules using only dependency manifests so this layer survives
+# normal source changes.
 #
 WORKDIR /app
-
-
-# Checkout Webdyne. Used if cloning
-#
-#RUN git clone -b development --single-branch https://github.com/aspeer/WebDyne.git pm-WebDyne
-#WORKDIR pm-WebDyne
-
-
-#  Otherwise copy working repo content
-#
-COPY . .
-
-
-# And now install CPAN modules using Carton
-#
-WORKDIR docker.template
+WORKDIR /app/docker.template
 COPY docker/cpanfile docker/cpanfile.snapshot ./
 RUN carton install --deployment
 
 
 # Now install main WebDyne module
 #
-WORKDIR ..
+WORKDIR /app
+COPY . .
 RUN carton exec -- cpanm --local-lib-contained=${PERL_CARTON_PATH} .
 
 

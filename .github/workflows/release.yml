@@ -18,7 +18,7 @@ jobs:
       - name: Set up Perl
         uses: shogo82148/actions-setup-perl@v1
         with:
-          perl-version: 'latest'
+          perl-version: '5.44.0'
 
       - name: Install build deps
         run: |
@@ -39,6 +39,7 @@ jobs:
         run: ls -l *.tar.gz
         
       - name: Create GitHub Release
+        if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v1
         with:
           files: '*.tar.gz'
@@ -46,5 +47,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Publish to CPAN
+        if: github.ref_type == 'tag'
         run: |
           cpan-upload -u ${{ secrets.CPAN_USERNAME }} -p ${{ secrets.CPAN_PASSWORD }} *.tar.gz

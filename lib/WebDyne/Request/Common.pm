@@ -327,7 +327,7 @@ This is an internal integration module rather than a page-facing API. It is prim
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
@@ -339,7 +339,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 
