@@ -63,7 +63,7 @@ my %ENV_BASE=(
 
 #  Version information
 #
-$VERSION='3.008';
+$VERSION='3.009';
 
 
 #==================================================================================================
@@ -422,7 +422,7 @@ The module relies on `WebDyne::Request::PSGI` for normalized request handling an
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT #
+# LICENSE and COPYRIGHT
 
 This file is part of WebDyne.
 
@@ -434,6 +434,7 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
+
 
 =end markdown
 
