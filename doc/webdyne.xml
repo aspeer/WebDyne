@@ -3260,7 +3260,11 @@ This is my output
   [title=TEXT]
   [meta=HASHREF]
   [style=URL | ARRAYREF]
+  [style_prepend=URL | ARRAYREF]
+  [style_append=URL | ARRAYREF]
   [script=URL | ARRAYREF]
+  [script_prepend=URL | ARRAYREF]
+  [script_append=URL | ARRAYREF]
   [base=URL]
   [target=TARGET]
   [author=EMAIL]
@@ -3282,6 +3286,11 @@ This is my output
           <para>Any attributes not listed here are passed through to the generated <tag>&lt;html&gt;</tag> tag after WebDyne has consumed the page-control attributes. The shortcut attributes
           <parameter>pico</parameter>, <parameter>htmx</parameter>, and <parameter>alpine</parameter> are defined by <varname>WEBDYNE_START_HTML_SHORTCUT_HR</varname> and can be changed or
           extended in WebDyne configuration.</para>
+
+          <para>Values in <varname>WEBDYNE_START_HTML_PARAM</varname> are applied before attributes from the page <tag>&lt;start_html&gt;</tag> tag. If a page supplies the same attribute with a
+          value, the page value replaces the configured value for that attribute. For example, <property>style</property> replaces a configured <property>style</property> list, and
+          <property>script</property> replaces a configured <property>script</property> list. Use <property>style_prepend</property>, <property>style_append</property>,
+          <property>script_prepend</property>, or <property>script_append</property> when a page should add resources around configured defaults instead of replacing them.</para>
 
           <variablelist>
             <varlistentry>
@@ -3333,6 +3342,23 @@ This is my output
 
                 <programlisting language="html">&lt;link href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" rel="stylesheet"&gt;
 &lt;link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet"&gt;</programlisting>
+
+                <para>Linked stylesheets are emitted before <property>include_style</property> content.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>style_prepend=URL | ARRAYREF</term>
+              <term>style_append=URL | ARRAYREF</term>
+
+              <listitem>
+                <para>Stylesheets to add before or after the current <property>style</property> value. This is useful when
+                <varname>WEBDYNE_START_HTML_PARAM</varname> supplies default styles and a page needs to add styles without replacing those defaults.</para>
+
+                <programlisting language="html">&lt;start_html style_append="app.css"&gt;</programlisting>
+
+                <para>The existing <property>style</property> attribute keeps its current override behaviour. If <property>style</property> is supplied with
+                <property>style_prepend</property> or <property>style_append</property>, the prepend and append values are added around the explicit style value.</para>
               </listitem>
             </varlistentry>
 
@@ -3358,6 +3384,23 @@ This is my output
                 <programlisting language="html">&lt;script defer integrity=sha.. src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"&gt;</programlisting>
 
                 <para>As per the style attribute you can supply an array of resources to load using the same syntax.</para>
+
+                <para>External scripts are emitted before <property>include_script</property> content.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>script_prepend=URL | ARRAYREF</term>
+              <term>script_append=URL | ARRAYREF</term>
+
+              <listitem>
+                <para>Scripts to add before or after the current <property>script</property> value. This is useful when
+                <varname>WEBDYNE_START_HTML_PARAM</varname> supplies default scripts and a page needs to add scripts without replacing those defaults.</para>
+
+                <programlisting language="html">&lt;start_html script_append="app.js"&gt;</programlisting>
+
+                <para>The existing <property>script</property> attribute keeps its current override behaviour. If <property>script</property> is supplied with
+                <property>script_prepend</property> or <property>script_append</property>, the prepend and append values are added around the explicit script value.</para>
               </listitem>
             </varlistentry>
 
@@ -3399,7 +3442,7 @@ This is my output
 
               <listitem>
                 <para>As per above <property>include</property> attribute, raw text from the nominated file is inserted into the <tag>&lt;head&gt;</tag> section, however it is wrapped in a
-                <tag>&lt;script&gt;</tag> tag.</para>
+                <tag>&lt;script&gt;</tag> tag. Included scripts are emitted after external scripts from the <property>script</property> attribute.</para>
               </listitem>
             </varlistentry>
 
@@ -3408,7 +3451,7 @@ This is my output
 
               <listitem>
                 <para>As per standard <property>include</property> attribute raw text from the nominated file is inserted into the <tag>&lt;head&gt;</tag> section, however it is wrapped in a
-                <tag>&lt;style&gt;</tag> tag.</para>
+                <tag>&lt;style&gt;</tag> tag. Included styles are emitted after linked stylesheets from the <property>style</property> attribute.</para>
               </listitem>
             </varlistentry>
 
@@ -4353,6 +4396,20 @@ $VAR1={
 
         <section>
           <info>
+            <title>PSGI and PAGI root configuration</title>
+          </info>
+
+          <para>When the <command>webdyne.psgi</command> or <command>webdyne.pagi</command> wrapper builds an application it also loads
+          <filename>$DOCUMENT_ROOT/.webdyne.conf.pl</filename>, if present. This applies both when the wrapper is started directly and when it is loaded by an external PSGI or PAGI server. If
+          the effective document root is a file, the parent directory is checked for <filename>.webdyne.conf.pl</filename>.</para>
+
+          <para>This root configuration file is separate from request-directory configuration. When <varname>WEBDYNE_DIR_CONFIG_CWD_LOAD</varname> is enabled, WebDyne can also inspect a
+          <filename>.webdyne.conf.pl</filename> file in the directory of the current PSP file, but only the <varname>WEBDYNE_DIR_CONFIG</varname> section is used from that per-directory
+          file.</para>
+        </section>
+
+        <section>
+          <info>
             <title>Setting WebDyne constants in Apache</title>
           </info>
 
@@ -4677,7 +4734,7 @@ PerlSetVar      WebDyneChain                 'WebDyne::Session'
 
       <variablelist>
         <varlistentry>
-          <term><filename>/etc/webdyne.conf.pl, ~/.webdyne.conf.pl, $DOCUMENT_ROOT/.webdyne.conf.pl, $DOCUMENT_ROOT/webdyne.conf.pl</filename></term>
+          <term><filename>/etc/webdyne.conf.pl, ~/.webdyne.conf.pl, $DOCUMENT_ROOT/.webdyne.conf.pl</filename></term>
 
           <listitem>
             <para>Used for storage of local constants that override WebDyne defaults. See the <link linkend="webdyne_constants">WebDyne::Constant</link> section for details</para>

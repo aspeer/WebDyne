@@ -4895,7 +4895,11 @@ with appropriate content attributes as output.
   [title=TEXT]
   [meta=HASHREF]
   [style=URL | ARRAYREF]
+  [style_prepend=URL | ARRAYREF]
+  [style_append=URL | ARRAYREF]
   [script=URL | ARRAYREF]
+  [script_prepend=URL | ARRAYREF]
+  [script_append=URL | ARRAYREF]
   [base=URL]
   [target=TARGET]
   [author=EMAIL]
@@ -4920,6 +4924,14 @@ Any attributes not listed here are passed through to the generated
 shortcut attributes `pico`, `htmx`, and `alpine` are defined by
 `WEBDYNE_START_HTML_SHORTCUT_HR` and can be changed or extended in
 WebDyne configuration.
+
+Values in `WEBDYNE_START_HTML_PARAM` are applied before attributes from
+the page &lt;start_html&gt; tag. If a page supplies the same attribute with
+a value, the page value replaces the configured value for that
+attribute. For example, style replaces a configured style list, and
+script replaces a configured script list. Use style_prepend,
+style_append, script_prepend, or script_append when a page should add
+resources around configured defaults instead of replacing them.
 
 title=TEXT
 
@@ -4976,6 +4988,22 @@ style=URL \| ARRAYREF
   <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
   ```
 
+  Linked stylesheets are emitted before include_style content.
+
+style_prepend=URL \| ARRAYREF; style_append=URL \| ARRAYREF
+
+: Stylesheets to add before or after the current style value. This is
+  useful when `WEBDYNE_START_HTML_PARAM` supplies default styles and a
+  page needs to add styles without replacing those defaults.
+
+  ``` html
+  <start_html style_append="app.css">
+  ```
+
+  The existing style attribute keeps its current override behaviour. If
+  style is supplied with style_prepend or style_append, the prepend and
+  append values are added around the explicit style value.
+
 script=URL \| ARRAYREF
 
 : Similar facility to the style attribute. Any values supplied to this
@@ -5006,6 +5034,22 @@ script=URL \| ARRAYREF
 
   As per the style attribute you can supply an array of resources to
   load using the same syntax.
+
+  External scripts are emitted before include_script content.
+
+script_prepend=URL \| ARRAYREF; script_append=URL \| ARRAYREF
+
+: Scripts to add before or after the current script value. This is
+  useful when `WEBDYNE_START_HTML_PARAM` supplies default scripts and a
+  page needs to add scripts without replacing those defaults.
+
+  ``` html
+  <start_html script_append="app.js">
+  ```
+
+  The existing script attribute keeps its current override behaviour. If
+  script is supplied with script_prepend or script_append, the prepend
+  and append values are added around the explicit script value.
 
 base, target = URL, TARGET
 
@@ -5039,13 +5083,15 @@ include_script=PATH \| ARRAYREF
 
 : As per above include attribute, raw text from the nominated file is
   inserted into the &lt;head&gt; section, however it is wrapped in a
-  &lt;script&gt; tag.
+  &lt;script&gt; tag. Included scripts are emitted after external scripts
+  from the script attribute.
 
 include_style=PATH \| ARRAYREF
 
 : As per standard include attribute raw text from the nominated file is
   inserted into the &lt;head&gt; section, however it is wrapped in a
-  &lt;style&gt; tag.
+  &lt;style&gt; tag. Included styles are emitted after linked stylesheets
+  from the style attribute.
 
 static
 
@@ -5770,6 +5816,20 @@ change any of the WebDyne constants from their default values.
     readable by Perl. Files with syntax errors will fail silently and the
     variables will revert to module defaults.
 
+#### PSGI and PAGI root configuration
+
+When the `webdyne.psgi` or `webdyne.pagi` wrapper builds an application
+it also loads `$DOCUMENT_ROOT/.webdyne.conf.pl`, if present. This
+applies both when the wrapper is started directly and when it is loaded
+by an external PSGI or PAGI server. If the effective document root is a
+file, the parent directory is checked for `.webdyne.conf.pl`.
+
+This root configuration file is separate from request-directory
+configuration. When `WEBDYNE_DIR_CONFIG_CWD_LOAD` is enabled, WebDyne
+can also inspect a `.webdyne.conf.pl` file in the directory of the
+current PSP file, but only the `WEBDYNE_DIR_CONFIG` section is used from
+that per-directory file.
+
 #### Setting WebDyne constants in Apache
 
 WebDyne constants can be set in an Apache httpd.conf file using the
@@ -6026,7 +6086,7 @@ is not very efficient:
 
 ## File Locations {#file_locations}
 
-`/etc/webdyne.conf.pl, ~/.webdyne.conf.pl, $DOCUMENT_ROOT/.webdyne.conf.pl, $DOCUMENT_ROOT/webdyne.conf.pl`
+`/etc/webdyne.conf.pl, ~/.webdyne.conf.pl, $DOCUMENT_ROOT/.webdyne.conf.pl`
 
 : Used for storage of local constants that override WebDyne defaults.
   See the [WebDyne::Constant](#webdyne_constants) section for details

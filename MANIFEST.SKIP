@@ -2,6 +2,7 @@
 ^\.github/
 ^\.gitignore
 ^\.venv/
+^\.dockerignore
 
 ^blib/
 ^doc/
