@@ -215,7 +215,8 @@ sub handler : method {    # no subsort
     if (ref($r)=~/^Apache/) {
         debug("converting r: $r to WebDyne::Request::Apache module");
         require WebDyne::Request::Apache;
-        $r=WebDyne::Request::Apache->new($r);
+        my %opt=map { do { (my $k=lc($_))=~s/^webdyne_request_//i; ($k=>$ENV{$_}) } } (grep {/^WEBDYNE_REQUEST_/} keys %ENV);
+        $r=WebDyne::Request::Apache->new($r, %opt);
         debug("r now: $r");
     }
 
@@ -892,7 +893,7 @@ sub handler : method {    # no subsort
 
     );
     debug('header_out_hr: %s', Dumper($header_out_hr));
-    foreach (keys %header_out) {$header_out_hr->{$_}=$header_out{$_}}
+    foreach (keys %header_out) {$r->headers_out($_ => $header_out{$_})}
 
 
     #  Debug

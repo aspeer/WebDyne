@@ -230,7 +230,8 @@ sub filename {
 
     #  Can be overridden by DOCUMENT_ROOT environment var
     #
-    return $ENV{'DOCUMENT_ROOT'} || shift()->{'req'}->filename();
+    my $r=shift();
+    return $ENV{'DOCUMENT_ROOT'} || $r->{'filename'} || $r->{'req'}->filename();
     
 }
 
