@@ -218,7 +218,7 @@ sub main {
     my $srce_fn=$opt{'test'} ? $WEBDYNE_DEFAULT_TEST_FN : shift(@{$argv_ar});
     $srce_fn ||
         pod2usage("$Script: no source file specified !");
-    (-f $srce_fn) ||
+    (-f $srce_fn) || do { (-f File::Spec->catfile($opt{'root'}, $srce_fn)) if $opt{'mod_perl'} } ||
         pod2usage("$Script: input file not found !");
 
 
