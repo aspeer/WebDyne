@@ -183,6 +183,7 @@ sub main {
     #
     #map {$opt{"no_${_}"}=!($opt{$_})} qw(head_insert);
     map {$opt{"no_${_}"}=!($opt{$_})} map { /^([^|!:=+]+)/ } grep {/\!$/} @opt;
+    $opt{'warn'}=0 if $opt{'silent'};
     
 
     #  Special config ?
@@ -1040,7 +1041,11 @@ Options can also be preloaded from `~/.wdrender.opt` by creating an anonymous ha
 
 * **--warn**
 
-    Enable or disable warnings about missing Tidy or Colourise modules
+    Enable or disable warnings about missing Tidy or Colourise modules.
+
+* **--quiet**
+
+    Suppress informational output, including warnings about missing optional Tidy or Colourise modules.
 
 * **--head_insert**
 
@@ -1411,9 +1416,13 @@ Use WebDyne's built-in default test page as the source file.
 
 B<--warn>
 
-Enable or disable warnings about missing Tidy or Colourise modules
+Enable or disable warnings about missing Tidy or Colourise modules.
 
+=item *
 
+B<--quiet>
+
+Suppress informational output, including warnings about missing optional Tidy or Colourise modules.
 
 =item *
 

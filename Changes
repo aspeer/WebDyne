@@ -1,5 +1,18 @@
 Revision history for WebDyne
 
+3.011 2026-08-07
+
+    * Extended wdrender --quiet/--silent to suppress advisory warnings about
+      missing optional HTML::Tidy5 or syntax-highlighting modules while
+      leaving rendering behaviour unchanged.
+
+    * Updated wdrender regression coverage so --header output remains clean
+      on machines without libtidy-devel and HTML::Tidy5 installed.
+
+    * Made wdrender head-insert tests tolerant of harmless HTML/CSS
+      whitespace differences while still checking that the default head
+      insert is present or absent as requested.
+
 3.010 2026-08-07
 
     * Fixed duplicate response header emission when WebDyne handlers set

@@ -61,7 +61,7 @@ like($written_html, qr/Value:\s*sigma/, 'wdrender writes rendered HTML to outfil
 
 my ($header_out, $header_err, $header_rc)=run_cmd(
     $^X, '-Ilib', $script,
-    '--header', '--no-colour', '--no-lineno', '--test',
+    '--header', '--quiet', '--no-colour', '--no-lineno', '--test',
 );
 is($header_rc, 0, 'wdrender --header exits cleanly');
 is($header_err, '', 'wdrender --header writes no stderr');
@@ -78,6 +78,8 @@ is($plain_header_err, '', 'wdrender --header without colour/tidy writes no stder
 my @plain_content_type_lines=grep { /^Content-Type:/i } split /\n/, $plain_header_out;
 is(scalar(@plain_content_type_lines), 1, 'wdrender --header without colour/tidy emits one Content-Type header');
 is($plain_content_type_lines[0], 'Content-Type: text/html; charset=UTF-8', 'wdrender --header without colour/tidy keeps encoded HTML Content-Type');
+
+my $head_insert_re=qr/<style>\s*:root\s*\{/;
 
 SKIP: {
     eval { require WebDyne::PSGI; require Plack::Test; 1 }
@@ -97,8 +99,8 @@ SKIP: {
     );
     is($psgi_head_rc, 0, 'wdrender --psgi --head-insert exits cleanly');
     is($psgi_head_err, '', 'wdrender --psgi --head-insert writes no stderr');
-    unlike($psgi_out, qr/<style>:root \{/, 'wdrender --psgi --test suppresses default head insert');
-    like($psgi_head_out, qr/<style>:root \{/, 'wdrender --psgi --head-insert keeps default head insert');
+    unlike($psgi_out, $head_insert_re, 'wdrender --psgi --test suppresses default head insert');
+    like($psgi_head_out, $head_insert_re, 'wdrender --psgi --head-insert keeps default head insert');
 }
 
 SKIP: {
@@ -119,8 +121,8 @@ SKIP: {
     );
     is($pagi_head_rc, 0, 'wdrender --pagi --head-insert exits cleanly');
     is($pagi_head_err, '', 'wdrender --pagi --head-insert writes no stderr');
-    unlike($pagi_out, qr/<style>:root \{/, 'wdrender --pagi --test suppresses default head insert');
-    like($pagi_head_out, qr/<style>:root \{/, 'wdrender --pagi --head-insert keeps default head insert');
+    unlike($pagi_out, $head_insert_re, 'wdrender --pagi --test suppresses default head insert');
+    like($pagi_head_out, $head_insert_re, 'wdrender --pagi --head-insert keeps default head insert');
 }
 
 SKIP: {
@@ -144,8 +146,8 @@ SKIP: {
         '--mod_perl', '--head-insert', '--no-colour', '--no-tidy', '--no-lineno', '--test',
     );
     is($apache_head_rc, 0, 'wdrender --mod_perl --head-insert exits cleanly');
-    unlike($apache_out, qr/<style>:root \{/, 'wdrender --mod_perl --test suppresses default head insert');
-    like($apache_head_out, qr/<style>:root \{/, 'wdrender --mod_perl --head-insert keeps default head insert');
+    unlike($apache_out, $head_insert_re, 'wdrender --mod_perl --test suppresses default head insert');
+    like($apache_head_out, $head_insert_re, 'wdrender --mod_perl --head-insert keeps default head insert');
 }
 
 done_testing();
