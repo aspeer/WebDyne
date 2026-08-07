@@ -507,7 +507,7 @@ This adapter also supports WebDyne’s SSE and WebSocket-aware PAGI flows becaus
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
@@ -519,7 +519,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 
