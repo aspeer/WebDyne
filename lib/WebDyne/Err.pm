@@ -38,7 +38,7 @@ $Data::Dumper::Indent=1;
 
 #  Version information
 #
-$VERSION='3.010';
+$VERSION='3.011';
 
 
 #  Debug
