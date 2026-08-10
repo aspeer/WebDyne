@@ -5,6 +5,9 @@ on:
     tags: [ 'v*.*.*' ]   # or any trigger you prefer
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   perl-ci:
     uses: ./.github/workflows/perl-ci.yml
@@ -12,9 +15,6 @@ jobs:
   build:
     needs: perl-ci
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
 
     steps:
       - uses: actions/checkout@v7
@@ -41,16 +41,53 @@ jobs:
 
       - name: List generated file
         run: ls -l *.tar.gz
-        
+
+      - name: Upload distribution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webdyne-dist
+          path: '*.tar.gz'
+
+  github-release:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download distribution artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: webdyne-dist
+
       - name: Create GitHub Release
-        if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v3
         with:
           files: '*.tar.gz'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
+  cpan-publish:
+    needs: github-release
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Perl
+        uses: shogo82148/actions-setup-perl@v1.42.0
+        with:
+          perl-version: '5.44.0'
+
+      - name: Install CPAN uploader
+        run: cpanm --notest CPAN::Uploader
+
+      - name: Download distribution artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: webdyne-dist
+
       - name: Publish to CPAN
-        if: github.ref_type == 'tag'
         run: |
           cpan-upload -u ${{ secrets.CPAN_USERNAME }} -p ${{ secrets.CPAN_PASSWORD }} *.tar.gz
