@@ -1,0 +1,31 @@
+name: OpenSSF Scorecard
+
+on:
+  schedule:
+    - cron: "30 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scorecard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run OpenSSF Scorecard
+        uses: ossf/scorecard-action@v2.4.3
+        with:
+          results_file: scorecard.json
+          results_format: json
+          publish_results: false
+
+      - name: Upload Scorecard results
+        uses: actions/upload-artifact@v4
+        with:
+          name: openssf-scorecard
+          path: scorecard.json
