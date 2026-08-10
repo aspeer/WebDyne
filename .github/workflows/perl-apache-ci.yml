@@ -40,6 +40,6 @@ jobs:
 
       - name: Run tests
         env:
-          APACHE_TEST_HTTPD: /usr/sbin/apache2
+          APACHE_TEST_HTTPD: /usr/sbin/apache2ctl
           APACHE_TEST_APXS: /usr/bin/apxs
         run: make test
