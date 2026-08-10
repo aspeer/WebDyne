@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
 
 jobs:
+  perl-ci:
+    uses: ./.github/workflows/perl-ci.yml
+
   build:
+    needs: perl-ci
     runs-on: ubuntu-latest
 
     permissions:

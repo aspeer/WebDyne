@@ -1,0 +1,41 @@
+name: Perl CI
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        perl: ['5.38', '5.40', '5.42', '5.44']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Perl
+        uses: shogo82148/actions-setup-perl@v1.42.0
+        with:
+          perl-version: ${{ matrix.perl }}
+
+      - name: Install dependencies
+        run: cpanm --notest --installdeps .
+
+      - name: Configure
+        run: perl Makefile.PL
+
+      - name: Run tests
+        run: make test
+
+      - name: Run distribution tests
+        run: make disttest
