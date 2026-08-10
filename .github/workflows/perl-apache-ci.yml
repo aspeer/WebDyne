@@ -1,0 +1,45 @@
+name: Perl Apache CI
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mod-perl:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Apache and mod_perl packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            apache2 \
+            apache2-dev \
+            libapache2-mod-perl2 \
+            libapache2-mod-perl2-dev \
+            cpanminus \
+            build-essential
+
+      - name: Install dependencies
+        run: cpanm --notest --installdeps .
+
+      - name: Install optional runtime dependencies
+        run: cpanm --notest --skip-satisfied Plack PAGI::Server PAGI::Tools
+
+      - name: Configure
+        run: perl Makefile.PL
+
+      - name: Run tests
+        env:
+          APACHE_TEST_HTTPD: /usr/sbin/apache2
+          APACHE_TEST_APXS: /usr/bin/apxs
+        run: make test
