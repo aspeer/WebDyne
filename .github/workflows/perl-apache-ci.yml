@@ -30,10 +30,10 @@ jobs:
             build-essential
 
       - name: Install dependencies
-        run: cpanm --notest --installdeps .
+        run: cpanm --sudo --notest --installdeps .
 
       - name: Install optional runtime dependencies
-        run: cpanm --notest --skip-satisfied Plack PAGI::Server PAGI::Tools
+        run: cpanm --sudo --notest --skip-satisfied Plack PAGI::Server PAGI::Tools
 
       - name: Configure
         run: perl Makefile.PL
