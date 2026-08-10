@@ -771,6 +771,10 @@ sub apache_startup {
         '-one-process',
         '-start-httpd',
     );
+    unshift(@argv, '-apxs',  $ENV{'APACHE_TEST_APXS'})
+        if $ENV{'APACHE_TEST_APXS'};
+    unshift(@argv, '-httpd', $ENV{'APACHE_TEST_HTTPD'})
+        if $ENV{'APACHE_TEST_HTTPD'};
 
     $runner->run(@argv);
     return $runner;
