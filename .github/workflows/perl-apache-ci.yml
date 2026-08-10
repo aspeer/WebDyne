@@ -31,14 +31,36 @@ jobs:
 
       - name: Configure Debian Apache environment
         run: |
-          sudo ln -sf /etc/apache2/apache2.conf /etc/apache2/httpd.conf
           sudo mkdir -p /var/run/apache2 /var/lock/apache2 /var/log/apache2
+          sudo tee /etc/apache2/httpd.conf >/dev/null <<'EOF'
+          ServerRoot "/etc/apache2"
+          DefaultRuntimeDir "/var/run/apache2"
+          PidFile "/var/run/apache2/apache2.pid"
+          ErrorLog "/var/log/apache2/error.log"
+          User www-data
+          Group www-data
+          LoadModule mpm_event_module /usr/lib/apache2/modules/mod_mpm_event.so
+          EOF
+          cat > "$RUNNER_TEMP/webdyne-apache2" <<'EOF'
+          #!/bin/sh
+          for arg in "$@"; do
+            case "$arg" in
+              -V|-v|-l)
+                exec /usr/sbin/apache2 "$arg"
+                ;;
+            esac
+          done
+          exec /usr/sbin/apache2 "$@"
+          EOF
+          chmod 755 "$RUNNER_TEMP/webdyne-apache2"
           echo "APACHE_RUN_DIR=/var/run/apache2" >> "$GITHUB_ENV"
           echo "APACHE_PID_FILE=/var/run/apache2/apache2.pid" >> "$GITHUB_ENV"
           echo "APACHE_RUN_USER=www-data" >> "$GITHUB_ENV"
           echo "APACHE_RUN_GROUP=www-data" >> "$GITHUB_ENV"
           echo "APACHE_LOG_DIR=/var/log/apache2" >> "$GITHUB_ENV"
           echo "APACHE_LOCK_DIR=/var/lock/apache2" >> "$GITHUB_ENV"
+          echo "APACHE_TEST_HTTPD=$RUNNER_TEMP/webdyne-apache2" >> "$GITHUB_ENV"
+          echo "APACHE_TEST_APXS=/usr/bin/apxs" >> "$GITHUB_ENV"
 
       - name: Install dependencies
         run: cpanm --sudo --notest --installdeps .
@@ -50,7 +72,4 @@ jobs:
         run: perl Makefile.PL
 
       - name: Run tests
-        env:
-          APACHE_TEST_HTTPD: /usr/sbin/apache2ctl
-          APACHE_TEST_APXS: /usr/bin/apxs
         run: make test
