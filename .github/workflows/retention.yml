@@ -19,5 +19,8 @@ jobs:
           cut-off: 30d
           keep-n-most-recent: 64
           account: user
-          token: ${{ secrets.GHCR_PAT }}   # or GITHUB_TOKEN if appropriate
+          # Use the repository-scoped token so this workflow is not dependent
+          # on a long-lived PAT secret.  The package must grant this repository
+          # Admin access under the package's "Manage Actions access" settings.
+          token: ${{ github.token }}
           dry-run: true
