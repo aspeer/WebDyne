@@ -29,17 +29,6 @@ jobs:
             cpanminus \
             build-essential
 
-      - name: Configure Debian Apache environment
-        run: |
-          sudo ln -sf /etc/apache2/apache2.conf /etc/apache2/httpd.conf
-          sudo mkdir -p /var/run/apache2 /var/lock/apache2 /var/log/apache2
-          echo "APACHE_RUN_DIR=/var/run/apache2" >> "$GITHUB_ENV"
-          echo "APACHE_PID_FILE=/var/run/apache2/apache2.pid" >> "$GITHUB_ENV"
-          echo "APACHE_RUN_USER=www-data" >> "$GITHUB_ENV"
-          echo "APACHE_RUN_GROUP=www-data" >> "$GITHUB_ENV"
-          echo "APACHE_LOG_DIR=/var/log/apache2" >> "$GITHUB_ENV"
-          echo "APACHE_LOCK_DIR=/var/lock/apache2" >> "$GITHUB_ENV"
-
       - name: Install dependencies
         run: cpanm --sudo --notest --installdeps .
 
