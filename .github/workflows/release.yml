@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Set up Perl
-        uses: shogo82148/actions-setup-perl@v1.42.0
+        uses: shogo82148/actions-setup-perl@v1.43.1
         with:
           perl-version: '5.44.0'
 
@@ -43,7 +43,7 @@ jobs:
         run: ls -l *.tar.gz
 
       - name: Upload distribution artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: webdyne-dist
           path: '*.tar.gz'
@@ -58,7 +58,7 @@ jobs:
 
     steps:
       - name: Download distribution artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: webdyne-dist
 
@@ -76,7 +76,7 @@ jobs:
 
     steps:
       - name: Set up Perl
-        uses: shogo82148/actions-setup-perl@v1.42.0
+        uses: shogo82148/actions-setup-perl@v1.43.1
         with:
           perl-version: '5.44.0'
 
@@ -84,7 +84,7 @@ jobs:
         run: cpanm --notest CPAN::Uploader
 
       - name: Download distribution artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: webdyne-dist
 
