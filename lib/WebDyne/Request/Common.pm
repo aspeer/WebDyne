@@ -36,7 +36,7 @@ use Exporter qw(import);
 
 #  Version information
 #
-$VERSION='3.012';
+$VERSION='3.013';
 
 
 #  Debug load
