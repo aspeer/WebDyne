@@ -32,20 +32,23 @@ END_MODULE
 my $tmp_dn=tempdir(CLEANUP => 1);
 my $source_fn="$tmp_dn/app.psp";
 write_file($source_fn, "<start_html>apache\n");
+my $fake_apxs=File::Spec->catfile($tmp_dn, 'apxs');
+write_file($fake_apxs, "#!/bin/sh\nprintf '%s\\n' '$tmp_dn'\n");
+chmod 0755, $fake_apxs or die "unable to make fake apxs executable: $!";
 
 my ($stdout, $stderr, $rc);
 {
     local $ENV{'APACHE_TEST_HTTPD'}='/tmp/webdyne-test-httpd';
-    local $ENV{'APACHE_TEST_APXS'}='/tmp/webdyne-test-apxs';
+    local $ENV{'APACHE_TEST_APXS'}=$fake_apxs;
     ($stdout, $stderr, $rc)=run_cmd(
         $^X, '-I', $stub_dn, '-Ilib', $script,
         '--port', '5123', '--no-index', $source_fn,
     );
 }
 is($rc, 0, 'webdyne.apache exits cleanly through stubbed pause');
-like($stdout, qr/-httpd\n\/tmp\/webdyne-test-httpd/, 'webdyne.apache forwards explicit Apache test httpd');
-like($stdout, qr/-apxs\n\/tmp\/webdyne-test-apxs/, 'webdyne.apache forwards explicit Apache test apxs');
-like($stdout, qr/-port\n5123/, 'webdyne.apache forwards requested port to Apache runner');
+like($stdout, qr/-httpd\s+\/tmp\/webdyne-test-httpd/, 'webdyne.apache forwards explicit Apache test httpd');
+like($stdout, qr/-apxs\s+\Q$fake_apxs\E/, 'webdyne.apache forwards explicit Apache test apxs');
+like($stdout, qr/-port\s+5123/, 'webdyne.apache forwards requested port to Apache runner');
 like($stdout, qr/PerlSetEnv DOCUMENT_ROOT \Q$source_fn\E/, 'webdyne.apache preserves file root as DOCUMENT_ROOT in postamble');
 unlike($stdout, qr/Alias \/index\.psp/, 'webdyne.apache --no-index omits index alias postamble for file-root startup');
 like($stderr, qr/^(?:|unable to write to stderr,stdout - reverting to log files\n)$/, 'webdyne.apache stubbed run writes no unexpected stderr');

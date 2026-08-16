@@ -137,7 +137,7 @@ sub main {
         'help|?'
         )
     ) || return err('bad options');
-    map {$opt{"no_${_}"} = !($opt{$_})} map { /^([^|!:=+]+)/ } grep {!ref($_) && /\!$/} @opt;
+    map {$opt{"no_${_}"} = $opt{$_} ? 0 : 1} map { /^([^|!:=+]+)/ } grep {!ref($_) && /\!$/} @opt;
 
 
     #  Last argument is root directory
