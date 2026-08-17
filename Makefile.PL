@@ -279,6 +279,9 @@ DOCKER := docker
 BIN_DOC_FILES := $(wildcard bin/*.md)
 LIB_DOC_FILES := $(shell find lib -type f -name '*.md' ! -name '._*' | sort)
 
+.PHONY: doc
+doc :: $(SRC_DIR)/webdyne.md
+
 $(SRC_DIR)/webdyne.md : $(SRC_DIR)/webdyne.xml $(BIN_DOC_FILES) $(LIB_DOC_FILES)
 	$(MKPATH) $(TMP_DIR)
 	$(XMLLINT) --xinclude --noent $< -o $(TMP_DIR)/$(notdir $<)
