@@ -18,7 +18,7 @@ package WebDyne::Constant;
 use strict qw(vars);
 use vars   qw($VERSION %Constant %Package);
 use warnings;
-no warnings qw(uninitialized);
+no warnings qw(uninitialized redefine);
 
 
 #  External modules

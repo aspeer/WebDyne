@@ -17,7 +17,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        perl: ['5.38', '5.40', '5.42', '5.44']
+        # Selected from long-lived distro/default Perl versions, not every
+        # upstream branch by assumption: Debian 7-13, Ubuntu LTS 14.04-26.04,
+        # RHEL 7-9, Fedora latest/n-1/n-2, plus recent/current upstream stable
+        # releases as forward canaries.
+        perl:
+          - '5.14' # Debian 7 Wheezy; oldest compatibility target
+          - '5.16' # RHEL/CentOS 7
+          - '5.18' # Ubuntu 14.04 LTS
+          - '5.20' # Debian 8 Jessie
+          - '5.22' # Ubuntu 16.04 LTS
+          - '5.24' # Debian 9 Stretch; RHEL 8 alternate stream
+          - '5.26' # RHEL 8 default; Ubuntu 18.04 LTS
+          - '5.28' # Debian 10 Buster
+          - '5.30' # Ubuntu 20.04 LTS
+          - '5.32' # Debian 11 Bullseye; RHEL 9 default
+          - '5.34' # Ubuntu 22.04 LTS
+          - '5.36' # Debian 12 Bookworm
+          - '5.38' # Ubuntu 24.04 LTS
+          - '5.40' # Debian 13 Trixie; Ubuntu 26.04 LTS; Fedora 42
+          - '5.42' # Fedora 43/44; recent upstream stable canary
+          - '5.44' # Current upstream stable
 
     steps:
       - name: Checkout repository
