@@ -32,7 +32,7 @@ require WebDyne::Constant;
 
 #  Version information. Must be all on one line
 #
-$VERSION='3.018';
+$VERSION='3.019';
 
 
 #  The guts
@@ -79,11 +79,11 @@ use WebDyne::Session::Constant;
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT #
+# LICENSE and COPYRIGHT
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
@@ -91,6 +91,7 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
+
 
 =end markdown
 
