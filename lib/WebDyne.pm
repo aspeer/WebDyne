@@ -2713,6 +2713,7 @@ sub json {
     #
     my $json_or=JSON->new() ||
         return err('unable to create new JSON object');
+    $json_or->allow_nonref(1);
     #$json_or->allow_blessed(1);
     #$json_or->convert_blessed(1);
     debug("json_or: $json_or");
@@ -2900,6 +2901,7 @@ sub api {
         #
         my $json_or=JSON->new() ||
             return err('unable to create new JSON object');
+        $json_or->allow_nonref(1);
         debug("json_or: $json_or");
         $json_or->canonical(defined($attr_hr->{'canonical'}) ? $attr_hr->{'canonical'} : WEBDYNE_JSON_CANONICAL);
         my $json=eval {$json_or->encode($json_xr)} ||
