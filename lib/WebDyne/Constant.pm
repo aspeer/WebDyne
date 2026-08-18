@@ -425,6 +425,7 @@ my %constant_temp;
     #  Enable the API mode ?
     #
     WEBDYNE_API_ENABLE => 1,
+    WEBDYNE_API_STRIP_PREFIX => 1,
     
     
     #  Enable Alpine/Vue hack

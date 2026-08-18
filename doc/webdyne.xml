@@ -1942,9 +1942,20 @@ COPY webdyne.conf.pl /etc</screen>
           </listitem>
 
           <listitem>
+            <para>The pattern should start at the API PSP filename, not at the document root. For example, a file called <filename>api.psp</filename> should normally use a pattern such as
+            <filename>/api/user/:id</filename>, even if the file is served from a subdirectory such as <filename>/example/api.psp</filename>.</para>
+          </listitem>
+
+          <listitem>
             <para>PSGI and PAGI maintain a basic in-process cache of discovered API PSP filenames to avoid repeated filesystem checks. If API filenames or API path structure are changed, a server restart may be required for the changes to be discovered.</para>
           </listitem>
         </itemizedlist>
+
+        <tip>
+          <para>API pattern paths are intended to be portable between document roots. If <filename>example/api.psp</filename> is served as <filename>/example/api/user/bob/42</filename>, the
+          <tag>&lt;api&gt;</tag> pattern should still be <filename>/api/user/{user}/:id</filename>, not <filename>/example/api/user/{user}/:id</filename>. WebDyne is forgiving by default and
+          will strip an accidental directory prefix before the PSP filename from the pattern. Set <constant>WEBDYNE_API_STRIP_PREFIX</constant> to 0 if exact pattern matching is preferred.</para>
+        </tip>
 
         <para>Here is a very simple example. Note the format of the URL in the Run hyperlink:</para>
 
@@ -3058,7 +3069,9 @@ Thank you for registering +{name} !
 
                 <listitem>
                   <para><emphasis>Mandatory</emphasis>. Name of <classname>Router::Simple</classname> pattern we want to serve, e.g. /api/{user}/:id. The <property>match</property>
-                  attribute is accepted as an alias.</para>
+                  attribute is accepted as an alias. The route should begin with the PSP filename stem, so routes in <filename>api.psp</filename> should begin with <filename>/api/</filename>
+                  regardless of whether the file is located at the document root or in a subdirectory. By default WebDyne will strip an accidental document-root prefix before that filename stem,
+                  e.g. <filename>/example/api/{user}/:id</filename> is treated as <filename>/api/{user}/:id</filename>. Disable this with <constant>WEBDYNE_API_STRIP_PREFIX</constant> if required.</para>
                 </listitem>
               </varlistentry>
 
