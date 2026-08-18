@@ -3349,12 +3349,28 @@ that:</p>
   different <code>Router::Simple</code> routes</p>
 </li>
 <li>
+<p>The pattern should start at the API PSP filename, not at the document
+  root. For example, a file called <code>api.psp</code> should normally use a
+  pattern such as <code>/api/user/:id</code>, even if the file is served from a
+  subdirectory such as <code>/example/api.psp</code>.</p>
+</li>
+<li>
 <p>PSGI and PAGI maintain a basic in-process cache of discovered API PSP
   filenames to avoid repeated filesystem checks. If API filenames or API
   path structure are changed, a server restart may be required for the
   changes to be discovered.</p>
 </li>
 </ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>API pattern paths are intended to be portable between document roots. If
+<code>example/api.psp</code> is served as <code>/example/api/user/bob/42</code>, the &lt;api&gt;
+pattern should still be <code>/api/user/{user}/:id</code>, not
+<code>/example/api/user/{user}/:id</code>. WebDyne is forgiving by default and will
+strip an accidental directory prefix before the PSP filename from the
+pattern. Set <code>WEBDYNE_API_STRIP_PREFIX</code> to 0 if exact pattern matching
+is preferred.</p>
+</div>
 <p>Here is a very simple example. Note the format of the URL in the Run
 hyperlink:</p>
 <div class="language-html highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="p">&lt;</span><span class="nt">api</span> <span class="na">handler</span><span class="o">=</span><span class="s">uppercase</span> <span class="na">pattern</span><span class="o">=</span><span class="s">&quot;/api/uppercase/{user}/:id&quot;</span><span class="p">&gt;</span>

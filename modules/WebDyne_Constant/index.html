@@ -2299,6 +2299,12 @@ $ perl -MWebDyne::Constant=dump
 <p>Memory cache cleanup method. <code>0</code> removes entries by oldest last-use time; <code>1</code> removes least-used entries first.</p>
 </li>
 <li>
+<p><strong>WEBDYNE_CACHE_STAT_TTL</strong></p>
+<p><strong>Default:</strong> <code>0</code></p>
+<p>Controls how often WebDyne rechecks disk cache file mtimes after a compiled page has been loaded into the current process.</p>
+<p><code>0</code> preserves the historical behavior and stats cache files on every request. A positive value reuses the last stat result for that many seconds. <code>-1</code> reuses the last stat result for the lifetime of the current process, so externally updated cache files are not detected until the process restarts or recompilation is forced.</p>
+</li>
+<li>
 <p><strong>WEBDYNE_EVAL_SAFE</strong></p>
 <p><strong>Default:</strong> <code>0</code></p>
 <p>Run dynamic PSP code in a <code>Safe</code> compartment instead of direct Perl eval. Safe mode is experimental and not recommended as a security boundary.</p>
@@ -2605,6 +2611,11 @@ $ perl -MWebDyne::Constant=dump
 <p><strong>WEBDYNE_API_ENABLE</strong></p>
 <p><strong>Default:</strong> <code>1</code></p>
 <p>Enable processing of <code>&lt;api&gt;</code> routes in PSGI request handling. Set to 0 to disable API route dispatch.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_API_STRIP_PREFIX</strong></p>
+<p><strong>Default:</strong> <code>1</code></p>
+<p>Strip accidental document-root prefixes from <code>&lt;api pattern&gt;</code> values when the pattern contains path segments before the current PSP filename stem. This keeps patterns such as <code>/api/user/:id</code> portable for <code>api.psp</code> files served from subdirectories. Set to 0 to require patterns to match the request path exactly.</p>
 </li>
 <li>
 <p><strong>WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE</strong></p>
