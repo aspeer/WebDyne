@@ -45,7 +45,7 @@ use URI;
 
 #  Version information
 #
-$VERSION='3.017';
+$VERSION='3.018';
 
 
 #  Debug load
