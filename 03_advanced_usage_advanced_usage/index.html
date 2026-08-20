@@ -3349,10 +3349,10 @@ that:</p>
   different <code>Router::Simple</code> routes</p>
 </li>
 <li>
-<p>The pattern should start at the API PSP filename, not at the document
-  root. For example, a file called <code>api.psp</code> should normally use a
-  pattern such as <code>/api/user/:id</code>, even if the file is served from a
-  subdirectory such as <code>/example/api.psp</code>.</p>
+<p>The API PSP filename forms the route mount point and should not be
+  repeated in the pattern attribute. For example, a file called
+  <code>api.psp</code> serving <code>/api/user/42</code> should use a pattern such as
+  <code>/user/:id</code>.</p>
 </li>
 <li>
 <p>PSGI and PAGI maintain a basic in-process cache of discovered API PSP
@@ -3361,20 +3361,18 @@ that:</p>
   changes to be discovered.</p>
 </li>
 </ul>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>API pattern paths are intended to be portable between document roots. If
-<code>example/api.psp</code> is served as <code>/example/api/user/bob/42</code>, the &lt;api&gt;
-pattern should still be <code>/api/user/{user}/:id</code>, not
-<code>/example/api/user/{user}/:id</code>. WebDyne is forgiving by default and will
-strip an accidental directory prefix before the PSP filename from the
-pattern. Set <code>WEBDYNE_API_STRIP_PREFIX</code> to 0 if exact pattern matching
-is preferred.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>From WebDyne 3.020 onwards &lt;api&gt; patterns are relative to the API PSP
+file path. If <code>example/api.psp</code> is served as <code>/example/api/user/bob/42</code>,
+the pattern should be <code>/user/{user}/:id</code>, not <code>/api/user/{user}/:id</code> or
+<code>/example/api/user/{user}/:id</code>. The filename prefix in pattern is no
+longer needed or supported.</p>
 </div>
 <p>Here is a very simple example. Note the format of the URL in the Run
 hyperlink:</p>
-<div class="language-html highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="p">&lt;</span><span class="nt">api</span> <span class="na">handler</span><span class="o">=</span><span class="s">uppercase</span> <span class="na">pattern</span><span class="o">=</span><span class="s">&quot;/api/uppercase/{user}/:id&quot;</span><span class="p">&gt;</span>
-</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="p">&lt;</span><span class="nt">api</span> <span class="na">handler</span><span class="o">=</span><span class="s">doublecase</span> <span class="na">pattern</span><span class="o">=</span><span class="s">&quot;/api/doublecase/{user}/:id&quot;</span><span class="p">&gt;</span>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="p">&lt;</span><span class="nt">api</span> <span class="na">handler</span><span class="o">=</span><span class="s">uppercase</span> <span class="na">pattern</span><span class="o">=</span><span class="s">&quot;/uppercase/{user}/:id&quot;</span><span class="p">&gt;</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="p">&lt;</span><span class="nt">api</span> <span class="na">handler</span><span class="o">=</span><span class="s">doublecase</span> <span class="na">pattern</span><span class="o">=</span><span class="s">&quot;/doublecase/{user}/:id&quot;</span><span class="p">&gt;</span>
 </span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>__PERL__
 </span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>sub uppercase {
 </span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>

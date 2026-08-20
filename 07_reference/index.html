@@ -3040,13 +3040,11 @@ from perl code are encoded as JSON and returned.</p>
 <dt>pattern=ROUTE</dt>
 <dd>
 <p><em>Mandatory</em>. Name of <code>Router::Simple</code> pattern we want to serve, e.g.
-  /api/{user}/:id. The match attribute is accepted as an alias. The
-  route should begin with the PSP filename stem, so routes in <code>api.psp</code>
-  should begin with <code>/api/</code> regardless of whether the file is located at
-  the document root or in a subdirectory. By default WebDyne will strip
-  an accidental document-root prefix before that filename stem, e.g.
-  <code>/example/api/{user}/:id</code> is treated as <code>/api/{user}/:id</code>. Disable
-  this with <code>WEBDYNE_API_STRIP_PREFIX</code> if required.</p>
+  /user/:id. The match attribute is accepted as an alias. The route is
+  relative to the API PSP file path: routes in <code>api.psp</code> serving URLs
+  under <code>/api/</code> should not include <code>/api</code> in the pattern. This is a
+  breaking change from WebDyne 3.020 onwards; older patterns such as
+  <code>/api/{user}/:id</code> should be changed to <code>/{user}/:id</code>.</p>
 </dd>
 <dt>destination=HASHREF | dest=HASHREF | data=HASHREF</dt>
 <dd>

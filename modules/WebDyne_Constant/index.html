@@ -2613,11 +2613,6 @@ $ perl -MWebDyne::Constant=dump
 <p>Enable processing of <code>&lt;api&gt;</code> routes in PSGI request handling. Set to 0 to disable API route dispatch.</p>
 </li>
 <li>
-<p><strong>WEBDYNE_API_STRIP_PREFIX</strong></p>
-<p><strong>Default:</strong> <code>1</code></p>
-<p>Strip accidental document-root prefixes from <code>&lt;api pattern&gt;</code> values when the pattern contains path segments before the current PSP filename stem. This keeps patterns such as <code>/api/user/:id</code> portable for <code>api.psp</code> files served from subdirectories. Set to 0 to require patterns to match the request path exactly.</p>
-</li>
-<li>
 <p><strong>WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE</strong></p>
 <p><strong>Default:</strong> <code>'x-on'</code></p>
 <p>Rewrite shorthand attributes beginning with <code>@</code>, such as <code>@click</code>, into parser-safe attributes because the HTML parser does not recognise <code>@</code> as a valid attribute character. The default rewrites them to Alpine-style <code>x-on:</code> attributes; set a different prefix such as <code>v-on:</code> for Vue-style output.</p>
