@@ -51,8 +51,12 @@ jobs:
       - name: Install dependencies
         run: cpanm --notest --installdeps .
 
-      - name: Install optional runtime dependencies
-        run: cpanm --notest --skip-satisfied Plack PAGI::Server PAGI::Tools
+      - name: Install PSGI optional runtime dependencies
+        run: cpanm --notest --skip-satisfied Plack
+
+      - name: Install PAGI optional runtime dependencies
+        if: ${{ matrix.perl != '5.14' && matrix.perl != '5.16' }}
+        run: cpanm --notest --skip-satisfied PAGI::Server PAGI::Tools
 
       - name: Configure
         run: perl Makefile.PL
