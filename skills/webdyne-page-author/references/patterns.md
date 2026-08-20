@@ -164,10 +164,10 @@ For JSON booleans, use `JSON::true` and `JSON::false`.
 
 ## API Routes
 
-Use `<api>` for JSON endpoints. Pattern values use Router::Simple-style routes.
+Use `<api>` for JSON endpoints. Pattern values use Router::Simple-style routes relative to the API PSP file path.
 
 ```html
-<api handler="uppercase" pattern="/api/uppercase/{user}/:id"/>
+<api handler="uppercase" pattern="/uppercase/{user}/:id"/>
 
 __PERL__
 

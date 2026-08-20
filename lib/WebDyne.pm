@@ -38,7 +38,6 @@ use Fcntl;
 use Tie::IxHash;
 use Digest::MD5 qw(md5_hex);
 use File::Spec::Unix;
-use File::Basename qw(basename);
 use Data::Dumper;
 use HTML::Entities qw(decode_entities encode_entities);
 use CGI::Simple;
@@ -2857,22 +2856,6 @@ sub api {
     #  Perl ?
     #
     my %attr=%{$attr_hr};
-    if (WEBDYNE_API_STRIP_PREFIX && (my $pattern=$attr{'pattern'})) {
-        my $path_fn=$self->r()->filename();
-        my $api_fn=basename($path_fn, WEBDYNE_PSP_EXT);
-
-        #  API patterns should start from the PSP filename stem, e.g.
-        #  /api/foo for api.psp. If the document-root path has been
-        #  included by mistake, strip it here so /example/api/foo is
-        #  treated as /api/foo. The tradeoff is that a nested API file
-        #  cannot deliberately use document-root relative patterns while
-        #  this behaviour is enabled.
-        #
-        if ($pattern=~s{^/.+?/\Q$api_fn\E(?=/|$)}{/$api_fn}) {
-            debug("normalised api pattern for $path_fn from $attr{'pattern'} to $pattern");
-            $attr{'pattern'}=$pattern;
-        }
-    }
     if (my $perl=$attr{'perl'}) {
         $attr{'name'}='perl'
     }
@@ -4983,19 +4966,9 @@ The following options are the most commonly used with `html()` and `html_sr()`:
 
 Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
-# LICENSE and COPYRIGHT
+# LICENSE #
 
-This file is part of WebDyne.
-
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
-
-Full license text is available at:
-
-<http://dev.perl.org/licenses/>
-
+This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself. See  [http://dev.perl.org/licenses/](http://dev.perl.org/licenses/) .
 
 =end markdown
 

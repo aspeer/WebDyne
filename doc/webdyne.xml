@@ -1942,8 +1942,8 @@ COPY webdyne.conf.pl /etc</screen>
           </listitem>
 
           <listitem>
-            <para>The pattern should start at the API PSP filename, not at the document root. For example, a file called <filename>api.psp</filename> should normally use a pattern such as
-            <filename>/api/user/:id</filename>, even if the file is served from a subdirectory such as <filename>/example/api.psp</filename>.</para>
+            <para>The API PSP filename forms the route mount point and should not be repeated in the <property>pattern</property> attribute. For example, a file called
+            <filename>api.psp</filename> serving <filename>/api/user/42</filename> should use a pattern such as <filename>/user/:id</filename>.</para>
           </listitem>
 
           <listitem>
@@ -1951,11 +1951,11 @@ COPY webdyne.conf.pl /etc</screen>
           </listitem>
         </itemizedlist>
 
-        <tip>
-          <para>API pattern paths are intended to be portable between document roots. If <filename>example/api.psp</filename> is served as <filename>/example/api/user/bob/42</filename>, the
-          <tag>&lt;api&gt;</tag> pattern should still be <filename>/api/user/{user}/:id</filename>, not <filename>/example/api/user/{user}/:id</filename>. WebDyne is forgiving by default and
-          will strip an accidental directory prefix before the PSP filename from the pattern. Set <constant>WEBDYNE_API_STRIP_PREFIX</constant> to 0 if exact pattern matching is preferred.</para>
-        </tip>
+        <warning>
+          <para>From WebDyne 3.020 onwards <tag>&lt;api&gt;</tag> patterns are relative to the API PSP file path. If <filename>example/api.psp</filename> is served as
+          <filename>/example/api/user/bob/42</filename>, the pattern should be <filename>/user/{user}/:id</filename>, not <filename>/api/user/{user}/:id</filename> or
+          <filename>/example/api/user/{user}/:id</filename>. The filename prefix in <property>pattern</property> is no longer needed or supported.</para>
+        </warning>
 
         <para>Here is a very simple example. Note the format of the URL in the Run hyperlink:</para>
 
@@ -3068,10 +3068,10 @@ Thank you for registering +{name} !
                 <term>pattern=ROUTE</term>
 
                 <listitem>
-                  <para><emphasis>Mandatory</emphasis>. Name of <classname>Router::Simple</classname> pattern we want to serve, e.g. /api/{user}/:id. The <property>match</property>
-                  attribute is accepted as an alias. The route should begin with the PSP filename stem, so routes in <filename>api.psp</filename> should begin with <filename>/api/</filename>
-                  regardless of whether the file is located at the document root or in a subdirectory. By default WebDyne will strip an accidental document-root prefix before that filename stem,
-                  e.g. <filename>/example/api/{user}/:id</filename> is treated as <filename>/api/{user}/:id</filename>. Disable this with <constant>WEBDYNE_API_STRIP_PREFIX</constant> if required.</para>
+                  <para><emphasis>Mandatory</emphasis>. Name of <classname>Router::Simple</classname> pattern we want to serve, e.g. /user/:id. The <property>match</property>
+                  attribute is accepted as an alias. The route is relative to the API PSP file path: routes in <filename>api.psp</filename> serving URLs under <filename>/api/</filename>
+                  should not include <filename>/api</filename> in the pattern. This is a breaking change from WebDyne 3.020 onwards; older patterns such as
+                  <filename>/api/{user}/:id</filename> should be changed to <filename>/{user}/:id</filename>.</para>
                 </listitem>
               </varlistentry>
 

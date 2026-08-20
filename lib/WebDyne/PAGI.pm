@@ -318,16 +318,15 @@ sub handler_http {
             #  If the requested path is not a file, an API PSP may own a path
             #  prefix such as /api.psp or /example/api.psp. Resolve that prefix
             #  before constructing the request so the normal WebDyne handler can
-            #  process the PSP. If we find a nested API file, treat its
-            #  containing directory as the mount point so <api> patterns are
-            #  local to the PSP file name. The tradeoff is that nested API
-            #  files should not use document-root relative patterns.
+            #  process the PSP. The discovered API file path becomes the mount
+            #  point, so /example/api.psp owning /example/api/foo passes /foo to
+            #  Router::Simple.
             #
             my $api_fn=api_filename($self, $scope);
             if ($api_fn) {
-                my $api_dn=dirname(File::Spec->abs2rel($api_fn, File::Spec->rel2abs($self->{'root'})));
-                $ENV{'PATH_INFO'}=~s{^/\Q$api_dn\E(?=/|$)}{}i
-                    if $api_dn ne '.';
+                my $api_path=File::Spec->abs2rel($api_fn, File::Spec->rel2abs($self->{'root'}));
+                $api_path=~s{\Q@{[WEBDYNE_PSP_EXT]}\E$}{};
+                $ENV{'PATH_INFO'}=~s{^/\Q$api_path\E(?=/|$)}{}i;
             }
 
             #  Only need request and response helper objects
@@ -594,11 +593,11 @@ The module relies on `WebDyne::Request::PAGI` for normalized request handling an
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
@@ -606,7 +605,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 

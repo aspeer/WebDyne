@@ -425,7 +425,6 @@ my %constant_temp;
     #  Enable the API mode ?
     #
     WEBDYNE_API_ENABLE => 1,
-    WEBDYNE_API_STRIP_PREFIX => 1,
     
     
     #  Enable Alpine/Vue hack
@@ -1624,12 +1623,6 @@ The constants below are defined by `WebDyne::Constant`. Each definition includes
 
     Enable processing of `<api>` routes in PSGI request handling. Set to 0 to disable API route dispatch.
 
-* **WEBDYNE_API_STRIP_PREFIX**
-
-    **Default:** `1`
-
-    Strip accidental document-root prefixes from `<api pattern>` values when the pattern contains path segments before the current PSP filename stem. This keeps patterns such as `/api/user/:id` portable for `api.psp` files served from subdirectories. Set to 0 to require patterns to match the request path exactly.
-
 * **WEBDYNE_ALPINE_VUE_ATTRIBUTE_HACK_ENABLE**
 
     **Default:** `'x-on'`
@@ -2750,16 +2743,6 @@ B<WEBDYNE_API_ENABLE>
 B<Default:> C<1>
 
 Enable processing of C<<< <api> >>> routes in PSGI request handling. Set to 0 to disable API route dispatch.
-
-
-
-=item *
-
-B<WEBDYNE_API_STRIP_PREFIX>
-
-B<Default:> C<1>
-
-Strip accidental document-root prefixes from C<<< <api pattern> >>> values when the pattern contains path segments before the current PSP filename stem. This keeps patterns such as C</api/user/:id> portable for C<api.psp> files served from subdirectories. Set to 0 to require patterns to match the request path exactly.
 
 
 
