@@ -18,10 +18,12 @@ jobs:
       fail-fast: false
       matrix:
         # Selected from long-lived distro/default Perl versions, not every
-        # upstream branch by assumption: Debian 7-13, Ubuntu LTS 14.04-26.04,
+        # upstream branch by assumption: Debian 7-13, Ubuntu LTS 12.04-26.04,
         # RHEL 7-9, Fedora latest/n-1/n-2, plus recent/current upstream stable
         # releases as forward canaries.
         perl:
+          - '5.14' # Debian 7 Wheezy; Ubuntu 12.04 LTS
+          - '5.16' # RHEL/CentOS 7 default
           - '5.18' # Ubuntu 14.04 LTS
           - '5.20' # Debian 8 Jessie
           - '5.22' # Ubuntu 16.04 LTS

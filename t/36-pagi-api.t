@@ -7,17 +7,18 @@ use warnings;
 #  Test Harness
 #
 use Test::More;
+use FindBin qw($RealBin);
+use lib $RealBin;
+use pagi_compat_helper qw(pagi_skip_reason);
 
 
 #  Skip test if PAGI dependencies are unavailable
 #
 BEGIN {
-    my @missing;
-    for my $m (qw(PAGI::Test::Client PAGI::Request PAGI::Response Future::AsyncAwait)) {
-        eval "require $m; 1" or push @missing, $m;
-    }
-    plan skip_all => "Skipping PAGI API test: missing " . join(", ", @missing)
-        if @missing;
+    unshift @INC, 't';
+    require pagi_compat_helper;
+    my $skip=pagi_compat_helper::pagi_skip_reason(qw(PAGI::Test::Client PAGI::Request PAGI::Response Future::AsyncAwait));
+    plan skip_all => "Skipping PAGI API test: $skip" if $skip;
 }
 
 

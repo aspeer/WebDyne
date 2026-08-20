@@ -989,14 +989,25 @@ sub import {
                 }
                 #debug("caller: $caller, set:$k value:$v");
                 #next if ref($v); # Not needed, stop Regexp conversion
+                my $sub_body;
                 if ($v=~/^\d+$/) {
                     #debug("using sub() ${caller}::${k}=$v");
-                    *{"${caller}::${k}"}=eval("sub () { $v }");
+                    $sub_body=$v;
                 }
                 else {
                     #debug("fall through, using sub() ${caller}::${k}=q($v)");
-                    *{"${caller}::${k}"}=eval("sub () { q($v) }");
+                    $sub_body="q($v)";
                 }
+
+                #  Perl 5.14 and earlier warn unconditionally when a foldable
+                #  constant sub is redefined. Keep foldable constants on newer
+                #  Perl, but use perlsub's documented non-inlined form there.
+                #
+                *{"${caller}::${k}"}=eval(
+                    ($] < 5.016)
+                    ? "sub () { $sub_body if \$] }"
+                    : "sub () { $sub_body }"
+                );
                     
             }
         }
