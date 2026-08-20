@@ -148,8 +148,8 @@ jobs:
           #    ${{ steps.meta.outputs.labels }}
           #annotations: |
           #    org.opencontainers.image.description=Simple self-contained WebDyne demonstration application 
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.variant }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.variant }}
           platforms: linux/arm64,linux/amd64
           
         
