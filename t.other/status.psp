@@ -1,0 +1,370 @@
+<start_html title="WebDyne Status" h1>
+
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.4;
+  margin: 1.5rem;
+}
+h2 {
+  border-bottom: 1px solid #ccc;
+  margin-top: 2rem;
+  padding-bottom: 0.25rem;
+}
+table {
+  border-collapse: collapse;
+  margin: 0.75rem 0 1.5rem;
+  width: 100%;
+}
+th, td {
+  border: 1px solid #ddd;
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  background: #f2f2f2;
+}
+td.num {
+  text-align: right;
+  white-space: nowrap;
+}
+code {
+  background: #f6f6f6;
+  padding: 0.1rem 0.25rem;
+}
+.muted {
+  color: #666;
+}
+</style>
+
+<perl handler/>
+
+__PERL__
+
+use File::Spec;
+use HTML::Entities qw(encode_entities);
+use POSIX qw(strftime);
+no warnings qw(once);
+
+sub handler {
+    my $self=shift();
+    my $now=time();
+    my $pkg_hr=\%WebDyne::Package;
+    my $cache_hr=$pkg_hr->{'_cache'} || {};
+    my @html;
+
+    push @html, section(
+        'Runtime',
+        kv_table(
+            [
+                ['Generated', scalar localtime($now)],
+                ['PID', $$],
+                ['Perl', $^V ? sprintf('%vd', $^V) : $]],
+                ['Executable', $^X],
+                ['Platform', $^O],
+                ['Current directory', scalar safe_call(sub { $self->cwd() })],
+                ['Request URI', scalar safe_call(sub { $self->r()->uri() })],
+                ['Filename', scalar safe_call(sub { $self->r()->filename() })],
+                ['Location', scalar safe_call(sub { $self->r()->location() })],
+                ['WebDyne version', $WebDyne::VERSION],
+                ['WebDyne git SHA', ${'WebDyne::VERSION_GIT_SHA'} || ''],
+            ]
+        )
+    );
+
+    push @html, section(
+        'Configuration',
+        kv_table(
+            [
+                ['WEBDYNE_CACHE_DN', constant_value('WEBDYNE_CACHE_DN')],
+                ['WEBDYNE_STARTUP_CACHE_FLUSH', constant_value('WEBDYNE_STARTUP_CACHE_FLUSH')],
+                ['WEBDYNE_CACHE_CHECK_FREQ', constant_value('WEBDYNE_CACHE_CHECK_FREQ')],
+                ['WEBDYNE_CACHE_HIGH_WATER', constant_value('WEBDYNE_CACHE_HIGH_WATER')],
+                ['WEBDYNE_CACHE_LOW_WATER', constant_value('WEBDYNE_CACHE_LOW_WATER')],
+                ['WEBDYNE_CACHE_CLEAN_METHOD', constant_value('WEBDYNE_CACHE_CLEAN_METHOD')],
+                ['WEBDYNE_CACHE_STAT_TTL', constant_value('WEBDYNE_CACHE_STAT_TTL')],
+                ['WEBDYNE_RELOAD', constant_value('WEBDYNE_RELOAD')],
+                ['WEBDYNE_EVAL_SAFE', constant_value('WEBDYNE_EVAL_SAFE')],
+                ['WEBDYNE_STRICT_VARS', constant_value('WEBDYNE_STRICT_VARS')],
+            ]
+        )
+    );
+
+    push @html, section('Disk Cache', disk_cache_html(constant_value('WEBDYNE_CACHE_DN'), $now));
+    push @html, section('Process Cache', process_cache_html($cache_hr, $now));
+    push @html, section('Package Caches', package_cache_html());
+    push @html, section('Loaded Modules Outside WebDyne', loaded_modules_html());
+    push @html, section('Memory', memory_html());
+    push @html, section('Selected Environment', env_html());
+
+    return \join("\n", @html);
+}
+
+sub section {
+    my ($title, $body)=@_;
+    return '<h2>'.h($title)."</h2>\n".$body;
+}
+
+sub kv_table {
+    my $rows_ar=shift();
+    my @html=('<table>', '<tr><th>Name</th><th>Value</th></tr>');
+    foreach my $row_ar (@{$rows_ar}) {
+        push @html, '<tr><td>'.h($row_ar->[0]).'</td><td>'.format_value($row_ar->[1]).'</td></tr>';
+    }
+    push @html, '</table>';
+    return join("\n", @html);
+}
+
+sub disk_cache_html {
+    my ($cache_dn, $now)=@_;
+    return '<p class="muted">No WEBDYNE_CACHE_DN configured.</p>' unless $cache_dn;
+    return kv_table([['Directory', $cache_dn], ['Status', 'not a directory']]) unless -d $cache_dn;
+
+    opendir(my $dh, $cache_dn) || return kv_table([['Directory', $cache_dn], ['Status', "opendir failed: $!"]]);
+    my @names=grep { $_ ne '.' && $_ ne '..' } readdir($dh);
+    closedir($dh);
+
+    my ($file_count, $dir_count, $html_count, $compiled_count, $other_count, $bytes)=(0, 0, 0, 0, 0, 0);
+    my ($oldest, $newest);
+    foreach my $name (@names) {
+        my $pn=File::Spec->catfile($cache_dn, $name);
+        if (-d $pn) {
+            $dir_count++;
+            next;
+        }
+        next unless -f $pn;
+        my @stat=stat($pn);
+        $file_count++;
+        $bytes += $stat[7] || 0;
+        if ($name =~ /\.html\z/) {
+            $html_count++;
+        }
+        elsif ($name =~ /\A[0-9a-f]{32}\z/i) {
+            $compiled_count++;
+        }
+        else {
+            $other_count++;
+        }
+        $oldest=$stat[9] if !defined($oldest) || $stat[9] < $oldest;
+        $newest=$stat[9] if !defined($newest) || $stat[9] > $newest;
+    }
+
+    return kv_table(
+        [
+            ['Directory', $cache_dn],
+            ['Entries', scalar @names],
+            ['Files', $file_count],
+            ['Directories', $dir_count],
+            ['Compiled cache files', $compiled_count],
+            ['Static HTML cache files', $html_count],
+            ['Other files', $other_count],
+            ['Total file size', bytes($bytes)],
+            ['Oldest file mtime', defined($oldest) ? age_time($oldest, $now) : ''],
+            ['Newest file mtime', defined($newest) ? age_time($newest, $now) : ''],
+        ]
+    );
+}
+
+sub process_cache_html {
+    my ($cache_hr, $now)=@_;
+    my @keys=sort keys %{$cache_hr};
+    my @rows;
+    foreach my $inode (@keys) {
+        my $entry_hr=$cache_hr->{$inode} || {};
+        push @rows, [
+            short($inode, 12),
+            exists($entry_hr->{'data'}) && defined($entry_hr->{'data'}) ? ref_size($entry_hr->{'data'}) : '',
+            exists($entry_hr->{'meta'}) && defined($entry_hr->{'meta'}) ? join(', ', sort keys %{$entry_hr->{'meta'}}) : '',
+            $entry_hr->{'nrun'} || 0,
+            $entry_hr->{'lrun'} ? age($now - $entry_hr->{'lrun'}) : '',
+            $entry_hr->{'mtime'} ? age_time($entry_hr->{'mtime'}, $now) : '',
+            cache_stat_summary($entry_hr, $now),
+        ];
+    }
+
+    my $summary=kv_table(
+        [
+            ['Entries', scalar @keys],
+            ['Total WebDyne handler runs', $WebDyne::Package{'_nrun'} || 0],
+            ['Entries with compiled data', scalar grep { defined($cache_hr->{$_}{'data'}) } @keys],
+            ['Entries with metadata', scalar grep { defined($cache_hr->{$_}{'meta'}) } @keys],
+            ['Entries with cache-stat memo', scalar grep { $cache_hr->{$_}{'cache_stat_set'} } @keys],
+            ['Entries with html-stat memo', scalar grep { $cache_hr->{$_}{'html_stat_set'} } @keys],
+        ]
+    );
+    return $summary.'<p class="muted">No process cache entries.</p>' unless @rows;
+    return $summary.table(
+        ['Inode', 'Data', 'Meta keys', 'Runs', 'Last run', 'Cache mtime', 'Stat memo'],
+        \@rows,
+        { 3 => 1 }
+    );
+}
+
+sub package_cache_html {
+    my @rows;
+    foreach my $pkg (sort grep { /^WebDyne(?:::|$)/ } package_names()) {
+        no strict 'refs';
+        next unless defined *{"${pkg}::Package"}{HASH};
+        my $hr=*{"${pkg}::Package"}{HASH};
+        next unless $hr && %{$hr};
+        foreach my $key (sort keys %{$hr}) {
+            push @rows, [$pkg, $key, ref_size($hr->{$key}), ref($hr->{$key}) || 'scalar'];
+        }
+    }
+    return '<p class="muted">No public package cache hashes populated.</p>' unless @rows;
+    return table(['Package', 'Key', 'Size', 'Type'], \@rows);
+}
+
+sub loaded_modules_html {
+    my @modules=sort grep { $_ !~ /^WebDyne(?:\/|\.pm\z)/ } keys %INC;
+    my @rows=map { [module_name($_), $INC{$_}] } @modules;
+    my $limit=150;
+    my $note=@rows > $limit ? '<p class="muted">Showing first '.$limit.' of '.scalar(@rows).' modules.</p>' : '';
+    @rows=@rows[0..$limit-1] if @rows > $limit;
+    return kv_table([['Count', scalar @modules]]).$note.table(['Module', 'Loaded from'], \@rows);
+}
+
+sub memory_html {
+    my @rows;
+    push @rows, ['Process RSS/VSZ', ps_memory()];
+    if (open(my $fh, '<', '/proc/self/status')) {
+        while (my $line=<$fh>) {
+            chomp $line;
+            if ($line =~ /^(VmPeak|VmSize|VmRSS|VmHWM|VmData|VmStk|VmExe|VmLib|Threads):\s*(.*)$/) {
+                push @rows, [$1, $2];
+            }
+        }
+        close($fh);
+    }
+    push @rows, ['Note', 'Values depend on operating system support. RSS/VSZ are kilobytes when reported by ps.'];
+    return kv_table(\@rows);
+}
+
+sub env_html {
+    my @names=qw(
+        MOD_PERL MOD_PERL_API_VERSION FCGI_ROLE GATEWAY_INTERFACE
+        PLACK_ENV PSGI_VERSION SERVER_SOFTWARE SERVER_NAME SERVER_PORT
+        DOCUMENT_ROOT SCRIPT_NAME PATH_INFO REQUEST_METHOD
+        WEBDYNE_CACHE_DN WEBDYNE_CONF PERL5LIB PAR_TEMP
+    );
+    my @rows=map { [$_, exists($ENV{$_}) ? $ENV{$_} : ''] } @names;
+    return kv_table(\@rows);
+}
+
+sub table {
+    my ($head_ar, $rows_ar, $num_hr)=@_;
+    my @html=('<table>', '<tr>'.join('', map { '<th>'.h($_).'</th>' } @{$head_ar}).'</tr>');
+    foreach my $row_ar (@{$rows_ar}) {
+        push @html, '<tr>'.join('', map {
+            my $class=$num_hr && $num_hr->{$_} ? ' class="num"' : '';
+            '<td'.$class.'>'.format_value($row_ar->[$_]).'</td>'
+        } 0..$#{$head_ar}).'</tr>';
+    }
+    push @html, '</table>';
+    return join("\n", @html);
+}
+
+sub package_names {
+    my %seen;
+    my @todo=('WebDyne');
+    while (my $pkg=shift @todo) {
+        next if $seen{$pkg}++;
+        no strict 'refs';
+        foreach my $name (keys %{"${pkg}::"}) {
+            next unless $name =~ /::$/;
+            (my $child=$name)=~s/::\z//;
+            push @todo, "${pkg}::${child}";
+        }
+    }
+    return sort keys %seen;
+}
+
+sub module_name {
+    my $file=shift();
+    $file =~ s/\.pm\z//;
+    $file =~ s{/}{::}g;
+    return $file;
+}
+
+sub constant_value {
+    my $name=shift();
+    no strict 'refs';
+    return ${"WebDyne::${name}"} if defined ${"WebDyne::${name}"};
+    return '';
+}
+
+sub cache_stat_summary {
+    my ($entry_hr, $now)=@_;
+    my @parts;
+    push @parts, 'cache='.($entry_hr->{'cache_stat_set'} ? age_time($entry_hr->{'cache_stat_mtime'}, $now) : 'none');
+    push @parts, 'html='.($entry_hr->{'html_stat_set'} ? age_time($entry_hr->{'html_stat_mtime'}, $now) : 'none');
+    return join('; ', @parts);
+}
+
+sub ps_memory {
+    my $pid=$$;
+    my $cmd="ps -o rss= -o vsz= -p $pid";
+    my $out='';
+    if (open(my $ph, '-|', $cmd)) {
+        $out=<$ph> || '';
+        close($ph);
+    }
+    $out =~ s/^\s+|\s+\z//g;
+    return 'unavailable' unless $out =~ /^\d+\s+\d+\z/;
+    return $out ? "rss/vsz $out KB" : 'unavailable';
+}
+
+sub ref_size {
+    my $value=shift();
+    my $ref=ref($value);
+    return 'scalar' unless $ref;
+    return scalar(@{$value}).' items' if $ref eq 'ARRAY';
+    return scalar(keys %{$value}).' keys' if $ref eq 'HASH';
+    return $ref;
+}
+
+sub format_value {
+    my $value=shift();
+    return '' unless defined $value;
+    return '<code>'.h($value).'</code>' if $value =~ m{[\\/]} || length($value) > 48;
+    return h($value);
+}
+
+sub bytes {
+    my $bytes=shift() || 0;
+    return sprintf('%.1f MB', $bytes / 1048576) if $bytes >= 1048576;
+    return sprintf('%.1f KB', $bytes / 1024) if $bytes >= 1024;
+    return "$bytes B";
+}
+
+sub age_time {
+    my ($epoch, $now)=@_;
+    return '' unless $epoch;
+    return scalar(localtime($epoch)).' ('.age($now - $epoch).' ago)';
+}
+
+sub age {
+    my $seconds=shift();
+    $seconds=0 if !defined($seconds) || $seconds < 0;
+    return sprintf('%dd %02dh %02dm %02ds', int($seconds / 86400), int($seconds / 3600) % 24, int($seconds / 60) % 60, $seconds % 60);
+}
+
+sub short {
+    my ($text, $len)=@_;
+    return '' unless defined $text;
+    return $text if length($text) <= $len;
+    return substr($text, 0, $len).'...';
+}
+
+sub safe_call {
+    my $cr=shift();
+    my $value=eval { $cr->() };
+    return $@ ? '' : $value;
+}
+
+sub h {
+    my $text=shift();
+    return '' unless defined $text;
+    return encode_entities($text, q{<>&"});
+}
