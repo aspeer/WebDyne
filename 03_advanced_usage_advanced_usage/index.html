@@ -3215,7 +3215,7 @@ That is why we check the month is valid in the code above.</p>
 <h2 id="dynamic_interfaces">Dynamic Interfaces<a class="headerlink" href="#dynamic_interfaces" title="Permanent link">&para;</a></h2>
 <h3 id="json">JSON<a class="headerlink" href="#json" title="Permanent link">&para;</a></h3>
 <p>WebDyne has a &lt;json&gt; tag that can be used to present JSON data objects
-to Javascript libraries in an output page. Here is a very simple
+to JavaScript libraries in an output page. Here is a very simple
 example:</p>
 <div class="language-html highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="p">&lt;</span><span class="nt">start_html</span> <span class="na">title</span><span class="o">=</span><span class="s">&quot;Sample JSON Chart&quot;</span> <span class="na">script</span><span class="o">=</span><span class="s">&quot;https://cdn.jsdelivr.net/npm/chart.js&quot;</span><span class="p">&gt;</span>
 </span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
@@ -3259,7 +3259,7 @@ example:</p>
 rendered into the page as &lt;script&gt;&lt;/script&gt; block of type
 application/json with an id of "chartData". Any data returned by the
 perl routine nominated by the json tag is presented as JSON within that
-tag block, and available to Javascript libraries within the page. JSON
+tag block, and available to JavaScript libraries within the page. JSON
 data is kept in canonical order by default, which can be adjusted with
 the WEBDYNE_JSON_CANONICAL variable if not desired/needed for a very
 small speed-up.</p>
@@ -3336,7 +3336,7 @@ that:</p>
   &lt;api&gt; tag. All other tags are ignored - in fact they are discarded.</p>
 </li>
 <li>
-<p>Any PSP file file an &lt;api&gt; tag will only emit JSON data with a
+<p>Any PSP file containing an &lt;api&gt; tag will only emit JSON data with a
   content type of "<code>application/json</code>"</p>
 </li>
 <li>
@@ -3419,7 +3419,7 @@ rewrite or routing configuration.</p>
 </div>
 <h3 id="htmx">HTMX<a class="headerlink" href="#htmx" title="Permanent link">&para;</a></h3>
 <p>WebDyne has support for &lt;htmx&gt; tags to supply fragmented HTML to pages
-using the <a href="https://htmx.org">HTMX Javascript Library</a> and similar
+using the <a href="https://htmx.org">HTMX JavaScript Library</a> and similar
 libraries such as <a href="https://alpine-ajax.js.org">Alpine Ajax</a>. WebDyne can
 support just supplying HTML snippet to pages in response to htmx or
 similar calls. HTMX/Alpine Ajax and WebDyne are complementary libraries
