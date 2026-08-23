@@ -1,0 +1,49 @@
+<start_html title="Release Board" h2 hr sse require="ReleaseDemo" import="fingerprint">
+
+<link rel="stylesheet" href="release.css">
+<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+<script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+
+<div class="release-board">
+  <section class="release-panel">
+    <p class="eyebrow">Shared deployment status</p>
+    <div
+      id="release-status"
+      hx-ext="sse"
+      sse-connect="release.psp"
+      hx-get="release_status.psp"
+      hx-trigger="load, sse:release-changed"
+      hx-swap="innerHTML"
+    >
+      <p class="loading">Loading release status...</p>
+    </div>
+  </section>
+</div>
+
+__PERL__
+
+use Future::AsyncAwait;
+use HTTP::Status qw(HTTP_OK);
+
+async sub sse {
+
+    my ($self, $param_hr)=@_;
+    my $sse_or=$self->r()->sse();
+    my $fingerprint=fingerprint();
+
+    await $sse_or->start(
+        status  => HTTP_OK,
+        headers => [
+            ['X-Accel-Buffering' => 'no'],
+            ['Content-Encoding'  => 'identity'],
+        ],
+    );
+
+    await $sse_or->every(1, async sub {
+
+        my $current=fingerprint();
+        return if $current eq $fingerprint;
+        $fingerprint=$current;
+        await $sse_or->send_event(event => 'release-changed', data => '');
+    });
+}

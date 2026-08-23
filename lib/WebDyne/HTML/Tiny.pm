@@ -356,6 +356,8 @@ sub _start_html {
         hr
         sse
         ws
+        require
+        import
     ), keys %{$WEBDYNE_START_HTML_SHORTCUT_HR});
     debug('start_html %s', Dumper(\%attr_page));
 
@@ -368,7 +370,7 @@ sub _start_html {
     #  Static, cache ? If so mark as such in HTML::Tiny object to be 
     #  reviewed at end of parse by Treebuilder. Not ideal, good enough
     #
-    foreach my $attr (qw(static cache handler sse ws)) {
+    foreach my $attr (qw(static cache handler sse ws require import)) {
         if (my $value=$attr_page{$attr}) {
             debug("found attr: $attr, setting to value: $value");
             $self->{"_${attr}"}=$value;
@@ -1446,11 +1448,11 @@ Global behavior is influenced by constants such as `WEBDYNE_DTD`, `WEBDYNE_META`
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
@@ -1458,7 +1460,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 

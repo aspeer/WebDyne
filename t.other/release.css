@@ -1,0 +1,87 @@
+body {
+  color: #172033;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.45;
+  margin: 2rem;
+  max-width: 680px;
+}
+
+.release-panel {
+  border: 1px solid #cfd5df;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.eyebrow {
+  background: #eef3f8;
+  border-bottom: 1px solid #cfd5df;
+  color: #40526b;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  text-transform: uppercase;
+}
+
+.release-card {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  min-height: 7.25rem;
+  padding: 1rem;
+}
+
+.release-summary h3,
+.release-revision,
+.release-time,
+.loading {
+  margin: 0;
+}
+
+.release-summary h3 {
+  font-size: 1.25rem;
+  margin-top: 0.2rem;
+}
+
+.release-revision,
+.release-time {
+  color: #526174;
+  font-size: 0.9rem;
+}
+
+.release-time {
+  margin-top: 0.25rem;
+}
+
+.release-action {
+  background: #176b57;
+  border: 1px solid #176b57;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  min-width: 9.5rem;
+  padding: 0.55rem 0.8rem;
+}
+
+.release-action:hover {
+  background: #125646;
+}
+
+.release-card.live h3 {
+  color: #176b57;
+}
+
+@media (max-width: 520px) {
+  .release-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .release-action {
+    width: 100%;
+  }
+}

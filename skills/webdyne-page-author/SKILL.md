@@ -1,41 +1,68 @@
 ---
 name: webdyne-page-author
-description: Use when creating, editing, reviewing, or explaining WebDyne .psp pages and WebDyne page syntax, including start_html, perl tags, __PERL__, blocks, includes, form helper tags, substitutions, JSON/API/HTMX tags, sessions, static pages, PSGI/PAGI/Apache runtime assumptions, and validation with wdrender or wdlint.
+description: Create, edit, review, explain, and validate WebDyne .psp pages and fragments. Use for WebDyne HTML/Perl syntax, start_html and form helpers, substitutions, handlers, blocks, includes, static/cache/session/template pages, JSON/API/HTMX endpoints, PAGI SSE/WebSockets, runtime selection, and wdlint/wdrender debugging.
 ---
 
 # WebDyne Page Author
 
-Use this skill to produce correct WebDyne PSP source for application pages, examples, includes, fragments, and small server-rendered tools. Prefer WebDyne-native syntax over generic templating conventions.
+Produce WebDyne-native PSP source that is readable as HTML, keeps Perl in the right execution scope, and matches the target runtime. Apply this skill to full pages, includes, fragments, examples, and small module-backed applications.
 
-## Workflow
+## Establish Context
 
-1. Identify the target file type: full `.psp` page, include, htmx fragment, API-only route page, example, or module-backed app page.
-2. For full pages, start with `<start_html>` unless the surrounding project already uses explicit `<html><head><body>` markup.
-3. Keep page HTML readable. Move larger Perl logic into `__PERL__` handlers or external modules instead of embedding long inline code.
-4. Use WebDyne form helper tags for normal forms unless the project already uses raw HTML form controls.
-5. Use `+{param}` or `${name}` substitutions in markup and `$self->render(...)` / `$self->render_block(...)` from handlers.
-6. If a request needs JSON data, API routing, htmx fragments, sessions, or static rendering, read the matching reference below before writing code.
-7. When editing an existing project, follow its local `.psp` style and runtime assumptions.
+Before editing:
+
+1. Inspect nearby `.psp` files, companion modules, configuration, and tests. Match their established style unless it conflicts with current WebDyne behavior.
+2. Classify the output as a full page, included content, HTMX fragment, JSON data block, API route page, static/cache page, or PAGI stream/socket page.
+3. Identify the runtime: direct/fake rendering, Apache, PSGI, or PAGI. SSE and WebSockets require PAGI.
+4. Separate request input, render parameters, route matches, and async connection parameters. They are related but not interchangeable.
+5. Decide whether HTML belongs in PSP markup, a reusable `<block>`, or programmatic `$self->html_tiny()` output. Prefer markup for substantial fragments.
+
+## Authoring Standard
+
+- Use `<start_html>` for a compact full page unless the project deliberately writes explicit document markup. Fragment and API pages need not use it.
+- Keep short expressions inline. Put reusable or multi-step logic in named handlers below `__PERL__`, or in an application module when it is shared.
+- Prefer `handler=` in new code. `method=` is a compatibility alias.
+- Treat content inside `<perl handler="name">...</perl>` as a template: the handler must return output, return a hash ref for implicit rendering, or call `$self->render(...)`.
+- Return scalar refs for generated HTML where practical. `$self->render()` already returns one. Use `\undef` for intentional empty output.
+- Prefer `${name}` plus `$self->render(...)` for template data and `+{name}` for simple CGI request substitutions.
+- Use `!{! ... !}` for short evaluated values, including dynamic HTML attributes.
+- Never put a WebDyne element such as `<perl .../>` inside an HTML attribute. An attribute is one parser value, not a nested PSP tree.
+- Use whole-value `@{...}` and `%{...}` expressions for array/hash attributes such as form values, labels, options, and parameters.
+- For HTMX `hx-vals`, use the documented JavaScript form with a double-quoted HTML attribute, for example `hx-vals="js:{ action: 'advance' }"`. Do not use JSON inside a single-quoted attribute such as `hx-vals='{"action":"advance"}'`: WebDyne normalizes rendered attributes to double quotes, which can corrupt the embedded JSON.
+- Use `$self->html_tiny()` when Perl genuinely needs to construct HTML. Do not add local escaping/tag-building helpers that duplicate it.
+- Do not assume substitutions automatically make untrusted input safe. Escape or validate data at the application boundary.
+- Keep expensive or request-dependent work out of top-level `__PERL__`: that section initializes the page package when compiled/loaded, not once per request.
+- Keep cache keys bounded and validated. User-controlled cache seeds can otherwise create unbounded files.
+- Produce valid rendered HTML. WebDyne parser acceptance alone is not an HTML correctness check.
+
+## Parser And Scope Invariants
+
+- `__PERL__` and `__CODE__` begin the raw Perl tail. HTML parsing stops there, so Perl operators containing `<`, `>`, or substitution syntax remain Perl.
+- Every compiled page has its own generated package. Same-named page-local handlers do not collide across PSP files.
+- Lexicals declared in the raw Perl tail are not visible to separately compiled inline chunks. Share behavior through handlers/helper subs or pass values through render parameters.
+- Handler calls receive `$self` first. Inline chunks also receive inherited render/tag parameters as `$_[1]`.
+- A processing instruction such as `<? helper() ?>` does not implicitly forward `@_` into `helper`. Use `<? helper(@_) ?>`, `<? helper(shift(), ...) ?>`, or a handler tag.
+- During normal synchronous page evaluation, `%_` aliases the CGI `Vars()` hash and exposes the last value for a multivalue parameter. Use the CGI object for list-valued input.
+- SSE and WebSocket handlers receive `($self, $param_hr)`. Use that explicit connection parameter hash across `await`; do not rely on dynamically localized `%_` in async code.
+- API handlers receive `($self, $route_match_hr)`. That second argument contains route matches, not the CGI parameter hash.
 
 ## Reference Routing
 
-Read only the references needed for the task:
+Read only the references relevant to the current page:
 
-- `references/syntax.md`: core PSP syntax, substitutions, tags, handler conventions, and methods.
-- `references/patterns.md`: common page patterns for forms, blocks, includes, JSON, API routes, htmx, sessions, and static pages.
-- `references/runtime.md`: deployment/runtime assumptions for standalone rendering, PSGI/PAGI/Apache, Docker, config, and environment variables.
-- `references/validation.md`: commands for checking/rendering `.psp` pages and troubleshooting generated code.
+- [Core syntax](references/syntax.md): parsing, page anatomy, Perl forms, substitutions, handler returns, attributes, core tags, and page methods.
+- [Rendering patterns](references/patterns.md): handler templates, blocks, forms/uploads, includes, HTML::Tiny, static/cache, sessions, and templates.
+- [Dynamic interfaces](references/interfaces.md): JSON, API, HTMX, PAGI SSE, WebSockets, and efficient event-driven update patterns.
+- [Runtime](references/runtime.md): direct API use, Apache/PSGI/PAGI behavior, configuration, paths, dependencies, and deployment constraints.
+- [Validation](references/validation.md): `wdlint`, `wdrender`, `wdcompile`, focused regression tests, debug output, and a page-type check matrix.
 
-## Authoring Rules
+## Finish The Work
 
-- Prefer `handler` in new examples. Treat `method` as a compatibility alias.
-- Use `<perl handler/>` only when the handler routine is named `handler`.
-- Remember handler-style WebDyne calls receive `$self` as the first argument. Processing instructions like `<? func() ?>` do not automatically pass `$self`; pass `@_` or use `<perl handler="func"/>` when the handler needs the page object.
-- Prefer returning scalar refs for larger generated strings, but returning strings or using `$self->render()` is acceptable in page examples.
-- Return `\undef` from a handler when it should render nothing.
-- Do not invent WebDyne tags or frontend shortcuts beyond the documented ones.
-- Generated pages should be valid HTML after WebDyne renders them.
+1. Run `wdlint` for all pages containing Perl. It checks page Perl and separately checks supported inline chunks.
+2. Render representative normal and parameterized requests with `wdrender`.
+3. For HTMX, test both the normal page and an HX request. For API, assert JSON and route behavior. For forms, exercise scalar and repeated values.
+4. Run focused repository tests with `prove` when changing an existing project.
+5. In a WebDyne source checkout whose development modules are not installed, invoke tools through Perl with `-Ilib`, for example `perl -Ilib bin/wdlint page.psp` and `perl -Ilib bin/wdrender page.psp`.
+6. Use `WEBDYNE_DEBUG=1` for compiler/parser diagnosis, then remove temporary probes and debugging output.
 
-## Output Expectations
-
-When creating a page, provide the `.psp` source and any required companion files or runtime assumptions. When reviewing or editing a page, explain WebDyne-specific issues plainly and point to the smallest correction.
+When behavior is ambiguous, prefer the current repository implementation and tests over generated/manual sidecars that may lag development changes.

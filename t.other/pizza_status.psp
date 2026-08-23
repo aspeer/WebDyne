@@ -1,0 +1,54 @@
+<htmx bare force>
+<perl handler="status">
+<block name="status">
+<section class="status-update ${done}">
+  <p class="message">${message}</p>
+  <p class="meta">Order ${order_id} - status ${status_no} of ${status_total}</p>
+  <progress value="${pct}" max="100"></progress>
+</section>
+</block>
+</perl>
+</htmx>
+
+__PERL__
+
+my @STATUS=(
+    'getting the dough ready',
+    'applying base sauce',
+    'adding toppings',
+    'in oven for cooking',
+    'slicing',
+    'boxing',
+    'ready for pickup',
+);
+
+sub status {
+
+    my $self=shift();
+    my $cgi_or=$self->CGI();
+    my $order_id=scalar($cgi_or->param('order_id')) || time();
+
+    # Demo only: order_id is epoch time, so elapsed seconds simulate backend
+    # status progress. A real app would look up order_id in backend state.
+    $order_id=~s/\D//g;
+    $order_id ||= time();
+    my $status_id=int((time() - $order_id) / 2);
+    $status_id=0 if $status_id < 0;
+    $status_id=$#STATUS if $status_id > $#STATUS;
+
+    my $message=$STATUS[$status_id];
+    my $status_total=scalar(@STATUS);
+    my $pct=int((($status_id + 1) / $status_total) * 100);
+    my $done=$pct >= 100 ? 'done' : '';
+
+    $self->render_block(
+        'status',
+        done         => $done,
+        message      => $message,
+        order_id     => $order_id,
+        status_no    => $status_id + 1,
+        status_total => $status_total,
+        pct          => $pct,
+    );
+    return $self->render();
+}

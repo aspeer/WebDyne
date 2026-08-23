@@ -62,7 +62,7 @@ __PERL__
 use Future::AsyncAwait;
 
 async sub ws {
-    my $self=shift();
+    my ($self, $param_hr)=@_;
     my $r=$self->r();
     my ($receive, $send)=map { $r->{$_} } qw(receive send);
 
@@ -77,7 +77,7 @@ async sub ws {
         if (defined $event->{text}) {
             await $send->({
                 type => 'websocket.send',
-                text => 'echo:' . $event->{text},
+                text => join(':', 'echo', $param_hr->{'one'}, $param_hr->{'two'}, $event->{text}),
             });
         }
     }
@@ -88,12 +88,12 @@ EOF
     ok(my $app_cr=WebDyne::PAGI->new(root => $root_dn)->to_app(), 'build PAGI app');
     ok(my $test_or=PAGI::Test::Client->new(app => $app_cr), 'create PAGI test client');
 
-    $test_or->websocket('/ws.psp', sub {
+    $test_or->websocket('/ws.psp?one=alpha&two=bravo', sub {
         my $ws=shift();
 
         ok(!$ws->is_closed(), 'WebSocket connection is accepted and open');
         $ws->send_text('hello');
-        is($ws->receive_text(), 'echo:hello', 'WebSocket echoes text payload');
+        is($ws->receive_text(), 'echo:alpha:bravo:hello', 'WebSocket handler receives param hash');
 
         $ws->close(1000, 'done');
         ok($ws->is_closed(), 'WebSocket connection closes cleanly');

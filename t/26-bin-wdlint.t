@@ -24,6 +24,7 @@ my $bad_pi_fn="$tmp_dn/bad_pi.psp";
 my $bad_subst_fn="$tmp_dn/bad_subst.psp";
 my $bad_multi_fn="$tmp_dn/bad_multi.psp";
 my $good_lookup_fn="$tmp_dn/good_lookup.psp";
+my $good_render_subst_fn="$tmp_dn/good_render_subst.psp";
 
 write_file($good_fn, <<'END_PSP');
 <start_html>
@@ -71,6 +72,23 @@ write_file($good_lookup_fn, <<'END_PSP');
 +{not_perl}
 END_PSP
 
+write_file($good_render_subst_fn, <<'END_PSP');
+<start_html>
+<perl handler="status">
+<block name="status">
+<div class="${done}">
+<p>${message}</p>
+</div>
+</block>
+</perl>
+__PERL__
+sub status {
+    my $self=shift();
+    $self->render_block('status', done => 'done', message => 'ready');
+    return $self->render();
+}
+END_PSP
+
 my ($good_out, $good_err, $good_rc)=run_cmd($^X, '-Ilib', $script, $good_fn);
 is($good_rc, 0, 'wdlint exits cleanly on valid __PERL__ section');
 like($good_out, qr/\Q$good_fn\E syntax OK/, 'wdlint reports syntax OK for valid file');
@@ -110,5 +128,10 @@ my ($good_lookup_out, $good_lookup_err, $good_lookup_rc)=run_cmd($^X, '-Ilib', $
 is($good_lookup_rc, 0, 'wdlint ignores non-Perl substitution operators');
 like($good_lookup_out, qr/\Q$good_lookup_fn\E syntax OK/, 'wdlint reports syntax OK for non-Perl substitution file');
 is($good_lookup_err, '', 'wdlint writes no stderr for non-Perl substitution file');
+
+my ($good_render_subst_out, $good_render_subst_err, $good_render_subst_rc)=run_cmd($^X, '-Ilib', $script, $good_render_subst_fn);
+is($good_render_subst_rc, 0, 'wdlint ignores render-time block substitutions');
+like($good_render_subst_out, qr/\Q$good_render_subst_fn\E syntax OK/, 'wdlint reports syntax OK for render substitution file');
+is($good_render_subst_err, '', 'wdlint writes no stderr for render substitution file');
 
 done_testing();

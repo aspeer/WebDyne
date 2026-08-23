@@ -1,0 +1,19 @@
+<htmx bare>
+<perl handler="ReleaseDemo::status" require="ReleaseDemo">
+<article class="release-card ${live}">
+  <div class="release-summary">
+    <p class="release-revision">Release revision ${revision}</p>
+    <h3>${stage}</h3>
+    <p class="release-time">Updated ${changed_at}</p>
+  </div>
+  <button
+    type="button"
+    class="release-action"
+    hx-post="release_action.psp"
+    hx-vals="js:{ action: 'advance' }"
+    hx-target="#release-status"
+    hx-swap="innerHTML"
+  >${action_label}</button>
+</article>
+</perl>
+</htmx>

@@ -63,7 +63,7 @@ use Future::AsyncAwait;
 use HTTP::Status qw(HTTP_OK);
 
 async sub sse {
-    my $self=shift();
+    my ($self, $param_hr)=@_;
     my $sse_or=$self->r()->sse();
     await $sse_or->start(
         status  => HTTP_OK,
@@ -72,7 +72,7 @@ async sub sse {
             ['Cache-Control' => 'no-cache'],
         ],
     );
-    await $sse_or->send_event(event => 'tick', data => 'alpha');
+    await $sse_or->send_event(event => 'tick', data => join(':', $param_hr->{'one'}, $param_hr->{'two'}));
     $sse_or->close();
 }
 EOF
@@ -81,7 +81,7 @@ EOF
     ok(my $app_cr=WebDyne::PAGI->new(root => $root_dn)->to_app(), 'build PAGI app');
     ok(my $test_or=PAGI::Test::Client->new(app => $app_cr), 'create PAGI test client');
 
-    $test_or->sse('/sse.psp', sub {
+    $test_or->sse('/sse.psp?one=alpha&two=bravo', sub {
         my $sse=shift();
 
         is($sse->{'status'}, 200, 'SSE transport returns HTTP 200');
@@ -95,7 +95,7 @@ EOF
 
         my $event=$sse->receive_event();
         is($event->{'event'}, 'tick', 'SSE event name is correct');
-        is($event->{'data'}, 'alpha', 'SSE event payload is correct');
+        is($event->{'data'}, 'alpha:bravo', 'SSE handler receives param hash');
     });
 
     return \1;

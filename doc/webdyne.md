@@ -3873,6 +3873,33 @@ WebDyne will call an async subroutine named `sse`. To use a different
 handler name, supply it as the attribute value, for example &lt;start_html
 sse="my_sse_handler"&gt;.
 
+The SSE handler is called with the WebDyne page object as the first
+argument and a hash reference of CGI parameters as the second argument.
+The parameter hash is built from \$self-&gt;CGI()-&gt;Vars() when the SSE
+connection is established, so query string parameters on the
+event-stream URL are available for the lifetime of that connection:
+
+``` perl
+async sub sse {
+    my ($self, $param_hr)=@_;
+    my $channel=$param_hr->{'channel'};
+    ...
+}
+```
+
+This is deliberately passed as an ordinary subroutine argument rather
+than relying on the `%_` shortcut used by normal inline eval code. SSE
+handlers are usually async routines and may suspend and resume after
+`await`; dynamically localised globals such as `%_` should not be relied
+on across those suspension points.
+
+If the SSE subroutine uses a local module, declare it on the page's
+&lt;start_html&gt; tag with require, and use import if unqualified function
+calls are desired. WebDyne loads this dependency from the page metadata
+before it dispatches the SSE request, so the async subroutine can safely
+call the module as soon as it starts. For example: &lt;start_html sse
+require="ReleaseDemo" import="fingerprint"&gt;.
+
 The following example also uses h3, hr and alpine on &lt;start_html&gt;. The
 heading and rule attributes are syntactic shortcuts for simple page
 formatting, while alpine is a shortcut that loads the Alpine.js
@@ -3963,6 +3990,33 @@ WebSocket pages normally declare their event handler through the
 WebDyne will call an async subroutine named `ws`. To use a different
 handler name, supply it as the attribute value, for example &lt;start_html
 ws="my_ws_handler"&gt;.
+
+The WebSocket handler is called with the WebDyne page object as the
+first argument and a hash reference of CGI parameters as the second
+argument. The parameter hash is built from \$self-&gt;CGI()-&gt;Vars() when
+the WebSocket connection is opened, so query string parameters on the
+WebSocket URL can be used to select rooms, channels or other
+connection-level options:
+
+``` perl
+async sub ws {
+    my ($self, $param_hr)=@_;
+    my $room=$param_hr->{'room'};
+    ...
+}
+```
+
+As with SSE, prefer the explicit `$param_hr` argument inside WebSocket
+handlers. The `%_` shortcut is useful in normal synchronous inline eval
+code, but async WebSocket routines can resume after `await`, outside the
+dynamic scope where such shortcuts would be localised.
+
+If the WebSocket subroutine uses a local module, declare it on the
+page's &lt;start_html&gt; tag with require. WebDyne loads the dependency
+before dispatching the WebSocket request, ensuring that module functions
+and any requested import names are available before the async subroutine
+is called. For example: &lt;start_html ws require="RoomState"
+import="current_room"&gt;.
 
 As with SSE pages, &lt;start_html&gt; can also use formatting and framework
 shortcuts such as h3, hr and alpine. The alpine shortcut loads the
@@ -4926,6 +4980,8 @@ with appropriate content attributes as output.
   [static]
   [cache=METHOD]
   [handler=METHOD]
+  [require=MODULE | FILE]
+  [import=FUNCTIONS]
   [h1 | h2 | h3 | h4 | h5 | h6]
   [hr]
   [sse=METHOD]
@@ -5133,6 +5189,42 @@ handler=METHOD
   a handler from the &lt;start_html&gt; tag instead of relying on
   surrounding server configuration.
 
+require=MODULE \| FILE
+
+: Load a Perl module or local Perl file before the page is dispatched.
+  This has the same meaning as the require attribute on the &lt;perl&gt;
+  tag: a module name is loaded through `@INC`, while a local file may be
+  resolved relative to the page document root. The dependency is
+  recorded in the compiled page metadata and is loaded before normal
+  page handlers, SSE handlers, or WebSocket handlers are called.
+
+  ``` html
+  <start_html require="ReleaseDemo">
+  ```
+
+  The attribute is intended for page dependencies and does not generate
+  HTML output. It is especially useful for SSE and WebSocket pages,
+  where the async subroutine may refer to module functions before any
+  ordinary page rendering takes place.
+
+import=FUNCTIONS
+
+: Import functions from the module named by require into the page's
+  compiled Perl package. This has the same meaning as the import
+  attribute on the &lt;perl&gt; tag. Supply function names separated by
+  whitespace; the imported functions can then be called without their
+  package prefix from page Perl code, including an SSE or WebSocket
+  subroutine.
+
+  ``` html
+  <start_html require="ReleaseDemo" import="fingerprint">
+  ```
+
+  import is meaningful together with require, because the required
+  module supplies the functions to import. Both attributes are consumed
+  as page metadata and are not emitted as attributes on the generated
+  &lt;html&gt; element.
+
 h1 \| h2 \| h3 \| h4 \| h5 \| h6
 
 : Boolean heading shortcut. If one of these attributes is present and a
@@ -5158,7 +5250,9 @@ sse=METHOD
 : Mark the page as providing Server-Sent Events when run through the
   PAGI request layer. The value is stored in WebDyne page metadata and
   names the async subroutine to call for SSE requests. If used as a bare
-  boolean attribute, the method name defaults to `sse`.
+  boolean attribute, the method name defaults to `sse`. The handler
+  receives the WebDyne page object as `$_[0]` and a hash reference of
+  CGI parameters as `$_[1]`.
 
   ``` html
   <start_html sse>
@@ -5169,7 +5263,9 @@ ws=METHOD
 : Mark the page as providing WebSocket handling when run through the
   PAGI request layer. The value is stored in WebDyne page metadata and
   names the async subroutine to call for WebSocket requests. If used as
-  a bare boolean attribute, the method name defaults to `ws`.
+  a bare boolean attribute, the method name defaults to `ws`. The
+  handler receives the WebDyne page object as `$_[0]` and a hash
+  reference of CGI parameters as `$_[1]`.
 
   ``` html
   <start_html ws>

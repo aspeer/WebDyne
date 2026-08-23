@@ -1,0 +1,65 @@
+<start_html title="Pizza Updates" h2 hr sse>
+
+<link rel="stylesheet" href="pizza.css">
+<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+<script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+
+<div id="pizza-order" class="pizza" hx-ext="sse" sse-connect="pizza.psp?order_id=!{! order_id(@_) !}" sse-close="pizza-done">
+  <section class="order">
+    <h3>Order placed</h3>
+    <p>Order <strong>!{! order_id(@_) !}</strong> has gone to the kitchen.</p>
+  </section>
+
+  <section class="status">
+    <h3>Order status</h3>
+    <div
+      id="pizza-status"
+      hx-get="pizza_status.psp?order_id=!{! order_id(@_) !}"
+      hx-trigger="sse:pizza-update, sse:pizza-done"
+      hx-swap="innerHTML"
+    >
+      <p class="message">Waiting for the kitchen...</p>
+    </div>
+  </section>
+</div>
+
+__PERL__
+use HTTP::Status qw(HTTP_OK);
+use Future::AsyncAwait;
+
+use constant PIZZA_STATUS_COUNT => 7;
+use constant PIZZA_STATUS_EVERY => 2;
+
+async sub sse {
+
+    my ($self, $param_hr)=@_;
+    my $sse_or=$self->r()->sse();
+    my $order_id=int($param_hr->{'order_id'} || time());
+
+    await $sse_or->start(
+        status  => HTTP_OK,
+        headers => [
+            ['X-Accel-Buffering' => 'no'],
+            ['Content-Encoding'  => 'identity'],
+        ],
+    );
+
+    await $sse_or->every(PIZZA_STATUS_EVERY, async sub {
+
+        # Demo only: this event just says "status changed". The current
+        # status is fetched from pizza_status.psp using the order id.
+        my $done=(time() - $order_id) >= ((PIZZA_STATUS_COUNT - 1) * PIZZA_STATUS_EVERY) ? 1 : 0;
+        await $sse_or->send_event(event => ($done ? 'pizza-done' : 'pizza-update'), data => '1');
+        await $sse_or->close() if $done;
+    });
+}
+
+sub order_id {
+
+    my $self=shift();
+    return $self->{'_pizza_order_id'} if $self->{'_pizza_order_id'};
+    my $cgi_or=$self->CGI();
+    my $order_id=scalar($cgi_or->param('order_id')) || time();
+    $order_id=~s/\D//g;
+    return ($self->{'_pizza_order_id'}=$order_id);
+}

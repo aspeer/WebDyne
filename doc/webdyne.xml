@@ -2131,6 +2131,24 @@ COPY webdyne.conf.pl /etc</screen>
         <property>sse=sse</property>, so WebDyne will call an async subroutine named <function>sse</function>. To use a different handler name, supply it as the attribute value, for example
         <tag>&lt;start_html sse="my_sse_handler"&gt;</tag>.</para>
 
+        <para>The SSE handler is called with the WebDyne page object as the first argument and a hash reference of CGI parameters as the second argument. The parameter hash is built from
+        <methodname>$self-&gt;CGI()-&gt;Vars()</methodname> when the SSE connection is established, so query string parameters on the event-stream URL are available for the lifetime of that
+        connection:</para>
+
+        <programlisting language="perl">async sub sse {
+    my ($self, $param_hr)=@_;
+    my $channel=$param_hr-&gt;{'channel'};
+    ...
+}</programlisting>
+
+        <para>This is deliberately passed as an ordinary subroutine argument rather than relying on the <varname>%_</varname> shortcut used by normal inline eval code. SSE handlers are
+        usually async routines and may suspend and resume after <function>await</function>; dynamically localised globals such as <varname>%_</varname> should not be relied on across those
+        suspension points.</para>
+
+        <para>If the SSE subroutine uses a local module, declare it on the page's <tag>&lt;start_html&gt;</tag> tag with <property>require</property>, and use <property>import</property> if
+        unqualified function calls are desired. WebDyne loads this dependency from the page metadata before it dispatches the SSE request, so the async subroutine can safely call the
+        module as soon as it starts. For example: <tag>&lt;start_html sse require="ReleaseDemo" import="fingerprint"&gt;</tag>.</para>
+
         <para>The following example also uses <property>h3</property>, <property>hr</property> and <property>alpine</property> on <tag>&lt;start_html&gt;</tag>. The heading and rule attributes
         are syntactic shortcuts for simple page formatting, while <property>alpine</property> is a shortcut that loads the Alpine.js JavaScript library. See the <tag>&lt;start_html&gt;</tag>
         tag reference for the complete list of shortcuts and options. Longer form HTML, such as writing a normal <tag>&lt;script&gt;</tag> tag to load a JavaScript library yourself, is still
@@ -2159,6 +2177,23 @@ COPY webdyne.conf.pl /etc</screen>
         <para>WebSocket pages normally declare their event handler through the <tag>&lt;start_html&gt;</tag> tag. The bare <property>ws</property> attribute is equivalent to
         <property>ws=ws</property>, so WebDyne will call an async subroutine named <function>ws</function>. To use a different handler name, supply it as the attribute value, for example
         <tag>&lt;start_html ws="my_ws_handler"&gt;</tag>.</para>
+
+        <para>The WebSocket handler is called with the WebDyne page object as the first argument and a hash reference of CGI parameters as the second argument. The parameter hash is built from
+        <methodname>$self-&gt;CGI()-&gt;Vars()</methodname> when the WebSocket connection is opened, so query string parameters on the WebSocket URL can be used to select rooms, channels or other
+        connection-level options:</para>
+
+        <programlisting language="perl">async sub ws {
+    my ($self, $param_hr)=@_;
+    my $room=$param_hr-&gt;{'room'};
+    ...
+}</programlisting>
+
+        <para>As with SSE, prefer the explicit <varname>$param_hr</varname> argument inside WebSocket handlers. The <varname>%_</varname> shortcut is useful in normal synchronous inline eval
+        code, but async WebSocket routines can resume after <function>await</function>, outside the dynamic scope where such shortcuts would be localised.</para>
+
+        <para>If the WebSocket subroutine uses a local module, declare it on the page's <tag>&lt;start_html&gt;</tag> tag with <property>require</property>. WebDyne loads the dependency
+        before dispatching the WebSocket request, ensuring that module functions and any requested <property>import</property> names are available before the async subroutine is called.
+        For example: <tag>&lt;start_html ws require="RoomState" import="current_room"&gt;</tag>.</para>
 
         <para>As with SSE pages, <tag>&lt;start_html&gt;</tag> can also use formatting and framework shortcuts such as <property>h3</property>, <property>hr</property> and
         <property>alpine</property>. The <property>alpine</property> shortcut loads the Alpine.js JavaScript library; normal HTML <tag>&lt;script&gt;</tag> tags can still be used instead when
@@ -3287,6 +3322,8 @@ This is my output
   [static]
   [cache=METHOD]
   [handler=METHOD]
+  [require=MODULE | FILE]
+  [import=FUNCTIONS]
   [h1 | h2 | h3 | h4 | h5 | h6]
   [hr]
   [sse=METHOD]
@@ -3497,6 +3534,35 @@ This is my output
             </varlistentry>
 
             <varlistentry>
+              <term>require=MODULE | FILE</term>
+
+              <listitem>
+                <para>Load a Perl module or local Perl file before the page is dispatched. This has the same meaning as the <property>require</property> attribute on the
+                <tag>&lt;perl&gt;</tag> tag: a module name is loaded through <filename>@INC</filename>, while a local file may be resolved relative to the page document root. The
+                dependency is recorded in the compiled page metadata and is loaded before normal page handlers, SSE handlers, or WebSocket handlers are called.</para>
+
+                <programlisting language="html">&lt;start_html require="ReleaseDemo"&gt;</programlisting>
+
+                <para>The attribute is intended for page dependencies and does not generate HTML output. It is especially useful for SSE and WebSocket pages, where the async subroutine may refer to module functions before any ordinary page rendering takes place.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>import=FUNCTIONS</term>
+
+              <listitem>
+                <para>Import functions from the module named by <property>require</property> into the page's compiled Perl package. This has the same meaning as the
+                <property>import</property> attribute on the <tag>&lt;perl&gt;</tag> tag. Supply function names separated by whitespace; the imported functions can then be called
+                without their package prefix from page Perl code, including an SSE or WebSocket subroutine.</para>
+
+                <programlisting language="html">&lt;start_html require="ReleaseDemo" import="fingerprint"&gt;</programlisting>
+
+                <para><property>import</property> is meaningful together with <property>require</property>, because the required module supplies the functions to import. Both attributes
+                are consumed as page metadata and are not emitted as attributes on the generated <tag>&lt;html&gt;</tag> element.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term>h1 | h2 | h3 | h4 | h5 | h6</term>
 
               <listitem>
@@ -3523,7 +3589,8 @@ This is my output
 
               <listitem>
                 <para>Mark the page as providing Server-Sent Events when run through the PAGI request layer. The value is stored in WebDyne page metadata and names the async subroutine to call
-                for SSE requests. If used as a bare boolean attribute, the method name defaults to <function>sse</function>.</para>
+                for SSE requests. If used as a bare boolean attribute, the method name defaults to <function>sse</function>. The handler receives the WebDyne page object as
+                <varname>$_[0]</varname> and a hash reference of CGI parameters as <varname>$_[1]</varname>.</para>
 
                 <programlisting language="html">&lt;start_html sse&gt;</programlisting>
               </listitem>
@@ -3534,7 +3601,8 @@ This is my output
 
               <listitem>
                 <para>Mark the page as providing WebSocket handling when run through the PAGI request layer. The value is stored in WebDyne page metadata and names the async subroutine to call
-                for WebSocket requests. If used as a bare boolean attribute, the method name defaults to <function>ws</function>.</para>
+                for WebSocket requests. If used as a bare boolean attribute, the method name defaults to <function>ws</function>. The handler receives the WebDyne page object as
+                <varname>$_[0]</varname> and a hash reference of CGI parameters as <varname>$_[1]</varname>.</para>
 
                 <programlisting language="html">&lt;start_html ws&gt;</programlisting>
               </listitem>

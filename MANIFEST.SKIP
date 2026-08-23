@@ -6,6 +6,8 @@
 
 ^blib/
 ^doc/
+^t\.other/
+^t\.scratch/
 ^site/
 ^skills/
 ^scripts/

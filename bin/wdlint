@@ -261,11 +261,11 @@ sub collect_subst_perl_ar {
     my ($text, $line_no, $perl_ar, $attr_fg)=@_;
     return if ref($text);
 
-    if ($attr_fg && ($text=~/^\s*([\@%!])\{(\1?)(.*)\2}\s*$/s || $text=~/^\s*(\$)\{(\1?)([^{]+)\2}\s*$/s)) {
+    if ($attr_fg && $text=~/^\s*([\@%!])\{(\1?)(.*)\2}\s*$/s) {
         push @{$perl_ar}, {perl => $3, line_no => $line_no || 1, wrap => 1};
     }
     else {
-        while ($text=~/([\$!])\{(\1?)(.*?)\2\}/g) {
+        while ($text=~/(!)\{(\1?)(.*?)\2\}/g) {
             push @{$perl_ar}, {perl => $3, line_no => $line_no || 1, wrap => 1};
         }
     }
@@ -325,7 +325,7 @@ In practice this means:
 
 *  Perl syntax checking is enabled by default via -c .
 
-*  Any additional arguments before the file name are passed directly to Perl, for example  -I  include paths or other Perl switches.
+*  Any additional arguments before the file name are passed directly to Perl, for example include paths or other Perl switches.
 
 <a name="wdlint-examples"></a>
 
@@ -375,19 +375,17 @@ Because the command relies on Perl's own parser, it is a good tool for catching 
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.
 
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 
@@ -422,7 +420,7 @@ It then runs:
 
 against the temporary file and prints any warnings or syntax errors returned by Perl.
 
-This utility is primarily useful for checking server-side Perl code in C<__PERL__>, inline C<< <perl> >> blocks, processing instructions, and substitution expressions. It is not a full WebDyne page validator and it does not check runtime behaviour of the page.
+This utility is primarily useful for checking server-side Perl code in C<__PERL__>, inline C<<< <perl> >>> blocks, processing instructions, and substitution expressions. It is not a full WebDyne page validator and it does not check runtime behaviour of the page.
 
 
 
@@ -449,7 +447,7 @@ Perl syntax checking is enabled by default via -c .
 
 =item *
 
-Any additional arguments before the file name are passed directly to Perl, for example  -I  include paths or other Perl switches.
+Any additional arguments before the file name are passed directly to Perl, for example include paths or other Perl switches.
 
 
 
