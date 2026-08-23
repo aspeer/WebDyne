@@ -1,13 +1,1 @@
-<!DOCTYPE html><html lang="en"><head></head>
-<body></body>
-<!-- start_html meta="%{ 'WebDyne' => 'cache=&cache' }>
-Cached page via start_html meta attribute
-Param value: <? $_[1]->{'count'} ?>
-__PERL__
-sub cache {
-    my $self=shift();
-    my $count=$self->r->{'param'}{'count'};
-    $self->cache_compile(1) if ($count%2);
-    return \undef;
-}
- --></html>
+<!DOCTYPE html><html lang="en"><head><title>Untitled Document</title><meta content="cache=&cache" name="WebDyne"><meta charset="UTF-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"></head><body><p>Cached page via start_html meta attribute Param value: </p></body></html>

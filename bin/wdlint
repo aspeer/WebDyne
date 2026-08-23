@@ -23,12 +23,13 @@ use vars   qw($VERSION);
 #  Use the base module
 #
 use WebDyne::Util;
+use WebDyne::Constant;
+use WebDyne::Compile;
 
 
 #  External modules
 #
 use File::Temp qw(tempfile);
-use IO::File;
 use Capture::Tiny qw(capture);
 use FindBin qw($Script);
 
@@ -57,41 +58,222 @@ sub main {
     #
     my $srce_pn=pop(@{$argv_ar}) ||
         pod2usage("$Script: no source file specified !");
-    my ($temp_fh, $temp_fn)=tempfile( UNLINK=> 0);
-    
-    
-    #  Write to temp file looking for __PERL__ signal
+
+
+    #  Compile to first stage so WebDyne does the PSP parsing. Then run Perl
+    #  syntax checks over the page code and each inline fragment.
     #
-    my $line_no;
-    my $srce_fh=IO::File->new($srce_pn, O_RDONLY) ||
-        return err("unable to open file $srce_pn, $!");
-    while (my $line=<$srce_fh>) {
-        $line_no++;
-        print $temp_fh $line;
-        if ($line=~/^__PERL__/) {
-            print $temp_fh '#!perl', $/;
-            print $temp_fh 'use strict;', $/;
-            $line_no+=2;
-            print $temp_fh "#line ${line_no}", $/;
-        }
+    my $perl_ar=perl_ar($srce_pn) ||
+        return err();
+    my (@page_perl, @chunk_perl);
+    foreach my $perl_hr (@{$perl_ar}) {
+        push @{$perl_hr->{'wrap'} ? \@chunk_perl : \@page_perl}, $perl_hr;
     }
-    $temp_fh->close();
-    $srce_fh->close();
-    
-    
-    #  Run perl check
+
+
+    #  Check page level code first, then each inline chunk separately so one
+    #  broken chunk does not hide later ones.
     #
-    my ($stdout, $stderr, $exit)=capture{
-        system($^X, qw(-c -w -x), @{$argv_ar}, $temp_fn)
-    };
-    $stderr=~s/\Q$temp_fn\E/$srce_pn/gs;
-    print $stderr;
-    unlink($temp_fn);
+    my $exit=0;
+    my $page_exit=check_perl($srce_pn, $argv_ar, \@page_perl);
+    $exit ||= $page_exit;
+    foreach my $perl_hr (@chunk_perl) {
+        my $chunk_exit=check_perl($srce_pn, $argv_ar, ($page_exit ? [] : \@page_perl), $perl_hr);
+        $exit ||= $chunk_exit;
+    }
+    print "$srce_pn syntax OK\n" unless $exit;
     
 
     #  Done
     #
-    return \($exit >> 8);
+    return \$exit;
+
+
+}
+
+
+sub check_perl {
+
+
+    #  Write a temp Perl file for a page or inline fragment and run perl -c
+    #
+    my ($srce_pn, $argv_ar, $page_perl_ar, $chunk_perl_hr)=@_;
+    my ($temp_fh, $temp_fn)=tempfile( UNLINK=> 0);
+    print $temp_fh '#!perl', $/;
+    print $temp_fh 'use strict;', $/;
+    print $temp_fh 'package WebDyne::Lint;', $/;
+    foreach my $perl_hr (@{$page_perl_ar}) {
+        print_perl($temp_fh, $srce_pn, $perl_hr);
+    }
+    if ($chunk_perl_hr) {
+        print_perl($temp_fh, $srce_pn, $chunk_perl_hr, 1);
+    }
+    print $temp_fh '1;', $/;
+    $temp_fh->close();
+
+
+    #  Run perl check
+    #
+    my ($stdout, $stderr, $exit)=capture{
+        system($^X, qw(-c -w), @{$argv_ar}, $temp_fn)
+    };
+    my $rc=$exit >> 8;
+    $stderr=~s/\Q$temp_fn\E/$srce_pn/gs;
+    $stderr=~s/^\Q$srce_pn\E syntax OK\r?\n//gm unless $rc;
+    print $stderr;
+    unlink($temp_fn);
+
+
+    #  Done
+    #
+    return $rc;
+
+
+}
+
+
+sub print_perl {
+
+
+    #  Print one Perl fragment into the lint temp file
+    #
+    my ($temp_fh, $srce_pn, $perl_hr, $wrap)=@_;
+    my ($perl, $line_no)=@{$perl_hr}{qw(perl line_no)};
+    if ($wrap) {
+        print $temp_fh 'my $__wdlint_cr = sub {', $/;
+        print $temp_fh "#line ${line_no} \"$srce_pn\"", $/;
+        print $temp_fh $perl;
+        print $temp_fh $/ unless $perl=~/(?:\r?\n|\r)$/;
+        print $temp_fh '};', $/;
+    }
+    else {
+        print $temp_fh "#line ${line_no} \"$srce_pn\"", $/;
+        print $temp_fh $perl;
+        print $temp_fh $/ unless $perl=~/(?:\r?\n|\r)$/;
+    }
+
+
+    #  Done
+    #
+    return \undef;
+
+
+}
+
+
+sub perl_ar {
+
+
+    #  Compile file and collect Perl code fragments
+    #
+    my $srce_pn=shift();
+    my $compile_or=WebDyne::Compile->new(filename => $srce_pn) ||
+        return err();
+    my $container_ar=$compile_or->compile({
+
+        srce        => $srce_pn,
+        no_perl     => 1,
+        no_filter   => 1,
+        no_manifest => 1,
+        stage0      => 1
+
+    }) || return err();
+
+
+    #  Start with page level __PERL__ code
+    #
+    my @perl;
+    my $meta_hr=$container_ar->[0] || {};
+    my $perl_ar=$meta_hr->{'perl'} || [];
+    my $perl_debug_ar=$meta_hr->{'perl_debug'} || [];
+    foreach my $ix (0..$#{$perl_ar}) {
+        my $perl_sr=$perl_ar->[$ix];
+        my $line_no=$perl_debug_ar->[$ix][0] || 1;
+        push @perl, {perl => ${$perl_sr}, line_no => $line_no};
+    }
+
+
+    #  Then inline Perl and substitutions from the compiled data tree
+    #
+    collect_perl_ar($container_ar->[1], \@perl);
+
+
+    #  Done
+    #
+    return \@perl;
+
+
+}
+
+
+sub collect_perl_ar {
+
+
+    #  Walk compiled data tree collecting inline Perl and substitution snippets
+    #
+    my ($data_xr, $perl_ar)=@_;
+    return if !ref($data_xr);
+    return if ref($data_xr) ne 'ARRAY';
+
+    my ($tag, $attr_hr, $child_ar, $line_no)=@{$data_xr}[
+        WEBDYNE_NODE_NAME_IX,
+        WEBDYNE_NODE_ATTR_IX,
+        WEBDYNE_NODE_CHLD_IX,
+        WEBDYNE_NODE_LINE_IX
+    ];
+
+    if ($tag && $tag eq 'perl' && $attr_hr && $attr_hr->{'perl'}) {
+        push @{$perl_ar}, {perl => $attr_hr->{'perl'}, line_no => $line_no || 1, wrap => 1};
+    }
+
+    if ($attr_hr) {
+        foreach my $attr_name (sort keys %{$attr_hr}) {
+            next if $attr_name eq 'perl';
+            collect_subst_perl_ar($attr_hr->{$attr_name}, $line_no, $perl_ar, 1);
+        }
+    }
+
+    if ($child_ar) {
+        foreach my $child_xr (@{$child_ar}) {
+            if (ref($child_xr)) {
+                collect_perl_ar($child_xr, $perl_ar);
+            }
+            else {
+                collect_subst_perl_ar($child_xr, $line_no, $perl_ar);
+            }
+        }
+    }
+
+
+    #  Done
+    #
+    return \undef;
+
+
+}
+
+
+sub collect_subst_perl_ar {
+
+
+    #  Extract Perl snippets from WebDyne substitution strings
+    #
+    my ($text, $line_no, $perl_ar, $attr_fg)=@_;
+    return if ref($text);
+
+    if ($attr_fg && ($text=~/^\s*([\@%!])\{(\1?)(.*)\2}\s*$/s || $text=~/^\s*(\$)\{(\1?)([^{]+)\2}\s*$/s)) {
+        push @{$perl_ar}, {perl => $3, line_no => $line_no || 1, wrap => 1};
+    }
+    else {
+        while ($text=~/([\$!])\{(\1?)(.*?)\2\}/g) {
+            push @{$perl_ar}, {perl => $3, line_no => $line_no || 1, wrap => 1};
+        }
+    }
+
+
+    #  Done
+    #
+    return \undef;
 
 
 }
@@ -104,7 +286,7 @@ __END__
 
 # NAME #
 
-wdlint - check Perl syntax in the \_\_PERL\_\_ section of a  WebDyne file
+wdlint - check Perl syntax embedded in a WebDyne file
 
 <a name="wdlint-synopsis"></a>
 
@@ -118,18 +300,18 @@ wdlint - check Perl syntax in the \_\_PERL\_\_ section of a  WebDyne file
 
 The  wdlint  command checks the Perl syntax embedded in a WebDyne  .psp  file.
 
-It does this by copying the source file to a temporary file, scanning until it finds the  `__PERL__`  marker, then inserting a Perl shebang,  `use strict;` , and a `#line`  directive so any syntax errors reported by Perl refer back to the original source file and line numbers as  closely as possible.
+It does this by compiling the page to WebDyne stage 0, collecting embedded Perl fragments, then writing those fragments to temporary Perl files with `#line` directives so syntax errors reported by Perl refer back to the original source file and line numbers as closely as possible. Inline fragments are checked separately so one syntax error does not hide later errors in other fragments.
 
 It then runs:
 
 ```bash
-perl -c -w -x
+perl -c -w
 
 ```
 
 against the temporary file and prints any warnings or syntax errors returned by Perl.
 
-This utility is primarily useful for checking server-side Perl code in the  `__PERL__`  section of a WebDyne page. It is not a full WebDyne page validator and it does not check the HTML  structure, WebDyne compilation stages, or runtime behaviour of the page.
+This utility is primarily useful for checking server-side Perl code in `__PERL__`, inline `<perl>` blocks, processing instructions, and substitution expressions. It is not a full WebDyne page validator and it does not check runtime behaviour of the page.
 
 <a name="wdlint-options"></a>
 
@@ -142,8 +324,6 @@ In practice this means:
 *  Perl warnings are enabled by default via  -w .
 
 *  Perl syntax checking is enabled by default via -c .
-
-*  Perl  -x  processing is enabled so Perl starts reading from the injected Perl section.
 
 *  Any additional arguments before the file name are passed directly to Perl, for example  -I  include paths or other Perl switches.
 
@@ -174,14 +354,14 @@ check.psp had compilation errors.
 ```bash
 # Pass an include path through to Perl while checking syntax
 #
-$ wdlint -Ilib page.psp
+$ wdlint -I/path/to/lib page.psp
 ```
 
 <a name="wdlint-notes"></a>
 
 # Notes #
 
-Only the Perl code after the  `__PERL__`  marker is linted. If a file contains no  `__PERL__`  section, the command still constructs a temporary file and runs Perl with `-x`, but there may be little or nothing useful to validate.
+wdlint relies on WebDyne's stage 0 compiler to find embedded Perl. If a file contains no embedded Perl, the command still constructs a minimal temporary file and runs Perl syntax checking against it.
 
 The temporary file is removed after the Perl syntax check completes.
 
@@ -217,7 +397,7 @@ Full license text is available at:
 
 =head1 NAME
 
-wdlint - check Perl syntax in the __PERL__ section of a  WebDyne file
+wdlint - check Perl syntax embedded in a WebDyne file
 
 
 
@@ -233,16 +413,16 @@ C<wdlint [PERL_OPTIONS] FILE>
 
 The  wdlint  command checks the Perl syntax embedded in a WebDyne  .psp  file.
 
-It does this by copying the source file to a temporary file, scanning until it finds the  C<__PERL__>  marker, then inserting a Perl shebang,  C<use strict;> , and a C<#line>  directive so any syntax errors reported by Perl refer back to the original source file and line numbers as  closely as possible.
+It does this by compiling the page to WebDyne stage 0, collecting embedded Perl fragments, then writing those fragments to temporary Perl files with C<#line> directives so syntax errors reported by Perl refer back to the original source file and line numbers as closely as possible. Inline fragments are checked separately so one syntax error does not hide later errors in other fragments.
 
 It then runs:
 
 
- perl -c -w -x
+ perl -c -w
 
 against the temporary file and prints any warnings or syntax errors returned by Perl.
 
-This utility is primarily useful for checking server-side Perl code in the  C<__PERL__>  section of a WebDyne page. It is not a full WebDyne page validator and it does not check the HTML  structure, WebDyne compilation stages, or runtime behaviour of the page.
+This utility is primarily useful for checking server-side Perl code in C<__PERL__>, inline C<< <perl> >> blocks, processing instructions, and substitution expressions. It is not a full WebDyne page validator and it does not check runtime behaviour of the page.
 
 
 
@@ -264,12 +444,6 @@ Perl warnings are enabled by default via  -w .
 =item *
 
 Perl syntax checking is enabled by default via -c .
-
-
-
-=item *
-
-Perl  -x  processing is enabled so Perl starts reading from the injected Perl section.
 
 
 
@@ -305,13 +479,13 @@ Any additional arguments before the file name are passed directly to Perl, for e
 
  # Pass an include path through to Perl while checking syntax
  #
- $ wdlint -Ilib page.psp
+ $ wdlint -I/path/to/lib page.psp
 
 
 
 =head1 Notes
 
-Only the Perl code after the  C<__PERL__>  marker is linted. If a file contains no  C<__PERL__>  section, the command still constructs a temporary file and runs Perl with C<-x>, but there may be little or nothing useful to validate.
+wdlint relies on WebDyne's stage 0 compiler to find embedded Perl. If a file contains no embedded Perl, the command still constructs a minimal temporary file and runs Perl syntax checking against it.
 
 The temporary file is removed after the Perl syntax check completes.
 

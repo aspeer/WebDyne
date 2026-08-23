@@ -1,4 +1,4 @@
-<start_html meta="%{ 'WebDyne' => 'cache=&cache' }>
+<start_html meta="%{ 'WebDyne' => 'cache=&cache' }">
 Cached page via start_html meta attribute
 Param value: <? $_[1]->{'count'} ?>
 __PERL__

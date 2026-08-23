@@ -159,6 +159,29 @@ sub compile {
         return err("unable to open file $html_cn, $!");
 
 
+    #  Keep trailing __PERL__/__CODE__ bodies out of HTML::Parser. The marker
+    #  itself still goes through TreeBuilder so the normal internal perl node is
+    #  created, but operators like s/</.../ are not tokenised as HTML.
+    #
+    my $perl_sr;
+    {
+        local $/;
+        my $source=<$html_fh>;
+        if ($source=~/\A(.*?)(^[ \t]*__(?:PERL|CODE)__\b[^\r\n]*(?:\r?\n|\r)?)(.*)\z/sm) {
+            my ($html, $marker, $perl)=($1, $2, $3);
+            $html.=$marker;
+            $perl_sr=\$perl;
+            open(my $html_split_fh, '<', \$html) ||
+                return err("unable to open scalar source for $html_cn, $!");
+            $html_fh=$html_split_fh;
+        }
+        unless ($perl_sr) {
+            seek($html_fh, 0, 0) ||
+                return err("unable to rewind file $html_cn, $!");
+        }
+    }
+
+
     #  Read over file handle until we get to the first non-comment line (ignores auto added copyright statements). Update - do
     #  this in Treebuilder code now so can account for comments when counting line numbers
     #
@@ -249,6 +272,13 @@ sub compile {
     #  man page.
     #
     $tree_or->parse($parse_cr);
+    if ($perl_sr) {
+        my $html_perl_or=$tree_or->{'_html_perl_or'} ||
+            return err('unable to locate __PERL__ node for raw perl source');
+        my $perl="\n".${$perl_sr};
+        $perl.=$/ unless $perl=~/(?:\r?\n|\r)$/;
+        $html_perl_or->attr('perl', $perl);
+    }
     
 
     #  Close handler if anything goes wrong below

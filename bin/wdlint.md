@@ -2,7 +2,7 @@
 
 # NAME #
 
-wdlint - check Perl syntax in the \_\_PERL\_\_ section of a  WebDyne file
+wdlint - check Perl syntax embedded in a WebDyne file
 
 <a name="wdlint-synopsis"></a>
 
@@ -16,18 +16,18 @@ wdlint - check Perl syntax in the \_\_PERL\_\_ section of a  WebDyne file
 
 The  wdlint  command checks the Perl syntax embedded in a WebDyne  .psp  file.
 
-It does this by copying the source file to a temporary file, scanning until it finds the  `__PERL__`  marker, then inserting a Perl shebang,  `use strict;` , and a `#line`  directive so any syntax errors reported by Perl refer back to the original source file and line numbers as  closely as possible.
+It does this by compiling the page to WebDyne stage 0, collecting embedded Perl fragments, then writing those fragments to temporary Perl files with `#line` directives so syntax errors reported by Perl refer back to the original source file and line numbers as closely as possible. Inline fragments are checked separately so one syntax error does not hide later errors in other fragments.
 
 It then runs:
 
 ```bash
-perl -c -w -x
+perl -c -w
 
 ```
 
 against the temporary file and prints any warnings or syntax errors returned by Perl.
 
-This utility is primarily useful for checking server-side Perl code in the  `__PERL__`  section of a WebDyne page. It is not a full WebDyne page validator and it does not check the HTML  structure, WebDyne compilation stages, or runtime behaviour of the page.
+This utility is primarily useful for checking server-side Perl code in `__PERL__`, inline `<perl>` blocks, processing instructions, and substitution expressions. It is not a full WebDyne page validator and it does not check runtime behaviour of the page.
 
 <a name="wdlint-options"></a>
 
@@ -41,9 +41,7 @@ In practice this means:
 
 *  Perl syntax checking is enabled by default via -c .
 
-*  Perl  -x  processing is enabled so Perl starts reading from the injected Perl section.
-
-*  Any additional arguments before the file name are passed directly to Perl, for example  -I  include paths or other Perl switches.
+*  Any additional arguments before the file name are passed directly to Perl, for example include paths or other Perl switches.
 
 <a name="wdlint-examples"></a>
 
@@ -72,14 +70,14 @@ check.psp had compilation errors.
 ```bash
 # Pass an include path through to Perl while checking syntax
 #
-$ wdlint -Ilib page.psp
+$ wdlint -I/path/to/lib page.psp
 ```
 
 <a name="wdlint-notes"></a>
 
 # Notes #
 
-Only the Perl code after the  `__PERL__`  marker is linted. If a file contains no  `__PERL__`  section, the command still constructs a temporary file and runs Perl with `-x`, but there may be little or nothing useful to validate.
+wdlint relies on WebDyne's stage 0 compiler to find embedded Perl. If a file contains no embedded Perl, the command still constructs a minimal temporary file and runs Perl syntax checking against it.
 
 The temporary file is removed after the Perl syntax check completes.
 
