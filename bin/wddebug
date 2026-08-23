@@ -49,7 +49,7 @@ local $Data::Dumper::Sortkeys=1;
 
 #  Version Info, must be all one line for MakeMaker, CPAN.
 #
-$VERSION='3.020';
+$VERSION='3.021';
 
 
 #  Run main
@@ -438,17 +438,19 @@ WEBDYNE_DEBUG=render,compile wdrender time.psp
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT #
+# LICENSE and COPYRIGHT
 
 This file is part of WebDyne.
 
-This software is copyright \(c) 2026 by Andrew Speer &lt;andrew.speer@isolutions.com.au&gt;.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
 
-This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 Full license text is available at:
 
-&lt;http://dev.perl.org/licenses/>;
+<http://dev.perl.org/licenses/>
+
 
 =end markdown
 
