@@ -1,5 +1,32 @@
 # Revision history for WebDyne
 
+## 3.021 - 2026-08-24
+
+- Extended `wdlint` to inspect inline Perl chunks, processing instructions,
+  and substitution expressions in addition to `__PERL__` sections. Each
+  chunk is checked independently so later syntax errors are still reported
+  after an earlier chunk fails. Added line-preserving regression coverage.
+- Added `require` and `import` attributes to `<start_html>`, using the same
+  dependency-loading and function-import behaviour as `<perl>`. Declared
+  dependencies are loaded before normal, SSE, and WebSocket handlers are
+  dispatched.
+- Passed CGI parameter hashes to PAGI SSE and WebSocket subroutines as their
+  second argument, allowing async handlers to use request parameters
+  explicitly across `await` points.
+- Fixed URL-encoded form POST handling under PAGI by asynchronously buffering
+  request bodies before synchronous `CGI::Simple` parsing. Kept the cached
+  body available to the WebDyne PAGI request adapter and avoided crossing
+  localized environment scopes during `await`. Added repeated-request
+  regression coverage for the former Future panic.
+- Added documentation and WebDyne authoring guidance for start_html
+  dependencies, PAGI parameters, SSE/WebSocket handlers, HTMX fragments, and
+  the required `hx-vals="js:{ ... }"` syntax when supplying values from PSP
+  pages.
+- Added release-board and pizza-order SSE/HTMX demonstration pages, including
+  WebDyne-rendered fragments, status refreshes, and PAGI handler examples.
+  Kept these developer demos and scratch material out of distribution
+  manifests.
+
 ## 3.020 - 2026-08-20
 
 - Changed `<api>` route pattern semantics so patterns are relative to the
