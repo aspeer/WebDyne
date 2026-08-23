@@ -30,7 +30,7 @@
     pseudo-tags (such as <markup>&lt;perl&gt;</markup> and <markup>&lt;block&gt;</markup>) which are interpreted and executed on the server. The resulting output is then sent to the
     browser.</para>
 
-    <para>WebDyne works with common web server persistent Perl interpreters - such as Apache <command>mod_perl, </command><command>PSGI</command> and <command>PAGI</command> - to provide fast
+    <para>WebDyne works with common web server persistent Perl interpreters - such as Apache <command>mod_perl</command>, <command>PSGI</command> and <command>PAGI</command> - to provide fast
     dynamic content. It works with PSGI servers such as Plack and <productname>Starman</productname>, and can be implemented as a Docker container to run HTML with embedded Perl code.</para>
 
     <para>Pages are parsed once, then stored in a partially compiled format - speeding up subsequent processing by avoiding the need to re-parse a page each time it is loaded.</para>
@@ -1890,7 +1890,7 @@ COPY webdyne.conf.pl /etc</screen>
       <section>
         <title>JSON</title>
 
-        <para>WebDyne has a &lt;json&gt; tag that can be used to present JSON data objects to Javascript libraries in an output page. Here is a very simple example:</para>
+        <para>WebDyne has a &lt;json&gt; tag that can be used to present JSON data objects to JavaScript libraries in an output page. Here is a very simple example:</para>
 
         <para><example>
             <info>
@@ -1900,7 +1900,7 @@ COPY webdyne.conf.pl /etc</screen>
             <para><programlisting language="html"><xi:include href="example/chart1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
             xlink:href="https://demo.webdyne.org/example/chart1.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
           </example>If you run it and review the source HTML you will see the JSON data rendered into the page as <tag>&lt;script&gt;&lt;/script&gt;</tag> block of type application/json with
-        an id of "chartData". Any data returned by the perl routine nominated by the json tag is presented as JSON within that tag block, and available to Javascript libraries within the page.
+        an id of "chartData". Any data returned by the perl routine nominated by the json tag is presented as JSON within that tag block, and available to JavaScript libraries within the page.
         JSON data is kept in canonical order by default, which can be adjusted with the WEBDYNE_JSON_CANONICAL variable if not desired/needed for a very small speed-up.</para>
 
         <para>Another example demonstrating a table constructed with the Grid.js library</para>
@@ -1929,7 +1929,7 @@ COPY webdyne.conf.pl /etc</screen>
           </listitem>
 
           <listitem>
-            <para>Any PSP file file an <tag>&lt;api&gt;</tag> tag will only emit JSON data with a content type of "<type>application/json</type>"</para>
+            <para>Any PSP file containing an <tag>&lt;api&gt;</tag> tag will only emit JSON data with a content type of "<type>application/json</type>"</para>
           </listitem>
 
           <listitem>
@@ -1988,7 +1988,7 @@ COPY webdyne.conf.pl /etc</screen>
         </info>
 
         <para>WebDyne has support for <tag>&lt;htmx&gt;</tag> tags to supply fragmented HTML to pages using the <link xlink:href="https://htmx.org"
-        xmlns:xlink="http://www.w3.org/1999/xlink">HTMX Javascript Library</link> and similar libraries such as <link xlink:href="https://alpine-ajax.js.org"
+        xmlns:xlink="http://www.w3.org/1999/xlink">HTMX JavaScript Library</link> and similar libraries such as <link xlink:href="https://alpine-ajax.js.org"
         xmlns:xlink="http://www.w3.org/1999/xlink">Alpine Ajax</link>. WebDyne can support just supplying HTML snippet to pages in response to htmx or similar calls. HTMX/Alpine Ajax and
         WebDyne are complementary libraries which can be combined together to support dynamic pages with in-place updates from a WebDyne Perl backend. <important>
             <para>The htmx javascript library must be activated in any file that utilises htmx calls (initiates a <command>hx-get</command> or similar operation). The javascript can be loaded
@@ -2842,7 +2842,7 @@ sub hello {
           </info>
 
           <para>Run Perl code similar to <tag>&lt;perl&gt;</tag> tag but expects code to return a HASH, ARRAY ref or plain scalar, which is encoded into JSON, outputting within a
-          &lt;script&gt; tag with <property>type="application/json"</property>. When supplied with an id attribute this data can be used by any Javascript function in the page. Takes the same
+          &lt;script&gt; tag with <property>type="application/json"</property>. When supplied with an id attribute this data can be used by any JavaScript function in the page. Takes the same
           options as the <tag>&lt;perl&gt;</tag> tag and behaves similarly - if a <property>handler</property> attribute is given it is called, if the <property>perl</property> attribute is
           given text between the <tag>&lt;json&gt;</tag> tags in treated as in-line perl code and executed.</para>
 
@@ -5215,7 +5215,7 @@ Server local time is: &lt;? localtime ?&gt;</programlisting>
       <title>Legal Information - Licensing and Copyright</title>
     </info>
 
-    <para>WebDyne is Copyright © Andrew Speer 2006-2025. WebDyne is free software; you can redistribute it and/or modify it under the same terms as Perl itself.</para>
+    <para>WebDyne is Copyright © Andrew Speer 2006-2026. WebDyne is free software; you can redistribute it and/or modify it under the same terms as Perl itself.</para>
 
     <para>WebDyne is written in Perl and uses modules from <link xlink:href="http://www.cpan.org" xmlns:xlink="http://www.w3.org/1999/xlink">CPAN</link> (the Comprehensive Perl Archive
     Network). CPAN modules are Copyright © the owner/author, and are available in source form by downloading from CPAN directly. All CPAN modules used are covered by the <link

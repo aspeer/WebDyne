@@ -11,7 +11,7 @@ which are interpreted and executed on the server. The resulting output
 is then sent to the browser.
 
 WebDyne works with common web server persistent Perl interpreters - such
-as Apache `mod_perl,``PSGI` and `PAGI` - to provide fast dynamic
+as Apache `mod_perl`, `PSGI` and `PAGI` - to provide fast dynamic
 content. It works with PSGI servers such as Plack and Starman, and can
 be implemented as a Docker container to run HTML with embedded Perl
 code.
@@ -3376,7 +3376,7 @@ sub results {
 ### JSON
 
 WebDyne has a &lt;json&gt; tag that can be used to present JSON data objects
-to Javascript libraries in an output page. Here is a very simple
+to JavaScript libraries in an output page. Here is a very simple
 example:
 
 ``` html
@@ -3425,7 +3425,7 @@ If you run it and review the source HTML you will see the JSON data
 rendered into the page as &lt;script&gt;&lt;/script&gt; block of type
 application/json with an id of "chartData". Any data returned by the
 perl routine nominated by the json tag is presented as JSON within that
-tag block, and available to Javascript libraries within the page. JSON
+tag block, and available to JavaScript libraries within the page. JSON
 data is kept in canonical order by default, which can be adjusted with
 the WEBDYNE_JSON_CANONICAL variable if not desired/needed for a very
 small speed-up.
@@ -3506,7 +3506,7 @@ that:
 - There is no need for any other tags in the document besides the
   &lt;api&gt; tag. All other tags are ignored - in fact they are discarded.
 
-- Any PSP file file an &lt;api&gt; tag will only emit JSON data with a
+- Any PSP file containing an &lt;api&gt; tag will only emit JSON data with a
   content type of "`application/json`"
 
 - The REST api path must correspond to a PSP file at some path level,
@@ -3590,7 +3590,7 @@ example](https://demo.webdyne.org/example/api/doublecase/bob/42)
 ### HTMX
 
 WebDyne has support for &lt;htmx&gt; tags to supply fragmented HTML to pages
-using the [HTMX Javascript Library](https://htmx.org) and similar
+using the [HTMX JavaScript Library](https://htmx.org) and similar
 libraries such as [Alpine Ajax](https://alpine-ajax.js.org). WebDyne can
 support just supplying HTML snippet to pages in response to htmx or
 similar calls. HTMX/Alpine Ajax and WebDyne are complementary libraries
@@ -4571,7 +4571,7 @@ autonewline
 Run Perl code similar to &lt;perl&gt; tag but expects code to return a HASH,
 ARRAY ref or plain scalar, which is encoded into JSON, outputting within
 a &lt;script&gt; tag with type="application/json". When supplied with an id
-attribute this data can be used by any Javascript function in the page.
+attribute this data can be used by any JavaScript function in the page.
 Takes the same options as the &lt;perl&gt; tag and behaves similarly - if a
 handler attribute is given it is called, if the perl attribute is given
 text between the &lt;json&gt; tags in treated as in-line perl code and
@@ -6602,7 +6602,7 @@ maintained on a [Github repository](https://github.com/aspeer/WebDyne).
 
 # Legal Information - Licensing and Copyright {#legal_information}
 
-WebDyne is Copyright © Andrew Speer 2006-2025. WebDyne is free software;
+WebDyne is Copyright © Andrew Speer 2006-2026. WebDyne is free software;
 you can redistribute it and/or modify it under the same terms as Perl
 itself.
 
