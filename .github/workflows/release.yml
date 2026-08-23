@@ -16,8 +16,17 @@ jobs:
     needs: perl-ci
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - uses: actions/checkout@v7
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6  # v4.1.2
+        with:
+          cosign-release: 'v2.2.4'
 
       - name: Set up Perl
         uses: shogo82148/actions-setup-perl@v1.42.0
@@ -39,14 +48,33 @@ jobs:
       - name: Build and create distribution
         run: make dist
 
+      - name: Sign distribution
+        id: sign-dist
+        run: |
+          set -euo pipefail
+          dist_file="$(find . -maxdepth 1 -type f -name '*.tar.gz' -print)"
+          test "$(printf '%s\n' "$dist_file" | sed '/^$/d' | wc -l)" -eq 1
+          dist_file="${dist_file#./}"
+          echo "dist_file=$dist_file" >> "$GITHUB_OUTPUT"
+          cosign sign-blob "$dist_file" --bundle "$dist_file.sigstore.json" --yes
+
+      - name: Verify distribution signature
+        run: |
+          cosign verify-blob "${{ steps.sign-dist.outputs.dist_file }}" \
+            --bundle "${{ steps.sign-dist.outputs.dist_file }}.sigstore.json" \
+            --certificate-identity="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/.github/workflows/release.yml@${GITHUB_REF}" \
+            --certificate-oidc-issuer="https://token.actions.githubusercontent.com"
+
       - name: List generated file
-        run: ls -l *.tar.gz
+        run: ls -l *.tar.gz *.tar.gz.sigstore.json
 
       - name: Upload distribution artifact
         uses: actions/upload-artifact@v4
         with:
           name: webdyne-dist
-          path: '*.tar.gz'
+          path: |
+            *.tar.gz
+            *.tar.gz.sigstore.json
 
   github-release:
     needs: build
@@ -65,7 +93,9 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          files: '*.tar.gz'
+          files: |
+            *.tar.gz
+            *.tar.gz.sigstore.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

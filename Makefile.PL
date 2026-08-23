@@ -260,6 +260,26 @@ pure_all :: filter_scripts
 
 
 #==============================================================================
+# Distribution Signature Verification
+#==============================================================================
+
+DIST_FILE ?= $(DISTVNAME).tar$(SUFFIX)
+COSIGN_BUNDLE ?= $(DIST_FILE).sigstore.json
+COSIGN_CERT_IDENTITY ?= https://github.com/aspeer/WebDyne/.github/workflows/release.yml@refs/tags/v$(VERSION)
+COSIGN_OIDC_ISSUER ?= https://token.actions.githubusercontent.com
+
+.PHONY: verify
+verify:
+	@test -f "$(DIST_FILE)" || { echo "Missing dist file: $(DIST_FILE)"; exit 1; }
+	@test -f "$(COSIGN_BUNDLE)" || { echo "Missing cosign bundle: $(COSIGN_BUNDLE)"; exit 1; }
+	@command -v cosign >/dev/null 2>&1 || { echo "Missing cosign executable"; exit 1; }
+	cosign verify-blob "$(DIST_FILE)" \
+		--bundle "$(COSIGN_BUNDLE)" \
+		--certificate-identity="$(COSIGN_CERT_IDENTITY)" \
+		--certificate-oidc-issuer="$(COSIGN_OIDC_ISSUER)"
+
+
+#==============================================================================
 # MkDocs Documentation
 #==============================================================================
 
