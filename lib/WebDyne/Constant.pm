@@ -253,6 +253,7 @@ my %constant_temp;
     
         pico    => { style  => 'https://cdn.jsdelivr.net/npm/@picocss/pico@latest/css/pico.min.css' },
         htmx    => { script => 'https://cdn.jsdelivr.net/npm/htmx.org@latest/dist/htmx.min.js' },
+        htmx_sse => { script => 'https://cdn.jsdelivr.net/npm/htmx-ext-sse@latest/sse.js' },
         alpine	=> { script => 'https://cdn.jsdelivr.net/npm/alpinejs@latest/dist/cdn.min.js#defer' }
         
         #  Commented out for now, left as syntax examples

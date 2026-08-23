@@ -1,8 +1,11 @@
-<start_html title="Pizza Updates" h2 hr sse>
-
-<link rel="stylesheet" href="pizza.css">
-<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
-<script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+<start_html
+  title="Pizza Updates"
+  h2
+  hr
+  sse
+  style="pizza.css"
+  script="@{qw(https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js https://unpkg.com/htmx-ext-sse@2.2.2/sse.js)}"
+>
 
 <div id="pizza-order" class="pizza" hx-ext="sse" sse-connect="pizza.psp?order_id=!{! order_id(@_) !}" sse-close="pizza-done">
   <section class="order">

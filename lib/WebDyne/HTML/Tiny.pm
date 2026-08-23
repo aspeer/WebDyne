@@ -383,9 +383,14 @@ sub _start_html {
     #
     foreach my $shortcut (grep {$attr_page{$_}} keys %{$WEBDYNE_START_HTML_SHORTCUT_HR}) {
         my $shortcut_hr=$WEBDYNE_START_HTML_SHORTCUT_HR->{$shortcut};
+        my $version=$attr_page{$shortcut};
         debug("found shortcut tag: $shortcut, content: %s", Dumper($shortcut_hr));
         while (my($type, $href_ar)=each %{$shortcut_hr}) {
-            unless (ref($href_ar) eq 'ARRAY') { $href_ar=[$href_ar] }
+            my @href=ref($href_ar) eq 'ARRAY' ? @{$href_ar} : ($href_ar);
+            if ($version=~/^\@/) {
+                s/\@latest/$version/g for @href;
+            }
+            $href_ar=\@href;
             debug("processing type: $type, href: %s", Dumper($href_ar));
             if (my $type_attr_value_ar=$attr_page{$type}) {
                  unless (ref($type_attr_value_ar) eq 'ARRAY') { $type_attr_value_ar=[$type_attr_value_ar] }

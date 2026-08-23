@@ -1,8 +1,13 @@
-<start_html title="Release Board" h2 hr sse require="ReleaseDemo" import="fingerprint">
-
-<link rel="stylesheet" href="release.css">
-<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
-<script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+<start_html
+  title="Release Board"
+  h2
+  hr
+  sse
+  require="ReleaseDemo"
+  import="fingerprint"
+  style="release.css"
+  script="@{qw(https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js https://unpkg.com/htmx-ext-sse@2.2.2/sse.js)}"
+>
 
 <div class="release-board">
   <section class="release-panel">
