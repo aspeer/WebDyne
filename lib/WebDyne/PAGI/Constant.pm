@@ -180,11 +180,11 @@ use WebDyne::PAGI::Constant;
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
@@ -192,7 +192,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 
@@ -247,7 +246,7 @@ Regular expression used by the default static middleware to decide which non-C<.
 
 B<WEBDYNE_PAGI_STATIC (0)>
 
-Disable static-file middleware by default. Pass C<static =E<gt> 1> to C<WebDyne::PAGI-E<gt>new(...)>, use C<webdyne.pagi --static>, or set this constant to true to enable it.
+Disable static-file middleware by default. Pass C<<< static => 1 >>> to C<<< WebDyne::PAGI->new(...) >>>, use C<webdyne.pagi --static>, or set this constant to true to enable it.
 
 
 

@@ -551,11 +551,11 @@ The module relies on `WebDyne::Request::PSGI` for normalized request handling an
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
@@ -563,7 +563,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 
@@ -612,7 +611,7 @@ Construct a PSGI application wrapper. Options include C<root>, C<index>, C<test>
 
 The C<filename> option is an explicit source-file override for the application. When supplied, it is passed to C<WebDyne::Request::PSGI> for every request and always wins over normal filename derivation from the PSGI environment, including C<PATH_INFO>, C<SCRIPT_FILENAME>, C<DOCUMENT_ROOT>, and default document handling. This is useful for helper tools or deliberate single-file PSGI applications; do not set it for normal multi-page applications that should dispatch from the request path.
 
-The C<static> option enables or disables the configured PSGI static-file middleware for this app instance. Static middleware is disabled by the package default, but wrapper scripts such as C<webdyne.psgi> may pass C<static =E<gt> 1>.
+The C<static> option enables or disables the configured PSGI static-file middleware for this app instance. Static middleware is disabled by the package default, but wrapper scripts such as C<webdyne.psgi> may pass C<<< static => 1 >>>.
 
 The C<conf> option loads local WebDyne constants during app construction. A true value of C<1> loads C<$root/.webdyne.conf.pl>; any other true value is treated as an explicit config filename, relative to C<root> unless already absolute.
 

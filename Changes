@@ -1,5 +1,23 @@
 Revision history for WebDyne
 
+3.023 2026-08-25
+
+    * Moved PSGI and PAGI wrapper initialization fully into
+      WebDyne::PSGI and WebDyne::PAGI. The webdyne.psgi and webdyne.pagi
+      scripts now use the shared application builder, so configured
+      middleware and document-root .webdyne.conf.pl loading behave the same
+      for wrapper scripts and directly constructed applications.
+
+    * Disabled PSGI and PAGI static-file middleware by default. Enable it
+      explicitly with static => 1, --static in the helper scripts, or the
+      WEBDYNE_PSGI_STATIC or WEBDYNE_PAGI_STATIC configuration constant.
+      This avoids serving static assets unexpectedly from directly
+      constructed applications.
+
+    * Added regression coverage for wrapper static-option forwarding and
+      ensured static middleware does not expose files with disallowed
+      extensions.
+
 3.022 2026-08-25
 
     * Hardened the helper script defaults for the built-in WebDyne indexer.
