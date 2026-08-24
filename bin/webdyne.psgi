@@ -376,6 +376,10 @@ Wrapper options handled by `webdyne.psgi` itself:
 
     Enable the built-in index page source viewer. This only takes effect when `--index` also enables WebDyne's built-in dynamic index page.
 
+* **--no-index**
+
+    Disable wrapper-managed index handling. This is the default unless `DOCUMENT_DEFAULT`, `~/.webdyne.psgi.opt`, or `--index` enables it.
+
 * **--root**
 
     Set the document root. If omitted, the final non-option command line argument is used. If neither is supplied, `DOCUMENT_ROOT` or the current working directory is used.
@@ -439,6 +443,14 @@ Use `home.psp` as the default document for directory requests
 
 `webdyne.psgi --index=home.psp /var/www/html`
 
+Persist index handling for local development by adding it to `~/.webdyne.psgi.opt`
+
+```perl
+{
+    index => 1,
+}
+```
+
 Start in production mode
 
 `webdyne.psgi --env production /var/www/html`
@@ -461,7 +473,7 @@ This script is a frontend to the WebDyne PSGI stack. In addition to `Plack::Runn
 
 * **DOCUMENT_DEFAULT**
 
-    Supplies the default `index` value before `~/.webdyne.psgi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.psgi.opt` also overrides the environment. When the script is loaded by `plackup` or `starman` instead of run directly, the PSGI constant layer default is `app.psp`.
+    Supplies the default `index` value before `~/.webdyne.psgi.opt` and command-line options are applied. If unset, wrapper-managed index handling is disabled by default. Explicit CLI index options override the environment, and `~/.webdyne.psgi.opt` also overrides the environment. When the script is loaded by `plackup` or `starman` instead of run directly, the PSGI constant layer default is `app.psp` unless the wrapper supplies another value.
 
 * **PLACK_ENV**
 
@@ -481,7 +493,7 @@ Andrew Speer <andrew.speer@isolutions.com.au>
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
@@ -489,7 +501,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 
@@ -563,6 +574,14 @@ Use C<FILE> as the default document for directory requests instead of the built-
 B<--view-source>
 
 Enable the built-in index page source viewer. This only takes effect when C<--index> also enables WebDyne's built-in dynamic index page.
+
+
+
+=item *
+
+B<--no-index>
+
+Disable wrapper-managed index handling. This is the default unless C<DOCUMENT_DEFAULT>, C<~/.webdyne.psgi.opt>, or C<--index> enables it.
 
 
 
@@ -675,6 +694,12 @@ Use C<home.psp> as the default document for directory requests
 
 C<webdyne.psgi --index=home.psp /var/www/html>
 
+Persist index handling for local development by adding it to C<~/.webdyne.psgi.opt>
+
+
+ {
+     index => 1,
+ }
 Start in production mode
 
 C<webdyne.psgi --env production /var/www/html>
@@ -706,7 +731,7 @@ Supplies the document root when neither C<--root> nor a final non-option documen
 
 B<DOCUMENT_DEFAULT>
 
-Supplies the default C<index> value before C<~/.webdyne.psgi.opt> and command-line options are applied. This means explicit CLI index options override the environment, and C<~/.webdyne.psgi.opt> also overrides the environment. When the script is loaded by C<plackup> or C<starman> instead of run directly, the PSGI constant layer default is C<app.psp>.
+Supplies the default C<index> value before C<~/.webdyne.psgi.opt> and command-line options are applied. If unset, wrapper-managed index handling is disabled by default. Explicit CLI index options override the environment, and C<~/.webdyne.psgi.opt> also overrides the environment. When the script is loaded by C<plackup> or C<starman> instead of run directly, the PSGI constant layer default is C<app.psp> unless the wrapper supplies another value.
 
 
 

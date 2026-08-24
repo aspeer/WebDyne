@@ -237,19 +237,17 @@ sub cache {
 
 Andrew Speer <andrew.speer@isolutions.com.au> and contributors.
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+This software is copyright \(c) 2026 by Andrew Speer &lt;andrew.speer@isolutions.com.au&gt;.
 
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming language system itself.
 
 Full license text is available at:
 
-<http://dev.perl.org/licenses/>
-
+&lt;http://dev.perl.org/licenses/&gt;
 
 =end markdown
 

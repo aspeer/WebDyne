@@ -411,7 +411,7 @@ This utility is primarily designed for quick prototyping and development under A
 
 * **--no-index**
 
-    Disable wrapper-managed index handling. No `DOCUMENT_DEFAULT`, `DirectoryIndex`, index alias, or index rewrite rules are emitted.
+    Disable wrapper-managed index handling. This is the default unless `DOCUMENT_DEFAULT`, `~/.webdyne.apache.opt`, or `--index` enables it. No `DOCUMENT_DEFAULT`, `DirectoryIndex`, index alias, or index rewrite rules are emitted.
 
 * **--root**
 
@@ -525,16 +525,30 @@ Show the generated Apache configuration instead of starting the server:
 webdyne.apache --dump_postamble /var/www/html
 ```
 
-Disable wrapper-managed index handling:
+Enable WebDyne's built-in dynamic index page for local development/debugging:
 
 ```sh
-webdyne.apache --no-index /var/www/html
+webdyne.apache --index /var/www/html
+```
+
+Enable the built-in index page source viewer as an additional local development/debugging aid:
+
+```sh
+webdyne.apache --index --view-source /var/www/html
 ```
 
 Use a site-local default document:
 
 ```sh
 webdyne.apache --index=home.psp /var/www/html
+```
+
+Persist index handling for local development by adding it to `~/.webdyne.apache.opt`:
+
+```perl
+{
+    index => 1,
+}
 ```
 
 Start using the internal test page:
@@ -571,7 +585,7 @@ Andrew Speer <andrew.speer@isolutions.com.au>
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
@@ -579,7 +593,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 
@@ -680,7 +693,7 @@ Enable the built-in index page source viewer. This only takes effect when C<--in
 
 B<--no-index>
 
-Disable wrapper-managed index handling. No C<DOCUMENT_DEFAULT>, C<DirectoryIndex>, index alias, or index rewrite rules are emitted.
+Disable wrapper-managed index handling. This is the default unless C<DOCUMENT_DEFAULT>, C<~/.webdyne.apache.opt>, or C<--index> enables it. No C<DOCUMENT_DEFAULT>, C<DirectoryIndex>, index alias, or index rewrite rules are emitted.
 
 
 
@@ -795,7 +808,6 @@ when built-in index handling is enabled, sets C<DOCUMENT_DEFAULT> to WebDyne's i
 =item -
 
 when C<--index --view-source> is used, emits C<WEBDYNE_INDEX_SOURCE_ENABLE=1> for the temporary Apache instance
-
 
 
 =item -
@@ -919,6 +931,12 @@ Use a site-local default document:
 
 
  webdyne.apache --index=home.psp /var/www/html
+Persist index handling for local development by adding it to C<~/.webdyne.apache.opt>:
+
+
+ {
+     index => 1,
+ }
 Start using the internal test page:
 
 

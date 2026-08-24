@@ -157,9 +157,9 @@ use WebDyne::PSGI::Constant;
 
     Regular expression used by the default static middleware to decide which non-`.psp` assets may be served directly.
 
-* **WEBDYNE_PSGI_STATIC (0)**
+* **WEBDYNE_PSGI_STATIC (1)**
 
-    Disable static-file middleware by default for direct `WebDyne::PSGI` use.
+    Enable static-file middleware by default.
 
 * **WEBDYNE_PSGI_MIDDLEWARE**
 
@@ -177,11 +177,11 @@ use WebDyne::PSGI::Constant;
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
@@ -189,7 +189,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 
@@ -250,9 +249,9 @@ Regular expression used by the default static middleware to decide which non-C<.
 
 =item *
 
-B<WEBDYNE_PSGI_STATIC (0)>
+B<WEBDYNE_PSGI_STATIC (1)>
 
-Disable static-file middleware by default for direct C<WebDyne::PSGI> use.
+Enable static-file middleware by default.
 
 
 
