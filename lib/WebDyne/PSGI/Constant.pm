@@ -80,7 +80,7 @@ $VERSION='3.020';
     
     #  Serve static files ?
     #
-    WEBDYNE_PSGI_STATIC => 1,
+    WEBDYNE_PSGI_STATIC => 0,
     
     
     #  All other middleware. Uncomment/modify as required
@@ -157,9 +157,9 @@ use WebDyne::PSGI::Constant;
 
     Regular expression used by the default static middleware to decide which non-`.psp` assets may be served directly.
 
-* **WEBDYNE_PSGI_STATIC (1)**
+* **WEBDYNE_PSGI_STATIC (0)**
 
-    Enable static-file middleware by default.
+    Disable static-file middleware by default for direct `WebDyne::PSGI` use.
 
 * **WEBDYNE_PSGI_MIDDLEWARE**
 
@@ -249,9 +249,9 @@ Regular expression used by the default static middleware to decide which non-C<.
 
 =item *
 
-B<WEBDYNE_PSGI_STATIC (1)>
+B<WEBDYNE_PSGI_STATIC (0)>
 
-Enable static-file middleware by default.
+Disable static-file middleware by default for direct C<WebDyne::PSGI> use.
 
 
 

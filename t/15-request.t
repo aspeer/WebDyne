@@ -5,6 +5,13 @@ no strict qw(refs);
 use warnings;
 
 
+#  Skip any local config
+#
+BEGIN {
+    $ENV{'WEBDYNE_CONF'}='.';
+}
+
+
 #  Test Harness
 #
 use Test::More;

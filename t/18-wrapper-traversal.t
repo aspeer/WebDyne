@@ -5,6 +5,14 @@
 use strict qw(vars);
 use warnings;
 
+
+#  Skip any local config
+#
+BEGIN {
+    $ENV{'WEBDYNE_CONF'}='.';
+}
+
+
 use Test::More;
 use FindBin qw($RealBin);
 use lib "$RealBin/../lib";

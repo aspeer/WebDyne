@@ -5,6 +5,15 @@
 use strict qw(vars);
 use warnings;
 use Test::More tests=>6;
+
+
+#  Skip any local config
+#
+BEGIN {
+    $ENV{'WEBDYNE_CONF'}='.';
+}
+
+
 use WebDyne::HTML::Tiny;
 
 

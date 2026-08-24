@@ -340,9 +340,9 @@ my %constant_temp;
     WEBDYNE_CGI_PARAM_EXPAND => 1,
 
 
-    #  Disable CGI autoescape of form fields ?
+    #  Escape CGI form fields and generated HTML attributes ?
     #
-    WEBDYNE_CGI_AUTOESCAPE => 0,
+    WEBDYNE_CGI_AUTOESCAPE => 1,
 
 
     #  Error handling. Use text errors rather than HTML ?
@@ -479,7 +479,7 @@ my %constant_temp;
     #  string .psp extension
     #
     WEBDYNE_PSP_EXT 	=> ($constant_temp{'webdyne_psp_ext'}='.psp'),
-    WEBDYNE_PSP_EXT_RE  => qr/\Q$constant_temp{'webdyne_psp_ext'}\E/,
+    WEBDYNE_PSP_EXT_RE  => qr/\Q$constant_temp{'webdyne_psp_ext'}\E$/,
     
     
     #  Very minimal MIME type hash used by lookup_file function
@@ -512,6 +512,11 @@ my %constant_temp;
         pm
         pl
     )},
+
+
+    #  Allow the bundled indexer to display file source ?
+    #
+    WEBDYNE_INDEX_SOURCE_ENABLE => 0,
 
 
     #  And raw file names. Should be regexp, todo
@@ -1464,9 +1469,9 @@ The constants below are defined by `WebDyne::Constant`. Each definition includes
 
 * **WEBDYNE_CGI_AUTOESCAPE**
 
-    **Default:** `0`
+    **Default:** `1`
 
-    Controls automatic escaping of CGI form field values before they are rendered back into generated form elements.
+    Controls automatic escaping of CGI form field values before they are rendered back into generated form elements, and generated HTML helper attribute values.
 
 * **WEBDYNE_ERROR_TEXT**
 
@@ -1680,7 +1685,7 @@ The constants below are defined by `WebDyne::Constant`. Each definition includes
     perl -MWebDyne::Constant=WEBDYNE_PSP_EXT_RE
     ```
 
-    Regular expression form of `WEBDYNE_PSP_EXT`, used internally for matching PSP filenames.
+    Anchored regular expression form of `WEBDYNE_PSP_EXT`, used internally for matching PSP filenames.
 
 * **WEBDYNE_MIME_TYPE_HR**
 
@@ -1700,7 +1705,13 @@ The constants below are defined by `WebDyne::Constant`. Each definition includes
     perl -MWebDyne::Constant=WEBDYNE_INDEX_EXT_ALLOWED_HR
     ```
 
-    Hash reference of source-code file extensions that the default directory indexer may open for viewing, in addition to recognised static file types.
+    Hash reference of source-code file extensions that the default directory indexer may open for viewing when `WEBDYNE_INDEX_SOURCE_ENABLE` is true, in addition to recognised static file types.
+
+* **WEBDYNE_INDEX_SOURCE_ENABLE**
+
+    **Default:** `0`
+
+    Controls whether the bundled directory index page offers and serves the source viewer. Directory listing can be enabled without enabling source viewing.
 
 * **WEBDYNE_INDEX_FN_ALLOWED_HR**
 
@@ -1710,7 +1721,7 @@ The constants below are defined by `WebDyne::Constant`. Each definition includes
     perl -MWebDyne::Constant=WEBDYNE_INDEX_FN_ALLOWED_HR
     ```
 
-    Hash reference of literal file names that the default directory indexer may open for viewing, in addition to recognised static file types.
+    Hash reference of literal file names that the default directory indexer may open for viewing when `WEBDYNE_INDEX_SOURCE_ENABLE` is true, in addition to recognised static file types.
 
 * **WEBDYNE_DIR_CONFIG**
 
@@ -2481,9 +2492,9 @@ Expand CGI parameter strings embedded in parameter values into separate CGI para
 
 B<WEBDYNE_CGI_AUTOESCAPE>
 
-B<Default:> C<0>
+B<Default:> C<1>
 
-Controls automatic escaping of CGI form field values before they are rendered back into generated form elements.
+Controls automatic escaping of CGI form field values before they are rendered back into generated form elements, and generated HTML helper attribute values.
 
 
 
@@ -2821,7 +2832,7 @@ B<Default:> See the command below for the value.
 
 
  perl -MWebDyne::Constant=WEBDYNE_PSP_EXT_RE
-Regular expression form of C<WEBDYNE_PSP_EXT>, used internally for matching PSP filenames.
+Anchored regular expression form of C<WEBDYNE_PSP_EXT>, used internally for matching PSP filenames.
 
 
 
@@ -2845,7 +2856,17 @@ B<Default:> See the command below for the value.
 
 
  perl -MWebDyne::Constant=WEBDYNE_INDEX_EXT_ALLOWED_HR
-Hash reference of source-code file extensions that the default directory indexer may open for viewing, in addition to recognised static file types.
+Hash reference of source-code file extensions that the default directory indexer may open for viewing when C<WEBDYNE_INDEX_SOURCE_ENABLE> is true, in addition to recognised static file types.
+
+
+
+=item *
+
+B<WEBDYNE_INDEX_SOURCE_ENABLE>
+
+B<Default:> C<0>
+
+Controls whether the bundled directory index page offers and serves the source viewer. Directory listing can be enabled without enabling source viewing.
 
 
 
@@ -2857,7 +2878,7 @@ B<Default:> See the command below for the value.
 
 
  perl -MWebDyne::Constant=WEBDYNE_INDEX_FN_ALLOWED_HR
-Hash reference of literal file names that the default directory indexer may open for viewing, in addition to recognised static file types.
+Hash reference of literal file names that the default directory indexer may open for viewing when C<WEBDYNE_INDEX_SOURCE_ENABLE> is true, in addition to recognised static file types.
 
 
 

@@ -35,6 +35,7 @@ use FindBin qw($RealBin);
 use File::Spec;
 use File::Temp qw(tempdir);
 use IO::File;
+use File::Path qw(make_path);
 use Plack::Test;
 use HTTP::Request::Common qw(GET);
 use lib "$RealBin/../lib";
@@ -57,6 +58,9 @@ done_testing();
 sub main {
 
     my $root_dn=tempdir(CLEANUP => 1);
+    my $base_dn=tempdir(CLEANUP => 1);
+    my $traversal_root_dn=File::Spec->catdir($base_dn, 'htdocs');
+    make_path($traversal_root_dn);
 
     my %page=(
         'api.psp' => <<'EOF',
@@ -93,12 +97,7 @@ EOF
 
     for my $relative (keys %page) {
         my $filename=File::Spec->catfile($root_dn, split m{/}, $relative);
-        my ($volume, $directory)=File::Spec->splitpath($filename);
-        mkdir $directory if length($directory) && !-d $directory;
-        ok(my $page_fh=IO::File->new($filename, O_WRONLY|O_CREAT|O_TRUNC),
-            "create temporary page $relative");
-        print {$page_fh} $page{$relative};
-        $page_fh->close();
+        ok(write_file($filename, $page{$relative}), "create temporary page $relative");
     }
 
     ok(my $psgi_or=WebDyne::PSGI->new(root => $root_dn), 'build PSGI application');
@@ -135,5 +134,48 @@ EOF
     $res=$test_or->request(GET('/missing/path'));
     is($res->code(), 404, 'unmatched request remains not found');
 
+    write_file(
+        File::Spec->catfile($traversal_root_dn, 'index.psp'),
+        '<html><? "INSIDE-" . 6*7 ?></html>'
+    );
+    write_file(
+        File::Spec->catfile($base_dn, 'private.psp'),
+        '<html><? "OUTSIDE-" . 6*7 ?></html>'
+    );
+
+    ok(my $traversal_app_cr=WebDyne::PSGI->new(root => $traversal_root_dn)->to_app(),
+        'build PSGI traversal regression application');
+    ok(my $traversal_test_or=Plack::Test->create($traversal_app_cr),
+        'create PSGI traversal regression client');
+
+    $res=$traversal_test_or->request(GET('/index.psp'));
+    is($res->code(), 200, 'traversal regression positive control returns HTTP 200');
+    like($res->decoded_content() || '', qr/INSIDE-42/,
+        'traversal regression positive control executes in-root PSP');
+
+    $res=$traversal_test_or->request(GET('/private'));
+    is($res->code(), 404, 'outside PSP is not reachable without traversal');
+    unlike($res->decoded_content() || '', qr/OUTSIDE-42/,
+        'outside PSP does not execute without traversal');
+
+    $res=$traversal_test_or->request(GET('/../private'));
+    is($res->code(), 404, 'PSGI API fallback rejects parent-directory traversal');
+    unlike($res->decoded_content() || '', qr/OUTSIDE-42/,
+        'PSGI API fallback does not execute out-of-root PSP through traversal');
+
     return \1;
+}
+
+
+sub write_file {
+
+    my ($fn, $content)=@_;
+    my ($volume, $directory)=File::Spec->splitpath($fn);
+    make_path($directory) if length($directory) && !-d $directory;
+    my $fh=IO::File->new($fn, O_WRONLY|O_CREAT|O_TRUNC) ||
+        die "unable to write $fn, $!";
+    print {$fh} $content;
+    $fh->close();
+    return $fn;
+
 }

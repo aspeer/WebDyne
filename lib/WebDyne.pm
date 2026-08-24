@@ -1787,13 +1787,6 @@ sub render_data_ar {
     debug("html_or: $html_or");
 
 
-    #  Stub out entity_encode - we don't want attributes escaped
-    #
-    local *HTML::Tiny::entity_encode=sub {$_[1]}
-        unless
-        WEBDYNE_CGI_AUTOESCAPE;
-        
-        
     #  Recursive anon sub to do the render, init and store in class space
     #  if not already done, saves a small amount of time if doing many
     #  iterations
@@ -3518,7 +3511,15 @@ sub subst {
             return err();
         };
     });
-    $text=~s/([\$!+*^])\{(\1?)(.*?)\2}/${$cr->($1, $3, $index++) || do { debug('subst returning error'); return err() } }/ge;
+    $text=~s/([\$!+*^])\{(\1?)(.*?)\2}/
+        my $oper=$1;
+        my $sr=$cr->($oper, $3, $index++) || do {
+            debug('subst returning error');
+            return err();
+        };
+        my $value=(ref($sr) eq 'SCALAR') ? ${$sr} : $sr;
+        $self->subst_escape($oper, $value);
+    /gex;
 
 
     #  Done
@@ -3526,6 +3527,21 @@ sub subst {
     debug("return *$text*");
     return \$text;
 
+
+}
+
+
+sub subst_escape {
+
+
+    #  Escape request-derived text substitutions when autoescape is enabled.
+    #  Attribute output is handled later by HTML::Tiny.
+    #
+    my ($self, $oper, $value)=@_;
+    return $value
+        unless defined($value) && WEBDYNE_CGI_AUTOESCAPE && (($oper eq '+') || ($oper eq '*') || ($oper eq '^'));
+
+    return $self->html_tiny()->entity_encode($value);
 
 }
 

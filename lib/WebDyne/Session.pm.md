@@ -29,7 +29,7 @@ When imported from a page `__PERL__` block, it switches the page to `WebDyne::Ch
 
 # CONSTANTS #
 
-Cookie naming is controlled by `WEBDYNE_SESSION_ID_COOKIE_NAME` from `WebDyne::Session::Constant`.
+Cookie naming and security attributes are controlled by constants from `WebDyne::Session::Constant`. New session cookies use `Secure`, `HttpOnly`, and `SameSite=Lax` by default. Set `WEBDYNE_SESSION_COOKIE_SECURE` to `0` for plain HTTP development deployments.
 
 # NOTES #
 

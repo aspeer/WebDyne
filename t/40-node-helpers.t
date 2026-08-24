@@ -5,6 +5,14 @@
 use strict qw(vars);
 use warnings;
 
+
+#  Skip any local config
+#
+BEGIN {
+    $ENV{'WEBDYNE_CONF'}='.';
+}
+
+
 use Test::More tests => 7;
 use WebDyne;
 use WebDyne::Constant;

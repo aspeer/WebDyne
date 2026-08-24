@@ -69,7 +69,11 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #  Trick to allow use of illegal subroutine name to suppport treebuilder comment format
 #
 *{'WebDyne::HTML::Tiny::~comment'}=\&_comment;
-*{'WebDyne::HTML::Tiny::entity_encode'}=sub { return $_[1] };
+*{'WebDyne::HTML::Tiny::entity_encode'}=sub {
+    my ($self, $value)=@_;
+    return $value unless WEBDYNE_CGI_AUTOESCAPE;
+    return HTML::Tiny::entity_encode($self, $value);
+};
 
 
 #  All done. Positive return

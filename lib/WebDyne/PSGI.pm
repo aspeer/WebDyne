@@ -28,6 +28,7 @@ use IO::String;
 use Data::Dumper;
 use Cwd qw(fastcwd);
 use File::Spec;
+use Plack::Builder;
 
 
 #  PSGI modules
@@ -94,6 +95,14 @@ sub new {
     $opt{'root'}=File::Spec->rel2abs($opt{'root'});
 
 
+    #  Load local config if requested. Keep the default off so direct
+    #  WebDyne::PSGI->new()->to_app callers preserve existing behaviour.
+    #
+    if ($opt{'conf'}) {
+        $class->local_constant_load($opt{'root'}, $opt{'conf'});
+    }
+
+
     #  API file name cache
     #
     $opt{'API_fn'}={};
@@ -117,12 +126,106 @@ sub to_app {
     #  Dispatch code ref
     #
     my $app_cr=sub { $self->handler(@_) };
+
+
+    #  Wrap with configured PSGI middleware.
+    #
+    $app_cr=$self->build($app_cr);
     
 
     #  Done
     #
     return $app_cr;
     
+}
+
+
+sub build {
+
+
+    #  Wrap a PSGI app code ref in configured middleware.
+    #
+    my ($self, $app_cr)=@_;
+
+
+    #  Build middleware stack
+    #
+    my $builder_or=Plack::Builder->new();
+
+
+    #  Static service can be overridden per instance without changing the
+    #  package default for later apps in the same interpreter.
+    #
+    my $static_fg=$WEBDYNE_PSGI_STATIC;
+    $static_fg=$self->{'static'} if exists($self->{'static'});
+
+
+    #  Add configured middleware.
+    #
+    foreach my $middleware_ar (@{$WEBDYNE_PSGI_MIDDLEWARE}) {
+        my ($middleware, $middleware_opt_hr)=@{$middleware_ar};
+
+        #  Skip static if not wanted
+        #
+        if ($middleware eq 'Static') {
+            next unless $static_fg;
+        }
+
+
+        #  And code refs are run and given self as first param
+        #
+        if (ref($middleware_opt_hr) eq 'CODE') {
+            $middleware_opt_hr=$middleware_opt_hr->($self);
+        }
+
+
+        #  Now add it
+        #
+        $builder_or->add_middleware($middleware, %{$middleware_opt_hr});
+    }
+
+
+    #  Done
+    #
+    return $builder_or->to_app($app_cr);
+
+}
+
+
+sub local_constant_load {
+
+
+    #  Read in local webdyne.conf.pl
+    #
+    my ($class, $root_dn, $conf)=@_;
+
+
+    #  If root_dn is a file get dir name
+    #
+    if (-f $root_dn) {
+        $root_dn=(File::Spec->splitpath($root_dn))[1];
+    }
+
+
+    #  Resolve conf option. 1 means root/.webdyne.conf.pl, otherwise use
+    #  explicit path relative to root unless already absolute.
+    #
+    my $conf_fn;
+    if ($conf eq '1') {
+        $conf_fn=File::Spec->catfile($root_dn, sprintf('.%s', $WEBDYNE_CONF_FN));
+    }
+    else {
+        $conf_fn=File::Spec->file_name_is_absolute($conf) ?
+            $conf :
+            File::Spec->catfile($root_dn, $conf);
+    }
+
+
+    #  Load via existing constant import path.
+    #
+    WebDyne::Constant->import($conf_fn);
+    return $conf_fn;
+
 }
 
 
@@ -318,18 +421,23 @@ sub api_filename {
     my ($self, $r)=@_;
     return unless WEBDYNE_API_ENABLE;
 
-    my $document_root=$r->document_root;
-    my $api_dn=$ENV{'PATH_INFO'} || '';
-    $api_dn=~s/^${document_root}//;
-    my @api_dn=grep {$_} File::Spec::Unix->splitdir($api_dn);
-    my @api_fn;
+    my $path=$ENV{'PATH_INFO'} || '';
+    return unless length($path);
+
+    my @part=grep { length($_) } split(m{/+}, $path);
+    return if grep { $_ eq '.' || $_ eq '..' } @part;
+
+    my $document_root=File::Spec->rel2abs($r->document_root);
     my $API_fn=$self->{'API_fn'};
-    while (my $dn=shift @api_dn) {
-        push @api_fn, $dn;
-        my $api_fn=File::Spec->catfile($document_root, @api_fn) . WEBDYNE_PSP_EXT;
+    for my $ix (0 .. $#part) {
+        my $api_fn=File::Spec->catfile($document_root, @part[0 .. $ix]);
+        $api_fn .= WEBDYNE_PSP_EXT unless $api_fn =~ WEBDYNE_PSP_EXT_RE;
         debug("check $api_fn");
+
         #  Check of outside docroot
-        last if (index($api_fn, $document_root) !=0);
+        #
+        my $relative=File::Spec->abs2rel($api_fn, $document_root);
+        next if $relative eq '..' || $relative =~ /^\.\.(?:[\\\/]|$)/;
         if ($API_fn->{$api_fn} || (-f $api_fn)) {
             debug("found api file name: $api_fn, %s, dispatching", Dumper($API_fn));
             $API_fn->{$api_fn}++; # Cache so not stat()ing on file system

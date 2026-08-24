@@ -199,10 +199,18 @@ $ <command>webdyne.psgi --test</command>
 #
 $ <command>webdyne.psgi app.psp</command>
 
-# Start serving files from the current directory. Directory requests use WebDyne's
-# built-in index page by default.
+# Start serving files from the current directory. Wrapper-managed directory
+# indexing is disabled by default.
 #
 $ <command>webdyne.psgi .</command>
+
+# Enable WebDyne's built-in index page for local development/debugging.
+#
+$ <command>webdyne.psgi --index .</command>
+
+# Also enable the built-in index page source viewer.
+#
+$ <command>webdyne.psgi --index --view-source .</command>
 
 # Start but listen on non-default port, only on localhost
 #
@@ -299,23 +307,31 @@ $ <command>cpanm Task::WebDyne::Starman</command></screen>
 
         <para>Once verified as working correctly you can serve WebDyne content from a particular directory - or from a single file - using the syntax:</para>
 
-        <screen>#  To serve up all files in a directory. Directory requests use WebDyne's built-in
-#  index page by default.
+        <screen>#  To serve up all files in a directory. Wrapper-managed directory indexing is
+#  disabled by default.
 #
 <command>$ webdyne.psgi &lt;directory&gt;</command>
 
-#  E.g serve files in /var/www/html. By default WebDyne will display its built-in
-#  index page if no filename is specified.
+#  E.g serve files in /var/www/html.
 #
 <command>$ webdyne.psgi /var/www/html</command>
+
+#  Enable WebDyne's built-in index page for local development/debugging.
+#
+<command>$ webdyne.psgi --index /var/www/html</command>
+
+#  Also enable the built-in index page source viewer.
+#
+<command>$ webdyne.psgi --index --view-source /var/www/html</command>
 
 #  Or just a single app.psp file. Only this file will be served regardless of URL
 #
 <command>$ webdyne.psgi /var/www/html/time.psp</command></screen>
 
         <tip>
-          <para>Starting WebDyne this way enables wrapper-managed index handling and full error messages with code backtraces if any errors are encountered. Use <option>--index=FILE</option>
-          or <envar>DOCUMENT_DEFAULT</envar> to nominate a site-local default page, or <option>--no-index</option> to rely on the underlying request layer default document behavior.</para>
+          <para>Starting WebDyne this way disables wrapper-managed index handling by default. Use <option>--index</option> to enable WebDyne's built-in index page for local development/debugging,
+          <option>--index=FILE</option> or <envar>DOCUMENT_DEFAULT</envar> to nominate a site-local default page, or <option>--no-index</option> to explicitly rely on the underlying request layer default document behavior.</para>
+          <para>The built-in index page lists files only by default. Its source viewer is disabled unless <option>--view-source</option> is supplied with <option>--index</option>, or <varname>WEBDYNE_INDEX_SOURCE_ENABLE</varname> is set to 1 in local configuration.</para>
         </tip>
 
         <para>To start with <command>plackup</command>:</para>
@@ -471,23 +487,31 @@ builder {
 
         <para>Once verified as working correctly you can serve WebDyne content from a particular directory - or from a single file - using the syntax:</para>
 
-        <screen>#  To serve up all files in a directory. Directory requests use WebDyne's built-in
-#  index page by default.
+        <screen>#  To serve up all files in a directory. Wrapper-managed directory indexing is
+#  disabled by default.
 #
 <command>$ webdyne.pagi &lt;directory&gt;</command>
 
-#  E.g serve files in /var/www/html. By default WebDyne will display its built-in
-#  index page if no filename is specified.
+#  E.g serve files in /var/www/html.
 #
 <command>$ webdyne.pagi /var/www/html</command>
+
+#  Enable WebDyne's built-in index page for local development/debugging.
+#
+<command>$ webdyne.pagi --index /var/www/html</command>
+
+#  Also enable the built-in index page source viewer.
+#
+<command>$ webdyne.pagi --index --view-source /var/www/html</command>
 
 #  Or just a single app.psp file. Only this file will be served regardless of URL
 #
 <command>$ webdyne.pagi /var/www/html/time.psp</command></screen>
 
         <tip>
-          <para>Starting WebDyne this way enables wrapper-managed index handling and full error messages with code backtraces if any errors are encountered. Use <option>--index=FILE</option>
-          or <envar>DOCUMENT_DEFAULT</envar> to nominate a site-local default page, or <option>--no-index</option> to rely on the underlying request layer default document behavior.</para>
+          <para>Starting WebDyne this way disables wrapper-managed index handling by default. Use <option>--index</option> to enable WebDyne's built-in index page for local development/debugging,
+          <option>--index=FILE</option> or <envar>DOCUMENT_DEFAULT</envar> to nominate a site-local default page, or <option>--no-index</option> to explicitly rely on the underlying request layer default document behavior.</para>
+          <para>The built-in index page lists files only by default. Its source viewer is disabled unless <option>--view-source</option> is supplied with <option>--index</option>, or <varname>WEBDYNE_INDEX_SOURCE_ENABLE</varname> is set to 1 in local configuration.</para>
         </tip>
 
         <para>To start with <command>pagi-server</command>:</para>
@@ -693,9 +717,13 @@ waiting 60 seconds for server to start: ok (waited 0 secs)
 server localhost:5000 started
 
 
-#  Start an instance to with a simple directory index on the current directory
+#  Start an instance with a simple directory index on the current directory
 #
-$ perl -Ilib bin/webdyne.apache .
+$ perl -Ilib bin/webdyne.apache --index .
+
+#  Also enable the built-in index page source viewer
+#
+$ perl -Ilib bin/webdyne.apache --index --view-source .
 
 
 </screen></para>
@@ -4626,8 +4654,8 @@ WEBDYNE_CONF=./myconf.pl webdyne.psgi</screen>
           <title>DOCUMENT_DEFAULT</title>
 
           <para>The default file to look for in a directory if none is given via browser URL. The PSGI and PAGI constant layer defaults this to <filename>app.psp</filename>. The direct
-          <command>webdyne.psgi</command> and <command>webdyne.pagi</command> command wrappers enable WebDyne's built-in index page by default unless <envar>DOCUMENT_DEFAULT</envar>,
-          <option>--index=FILE</option>, or <option>--no-index</option> changes that behavior.</para>
+          <command>webdyne.psgi</command>, <command>webdyne.pagi</command>, and <command>webdyne.apache</command> command wrappers disable wrapper-managed indexing by default unless
+          <envar>DOCUMENT_DEFAULT</envar>, <option>--index</option>, <option>--index=FILE</option>, or a <filename>~/.webdyne.*.opt</filename> file enables it.</para>
         </section>
 
         <section xml:id="env_webdyne_debug">
@@ -4957,7 +4985,43 @@ PerlSetVar      WebDyneCacheHandler '&amp;MyModule::cache'
             linkend="webdyne_constants">WebDyne::Constants</link> section. Resides in the <classname>WebDyne::Session::Constant</classname> package namespace.</para>
           </listitem>
         </varlistentry>
+
+        <varlistentry>
+          <term><varname>$WEBDYNE_SESSION_COOKIE_PATH</varname></term>
+
+          <listitem>
+            <para>Constant. Holds the path attribute used when setting the session cookie. Defaults to "/".</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><varname>$WEBDYNE_SESSION_COOKIE_SECURE</varname></term>
+
+          <listitem>
+            <para>Constant. Controls whether newly generated session cookies include the <literal>Secure</literal> attribute. Defaults to 1. Set this to 0 for plain HTTP development deployments.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><varname>$WEBDYNE_SESSION_COOKIE_HTTPONLY</varname></term>
+
+          <listitem>
+            <para>Constant. Controls whether newly generated session cookies include the <literal>HttpOnly</literal> attribute. Defaults to 1.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><varname>$WEBDYNE_SESSION_COOKIE_SAMESITE</varname></term>
+
+          <listitem>
+            <para>Constant. Holds the SameSite value used for newly generated session cookies. Defaults to "Lax". Valid non-empty values are "Lax", "Strict" and "None". Set this to an empty value to omit the attribute.</para>
+          </listitem>
+        </varlistentry>
       </variablelist>
+
+      <para>By default WebDyne::Session emits cookies with <literal>Secure</literal>, <literal>HttpOnly</literal> and <literal>SameSite=Lax</literal>. If you are testing over plain HTTP, disable only the Secure flag in local configuration:</para>
+
+      <para><programlisting>WEBDYNE_SESSION_COOKIE_SECURE =&gt; 0</programlisting></para>
 
       <para>Example:</para>
 
@@ -4984,6 +5048,10 @@ PerlSetVar      WebDyneChain    'WebDyne::Session'
 #  Change cookie name from "session" to "gingernut" for something different
 #
 PerlSetVar      WEBDYNE_SESSION_ID_COOKIE_NAME    'gingernut'
+
+#  Plain HTTP development only: allow the browser to send the cookie back
+#
+# PerlSetVar    WEBDYNE_SESSION_COOKIE_SECURE     0
 
 &lt;/Location&gt;
 </programlisting></para>

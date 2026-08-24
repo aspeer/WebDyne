@@ -71,9 +71,10 @@ sub run {
         'psgi.nonblocking' => 0,
     });
     print "args=" . join(' ', @{$self->{argv} || []}) . "\n";
-    print "env=" . ($ENV{PLACK_ENV} // '') . "\n";
-    print "index=" . ($WebDyne::PSGI::LAST_INDEX // '') . "\n";
-    print "status=$res->[0]\n";
+	    print "env=" . ($ENV{PLACK_ENV} // '') . "\n";
+	    print "index=" . ($WebDyne::PSGI::LAST_INDEX // '') . "\n";
+	    print "view_source=" . ($ENV{WEBDYNE_INDEX_SOURCE_ENABLE} // 0) . "\n";
+	    print "status=$res->[0]\n";
     print "body=" . join('', @{$res->[2]}) . "\n";
     return 0;
 }
@@ -100,13 +101,28 @@ is($stderr, '', 'webdyne.psgi stubbed run writes no stderr');
 delete $ENV{PLACK_ENV};
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--no-index', '--no-static', '--argv', '--port 6022',
+    '--no-static', '--argv', '--port 6022',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.psgi runs without --env');
 unlike($stdout, qr/--env/, 'webdyne.psgi does not forward env mode when omitted');
 like($stdout, qr/^env=$/m, 'webdyne.psgi leaves PLACK_ENV unset when --env is omitted');
+like($stdout, qr/^index=0$/m, 'webdyne.psgi defaults index off when DOCUMENT_DEFAULT is unset');
 is($stderr, '', 'webdyne.psgi no-env run writes no stderr');
+
+{
+    my $home_dn=tempdir(CLEANUP => 1);
+    write_file("$home_dn/.webdyne.psgi.opt", "{ index => 1 }\n");
+    local $ENV{HOME}=$home_dn;
+    ($stdout, $stderr, $rc)=run_cmd(
+        $^X, '-I', $stub_dn, '-Ilib', $script,
+        '--no-static',
+        $tmp_dn,
+    );
+    is($rc, 0, 'webdyne.psgi accepts index opt-in from user option file');
+    like($stdout, qr/^index=1$/m, 'webdyne.psgi option file can enable built-in index mode');
+    is($stderr, '', 'webdyne.psgi option-file index run writes no stderr');
+}
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
@@ -115,7 +131,28 @@ is($stderr, '', 'webdyne.psgi no-env run writes no stderr');
 );
 is($rc, 0, 'webdyne.psgi accepts bare --index');
 like($stdout, qr/^index=1$/m, 'webdyne.psgi bare --index uses built-in index mode');
+like($stdout, qr/^view_source=0$/m, 'webdyne.psgi bare --index does not enable source view');
 is($stderr, '', 'webdyne.psgi bare --index run writes no stderr');
+
+($stdout, $stderr, $rc)=run_cmd(
+    $^X, '-I', $stub_dn, '-Ilib', $script,
+    '--no-static', '--view-source',
+    $tmp_dn,
+);
+is($rc, 0, 'webdyne.psgi accepts --view-source without --index');
+like($stdout, qr/^index=0$/m, 'webdyne.psgi --view-source alone leaves index disabled');
+like($stdout, qr/^view_source=0$/m, 'webdyne.psgi --view-source alone is inert');
+is($stderr, '', 'webdyne.psgi view-source-only run writes no stderr');
+
+($stdout, $stderr, $rc)=run_cmd(
+    $^X, '-I', $stub_dn, '-Ilib', $script,
+    '--no-static', '--index', '--view-source',
+    $tmp_dn,
+);
+is($rc, 0, 'webdyne.psgi accepts --index --view-source');
+like($stdout, qr/^index=1$/m, 'webdyne.psgi --index --view-source enables built-in index mode');
+like($stdout, qr/^view_source=1$/m, 'webdyne.psgi --index --view-source enables source view');
+is($stderr, '', 'webdyne.psgi index view-source run writes no stderr');
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
