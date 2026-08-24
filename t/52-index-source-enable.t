@@ -38,6 +38,7 @@ END_PSP
 my $default=render_index($root_dn, 0);
 like($default->{'listing'}, qr/app\.psp/, 'default index lists files');
 unlike($default->{'listing'}, qr/data-filename="app\.psp"/, 'default index does not render source toggle');
+unlike($default->{'listing'}, qr/>View<\/th>/, 'default index omits source-view column');
 unlike($default->{'source'}, qr/INDEX-SOURCE-SECRET-42/, 'default index source request does not disclose source');
 like($default->{'source'}, qr/\[Source view disabled\]/, 'default index source request reports disabled source view');
 
@@ -45,7 +46,11 @@ like($default->{'source'}, qr/\[Source view disabled\]/, 'default index source r
 my $enabled=render_index($root_dn, 1);
 like($enabled->{'listing'}, qr/app\.psp/, 'enabled index lists files');
 like($enabled->{'listing'}, qr/data-filename="app\.psp"/, 'enabled index renders source toggle');
+like($enabled->{'listing'}, qr/>View<\/th>/, 'enabled index renders source-view column');
 like($enabled->{'source'}, qr/INDEX-SOURCE-SECRET-42/, 'enabled index source request discloses source by explicit opt-in');
+my ($md5_hex)=$enabled->{'listing'} =~ /data-filename="app\.psp"\s+data-md5="([0-9a-f]{32})"/;
+ok($md5_hex, 'enabled index renders a source-row digest');
+like($enabled->{'source'}, qr/data-md5="$md5_hex"/, 'source response uses the digest rendered by its toggle');
 
 
 done_testing();

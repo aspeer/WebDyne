@@ -34,7 +34,9 @@
         <th><a href="${sort_name_href}">Filename</a></th>
         <th><a href="${sort_mtime_href}">Last Modified</a></th>
         <th style="text-align: right"><a href="${sort_size_href}">Size</a></th>
+        <block name="view_header" display="!{! $_[1]->{'view_enable'} !}">
         <th style="text-align: right">View</th>
+        </block>
       </tr>
     </thead>
     <tbody>
@@ -52,7 +54,7 @@
             </td>
             </block>
 
-            <block name="dir" display="!{! $_[1]->{'type'} eq 'dir' !}">
+            <block name="dir" display="!{! $_[1]->{'view_enable'} && $_[1]->{'type'} eq 'dir' !}">
             <td style="text-align: right">
             -
             </td>
@@ -296,7 +298,7 @@ sub test_fn {
 
     #  Now check not higher than document root
     #    
-    my $root_dn=$r->document_root() || do {
+    my $root_dn=realpath($r->document_root() || '') || do {
         debug('fail, root_dn not found !');
         return undef;
     };
@@ -366,7 +368,8 @@ sub full_dn {
     
     #  Now get real dn and check not higher than document root
     #    
-    my $root_dn=$r->document_root();
+    my $root_dn=realpath($r->document_root() || '') ||
+        return err('unable to resolve document root');
     my $full_dn;
     for (1..2) { # Max 2 loops to check and sanitise path
         $full_dn=File::Spec->catdir($root_dn, split(m{/+}, $path_dn));
@@ -429,7 +432,8 @@ sub index {
     
     #  Now get real dn and check not higher than document root
     #    
-    my $root_dn=$r->document_root();
+    my $root_dn=realpath($r->document_root() || '') ||
+        return err('unable to resolve document root');
     my $full_dn=$self->full_dn() ||
         return err('no full_dn');
     debug("root_dn: $root_dn, full_dn: $full_dn");
@@ -528,7 +532,8 @@ sub index {
             size        => $size,
             md5_hex     => md5_hex($fn),
             type        => $type,
-            source_enable => (($type eq 'file') && $WEBDYNE_INDEX_SOURCE_ENABLE) ? 1 : 0
+            source_enable => (($type eq 'file') && $WEBDYNE_INDEX_SOURCE_ENABLE) ? 1 : 0,
+            view_enable   => $WEBDYNE_INDEX_SOURCE_ENABLE ? 1 : 0
         );
         
         
@@ -559,6 +564,7 @@ sub index {
         path_dn         => $path_dn,
         timestamp       => strftime('%X', localtime()),
         sec             => sprintf('%.3f', $self->render_time()),
+        view_enable     => $WEBDYNE_INDEX_SOURCE_ENABLE ? 1 : 0,
         %sort_href
     );
     
