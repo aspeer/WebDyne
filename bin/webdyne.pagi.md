@@ -36,11 +36,19 @@ Wrapper options handled by `webdyne.pagi` itself:
 
 * **--index**
 
-    Enable or disable directory index handling. With the default enabled setting, `--index` uses WebDyne's built-in dynamic index page.
+    Enable directory index handling. With no value, `--index` uses WebDyne's built-in dynamic index page. Index handling is disabled by default.
 
 * **--index=FILE**
 
     Use `FILE` as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.
+
+* **--view-source**
+
+    Enable the built-in index page source viewer. This only takes effect when `--index` also enables WebDyne's built-in dynamic index page.
+
+* **--no-index**
+
+    Disable wrapper-managed index handling. This is the default unless `DOCUMENT_DEFAULT`, `~/.webdyne.pagi.opt`, or `--index` enables it.
 
 * **--root**
 
@@ -107,13 +115,25 @@ To run the script for basic functionality and serve files from `/var/www/html`, 
 
 `webdyne.pagi /var/www/html`
 
-Disable wrapper-managed index handling and rely on the PAGI request layer's default document behaviour instead:
+Enable WebDyne's built-in dynamic index page for local development/debugging:
 
-`webdyne.pagi --no-index /var/www/html`
+`webdyne.pagi --index /var/www/html`
+
+Enable the built-in index page source viewer as an additional local development/debugging aid:
+
+`webdyne.pagi --index --view-source /var/www/html`
 
 Use `home.psp` as the default document for directory requests:
 
 `webdyne.pagi --index=home.psp /var/www/html`
+
+Persist index handling for local development by adding it to `~/.webdyne.pagi.opt`:
+
+```perl
+{
+    index => 1,
+}
+```
 
 Start in production mode:
 
@@ -145,7 +165,7 @@ This script is a frontend to the WebDyne PAGI stack. It uses WebDyne configurati
 
 * **DOCUMENT_DEFAULT**
 
-    Supplies the default `index` value before `~/.webdyne.pagi.opt` and command-line options are applied. This means explicit CLI index options override the environment, and `~/.webdyne.pagi.opt` also overrides the environment. When the script is loaded by `pagi-server` instead of run directly, the PAGI constant layer default is `app.psp`.
+    Supplies the default `index` value before `~/.webdyne.pagi.opt` and command-line options are applied. If unset, wrapper-managed index handling is disabled by default. Explicit CLI index options override the environment, and `~/.webdyne.pagi.opt` also overrides the environment. When the script is loaded by `pagi-server` instead of run directly, the PAGI constant layer default is `app.psp` unless the wrapper supplies another value.
 
 * **PAGI_ENV**
 

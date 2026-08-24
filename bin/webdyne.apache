@@ -19,6 +19,7 @@
 use strict;
 use vars   qw($VERSION);
 use warnings;
+no warnings qw(once);
 
 
 #  External modules
@@ -91,7 +92,7 @@ sub main {
     #  Defaults
     #
     my %opt=(
-        index       => defined($ENV{'DOCUMENT_DEFAULT'}) ? $ENV{'DOCUMENT_DEFAULT'} : 1,
+        index       => defined($ENV{'DOCUMENT_DEFAULT'}) ? $ENV{'DOCUMENT_DEFAULT'} : 0,
         keep_tmp    => 0,
         port        => ($^O eq 'darwin') ? 5001 : 5000,
         %{do(glob(sprintf('~/.%s.opt', basename(__FILE__)))) || {}}
@@ -127,6 +128,7 @@ sub main {
         'no_index' => sub {
             $opt{'index'}=0
         },
+        'view_source|view-source!',
         'root|docroot|doc_root|doc-root|document_root|document-root=s',
         'port=s',
         'keep_tmp|keep-tmp!',
@@ -161,6 +163,7 @@ sub main {
 
     #  Dump options for debugging
     #
+    &view_source_apply(\%opt);
     die Dumper(\%opt) if $opt{'dump_opt'};
     
     
@@ -182,6 +185,25 @@ sub main {
     while (1) {
         pause();
     }
+
+}
+
+
+sub view_source_apply {
+
+
+    #  Source viewing is an extra opt-in on top of built-in index handling.
+    #
+    my $opt_hr=shift();
+    if ($opt_hr->{'index'} && $opt_hr->{'view_source'}) {
+        $ENV{'WEBDYNE_INDEX_SOURCE_ENABLE'}=1;
+        $WebDyne::WEBDYNE_INDEX_SOURCE_ENABLE=1;
+        $WebDyne::Constant::Constant{'WEBDYNE_INDEX_SOURCE_ENABLE'}=1;
+    }
+    else {
+        $opt_hr->{'view_source'}=0;
+    }
+    return \undef;
 
 }
 
@@ -363,7 +385,7 @@ webdyne.apache - start a temporary Apache mod_perl instance for serving WebDyne 
 By default the script:
 
 - uses `DOCUMENT_ROOT` as the document root if it is set, otherwise the current working directory
-- enables WebDyne index handling, using `DOCUMENT_DEFAULT` if it is set
+- disables wrapper-managed index handling unless `DOCUMENT_DEFAULT`, `~/.webdyne.apache.opt`, or `--index` enables it
 - listens on port `5001` on macOS, or `5000` on other platforms
 - creates a temporary Apache server root
 - creates a temporary WebDyne cache directory under that server root
@@ -377,11 +399,15 @@ This utility is primarily designed for quick prototyping and development under A
 
 * **--index**
 
-    Enable index handling. This is on by default. If enabled with the default value, WebDyne uses its internal default index page.
+    Enable index handling. With no value, `--index` uses WebDyne's internal default index page. Index handling is disabled by default.
 
 * **--index=FILE**
 
     Use `FILE` as the Apache directory index/default document. Relative names are emitted as `DirectoryIndex FILE`. Absolute names are exposed through the same alias/rewrite mechanism used for the internal WebDyne index page.
+
+* **--view-source**
+
+    Enable the built-in index page source viewer. This only takes effect when `--index` also enables WebDyne's built-in index page.
 
 * **--no-index**
 
@@ -430,6 +456,7 @@ The generated Apache configuration currently does the following:
 - sets `WEBDYNE_ERROR_TEXT=1` unless already defined
 - grants access to the selected document root
 - when built-in index handling is enabled, sets `DOCUMENT_DEFAULT` to WebDyne's internal index page, grants access to that file's directory, aliases `/index.psp` to it, and rewrites directory requests to `/index.psp`
+- when `--index --view-source` is used, emits `WEBDYNE_INDEX_SOURCE_ENABLE=1` for the temporary Apache instance
 - when `DOCUMENT_DEFAULT` or `--index=FILE` supplies a relative filename, emits `PerlSetEnv DOCUMENT_DEFAULT FILE` and `DirectoryIndex FILE`
 - when `DOCUMENT_DEFAULT` or `--index=FILE` supplies an absolute filename, aliases `/index.psp` to that file and rewrites directory requests to `/index.psp`
 - when `--no-index` is used, omits all wrapper-managed index configuration
@@ -591,7 +618,7 @@ uses C<DOCUMENT_ROOT> as the document root if it is set, otherwise the current w
 
 =item -
 
-enables WebDyne index handling, using C<DOCUMENT_DEFAULT> if it is set
+disables wrapper-managed index handling unless C<DOCUMENT_DEFAULT>, C<~/.webdyne.apache.opt>, or C<--index> enables it
 
 
 =item -
@@ -629,7 +656,7 @@ This utility is primarily designed for quick prototyping and development under A
 
 B<--index>
 
-Enable index handling. This is on by default. If enabled with the default value, WebDyne uses its internal default index page.
+Enable index handling. With no value, C<--index> uses WebDyne's internal default index page. Index handling is disabled by default.
 
 
 
@@ -638,6 +665,14 @@ Enable index handling. This is on by default. If enabled with the default value,
 B<--index=FILE>
 
 Use C<FILE> as the Apache directory index/default document. Relative names are emitted as C<DirectoryIndex FILE>. Absolute names are exposed through the same alias/rewrite mechanism used for the internal WebDyne index page.
+
+
+
+=item *
+
+B<--view-source>
+
+Enable the built-in index page source viewer. This only takes effect when C<--index> also enables WebDyne's built-in index page.
 
 
 
@@ -759,6 +794,12 @@ when built-in index handling is enabled, sets C<DOCUMENT_DEFAULT> to WebDyne's i
 
 =item -
 
+when C<--index --view-source> is used, emits C<WEBDYNE_INDEX_SOURCE_ENABLE=1> for the temporary Apache instance
+
+
+
+=item -
+
 when C<DOCUMENT_DEFAULT> or C<--index=FILE> supplies a relative filename, emits C<PerlSetEnv DOCUMENT_DEFAULT FILE> and C<DirectoryIndex FILE>
 
 
@@ -866,10 +907,14 @@ Show the generated Apache configuration instead of starting the server:
 
 
  webdyne.apache --dump_postamble /var/www/html
-Disable wrapper-managed index handling:
+Enable WebDyne's built-in dynamic index page for local development/debugging:
 
 
- webdyne.apache --no-index /var/www/html
+ webdyne.apache --index /var/www/html
+Enable the built-in index page source viewer as an additional local development/debugging aid:
+
+
+ webdyne.apache --index --view-source /var/www/html
 Use a site-local default document:
 
 

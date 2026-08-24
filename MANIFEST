@@ -262,6 +262,14 @@ t/42-eval-require.t
 t/43-perl-raw-boundary.t
 t/44-start-html-require.t
 t/45-pagi-form-post.t
+t/46-psgi-init.t
+t/46-start-html-shortcut-version.t
+t/47-pagi-init.t
+t/48-psp-extension-boundary.t
+t/49-cgi-autoescape.t
+t/50-substitution-autoescape.t
+t/51-session-cookie-flags.t
+t/52-index-source-enable.t
 t/alpine.psp                             
 t/apache_harness_helper.pm
 t/api_bare.psp                           

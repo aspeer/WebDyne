@@ -44,7 +44,7 @@
         <td>${date}</td>
         <td style="text-align: right">${size}</td>
         
-            <block name="file" display="!{! $_[1]->{'type'} eq 'file' !}" >
+            <block name="file" display="!{! $_[1]->{'source_enable'} !}" >
             <td style="text-align: right"  x-data="{ isOpen: false }">
                 <a href="#" @click.prevent="toggleSourceRow($el, $data)" class="source-toggle"  data-filename="${filename}" data-md5="${md5_hex}">
                     <svg data-lucide="chevron-left" width="16" height="16" :style="isOpen ? 'transform: rotate(-90deg)' : ''" style="transition: transform .15s ease-in-out;"></svg>
@@ -92,6 +92,7 @@
 __PERL__
 
 use strict;
+use vars qw($WEBDYNE_INDEX_SOURCE_ENABLE);
 use File::stat;
 use File::Spec::Unix;
 use File::Basename qw(dirname basename fileparse);
@@ -109,6 +110,8 @@ sub source {
     #  Get source file and display
     #
     my $self=shift();
+    return $self->source_blocked()
+        unless $WEBDYNE_INDEX_SOURCE_ENABLE;
     my $cgi_or=$self->CGI() ||
         return err('unable to get CGI object');
     
@@ -204,6 +207,24 @@ sub source {
         md5_hex     => md5_hex($srce_fn)
     );
     
+}
+
+
+sub source_blocked {
+
+
+    #  Render the same source-row shell with a blocked payload so direct
+    #  HTMX source requests do not disclose file content when disabled.
+    #
+    my $self=shift();
+    my $srce_fn=$_{'source'} || 'source';
+    my $lang='text';
+    $self->render_block('source', lang=>$lang, code=>'[Source view disabled]');
+    return $self->render(
+        language    => $lang,
+        md5_hex     => md5_hex($srce_fn)
+    );
+
 }
 
 
@@ -506,7 +527,8 @@ sub index {
             date        => $mtime,
             size        => $size,
             md5_hex     => md5_hex($fn),
-            type        => $type
+            type        => $type,
+            source_enable => (($type eq 'file') && $WEBDYNE_INDEX_SOURCE_ENABLE) ? 1 : 0
         );
         
         

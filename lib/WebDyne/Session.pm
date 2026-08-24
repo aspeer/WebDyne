@@ -16,7 +16,14 @@ package WebDyne::Session;
 #  Compiler Pragma
 #
 use strict qw(vars);
-use vars   qw($VERSION);
+use vars   qw(
+    $VERSION
+    $WEBDYNE_SESSION_COOKIE_HTTPONLY
+    $WEBDYNE_SESSION_COOKIE_PATH
+    $WEBDYNE_SESSION_COOKIE_SAMESITE
+    $WEBDYNE_SESSION_COOKIE_SECURE
+    $WEBDYNE_SESSION_ID_COOKIE_NAME
+);
 use warnings;
 no warnings qw(uninitialized);
 
@@ -139,13 +146,22 @@ sub handler : method {
 
         #  Create a cookie with our session id
         #
-        my $cookie=$cgi_or->cookie(
-
+        my @cookie=(
             -name  => $cookie_name,
             -value => $session_id,
-            -path  => '/'
-
-        ) || return $self->err_html("unable to generate sid: $session_id cookie");
+            -path  => $WEBDYNE_SESSION_COOKIE_PATH
+        );
+        push @cookie, (-secure => 1)
+            if $WEBDYNE_SESSION_COOKIE_SECURE;
+        push @cookie, (-httponly => 1)
+            if $WEBDYNE_SESSION_COOKIE_HTTPONLY;
+        if (defined($WEBDYNE_SESSION_COOKIE_SAMESITE) && length($WEBDYNE_SESSION_COOKIE_SAMESITE)) {
+            ($WEBDYNE_SESSION_COOKIE_SAMESITE =~ /^(?:Lax|Strict|None)$/) ||
+                return $self->err_html("invalid SameSite value for session cookie: $WEBDYNE_SESSION_COOKIE_SAMESITE");
+            push @cookie, (-samesite => $WEBDYNE_SESSION_COOKIE_SAMESITE);
+        }
+        my $cookie=$cgi_or->cookie(@cookie) ||
+            return $self->err_html("unable to generate sid: $session_id cookie");
 
 
         #  Get our header hash ref
@@ -222,7 +238,7 @@ When imported from a page `__PERL__` block, it switches the page to `WebDyne::Ch
 
 # CONSTANTS #
 
-Cookie naming is controlled by `WEBDYNE_SESSION_ID_COOKIE_NAME` from `WebDyne::Session::Constant`.
+Cookie naming and security attributes are controlled by constants from `WebDyne::Session::Constant`. New session cookies use `Secure`, `HttpOnly`, and `SameSite=Lax` by default. Set `WEBDYNE_SESSION_COOKIE_SECURE` to `0` for plain HTTP development deployments.
 
 # NOTES #
 
@@ -295,7 +311,7 @@ Return the current session identifier for the active page/request object.
 
 =head1 CONSTANTS
 
-Cookie naming is controlled by C<WEBDYNE_SESSION_ID_COOKIE_NAME> from C<WebDyne::Session::Constant>.
+Cookie naming and security attributes are controlled by constants from C<WebDyne::Session::Constant>. New session cookies use C<Secure>, C<HttpOnly>, and C<SameSite=Lax> by default. Set C<WEBDYNE_SESSION_COOKIE_SECURE> to C<0> for plain HTTP development deployments.
 
 
 =head1 NOTES

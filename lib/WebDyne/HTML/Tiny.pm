@@ -69,7 +69,11 @@ debug("Loading %s version $VERSION", __PACKAGE__);
 #  Trick to allow use of illegal subroutine name to suppport treebuilder comment format
 #
 *{'WebDyne::HTML::Tiny::~comment'}=\&_comment;
-*{'WebDyne::HTML::Tiny::entity_encode'}=sub { return $_[1] };
+*{'WebDyne::HTML::Tiny::entity_encode'}=sub {
+    my ($self, $value)=@_;
+    return $value unless WEBDYNE_CGI_AUTOESCAPE;
+    return HTML::Tiny::entity_encode($self, $value);
+};
 
 
 #  All done. Positive return
@@ -383,9 +387,14 @@ sub _start_html {
     #
     foreach my $shortcut (grep {$attr_page{$_}} keys %{$WEBDYNE_START_HTML_SHORTCUT_HR}) {
         my $shortcut_hr=$WEBDYNE_START_HTML_SHORTCUT_HR->{$shortcut};
+        my $version=$attr_page{$shortcut};
         debug("found shortcut tag: $shortcut, content: %s", Dumper($shortcut_hr));
         while (my($type, $href_ar)=each %{$shortcut_hr}) {
-            unless (ref($href_ar) eq 'ARRAY') { $href_ar=[$href_ar] }
+            my @href=ref($href_ar) eq 'ARRAY' ? @{$href_ar} : ($href_ar);
+            if ($version=~/^\@/) {
+                s/\@latest/$version/g for @href;
+            }
+            $href_ar=\@href;
             debug("processing type: $type, href: %s", Dumper($href_ar));
             if (my $type_attr_value_ar=$attr_page{$type}) {
                  unless (ref($type_attr_value_ar) eq 'ARRAY') { $type_attr_value_ar=[$type_attr_value_ar] }

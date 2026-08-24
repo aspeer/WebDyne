@@ -55,6 +55,7 @@ sub run {
     print "args=" . join(' ', @{$self->{argv} || []}) . "\n";
     print "env=" . ($ENV{PAGI_ENV} // '') . "\n";
     print "index=" . ($WebDyne::PAGI::LAST_INDEX // '') . "\n";
+    print "view_source=" . ($ENV{WEBDYNE_INDEX_SOURCE_ENABLE} // 0) . "\n";
     print "app=" . ref($app) . "\n";
     return 0;
 }
@@ -77,13 +78,28 @@ is($stderr, '', 'webdyne.pagi stubbed run writes no stderr');
 delete $ENV{PAGI_ENV};
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
-    '--no-index', '--no-static', '--argv', '--port 6012',
+    '--no-static', '--argv', '--port 6012',
     $tmp_dn,
 );
 is($rc, 0, 'webdyne.pagi runs without --env');
 unlike($stdout, qr/--env/, 'webdyne.pagi does not forward env mode when omitted');
 like($stdout, qr/^env=$/m, 'webdyne.pagi leaves PAGI_ENV unset when --env is omitted');
+like($stdout, qr/^index=0$/m, 'webdyne.pagi defaults index off when DOCUMENT_DEFAULT is unset');
 is($stderr, '', 'webdyne.pagi no-env run writes no stderr');
+
+{
+    my $home_dn=tempdir(CLEANUP => 1);
+    write_file("$home_dn/.webdyne.pagi.opt", "{ index => 1 }\n");
+    local $ENV{HOME}=$home_dn;
+    ($stdout, $stderr, $rc)=run_cmd(
+        $^X, '-I', $stub_dn, '-Ilib', $script,
+        '--no-static',
+        $tmp_dn,
+    );
+    is($rc, 0, 'webdyne.pagi accepts index opt-in from user option file');
+    like($stdout, qr/^index=1$/m, 'webdyne.pagi option file can enable built-in index mode');
+    is($stderr, '', 'webdyne.pagi option-file index run writes no stderr');
+}
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,
@@ -92,7 +108,28 @@ is($stderr, '', 'webdyne.pagi no-env run writes no stderr');
 );
 is($rc, 0, 'webdyne.pagi accepts bare --index');
 like($stdout, qr/^index=1$/m, 'webdyne.pagi bare --index uses built-in index mode');
+like($stdout, qr/^view_source=0$/m, 'webdyne.pagi bare --index does not enable source view');
 is($stderr, '', 'webdyne.pagi bare --index run writes no stderr');
+
+($stdout, $stderr, $rc)=run_cmd(
+    $^X, '-I', $stub_dn, '-Ilib', $script,
+    '--no-static', '--view-source',
+    $tmp_dn,
+);
+is($rc, 0, 'webdyne.pagi accepts --view-source without --index');
+like($stdout, qr/^index=0$/m, 'webdyne.pagi --view-source alone leaves index disabled');
+like($stdout, qr/^view_source=0$/m, 'webdyne.pagi --view-source alone is inert');
+is($stderr, '', 'webdyne.pagi view-source-only run writes no stderr');
+
+($stdout, $stderr, $rc)=run_cmd(
+    $^X, '-I', $stub_dn, '-Ilib', $script,
+    '--no-static', '--index', '--view-source',
+    $tmp_dn,
+);
+is($rc, 0, 'webdyne.pagi accepts --index --view-source');
+like($stdout, qr/^index=1$/m, 'webdyne.pagi --index --view-source enables built-in index mode');
+like($stdout, qr/^view_source=1$/m, 'webdyne.pagi --index --view-source enables source view');
+is($stderr, '', 'webdyne.pagi index view-source run writes no stderr');
 
 ($stdout, $stderr, $rc)=run_cmd(
     $^X, '-I', $stub_dn, '-Ilib', $script,

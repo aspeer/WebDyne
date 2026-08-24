@@ -20,6 +20,22 @@ use WebDyne::Session::Constant;
 
     Name of the cookie used to store the WebDyne session identifier on the client.
 
+* **WEBDYNE_SESSION_COOKIE_PATH ('/')**
+
+    Path attribute used when setting the WebDyne session cookie.
+
+* **WEBDYNE_SESSION_COOKIE_SECURE (1)**
+
+    Add the `Secure` attribute to newly generated session cookies. Set to `0` for plain HTTP development deployments.
+
+* **WEBDYNE_SESSION_COOKIE_HTTPONLY (1)**
+
+    Add the `HttpOnly` attribute to newly generated session cookies.
+
+* **WEBDYNE_SESSION_COOKIE_SAMESITE ('Lax')**
+
+    SameSite attribute used for newly generated session cookies. Set to an empty value to omit the attribute.
+
 # AUTHOR #
 
 Andrew Speer <andrew.speer@isolutions.com.au>

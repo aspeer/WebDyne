@@ -55,6 +55,20 @@ like($stderr, qr/^(?:|unable to write to stderr,stdout - reverting to log files\
 
 {
     local $ENV{DOCUMENT_ROOT}=$tmp_dn;
+    my ($default_out, $default_err, $default_rc)=run_cmd(
+        $^X, '-I', $stub_dn, '-Ilib', $script,
+        '--dump_opt',
+    );
+    isnt($default_rc, 0, 'webdyne.apache --dump_opt aborts after dumping default options');
+    is($default_out, '', 'webdyne.apache default dump writes no stdout');
+    my $default_opt_hr=dump_opt_hash($default_err);
+    ok(!$default_opt_hr->{'index'}, 'webdyne.apache defaults index off when DOCUMENT_DEFAULT is unset');
+    ok($default_opt_hr->{'no_index'}, 'webdyne.apache default regenerates no_index true');
+    is($default_opt_hr->{'root'}, $tmp_dn, 'webdyne.apache DOCUMENT_ROOT still seeds root option');
+}
+
+{
+    local $ENV{DOCUMENT_ROOT}=$tmp_dn;
     local $ENV{DOCUMENT_DEFAULT}='home.psp';
     my ($env_out, $env_err, $env_rc)=run_cmd(
         $^X, '-I', $stub_dn, '-Ilib', $script,
@@ -84,6 +98,21 @@ like($stderr, qr/^(?:|unable to write to stderr,stdout - reverting to log files\
 
 {
     my $home_dn=tempdir(CLEANUP => 1);
+    write_file("$home_dn/.webdyne.apache.opt", "{ index => 1 }\n");
+    local $ENV{HOME}=$home_dn;
+    my ($seed_index_out, $seed_index_err, $seed_index_rc)=run_cmd(
+        $^X, '-I', $stub_dn, '-Ilib', $script,
+        '--dump_opt',
+    );
+    isnt($seed_index_rc, 0, 'webdyne.apache seeded index --dump_opt aborts after dumping options');
+    is($seed_index_out, '', 'webdyne.apache seeded index dump writes no stdout');
+    my $seed_index_opt_hr=dump_opt_hash($seed_index_err);
+    ok($seed_index_opt_hr->{'index'}, 'webdyne.apache option file can enable built-in index mode');
+    ok(!$seed_index_opt_hr->{'no_index'}, 'webdyne.apache seeded index regenerates no_index false');
+}
+
+{
+    my $home_dn=tempdir(CLEANUP => 1);
     write_file("$home_dn/.webdyne.apache.opt", "{ no_index => 1 }\n");
     local $ENV{HOME}=$home_dn;
     my ($seed_out, $seed_err, $seed_rc)=run_cmd(
@@ -105,6 +134,41 @@ like($stderr, qr/^(?:|unable to write to stderr,stdout - reverting to log files\
     my $override_opt_hr=dump_opt_hash($override_err);
     ok($override_opt_hr->{'index'}, 'webdyne.apache --index overrides seeded no_index');
     ok(!$override_opt_hr->{'no_index'}, 'webdyne.apache --index regenerates no_index false');
+}
+
+{
+    local $ENV{DOCUMENT_ROOT}=$tmp_dn;
+    my ($view_only_out, $view_only_err, $view_only_rc)=run_cmd(
+        $^X, '-I', $stub_dn, '-Ilib', $script,
+        '--view-source', '--dump_opt',
+    );
+    isnt($view_only_rc, 0, 'webdyne.apache --view-source --dump_opt aborts after dumping options');
+    is($view_only_out, '', 'webdyne.apache view-source-only dump writes no stdout');
+    my $view_only_opt_hr=dump_opt_hash($view_only_err);
+    ok(!$view_only_opt_hr->{'index'}, 'webdyne.apache --view-source alone leaves index disabled');
+    ok(!$view_only_opt_hr->{'view_source'}, 'webdyne.apache --view-source alone is normalized inert');
+
+    my ($view_out, $view_err, $view_rc)=run_cmd(
+        $^X, '-I', $stub_dn, '-Ilib', $script,
+        '--index', '--view-source', '--dump_opt',
+    );
+    isnt($view_rc, 0, 'webdyne.apache --index --view-source --dump_opt aborts after dumping options');
+    is($view_out, '', 'webdyne.apache index view-source dump writes no stdout');
+    my $view_opt_hr=dump_opt_hash($view_err);
+    ok($view_opt_hr->{'index'}, 'webdyne.apache --index --view-source enables index');
+    ok($view_opt_hr->{'view_source'}, 'webdyne.apache --index --view-source keeps source view enabled');
+}
+
+{
+    local $ENV{'APACHE_TEST_HTTPD'}='/tmp/webdyne-test-httpd';
+    local $ENV{'APACHE_TEST_APXS'}=$fake_apxs;
+    my ($view_out, $view_err, $view_rc)=run_cmd(
+        $^X, '-I', $stub_dn, '-Ilib', $script,
+        '--port', '5125', '--index', '--view-source', $tmp_dn,
+    );
+    is($view_rc, 0, 'webdyne.apache --index --view-source exits cleanly through stubbed pause');
+    like($view_out, qr/PerlSetEnv WEBDYNE_INDEX_SOURCE_ENABLE 1/, 'webdyne.apache emits source-view environment only with index and view-source');
+    like($view_err, qr/^(?:|unable to write to stderr,stdout - reverting to log files\n)$/, 'webdyne.apache view-source run writes no unexpected stderr');
 }
 
 my ($dump_out, $dump_err, $dump_rc)=run_cmd(

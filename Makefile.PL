@@ -265,7 +265,7 @@ pure_all :: filter_scripts
 
 DIST_FILE ?= $(DISTVNAME).tar$(SUFFIX)
 COSIGN_BUNDLE ?= $(DIST_FILE).sigstore.json
-COSIGN_CERT_IDENTITY ?= https://github.com/aspeer/WebDyne/.github/workflows/release.yml@refs/tags/v$(VERSION)
+COSIGN_CERT_IDENTITY ?= https://github.com/aspeer/WebDyne/.github/workflows/release.yml@refs/tags/$(shell $(PERL) -Mversion -e 'print version->parse("$(VERSION)")->normal')
 COSIGN_OIDC_ISSUER ?= https://token.actions.githubusercontent.com
 
 .PHONY: verify

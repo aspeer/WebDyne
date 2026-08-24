@@ -97,6 +97,14 @@ sub new {
     $opt{'root'}=File::Spec->rel2abs($opt{'root'});
 
 
+    #  Load local config if requested. Keep the default off so direct
+    #  WebDyne::PAGI->new()->to_app callers preserve existing behaviour.
+    #
+    if ($opt{'conf'}) {
+        $class->local_constant_load($opt{'root'}, $opt{'conf'});
+    }
+
+
     #  API file name cache
     #
     $opt{'API_fn'}={};
@@ -145,12 +153,118 @@ sub to_app {
         }
 
     };
+
+
+    #  Wrap with configured PAGI middleware.
+    #
+    $app_cr=$self->build($app_cr);
     
     
     #  Done
     #
     return $app_cr;
     
+}
+
+
+sub build {
+
+
+    #  Wrap a PAGI app code ref in configured middleware.
+    #
+    my ($self, $app_cr)=@_;
+
+
+    #  Static service can be overridden per instance without changing the
+    #  package default for later apps in the same interpreter.
+    #
+    my $static_fg=$WEBDYNE_PAGI_STATIC;
+    $static_fg=$self->{'static'} if exists($self->{'static'});
+
+
+    #  Build list of active middleware.
+    #
+    my @middleware;
+    foreach my $middleware_ar (@{$WEBDYNE_PAGI_MIDDLEWARE}) {
+        my ($middleware, $middleware_opt_hr)=@{$middleware_ar};
+
+        #  Skip static if not wanted
+        #
+        if ($middleware eq 'Static') {
+            next unless $static_fg;
+        }
+
+
+        #  And code refs are run and given self as first param
+        #
+        if (ref($middleware_opt_hr) eq 'CODE') {
+            $middleware_opt_hr=$middleware_opt_hr->($self);
+        }
+
+
+        #  Save it for wrapping below
+        #
+        push @middleware, [$middleware, $middleware_opt_hr];
+    }
+
+
+    #  No active middleware, preserve bare app behaviour and avoid requiring
+    #  PAGI::Middleware::Builder for direct WebDyne::PAGI use.
+    #
+    return $app_cr unless @middleware;
+
+
+    #  Build middleware stack
+    #
+    require PAGI::Middleware::Builder;
+    my $builder_or=PAGI::Middleware::Builder->new();
+    foreach my $middleware_ar (@middleware) {
+        my ($middleware, $middleware_opt_hr)=@{$middleware_ar};
+        $builder_or->add_middleware($middleware, %{$middleware_opt_hr});
+    }
+
+
+    #  Done
+    #
+    return $builder_or->to_app($app_cr);
+
+}
+
+
+sub local_constant_load {
+
+
+    #  Read in local webdyne.conf.pl
+    #
+    my ($class, $root_dn, $conf)=@_;
+
+
+    #  If root_dn is a file get dir name
+    #
+    if (-f $root_dn) {
+        $root_dn=(File::Spec->splitpath($root_dn))[1];
+    }
+
+
+    #  Resolve conf option. 1 means root/.webdyne.conf.pl, otherwise use
+    #  explicit path relative to root unless already absolute.
+    #
+    my $conf_fn;
+    if ($conf eq '1') {
+        $conf_fn=File::Spec->catfile($root_dn, sprintf('.%s', $WEBDYNE_CONF_FN));
+    }
+    else {
+        $conf_fn=File::Spec->file_name_is_absolute($conf) ?
+            $conf :
+            File::Spec->catfile($root_dn, $conf);
+    }
+
+
+    #  Load via existing constant import path.
+    #
+    WebDyne::Constant->import($conf_fn);
+    return $conf_fn;
+
 }
 
 

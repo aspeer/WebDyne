@@ -28,6 +28,7 @@ Before editing:
 - Use `!{! ... !}` for short evaluated values, including dynamic HTML attributes.
 - Never put a WebDyne element such as `<perl .../>` inside an HTML attribute. An attribute is one parser value, not a nested PSP tree.
 - Use whole-value `@{...}` and `%{...}` expressions for array/hash attributes such as form values, labels, options, and parameters.
+- `<start_html>` resource attributes accept arrays: use one ordered `script="@{qw(htmx.js extension.js)}"` (or equivalent array expression) for dependent libraries instead of `script_append` when no configured script list must be preserved. The same array form applies to `style`, `include_script`, and related resource attributes.
 - For HTMX `hx-vals`, use the documented JavaScript form with a double-quoted HTML attribute, for example `hx-vals="js:{ action: 'advance' }"`. Do not use JSON inside a single-quoted attribute such as `hx-vals='{"action":"advance"}'`: WebDyne normalizes rendered attributes to double quotes, which can corrupt the embedded JSON.
 - Use `$self->html_tiny()` when Perl genuinely needs to construct HTML. Do not add local escaping/tag-building helpers that duplicate it.
 - Do not assume substitutions automatically make untrusted input safe. Escape or validate data at the application boundary.
