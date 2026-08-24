@@ -1,5 +1,60 @@
 Revision history for WebDyne
 
+3.022 2026-08-25
+
+    * Hardened the helper script defaults for the built-in WebDyne indexer.
+      webdyne.psgi, webdyne.pagi, and webdyne.apache now leave index handling
+      disabled by default unless DOCUMENT_DEFAULT, a user option file, or an
+      explicit --index option enables it.
+
+    * Added WEBDYNE_INDEX_SOURCE_ENABLE and --view-source support for the
+      helper scripts. The built-in index page source viewer is now disabled
+      unless both index handling and source viewing are explicitly enabled,
+      preserving the directory listing/debugging workflow without exposing
+      page source by default.
+
+    * Added PSGI and PAGI application builder support for wrapper-style
+      initialization, including optional static handling and document-root
+      .webdyne.conf.pl loading via the new constructor options. The helper
+      scripts now opt in to this behaviour while direct
+      WebDyne::PSGI->new(...)->to_app and WebDyne::PAGI->new(...)->to_app
+      construction retains conservative defaults.
+
+    * Fixed PSGI API fallback path traversal by rejecting dot path segments
+      before route discovery and verifying discovered API files remain inside
+      the document root using canonical relative-path checks. Added
+      regression coverage for traversal attempts and normal API routing.
+
+    * Restored end-of-string matching for WebDyne PSP filenames so files
+      such as report.psp.pdf are not treated as executable PSP pages.
+      This fixes a double-extension execution regression introduced when
+      WEBDYNE_PSP_EXT became configurable.
+
+    * Re-enabled CGI form value escaping by default and fixed the
+      WebDyne::HTML::Tiny entity encoder override so
+      WEBDYNE_CGI_AUTOESCAPE works as documented. Sticky text, password, and
+      file form fields now escape request-derived values before rendering
+      them into HTML attributes.
+
+    * Applied automatic HTML escaping to request, environment, and method
+      substitution operators (+{...}, *{...}, and ^{...}) when
+      WEBDYNE_CGI_AUTOESCAPE is enabled. The raw ${...} substitution operator
+      remains available for trusted, already-rendered values.
+
+    * Added secure session cookie defaults and configuration constants for
+      Secure, HttpOnly, and SameSite attributes. WebDyne sessions now emit
+      Secure, HttpOnly, and SameSite=Lax cookies by default, with documented
+      constants for deployments that need to adjust those attributes.
+
+    * Preserved <start_html> shortcut version overrides and added regression
+      coverage for local-configuration isolation so tests are not affected by
+      a developer's document-root .webdyne.conf.pl.
+
+    * Updated the XML documentation, markdown sidecars, MANIFEST, and test
+      suite for the new helper defaults, index source controls, escaping
+      behaviour, PSP extension matching, PSGI/PAGI initialization, API
+      traversal checks, and session cookie flags.
+
 3.021 2026-08-24
 
     * Extended wdlint to inspect inline Perl chunks, processing instructions,
