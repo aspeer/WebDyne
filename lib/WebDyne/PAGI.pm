@@ -662,8 +662,10 @@ WebDyne::PAGI - PAGI application wrapper for WebDyne
 use WebDyne::PAGI;
 
 my $app = WebDyne::PAGI->new(
-    root  => '.',
-    index => 1,
+    root   => '.',
+    index  => 1,
+    static => 1,
+    conf   => 1,
 )->to_app;
 
 my $single_file_app = WebDyne::PAGI->new(
@@ -680,13 +682,17 @@ my $single_file_app = WebDyne::PAGI->new(
 
 * **new(%options)**
 
-    Construct a PAGI application wrapper. Options include `root`, `index`, `test`, `filename`, and related runtime settings.
+    Construct a PAGI application wrapper. Options include `root`, `index`, `test`, `filename`, `static`, `conf`, and related runtime settings.
 
     The `filename` option is an explicit source-file override for the application. When supplied, it is passed to `WebDyne::Request::PAGI` for every HTTP request and always wins over normal filename derivation from the PAGI request scope, including path-based dispatch, document-root resolution, default document handling, and API-style fallback resolution. This is useful for helper tools or deliberate single-file PAGI applications; do not set it for normal multi-page applications that should dispatch from the request path.
 
+    The `static` option enables or disables the configured PAGI static-file middleware for this app instance. Static middleware is disabled by the package default, but wrapper scripts such as `webdyne.pagi` may pass `static => 1`.
+
+    The `conf` option loads local WebDyne constants during app construction. A true value of `1` loads `$root/.webdyne.conf.pl`; any other true value is treated as an explicit config filename, relative to `root` unless already absolute.
+
 * **to_app()**
 
-    Return the PAGI application code reference.
+    Return the PAGI application code reference, wrapped in configured PAGI middleware.
 
 * **handler_http()**
 
@@ -747,8 +753,10 @@ WebDyne::PAGI - PAGI application wrapper for WebDyne
  use WebDyne::PAGI;
  
  my $app = WebDyne::PAGI->new(
-     root  => '.',
-     index => 1,
+     root   => '.',
+     index  => 1,
+     static => 1,
+     conf   => 1,
  )->to_app;
  
  my $single_file_app = WebDyne::PAGI->new(
@@ -769,9 +777,13 @@ C<WebDyne::PAGI> wraps the core WebDyne handler in a PAGI application. It suppor
 
 B<new(%options)>
 
-Construct a PAGI application wrapper. Options include C<root>, C<index>, C<test>, C<filename>, and related runtime settings.
+Construct a PAGI application wrapper. Options include C<root>, C<index>, C<test>, C<filename>, C<static>, C<conf>, and related runtime settings.
 
 The C<filename> option is an explicit source-file override for the application. When supplied, it is passed to C<WebDyne::Request::PAGI> for every HTTP request and always wins over normal filename derivation from the PAGI request scope, including path-based dispatch, document-root resolution, default document handling, and API-style fallback resolution. This is useful for helper tools or deliberate single-file PAGI applications; do not set it for normal multi-page applications that should dispatch from the request path.
+
+The C<static> option enables or disables the configured PAGI static-file middleware for this app instance. Static middleware is disabled by the package default, but wrapper scripts such as C<webdyne.pagi> may pass C<static =E<gt> 1>.
+
+The C<conf> option loads local WebDyne constants during app construction. A true value of C<1> loads C<$root/.webdyne.conf.pl>; any other true value is treated as an explicit config filename, relative to C<root> unless already absolute.
 
 
 
@@ -779,7 +791,7 @@ The C<filename> option is an explicit source-file override for the application. 
 
 B<to_app()>
 
-Return the PAGI application code reference.
+Return the PAGI application code reference, wrapped in configured PAGI middleware.
 
 
 

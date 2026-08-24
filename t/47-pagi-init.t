@@ -35,6 +35,7 @@ sub main {
     my $root_dn=tempdir(CLEANUP => 1);
     write_file(File::Spec->catfile($root_dn, 'app.psp'), '<start_html>trial app');
     write_file(File::Spec->catfile($root_dn, 'asset.css'), "body { color: red; }\n");
+    write_file(File::Spec->catfile($root_dn, 'secret.dat'), "constructor static secret\n");
     write_file(File::Spec->catfile($root_dn, '.webdyne.conf.pl'), <<'END_CONF');
 $_={
     'WebDyne::Constant' => {
@@ -66,6 +67,10 @@ END_CONF
     is($res->{'status'}, 200, 'static flag serves static asset');
     is($res->{'body'}, "body { color: red; }\n",
         'static asset body is served by middleware');
+    $res=$static_test_or->get('/secret.dat');
+    isnt($res->{'status'}, 200, 'static flag does not serve disallowed static extension');
+    unlike($res->{'body'} || '', qr/constructor static secret/,
+        'disallowed static asset body is not leaked');
 
     ok(my $conf_or=WebDyne::PAGI->new(root => $root_dn, index => 'app.psp', conf => 1),
         'construct PAGI app with root conf flag');

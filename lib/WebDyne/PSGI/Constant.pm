@@ -64,10 +64,8 @@ $VERSION='3.022';
     WEBDYNE_PSGI_INDEX	=> 'index.psp',
     
     
-    #  Middeware config, static module. Loaded by default for convenience if
-    #  started via webdyne.psgi script directly (i.e. not invoked by plakup
-    #  or starman). Activate in middleware section below if wanted with plackup
-    #  or starman
+    #  Middleware config, static module. Enable per app with static => 1
+    #  or globally by setting WEBDYNE_PSGI_STATIC.
     #
     #  Serve any static file except .psp
     #
@@ -157,9 +155,9 @@ use WebDyne::PSGI::Constant;
 
     Regular expression used by the default static middleware to decide which non-`.psp` assets may be served directly.
 
-* **WEBDYNE_PSGI_STATIC (1)**
+* **WEBDYNE_PSGI_STATIC (0)**
 
-    Enable static-file middleware by default.
+    Disable static-file middleware by default. Pass `static => 1` to `WebDyne::PSGI->new(...)`, use `webdyne.psgi --static`, or set this constant to true to enable it.
 
 * **WEBDYNE_PSGI_MIDDLEWARE**
 
@@ -250,9 +248,9 @@ Regular expression used by the default static middleware to decide which non-C<.
 
 =item *
 
-B<WEBDYNE_PSGI_STATIC (1)>
+B<WEBDYNE_PSGI_STATIC (0)>
 
-Enable static-file middleware by default.
+Disable static-file middleware by default. Pass C<static =E<gt> 1> to C<WebDyne::PSGI-E<gt>new(...)>, use C<webdyne.psgi --static>, or set this constant to true to enable it.
 
 
 

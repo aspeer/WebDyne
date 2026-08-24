@@ -26,10 +26,18 @@ use strict;
 use warnings;
 use WebDyne::Constant;
 our $LAST_INDEX;
+our $LAST_STATIC;
 our $LAST_TITLE;
 sub new {
     my ($class, %opt)=@_;
+    if ($opt{conf}) {
+        my $conf_fn = $opt{conf} eq '1'
+            ? "$opt{root}/.webdyne.conf.pl"
+            : $opt{conf};
+        WebDyne::Constant->import($conf_fn);
+    }
     $LAST_INDEX=$opt{index};
+    $LAST_STATIC=$opt{static};
     $LAST_TITLE=$WEBDYNE_HTML_DEFAULT_TITLE;
     return bless \%opt, $class;
 }
@@ -73,6 +81,7 @@ sub run {
     print "args=" . join(' ', @{$self->{argv} || []}) . "\n";
 	    print "env=" . ($ENV{PLACK_ENV} // '') . "\n";
 	    print "index=" . ($WebDyne::PSGI::LAST_INDEX // '') . "\n";
+	    print "static=" . ($WebDyne::PSGI::LAST_STATIC // '') . "\n";
 	    print "view_source=" . ($ENV{WEBDYNE_INDEX_SOURCE_ENABLE} // 0) . "\n";
 	    print "status=$res->[0]\n";
     print "body=" . join('', @{$res->[2]}) . "\n";
@@ -94,6 +103,7 @@ is($rc, 0, 'webdyne.psgi exits cleanly through stubbed runner');
 like($stdout, qr/args=.*--port 6021 .*--env production/, 'webdyne.psgi forwards argv options and env mode to Plack::Runner');
 like($stdout, qr/env=production/, 'webdyne.psgi sets PLACK_ENV from --env');
 like($stdout, qr/^index=0$/m, 'webdyne.psgi --no-index sets index false');
+like($stdout, qr/^static=0$/m, 'webdyne.psgi --no-static passes static false to WebDyne::PSGI');
 like($stdout, qr/status=200/, 'webdyne.psgi built app serves request through stubbed runner');
 like($stdout, qr/body=.*psgi/s, 'webdyne.psgi built app returns rendered body');
 is($stderr, '', 'webdyne.psgi stubbed run writes no stderr');

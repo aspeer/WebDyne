@@ -32,9 +32,9 @@ use WebDyne::PSGI::Constant;
 
     Regular expression used by the default static middleware to decide which non-`.psp` assets may be served directly.
 
-* **WEBDYNE_PSGI_STATIC (1)**
+* **WEBDYNE_PSGI_STATIC (0)**
 
-    Enable static-file middleware by default.
+    Disable static-file middleware by default. Pass `static => 1` to `WebDyne::PSGI->new(...)`, use `webdyne.psgi --static`, or set this constant to true to enable it.
 
 * **WEBDYNE_PSGI_MIDDLEWARE**
 

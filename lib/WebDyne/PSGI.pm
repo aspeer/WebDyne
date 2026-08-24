@@ -501,8 +501,10 @@ WebDyne::PSGI - PSGI application wrapper for WebDyne
 use WebDyne::PSGI;
 
 my $app = WebDyne::PSGI->new(
-    root  => '.',
-    index => 1,
+    root   => '.',
+    index  => 1,
+    static => 1,
+    conf   => 1,
 )->to_app;
 
 my $single_file_app = WebDyne::PSGI->new(
@@ -521,13 +523,17 @@ The module also contains special handling for API-style fallback resolution when
 
 * **new(%options)**
 
-    Construct a PSGI application wrapper. Options include `root`, `index`, `test`, `filename`, and related runtime settings.
+    Construct a PSGI application wrapper. Options include `root`, `index`, `test`, `filename`, `static`, `conf`, and related runtime settings.
 
     The `filename` option is an explicit source-file override for the application. When supplied, it is passed to `WebDyne::Request::PSGI` for every request and always wins over normal filename derivation from the PSGI environment, including `PATH_INFO`, `SCRIPT_FILENAME`, `DOCUMENT_ROOT`, and default document handling. This is useful for helper tools or deliberate single-file PSGI applications; do not set it for normal multi-page applications that should dispatch from the request path.
 
+    The `static` option enables or disables the configured PSGI static-file middleware for this app instance. Static middleware is disabled by the package default, but wrapper scripts such as `webdyne.psgi` may pass `static => 1`.
+
+    The `conf` option loads local WebDyne constants during app construction. A true value of `1` loads `$root/.webdyne.conf.pl`; any other true value is treated as an explicit config filename, relative to `root` unless already absolute.
+
 * **to_app()**
 
-    Return the PSGI application code reference.
+    Return the PSGI application code reference, wrapped in configured PSGI middleware.
 
 * **handler($env, @param)**
 
@@ -576,8 +582,10 @@ WebDyne::PSGI - PSGI application wrapper for WebDyne
  use WebDyne::PSGI;
  
  my $app = WebDyne::PSGI->new(
-     root  => '.',
-     index => 1,
+     root   => '.',
+     index  => 1,
+     static => 1,
+     conf   => 1,
  )->to_app;
  
  my $single_file_app = WebDyne::PSGI->new(
@@ -600,9 +608,13 @@ The module also contains special handling for API-style fallback resolution when
 
 B<new(%options)>
 
-Construct a PSGI application wrapper. Options include C<root>, C<index>, C<test>, C<filename>, and related runtime settings.
+Construct a PSGI application wrapper. Options include C<root>, C<index>, C<test>, C<filename>, C<static>, C<conf>, and related runtime settings.
 
 The C<filename> option is an explicit source-file override for the application. When supplied, it is passed to C<WebDyne::Request::PSGI> for every request and always wins over normal filename derivation from the PSGI environment, including C<PATH_INFO>, C<SCRIPT_FILENAME>, C<DOCUMENT_ROOT>, and default document handling. This is useful for helper tools or deliberate single-file PSGI applications; do not set it for normal multi-page applications that should dispatch from the request path.
+
+The C<static> option enables or disables the configured PSGI static-file middleware for this app instance. Static middleware is disabled by the package default, but wrapper scripts such as C<webdyne.psgi> may pass C<static =E<gt> 1>.
+
+The C<conf> option loads local WebDyne constants during app construction. A true value of C<1> loads C<$root/.webdyne.conf.pl>; any other true value is treated as an explicit config filename, relative to C<root> unless already absolute.
 
 
 
@@ -610,7 +622,7 @@ The C<filename> option is an explicit source-file override for the application. 
 
 B<to_app()>
 
-Return the PSGI application code reference.
+Return the PSGI application code reference, wrapped in configured PSGI middleware.
 
 
 

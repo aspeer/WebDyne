@@ -26,10 +26,18 @@ use strict;
 use warnings;
 use WebDyne::Constant;
 our $LAST_INDEX;
+our $LAST_STATIC;
 our $LAST_TITLE;
 sub new {
     my ($class, %opt)=@_;
+    if ($opt{conf}) {
+        my $conf_fn = $opt{conf} eq '1'
+            ? "$opt{root}/.webdyne.conf.pl"
+            : $opt{conf};
+        WebDyne::Constant->import($conf_fn);
+    }
     $LAST_INDEX=$opt{index};
+    $LAST_STATIC=$opt{static};
     $LAST_TITLE=$WEBDYNE_HTML_DEFAULT_TITLE;
     return bless \%opt, $class;
 }
@@ -55,6 +63,7 @@ sub run {
     print "args=" . join(' ', @{$self->{argv} || []}) . "\n";
     print "env=" . ($ENV{PAGI_ENV} // '') . "\n";
     print "index=" . ($WebDyne::PAGI::LAST_INDEX // '') . "\n";
+    print "static=" . ($WebDyne::PAGI::LAST_STATIC // '') . "\n";
     print "view_source=" . ($ENV{WEBDYNE_INDEX_SOURCE_ENABLE} // 0) . "\n";
     print "app=" . ref($app) . "\n";
     return 0;
@@ -72,6 +81,7 @@ is($rc, 0, 'webdyne.pagi exits cleanly through stubbed runner');
 like($stdout, qr/args=.*--port 6011 .*--workers 2 .*--env production .*--host 0\.0\.0\.0/, 'webdyne.pagi prepends argv options, env mode, and default host');
 like($stdout, qr/env=production/, 'webdyne.pagi sets PAGI_ENV from --env');
 like($stdout, qr/^index=0$/m, 'webdyne.pagi --no-index sets index false');
+like($stdout, qr/^static=0$/m, 'webdyne.pagi --no-static passes static false to WebDyne::PAGI');
 like($stdout, qr/app=CODE/, 'webdyne.pagi passes a built app coderef to PAGI::Runner');
 is($stderr, '', 'webdyne.pagi stubbed run writes no stderr');
 

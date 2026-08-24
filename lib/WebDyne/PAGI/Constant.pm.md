@@ -28,9 +28,9 @@ use WebDyne::PAGI::Constant;
 
     Regular expression used by the default static middleware to decide which non-`.psp` assets may be served directly.
 
-* **WEBDYNE_PAGI_STATIC (1)**
+* **WEBDYNE_PAGI_STATIC (0)**
 
-    Enable static-file middleware by default.
+    Disable static-file middleware by default. Pass `static => 1` to `WebDyne::PAGI->new(...)`, use `webdyne.pagi --static`, or set this constant to true to enable it.
 
 * **WEBDYNE_PAGI_MIDDLEWARE**
 

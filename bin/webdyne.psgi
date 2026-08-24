@@ -37,7 +37,6 @@ local $Data::Dumper::Sortkeys=1;
 
 #  PSGI modules we need
 #
-use Plack::Builder;
 use WebDyne::PSGI;
 use WebDyne::Constant;
 use WebDyne::PSGI::Constant;
@@ -169,10 +168,10 @@ else {
 sub build {
 
 
-    #  Trial migration point. Keep the old script-owned builder available
-    #  behind build0() so this can be backed out with a one-line change.
+    #  WebDyne::PSGI owns local config loading and middleware wrapping.
     #
-    return &build0(@_);
+    my $opt_hr=shift();
+    return WebDyne::PSGI->new(%{$opt_hr})->to_app();
 
 }
 
@@ -192,69 +191,6 @@ sub view_source_apply {
         $opt_hr->{'view_source'}=0;
     }
     return \undef;
-
-}
-
-
-sub build0 {
-
-
-    #  Build app code ref, options passed for builder
-    #
-    my $opt_hr=shift();
-
-
-    #  Read in local webdyne.conf.pl before middleware and app setup so
-    #  wrapper and external server loading use the same root config.
-    #
-    &local_constant_load($opt_hr->{'root'});
-
-
-    my $builder_or=Plack::Builder->new();
-    
-    
-    #  Adjust static service config var based on opts if
-    #  they exist
-    #
-    if (exists($opt_hr->{'static'})) {
-        $WEBDYNE_PSGI_STATIC=$opt_hr->{'static'};
-    }
-    
-    
-    #  Add in any middleware in config file
-    #
-    foreach my $middleware_ar (@{$WEBDYNE_PSGI_MIDDLEWARE}) {
-        my ($middleware, $middleware_opt_hr)=@{$middleware_ar};
-        
-        #  Skip static if not wanted
-        #
-        if ($middleware eq 'Static') {
-            next unless $WEBDYNE_PSGI_STATIC;
-        }
-        
-        
-        #  And code refs are run and given opt as first param
-        #
-        if (ref($middleware_opt_hr) eq 'CODE') {
-            $middleware_opt_hr=$middleware_opt_hr->($opt_hr);
-        }
-        
-        
-        #  Now add it
-        #
-        $builder_or->add_middleware($middleware, %{$middleware_opt_hr});
-    }
-    
-
-    #  Read in local webdyne.conf.pl
-    #
-    #&local_constant_load($opt_hr->{'root'});
-
-
-    #  Finally return as app code ref
-    #
-    return $builder_or->to_app(
-        WebDyne::PSGI->new(%{$opt_hr})->to_app())
 
 }
 
@@ -304,24 +240,6 @@ sub startup {
     #
     #*PAGI::Runner::load_app=sub { return $app_cr };
     exit $plack_or->run($app_cr);
-
-}
-
-
-sub local_constant_load {
-
-
-    #  Read in local webdyne.conf.pl
-    #
-    my $root_dn=shift();
-    
-    
-    #  If root_dn is a file get dir name
-    #
-    if (-f $root_dn) {
-        $root_dn=(File::Spec->splitpath($root_dn))[1];
-    }
-    WebDyne::Constant->import(File::Spec->catfile($root_dn, sprintf('.%s', $WEBDYNE_CONF_FN)));
 
 }
 

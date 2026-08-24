@@ -58,8 +58,8 @@ $VERSION='3.022';
     DOCUMENT_DEFAULT	=> 'app.psp',
 
     
-    #  Middeware config, static module. Loaded by default for convenience, comment out if
-    #  not wanted
+    #  Middleware config, static module. Enable per app with static => 1
+    #  or globally by setting WEBDYNE_PAGI_STATIC.
     #
 
 
@@ -156,9 +156,9 @@ use WebDyne::PAGI::Constant;
 
     Regular expression used by the default static middleware to decide which non-`.psp` assets may be served directly.
 
-* **WEBDYNE_PAGI_STATIC (1)**
+* **WEBDYNE_PAGI_STATIC (0)**
 
-    Enable static-file middleware by default.
+    Disable static-file middleware by default. Pass `static => 1` to `WebDyne::PAGI->new(...)`, use `webdyne.pagi --static`, or set this constant to true to enable it.
 
 * **WEBDYNE_PAGI_MIDDLEWARE**
 
@@ -245,9 +245,9 @@ Regular expression used by the default static middleware to decide which non-C<.
 
 =item *
 
-B<WEBDYNE_PAGI_STATIC (1)>
+B<WEBDYNE_PAGI_STATIC (0)>
 
-Enable static-file middleware by default.
+Disable static-file middleware by default. Pass C<static =E<gt> 1> to C<WebDyne::PAGI-E<gt>new(...)>, use C<webdyne.pagi --static>, or set this constant to true to enable it.
 
 
 
