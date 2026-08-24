@@ -2144,11 +2144,19 @@
 </li>
 <li>
 <p><strong>--index</strong></p>
-<p>Enable or disable directory index handling. With the default enabled setting, <code>--index</code> uses WebDyne's built-in dynamic index page.</p>
+<p>Enable directory index handling. With no value, <code>--index</code> uses WebDyne's built-in dynamic index page. Index handling is disabled by default.</p>
 </li>
 <li>
 <p><strong>--index=FILE</strong></p>
 <p>Use <code>FILE</code> as the default document for directory requests instead of the built-in dynamic index page. Use the equals form so the document root argument is not consumed as the index value.</p>
+</li>
+<li>
+<p><strong>--view-source</strong></p>
+<p>Enable the built-in index page source viewer. This only takes effect when <code>--index</code> also enables WebDyne's built-in dynamic index page.</p>
+</li>
+<li>
+<p><strong>--no-index</strong></p>
+<p>Disable wrapper-managed index handling. This is the default unless <code>DOCUMENT_DEFAULT</code>, <code>~/.webdyne.psgi.opt</code>, or <code>--index</code> enables it.</p>
 </li>
 <li>
 <p><strong>--root</strong></p>
@@ -2196,12 +2204,19 @@
 </ul>
 <p>On macOS, if no <code>--port</code> option is passed through to <code>Plack::Runner</code>, the wrapper uses port <code>5001</code> to avoid conflicts with Plack's default port. Other platforms use the normal Plack default unless a port is supplied.</p>
 <h1 id="examples">EXAMPLES<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h1>
-<p>To run the script, use the following command for basic functionality and serving files from the /var/www/html directory. With default settings, index handling is enabled and the wrapper uses WebDyne's built-in dynamic index page.</p>
+<p>To run the script, use the following command for basic functionality and serving files from the /var/www/html directory. With default settings, wrapper-managed index handling is disabled.</p>
 <p><code>webdyne.psgi /var/www/html</code></p>
-<p>Disable wrapper-managed index handling and rely on the PSGI request layer's default document behaviour instead</p>
-<p><code>webdyne.psgi --no-index /var/www/html</code></p>
+<p>Enable WebDyne's built-in dynamic index page for local development/debugging</p>
+<p><code>webdyne.psgi --index /var/www/html</code></p>
+<p>Enable the built-in index page source viewer as an additional local development/debugging aid</p>
+<p><code>webdyne.psgi --index --view-source /var/www/html</code></p>
 <p>Use <code>home.psp</code> as the default document for directory requests</p>
 <p><code>webdyne.psgi --index=home.psp /var/www/html</code></p>
+<p>Persist index handling for local development by adding it to <code>~/.webdyne.psgi.opt</code></p>
+<div class="language-perl highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nb">index</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
+</span></code></pre></div>
 <p>Start in production mode</p>
 <p><code>webdyne.psgi --env production /var/www/html</code></p>
 <p>Start with the Starman server</p>
@@ -2217,7 +2232,7 @@
 </li>
 <li>
 <p><strong>DOCUMENT_DEFAULT</strong></p>
-<p>Supplies the default <code>index</code> value before <code>~/.webdyne.psgi.opt</code> and command-line options are applied. This means explicit CLI index options override the environment, and <code>~/.webdyne.psgi.opt</code> also overrides the environment. When the script is loaded by <code>plackup</code> or <code>starman</code> instead of run directly, the PSGI constant layer default is <code>app.psp</code>.</p>
+<p>Supplies the default <code>index</code> value before <code>~/.webdyne.psgi.opt</code> and command-line options are applied. If unset, wrapper-managed index handling is disabled by default. Explicit CLI index options override the environment, and <code>~/.webdyne.psgi.opt</code> also overrides the environment. When the script is loaded by <code>plackup</code> or <code>starman</code> instead of run directly, the PSGI constant layer default is <code>app.psp</code> unless the wrapper supplies another value.</p>
 </li>
 <li>
 <p><strong>PLACK_ENV</strong></p>

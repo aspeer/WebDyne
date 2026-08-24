@@ -2142,7 +2142,7 @@
 </li>
 </ul>
 <h1 id="constants">CONSTANTS<a class="headerlink" href="#constants" title="Permanent link">&para;</a></h1>
-<p>Cookie naming is controlled by <code>WEBDYNE_SESSION_ID_COOKIE_NAME</code> from <code>WebDyne::Session::Constant</code>.</p>
+<p>Cookie naming and security attributes are controlled by constants from <code>WebDyne::Session::Constant</code>. New session cookies use <code>Secure</code>, <code>HttpOnly</code>, and <code>SameSite=Lax</code> by default. Set <code>WEBDYNE_SESSION_COOKIE_SECURE</code> to <code>0</code> for plain HTTP development deployments.</p>
 <h1 id="notes">NOTES<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h1>
 <p>The current implementation uses <code>Crypt::URandom</code> to generate new session IDs.</p>
 <h1 id="author">AUTHOR<a class="headerlink" href="#author" title="Permanent link">&para;</a></h1>

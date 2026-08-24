@@ -2133,7 +2133,7 @@
 <p>By default the script:</p>
 <ul>
 <li>uses <code>DOCUMENT_ROOT</code> as the document root if it is set, otherwise the current working directory</li>
-<li>enables WebDyne index handling, using <code>DOCUMENT_DEFAULT</code> if it is set</li>
+<li>disables wrapper-managed index handling unless <code>DOCUMENT_DEFAULT</code>, <code>~/.webdyne.apache.opt</code>, or <code>--index</code> enables it</li>
 <li>listens on port <code>5001</code> on macOS, or <code>5000</code> on other platforms</li>
 <li>creates a temporary Apache server root</li>
 <li>creates a temporary WebDyne cache directory under that server root</li>
@@ -2145,15 +2145,19 @@
 <ul>
 <li>
 <p><strong>--index</strong></p>
-<p>Enable index handling. This is on by default. If enabled with the default value, WebDyne uses its internal default index page.</p>
+<p>Enable index handling. With no value, <code>--index</code> uses WebDyne's internal default index page. Index handling is disabled by default.</p>
 </li>
 <li>
 <p><strong>--index=FILE</strong></p>
 <p>Use <code>FILE</code> as the Apache directory index/default document. Relative names are emitted as <code>DirectoryIndex FILE</code>. Absolute names are exposed through the same alias/rewrite mechanism used for the internal WebDyne index page.</p>
 </li>
 <li>
+<p><strong>--view-source</strong></p>
+<p>Enable the built-in index page source viewer. This only takes effect when <code>--index</code> also enables WebDyne's built-in index page.</p>
+</li>
+<li>
 <p><strong>--no-index</strong></p>
-<p>Disable wrapper-managed index handling. No <code>DOCUMENT_DEFAULT</code>, <code>DirectoryIndex</code>, index alias, or index rewrite rules are emitted.</p>
+<p>Disable wrapper-managed index handling. This is the default unless <code>DOCUMENT_DEFAULT</code>, <code>~/.webdyne.apache.opt</code>, or <code>--index</code> enables it. No <code>DOCUMENT_DEFAULT</code>, <code>DirectoryIndex</code>, index alias, or index rewrite rules are emitted.</p>
 </li>
 <li>
 <p><strong>--root</strong></p>
@@ -2198,6 +2202,7 @@
 <li>sets <code>WEBDYNE_ERROR_TEXT=1</code> unless already defined</li>
 <li>grants access to the selected document root</li>
 <li>when built-in index handling is enabled, sets <code>DOCUMENT_DEFAULT</code> to WebDyne's internal index page, grants access to that file's directory, aliases <code>/index.psp</code> to it, and rewrites directory requests to <code>/index.psp</code></li>
+<li>when <code>--index --view-source</code> is used, emits <code>WEBDYNE_INDEX_SOURCE_ENABLE=1</code> for the temporary Apache instance</li>
 <li>when <code>DOCUMENT_DEFAULT</code> or <code>--index=FILE</code> supplies a relative filename, emits <code>PerlSetEnv DOCUMENT_DEFAULT FILE</code> and <code>DirectoryIndex FILE</code></li>
 <li>when <code>DOCUMENT_DEFAULT</code> or <code>--index=FILE</code> supplies an absolute filename, aliases <code>/index.psp</code> to that file and rewrites directory requests to <code>/index.psp</code></li>
 <li>when <code>--no-index</code> is used, omits all wrapper-managed index configuration</li>
@@ -2249,14 +2254,22 @@
 <p>Show the generated Apache configuration instead of starting the server:</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>webdyne.apache<span class="w"> </span>--dump_postamble<span class="w"> </span>/var/www/html
 </span></code></pre></div>
-<p>Disable wrapper-managed index handling:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>webdyne.apache<span class="w"> </span>--no-index<span class="w"> </span>/var/www/html
+<p>Enable WebDyne's built-in dynamic index page for local development/debugging:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>webdyne.apache<span class="w"> </span>--index<span class="w"> </span>/var/www/html
+</span></code></pre></div>
+<p>Enable the built-in index page source viewer as an additional local development/debugging aid:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>webdyne.apache<span class="w"> </span>--index<span class="w"> </span>--view-source<span class="w"> </span>/var/www/html
 </span></code></pre></div>
 <p>Use a site-local default document:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>webdyne.apache<span class="w"> </span>--index<span class="o">=</span>home.psp<span class="w"> </span>/var/www/html
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>webdyne.apache<span class="w"> </span>--index<span class="o">=</span>home.psp<span class="w"> </span>/var/www/html
+</span></code></pre></div>
+<p>Persist index handling for local development by adding it to <code>~/.webdyne.apache.opt</code>:</p>
+<div class="language-perl highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="nb">index</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>Start using the internal test page:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>webdyne.apache<span class="w"> </span>--test
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>webdyne.apache<span class="w"> </span>--test
 </span></code></pre></div>
 <h1 id="notes">NOTES<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h1>
 <p>This script is a development helper, not a full Apache installation tool. It starts Apache using <code>Apache::Test</code> infrastructure in one-process mode, which is convenient for local testing but is not a substitute for a proper Apache deployment.</p>

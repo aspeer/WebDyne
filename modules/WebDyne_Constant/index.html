@@ -2479,8 +2479,8 @@ $ perl -MWebDyne::Constant=dump
 </li>
 <li>
 <p><strong>WEBDYNE_CGI_AUTOESCAPE</strong></p>
-<p><strong>Default:</strong> <code>0</code></p>
-<p>Controls automatic escaping of CGI form field values before they are rendered back into generated form elements.</p>
+<p><strong>Default:</strong> <code>1</code></p>
+<p>Controls automatic escaping of CGI form field values before they are rendered back into generated form elements, and generated HTML helper attribute values.</p>
 </li>
 <li>
 <p><strong>WEBDYNE_ERROR_TEXT</strong></p>
@@ -2653,7 +2653,7 @@ $ perl -MWebDyne::Constant=dump
 <p><strong>Default:</strong> See the command below for the value.</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>perl<span class="w"> </span>-MWebDyne::Constant<span class="o">=</span>WEBDYNE_PSP_EXT_RE
 </span></code></pre></div>
-<p>Regular expression form of <code>WEBDYNE_PSP_EXT</code>, used internally for matching PSP filenames.</p>
+<p>Anchored regular expression form of <code>WEBDYNE_PSP_EXT</code>, used internally for matching PSP filenames.</p>
 </li>
 <li>
 <p><strong>WEBDYNE_MIME_TYPE_HR</strong></p>
@@ -2667,14 +2667,19 @@ $ perl -MWebDyne::Constant=dump
 <p><strong>Default:</strong> See the command below for the value.</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>perl<span class="w"> </span>-MWebDyne::Constant<span class="o">=</span>WEBDYNE_INDEX_EXT_ALLOWED_HR
 </span></code></pre></div>
-<p>Hash reference of source-code file extensions that the default directory indexer may open for viewing, in addition to recognised static file types.</p>
+<p>Hash reference of source-code file extensions that the default directory indexer may open for viewing when <code>WEBDYNE_INDEX_SOURCE_ENABLE</code> is true, in addition to recognised static file types.</p>
+</li>
+<li>
+<p><strong>WEBDYNE_INDEX_SOURCE_ENABLE</strong></p>
+<p><strong>Default:</strong> <code>0</code></p>
+<p>Controls whether the bundled directory index page offers and serves the source viewer. Directory listing can be enabled without enabling source viewing.</p>
 </li>
 <li>
 <p><strong>WEBDYNE_INDEX_FN_ALLOWED_HR</strong></p>
 <p><strong>Default:</strong> See the command below for the value.</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>perl<span class="w"> </span>-MWebDyne::Constant<span class="o">=</span>WEBDYNE_INDEX_FN_ALLOWED_HR
 </span></code></pre></div>
-<p>Hash reference of literal file names that the default directory indexer may open for viewing, in addition to recognised static file types.</p>
+<p>Hash reference of literal file names that the default directory indexer may open for viewing when <code>WEBDYNE_INDEX_SOURCE_ENABLE</code> is true, in addition to recognised static file types.</p>
 </li>
 <li>
 <p><strong>WEBDYNE_DIR_CONFIG</strong></p>

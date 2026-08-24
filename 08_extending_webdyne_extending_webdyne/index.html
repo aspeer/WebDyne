@@ -2323,7 +2323,34 @@ connection and stores it in a cookie. It has the following API:</p>
   <a href="../07_reference/#webdyne_constants">WebDyne::Constants</a> section. Resides in the
   <code>WebDyne::Session::Constant</code> package namespace.</p>
 </dd>
+<dt><code>$WEBDYNE_SESSION_COOKIE_PATH</code></dt>
+<dd>
+<p>Constant. Holds the path attribute used when setting the session
+  cookie. Defaults to "/".</p>
+</dd>
+<dt><code>$WEBDYNE_SESSION_COOKIE_SECURE</code></dt>
+<dd>
+<p>Constant. Controls whether newly generated session cookies include the
+  <code>Secure</code> attribute. Defaults to 1. Set this to 0 for plain HTTP
+  development deployments.</p>
+</dd>
+<dt><code>$WEBDYNE_SESSION_COOKIE_HTTPONLY</code></dt>
+<dd>
+<p>Constant. Controls whether newly generated session cookies include the
+  <code>HttpOnly</code> attribute. Defaults to 1.</p>
+</dd>
+<dt><code>$WEBDYNE_SESSION_COOKIE_SAMESITE</code></dt>
+<dd>
+<p>Constant. Holds the SameSite value used for newly generated session
+  cookies. Defaults to "Lax". Valid non-empty values are "Lax", "Strict"
+  and "None". Set this to an empty value to omit the attribute.</p>
+</dd>
 </dl>
+<p>By default WebDyne::Session emits cookies with <code>Secure</code>, <code>HttpOnly</code> and
+<code>SameSite=Lax</code>. If you are testing over plain HTTP, disable only the
+Secure flag in local configuration:</p>
+<div class="language-text highlight"><pre><span></span><code>WEBDYNE_SESSION_COOKIE_SECURE =&gt; 0
+</code></pre></div>
 <p>Example:</p>
 <div class="language-text highlight"><pre><span></span><code>&lt;start_html&gt;
 
@@ -2350,6 +2377,10 @@ PerlSetVar      WebDyneChain    &#39;WebDyne::Session&#39;
 #  Change cookie name from &quot;session&quot; to &quot;gingernut&quot; for something different
 #
 PerlSetVar      WEBDYNE_SESSION_ID_COOKIE_NAME    &#39;gingernut&#39;
+
+#  Plain HTTP development only: allow the browser to send the cookie back
+#
+# PerlSetVar    WEBDYNE_SESSION_COOKIE_SECURE     0
 
 &lt;/Location&gt;
 </code></pre></div>

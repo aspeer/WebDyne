@@ -2312,14 +2312,22 @@ My first WebDyne page. Server time: &lt;? localtime ?&gt;
 </span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="c1">#</span>
 </span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>$<span class="w"> </span>webdyne.psgi<span class="w"> </span>app.psp
 </span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="c1"># Start serving files from the current directory. Directory requests use WebDyne&#39;s</span>
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="c1"># built-in index page by default.</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="c1"># Start serving files from the current directory. Wrapper-managed directory</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="c1"># indexing is disabled by default.</span>
 </span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="c1">#</span>
 </span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>$<span class="w"> </span>webdyne.psgi<span class="w"> </span>.
 </span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="c1"># Start but listen on non-default port, only on localhost</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="c1"># Enable WebDyne&#39;s built-in index page for local development/debugging.</span>
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="c1">#</span>
-</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>$<span class="w"> </span>webdyne.psgi<span class="w"> </span>--port<span class="o">=</span><span class="m">5001</span><span class="w"> </span>--host<span class="o">=</span><span class="m">127</span>.0.0.1
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>$<span class="w"> </span>webdyne.psgi<span class="w"> </span>--index<span class="w"> </span>.
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="c1"># Also enable the built-in index page source viewer.</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="c1">#</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>$<span class="w"> </span>webdyne.psgi<span class="w"> </span>--index<span class="w"> </span>--view-source<span class="w"> </span>.
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="c1"># Start but listen on non-default port, only on localhost</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="c1">#</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>$<span class="w"> </span>webdyne.psgi<span class="w"> </span>--port<span class="o">=</span><span class="m">5001</span><span class="w"> </span>--host<span class="o">=</span><span class="m">127</span>.0.0.1
 </span></code></pre></div>
 <p>Connect your browser to the host and you should see the WebDyne output.</p>
 <p>You can shortcut install of Plack/Starman versions via:</p>
@@ -2395,15 +2403,22 @@ the IP address of your server in your web browser to view the test page
 and validate the WebDyne is working correctly:</p>
 <p>Once verified as working correctly you can serve WebDyne content from a
 particular directory - or from a single file - using the syntax:</p>
-<div class="language-text highlight"><pre><span></span><code>#  To serve up all files in a directory. Directory requests use WebDyne&#39;s built-in
-#  index page by default.
+<div class="language-text highlight"><pre><span></span><code>#  To serve up all files in a directory. Wrapper-managed directory indexing is
+#  disabled by default.
 #
 $ webdyne.psgi &lt;directory&gt;
 
-#  E.g serve files in /var/www/html. By default WebDyne will display its built-in
-#  index page if no filename is specified.
+#  E.g serve files in /var/www/html.
 #
 $ webdyne.psgi /var/www/html
+
+#  Enable WebDyne&#39;s built-in index page for local development/debugging.
+#
+$ webdyne.psgi --index /var/www/html
+
+#  Also enable the built-in index page source viewer.
+#
+$ webdyne.psgi --index --view-source /var/www/html
 
 #  Or just a single app.psp file. Only this file will be served regardless of URL
 #
@@ -2411,11 +2426,14 @@ $ webdyne.psgi /var/www/html/time.psp
 </code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>Starting WebDyne this way enables wrapper-managed index handling and
-full error messages with code backtraces if any errors are encountered.
-Use <code>--index=FILE</code> or <code>DOCUMENT_DEFAULT</code> to nominate a site-local
-default page, or <code>--no-index</code> to rely on the underlying request layer
-default document behavior.</p>
+<p>Starting WebDyne this way disables wrapper-managed index handling by
+default. Use <code>--index</code> to enable WebDyne's built-in index page for local
+development/debugging, <code>--index=FILE</code> or <code>DOCUMENT_DEFAULT</code> to nominate
+a site-local default page, or <code>--no-index</code> to explicitly rely on the
+underlying request layer default document behavior.</p>
+<p>The built-in index page lists files only by default. Its source viewer
+is disabled unless <code>--view-source</code> is supplied with <code>--index</code>, or
+<code>WEBDYNE_INDEX_SOURCE_ENABLE</code> is set to 1 in local configuration.</p>
 </div>
 <p>To start with <code>plackup</code>:</p>
 <div class="language-text highlight"><pre><span></span><code>#  Start WebDyne via plackup in the current directory. A file named app.psp must exist,
@@ -2558,15 +2576,22 @@ server) in your web browser to view the test page and validate the
 WebDyne is working correctly:</p>
 <p>Once verified as working correctly you can serve WebDyne content from a
 particular directory - or from a single file - using the syntax:</p>
-<div class="language-text highlight"><pre><span></span><code>#  To serve up all files in a directory. Directory requests use WebDyne&#39;s built-in
-#  index page by default.
+<div class="language-text highlight"><pre><span></span><code>#  To serve up all files in a directory. Wrapper-managed directory indexing is
+#  disabled by default.
 #
 $ webdyne.pagi &lt;directory&gt;
 
-#  E.g serve files in /var/www/html. By default WebDyne will display its built-in
-#  index page if no filename is specified.
+#  E.g serve files in /var/www/html.
 #
 $ webdyne.pagi /var/www/html
+
+#  Enable WebDyne&#39;s built-in index page for local development/debugging.
+#
+$ webdyne.pagi --index /var/www/html
+
+#  Also enable the built-in index page source viewer.
+#
+$ webdyne.pagi --index --view-source /var/www/html
 
 #  Or just a single app.psp file. Only this file will be served regardless of URL
 #
@@ -2574,11 +2599,14 @@ $ webdyne.pagi /var/www/html/time.psp
 </code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>Starting WebDyne this way enables wrapper-managed index handling and
-full error messages with code backtraces if any errors are encountered.
-Use <code>--index=FILE</code> or <code>DOCUMENT_DEFAULT</code> to nominate a site-local
-default page, or <code>--no-index</code> to rely on the underlying request layer
-default document behavior.</p>
+<p>Starting WebDyne this way disables wrapper-managed index handling by
+default. Use <code>--index</code> to enable WebDyne's built-in index page for local
+development/debugging, <code>--index=FILE</code> or <code>DOCUMENT_DEFAULT</code> to nominate
+a site-local default page, or <code>--no-index</code> to explicitly rely on the
+underlying request layer default document behavior.</p>
+<p>The built-in index page lists files only by default. Its source viewer
+is disabled unless <code>--view-source</code> is supplied with <code>--index</code>, or
+<code>WEBDYNE_INDEX_SOURCE_ENABLE</code> is set to 1 in local configuration.</p>
 </div>
 <p>To start with <code>pagi-server</code>:</p>
 <div class="language-text highlight"><pre><span></span><code>#  Start WebDyne via pagi-server in the current directory. A file named app.psp must exist,
@@ -2764,9 +2792,13 @@ waiting 60 seconds for server to start: ok (waited 0 secs)
 server localhost:5000 started
 
 
-#  Start an instance to with a simple directory index on the current directory
+#  Start an instance with a simple directory index on the current directory
 #
-$ perl -Ilib bin/webdyne.apache .
+$ perl -Ilib bin/webdyne.apache --index .
+
+#  Also enable the built-in index page source viewer
+#
+$ perl -Ilib bin/webdyne.apache --index --view-source .
 </code></pre></div>
 <h2 id="docker">Docker<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h2>
 <p>Docker containers are available from the <a href="https://github.com/aspeer/WebDyne/pkgs/container/webdyne">Github Container

@@ -2122,19 +2122,19 @@
 
 <h1 id="wdlint">wdlint<a class="headerlink" href="#wdlint" title="Permanent link">&para;</a></h1>
 <h1 id="name">NAME<a class="headerlink" href="#name" title="Permanent link">&para;</a></h1>
-<p>wdlint - check Perl syntax in the __PERL__ section of a  WebDyne file</p>
+<p>wdlint - check Perl syntax embedded in a WebDyne file</p>
 <p><a name="wdlint-synopsis"></a></p>
 <h1 id="synopsis">SYNOPSIS<a class="headerlink" href="#synopsis" title="Permanent link">&para;</a></h1>
 <p><code>wdlint [PERL_OPTIONS] FILE</code></p>
 <p><a name="wdlint-description"></a></p>
 <h1 id="description">Description<a class="headerlink" href="#description" title="Permanent link">&para;</a></h1>
 <p>The  wdlint  command checks the Perl syntax embedded in a WebDyne  .psp  file.</p>
-<p>It does this by copying the source file to a temporary file, scanning until it finds the  <code>__PERL__</code>  marker, then inserting a Perl shebang,  <code>use strict;</code> , and a <code>#line</code>  directive so any syntax errors reported by Perl refer back to the original source file and line numbers as  closely as possible.</p>
+<p>It does this by compiling the page to WebDyne stage 0, collecting embedded Perl fragments, then writing those fragments to temporary Perl files with <code>#line</code> directives so syntax errors reported by Perl refer back to the original source file and line numbers as closely as possible. Inline fragments are checked separately so one syntax error does not hide later errors in other fragments.</p>
 <p>It then runs:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>perl<span class="w"> </span>-c<span class="w"> </span>-w<span class="w"> </span>-x
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>perl<span class="w"> </span>-c<span class="w"> </span>-w
 </span></code></pre></div>
 <p>against the temporary file and prints any warnings or syntax errors returned by Perl.</p>
-<p>This utility is primarily useful for checking server-side Perl code in the  <code>__PERL__</code>  section of a WebDyne page. It is not a full WebDyne page validator and it does not check the HTML  structure, WebDyne compilation stages, or runtime behaviour of the page.</p>
+<p>This utility is primarily useful for checking server-side Perl code in <code>__PERL__</code>, inline <code>&lt;perl&gt;</code> blocks, processing instructions, and substitution expressions. It is not a full WebDyne page validator and it does not check runtime behaviour of the page.</p>
 <p><a name="wdlint-options"></a></p>
 <h1 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h1>
 <p>wdlint  does not implement its own option parser. The last argument is treated as the source file to check. Any earlier arguments are passed directly through to Perl when running  the syntax check.</p>
@@ -2147,10 +2147,7 @@
 <p>Perl syntax checking is enabled by default via -c .</p>
 </li>
 <li>
-<p>Perl  -x  processing is enabled so Perl starts reading from the injected Perl section.</p>
-</li>
-<li>
-<p>Any additional arguments before the file name are passed directly to Perl, for example  -I  include paths or other Perl switches.</p>
+<p>Any additional arguments before the file name are passed directly to Perl, for example include paths or other Perl switches.</p>
 </li>
 </ul>
 <p><a name="wdlint-examples"></a></p>
@@ -2173,11 +2170,11 @@
 </span></code></pre></div>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Pass an include path through to Perl while checking syntax</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1">#</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>$<span class="w"> </span>wdlint<span class="w"> </span>-Ilib<span class="w"> </span>page.psp
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>$<span class="w"> </span>wdlint<span class="w"> </span>-I/path/to/lib<span class="w"> </span>page.psp
 </span></code></pre></div>
 <p><a name="wdlint-notes"></a></p>
 <h1 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h1>
-<p>Only the Perl code after the  <code>__PERL__</code>  marker is linted. If a file contains no  <code>__PERL__</code>  section, the command still constructs a temporary file and runs Perl with <code>-x</code>, but there may be little or nothing useful to validate.</p>
+<p>wdlint relies on WebDyne's stage 0 compiler to find embedded Perl. If a file contains no embedded Perl, the command still constructs a minimal temporary file and runs Perl syntax checking against it.</p>
 <p>The temporary file is removed after the Perl syntax check completes.</p>
 <p>wdlint  adds  <code>use strict;</code>  to the temporary file during checking, so code that only compiles without strict mode may fail under  wdlint .</p>
 <p>Because the command relies on Perl's own parser, it is a good tool for catching syntax mistakes early, but it will not detect WebDyne-specific logic errors, bad HTML, or problems that only appear when the page is compiled or rendered in a real request context.</p>
