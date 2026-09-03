@@ -351,6 +351,18 @@ sub body_handle {
     #
     my $r=shift();
     debug($r);
+
+    #  Multipart bodies used by synchronous CGI parsing are staged by the
+    #  async PAGI handler before WebDyne dispatch begins.
+    #
+    if (exists $r->{'scope'}{'webdyne.pagi.multipart_body'}) {
+        my $body_sr=$r->{'scope'}{'webdyne.pagi.multipart_body'};
+        open(my $fh, '<', $body_sr) ||
+            return err('unable to open staged PAGI multipart body: %s', $!);
+        binmode($fh);
+        return $fh;
+    }
+
     local $SIG{__DIE__};
     my ($fh, $fn) = tempfile();
     if (my $stream_or=eval{ $r->{'req'}->body_stream() }) {

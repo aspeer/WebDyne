@@ -18,6 +18,10 @@ Revision history for WebDyne
       ensured static middleware does not expose files with disallowed
       extensions.
 
+    * Staged bounded PAGI multipart request bodies before synchronous WebDyne
+      dispatch so CGI::Simple file uploads work with asynchronous runtimes.
+      Multipart bodies above WEBDYNE_CGI_POST_MAX now return HTTP 413.
+
 3.022 2026-08-25
 
     * Hardened the helper script defaults for the built-in WebDyne indexer.
