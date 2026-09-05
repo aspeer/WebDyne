@@ -1,20 +1,29 @@
 requires 'perl', '5.006';
 requires 'CGI::Simple';
+requires 'Capture::Tiny';
 requires 'Crypt::URandom';
 requires 'Devel::Confess';
 requires 'Digest::MD5';
 requires 'Env::Path';
+requires 'File::Temp';
 requires 'Future::XS';
 requires 'Future::IO';
 requires 'Hash::MultiValue';
+requires 'HTML::Element';
+requires 'HTML::Entities';
 requires 'HTML::Tagset';
 requires 'HTML::Tiny';
 requires 'HTML::TreeBuilder';
 requires 'HTTP::AcceptLanguage';
+requires 'HTTP::Headers::Fast';
+requires 'HTTP::Headers::Util';
 requires 'HTTP::Negotiate';
+requires 'HTTP::Request';
+requires 'HTTP::Request::Common';
 requires 'HTTP::Status';
 requires 'IO::String';
 requires 'JSON';
+requires 'Module::Reload';
 requires 'PAGI::Server', '0.002006';
 requires 'PAGI::Tools', '0.002002';
 requires 'Plack::Middleware::ForceEnv';
@@ -22,20 +31,26 @@ requires 'Plack';
 requires 'Router::Simple';
 requires 'Starman';
 requires 'Storable';
+requires 'Sub::Util';
+requires 'Term::ANSIColor';
 requires 'Text::Template';
 requires 'Tie::IxHash';
 requires 'Time::HiRes';
+requires 'URI';
+requires 'URI::Escape';
 
 on configure => sub {
     requires 'ExtUtils::MakeMaker';
+    requires 'Tie::File';
 };
 
 on build => sub {
-    requires 'Capture::Tiny';
+    requires 'Algorithm::Diff';
     requires 'Test::Deep';
     requires 'Test::Differences';
     requires 'Test::Exception';
-    requires 'Test::More';
+    requires 'Test::More', '0.88';
     requires 'Test::Pod';
     requires 'Test::Simple', '0.44';
+    requires 'Text::Diff';
 };

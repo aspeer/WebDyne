@@ -525,16 +525,6 @@ DISTRIBUTIONS
       Struct::Dumb 0
       Time::HiRes 0
       perl 5.014
-  IO-Async-Loop-Epoll-0.23
-    pathname: P/PE/PEVANS/IO-Async-Loop-Epoll-0.23.tar.gz
-    provides:
-      IO::Async::Loop::Epoll 0.23
-    requirements:
-      IO::Async 0.24
-      Linux::Epoll 0.005
-      Module::Build 0.4004
-      Struct::Dumb 0
-      perl 5.014
   IO-HTML-1.004
     pathname: C/CJ/CJM/IO-HTML-1.004.tar.gz
     provides:
@@ -591,23 +581,6 @@ DISTRIBUTIONS
       Scalar::Util 0
       perl 5.006002
       strict 0
-  Linux-Epoll-0.019
-    pathname: L/LE/LEONT/Linux-Epoll-0.019.tar.gz
-    provides:
-      Linux::Epoll 0.019
-    requirements:
-      ExtUtils::CBuilder 0
-      IO::Handle 0
-      Module::Build 0.28
-      POSIX 0
-      Scalar::Util 0
-      Socket 0
-      Test::More 0
-      Time::HiRes 0
-      parent 0
-      perl 5.010
-      strict 0
-      warnings 0
   MIME-Base32-1.303
     pathname: R/RE/REHSACK/MIME-Base32-1.303.tar.gz
     provides:
@@ -684,6 +657,15 @@ DISTRIBUTIONS
       JSON::PP 2
       Pod::Man 0
       TAP::Harness::Env 0
+      perl 5.006
+      strict 0
+      warnings 0
+  Module-Reload-1.12
+    pathname: N/NE/NEILB/Module-Reload-1.12.tar.gz
+    provides:
+      Module::Reload 1.12
+    requirements:
+      ExtUtils::MakeMaker 0
       perl 5.006
       strict 0
       warnings 0
