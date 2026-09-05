@@ -20,6 +20,7 @@ requires 'HTTP::Request::Common';
 requires 'Hash::MultiValue';
 requires 'IO::String';
 requires 'JSON';
+requires 'Module::Reload';
 requires 'Plack::Request';
 requires 'Router::Simple';
 requires 'Storable';
@@ -31,53 +32,16 @@ requires 'Time::HiRes';
 requires 'URI';
 requires 'URI::Escape';
 requires 'perl', '5.006';
-recommends 'Plack::Middleware::Static';
-recommends 'Plack::Runner';
-recommends 'Win32::TieRegistry';
-suggests 'APR::Pool';
-suggests 'APR::Table';
-suggests 'Apache2';
-suggests 'Apache2::Const';
-suggests 'Apache2::Log';
-suggests 'Apache2::RequestIO';
-suggests 'Apache2::RequestRec';
-suggests 'Apache2::RequestUtil';
-suggests 'Apache2::Response';
-suggests 'Apache2::ServerUtil';
-suggests 'Apache2::SubRequest';
-suggests 'Apache::Const';
-suggests 'Apache::Constants';
-suggests 'Apache::Log';
-suggests 'Apache::Response';
-suggests 'Apache::ServerUtil';
-suggests 'Apache::SubRequest';
-suggests 'Apache::Table';
-suggests 'Module::Reload';
-suggests 'mod_perl';
-suggests 'mod_perl2';
 
 on configure => sub {
     requires 'ExtUtils::MakeMaker';
     requires 'Tie::File';
-    requires 'perl', '5.006';
-};
-
-on build => sub {
-    requires 'Capture::Tiny';
-    requires 'Test::Deep';
-    requires 'Test::Exception';
-    requires 'Test::More';
-    requires 'Test::Simple', '0.44';
-    requires 'Test::Differences';
 };
 
 on test => sub {
     requires 'Algorithm::Diff';
-    requires 'Capture::Tiny';
-    requires 'File::Temp';
-    requires 'IO::String';
-    requires 'Storable';
     requires 'Test::Deep';
+    requires 'Test::Differences';
     requires 'Test::More', '0.88';
-    suggests 'Text::Diff';
+    requires 'Text::Diff';
 };
