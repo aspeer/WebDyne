@@ -44,4 +44,17 @@ for my $attempt (1..3) {
     like($res_or->{'body'} || '', qr/advance/, "CGI::Simple receives URL-encoded POST field $attempt");
 }
 
+foreach my $content_type (
+    'application/x-www-form-urlencoded; charset=UTF-8',
+    'Application/X-Www-Form-Urlencoded',
+    'Application/X-Www-Form-Urlencoded ; charset=UTF-8',
+) {
+    my $res_or=$test_or->post('/form.psp',
+        headers => {'Content-Type' => $content_type},
+        body => 'action=advance',
+    );
+    is($res_or->{'status'}, 200, "$content_type returns HTTP 200");
+    like($res_or->{'body'} || '', qr/advance/, "$content_type preserves form fields");
+}
+
 done_testing();

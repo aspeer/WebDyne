@@ -72,7 +72,12 @@ sub new {
         
         #  Need to construct
         #
-        if (($r->headers_in('content-type') eq 'application/x-www-form-urlencoded') && $r->content_length()) {
+        #  Match the media type independently of optional charset parameters.
+        #
+        if (
+            ($r->headers_in('content-type') || '') =~ m{\Aapplication/x-www-form-urlencoded(?:\s*;|\s*\z)}i
+            && $r->content_length()
+        ) {
         
             #  Normal form POST so can read body in 
             #
