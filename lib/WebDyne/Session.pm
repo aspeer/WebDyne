@@ -1,7 +1,7 @@
 #
 #  This file is part of WebDyne.
 #
-#  This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+#  This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 #
 #  This is free software; you can redistribute it and/or modify it under
 #  the same terms as the Perl 5 programming language system itself.
@@ -43,7 +43,7 @@ use CGI::Simple;
 
 #  Version information
 #
-$VERSION='3.025';
+$VERSION='3.026';
 
 
 #  Shortcut error handler.
@@ -252,7 +252,7 @@ Andrew Speer <andrew.speer@isolutions.com.au>
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
