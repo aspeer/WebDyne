@@ -1,5 +1,25 @@
 Revision history for WebDyne
 
+3.024 2026-09-05
+
+    * Fixed PAGI multipart form uploads by staging bounded request bodies
+      before synchronous CGI::Simple parsing. Binary uploads and form fields
+      now work with asynchronous request delivery, and multipart bodies
+      above WEBDYNE_CGI_POST_MAX return HTTP 413.
+
+    * Fixed source, template, and compiled-cache handling for files with an
+      mtime of zero, as found on WebAssembly and other virtual filesystems.
+      Distinguished undefined cache timestamps from valid epoch-dated caches
+      when deciding whether to compile or load a page.
+
+    * Added the missing Fcntl import in WebDyne::Util for file-open flags.
+
+    * Added regression coverage for repeated asynchronous multipart uploads,
+      upload size limits, and zero-timestamp source, template, and cache
+      files. Optional PAGI tests now check dependencies before loading async
+      modules, and the session-cookie test skips the SameSite assertion when
+      the installed CGI::Simple cannot serialize that attribute.
+
 3.023 2026-08-25
 
     * Moved PSGI and PAGI wrapper initialization fully into
@@ -17,10 +37,6 @@ Revision history for WebDyne
     * Added regression coverage for wrapper static-option forwarding and
       ensured static middleware does not expose files with disallowed
       extensions.
-
-    * Staged bounded PAGI multipart request bodies before synchronous WebDyne
-      dispatch so CGI::Simple file uploads work with asynchronous runtimes.
-      Multipart bodies above WEBDYNE_CGI_POST_MAX now return HTTP 413.
 
 3.022 2026-08-25
 

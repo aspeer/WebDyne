@@ -382,7 +382,7 @@ sub handler : method {    # no subsort
             $cache_mtime=$cache_inode_hr->{'cache_stat_mtime'};
         }
         else {
-            $cache_mtime=((-f $cache_pn) && (stat(_))[9]);
+            $cache_mtime=(stat(_))[9] if -f $cache_pn;
             if ($cache_stat_ttl) {
                 $cache_inode_hr->{'cache_stat_set'}=1;
                 $cache_inode_hr->{'cache_stat_time'}=time() if ($cache_stat_ttl > 0);
@@ -399,7 +399,6 @@ sub handler : method {    # no subsort
 
     #  Test if compile/reload needed
     #
-    #if (WEBDYNE_RELOAD || $self->{'_compile'} || ($cache_inode_hr->{'mtime'} < $srce_mtime) || ($cache_mtime > $cache_inode_hr->{'mtime'})) {
     my $cache_inode_mtime=$cache_inode_hr->{'mtime'};
     if (
         WEBDYNE_RELOAD
@@ -468,7 +467,6 @@ sub handler : method {    # no subsort
 
 
         my $container_ar;
-        #if ($self->{'_compile'} || ($cache_mtime < $srce_mtime)) {
         if (
             $self->{'_compile'}
             || !defined($cache_mtime)
@@ -510,7 +508,6 @@ sub handler : method {    # no subsort
             #
             $cache_mtime=(stat($cache_pn))[9] if $cache_pn;    # ||
                                                                #return $self->err_html("could not stat cache file '$cache_pn'");
-            #$cache_inode_hr->{'mtime'}=$cache_mtime || time();
             $cache_inode_hr->{'mtime'}=defined($cache_mtime) ? $cache_mtime : time();
             my $cache_stat_ttl=WEBDYNE_CACHE_STAT_TTL;
             if ($cache_stat_ttl && $cache_pn) {

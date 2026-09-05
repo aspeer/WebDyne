@@ -40,7 +40,17 @@ like($default_cookie, qr/\bsession=[0-9a-f]{32}\b/, 'default cookie contains gen
 like($default_cookie, qr/;\s*path=\//i, 'default cookie uses path /');
 like($default_cookie, qr/;\s*secure\b/i, 'default cookie has Secure flag');
 like($default_cookie, qr/;\s*HttpOnly\b/i, 'default cookie has HttpOnly flag');
-like($default_cookie, qr/;\s*SameSite=Lax\b/i, 'default cookie has SameSite=Lax');
+SKIP: {
+    #  Older CGI::Simple releases do not serialize the SameSite attribute.
+    #
+    require CGI::Simple;
+    my $probe_cookie_or=CGI::Simple->new({})->cookie(
+        -name => 'probe', -value => '1', -samesite => 'Lax'
+    );
+    skip('CGI::Simple does not support SameSite cookies', 1)
+        unless "$probe_cookie_or" =~ /;\s*SameSite=Lax\b/i;
+    like($default_cookie, qr/;\s*SameSite=Lax\b/i, 'default cookie has SameSite=Lax');
+}
 
 
 my $custom_cookie=render_session($root_dn, {

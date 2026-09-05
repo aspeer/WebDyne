@@ -126,8 +126,6 @@ sub source_mtime {
     #  Get full path, mtime of menu template
     #
     my $template_cn=${$self->template() || return err()};
-    #my $template_mtime=(stat($template_cn))[9] ||
-    #    return err("could not stat $template_cn, $!");
     my $template_mtime=(stat($template_cn))[9];
     defined($template_mtime) ||
         return err("could not stat $template_cn, $!");
