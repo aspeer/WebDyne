@@ -53,7 +53,9 @@ async sub sse {
 
         if ($progress >= 100) {
             await $sse_or->send_event(event => 'done');
-            $sse_or->close;  # stop stream
+            #  Wait for the close send before finishing this callback.
+            #
+            await $sse_or->close();
         }
     });
 
