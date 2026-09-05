@@ -418,8 +418,9 @@ sub handler_http {
         #
         my ($r, $html, $html_fh, $status, $req_or, $res_or);
 
-        #  CGI::Simple parses URL-encoded bodies synchronously. Read the
-        #  PAGI body while still inside this async request handler, before
+        #  CGI::Simple parses request bodies synchronously. Read URL-encoded
+        #  bodies through PAGI's buffered helper, and stage bounded multipart
+        #  bodies while still inside this async request handler, before
         #  entering the localized %ENV scope below.
         #
         $req_or=PAGI::Request->new($scope, $receive) ||
@@ -431,6 +432,28 @@ sub handler_http {
             && $req_or->content_length()
         ) {
             await $req_or->body();
+        }
+        elsif (
+            ($req_or->content_type() || '') =~ m{\Amultipart/form-data(?:\s*;|\z)}i
+            && $req_or->content_length()
+        ) {
+            my $multipart_body='';
+            my $staged=eval {
+                my $stream_or=$req_or->body_stream(max_bytes => $WEBDYNE_CGI_POST_MAX);
+                await $stream_or->stream_to(sub { $multipart_body .= shift() });
+                1;
+            };
+            unless ($staged) {
+                my $error=$@;
+                if ($error =~ /\ARequest body max_bytes exceeded\b/) {
+                    return await $res_or
+                        ->status(HTTP_REQUEST_ENTITY_TOO_LARGE)
+                        ->send("Request body exceeds upload limit\n")
+                        ->respond($send);
+                }
+                die $error;
+            }
+            $scope->{'webdyne.pagi.multipart_body'}=\$multipart_body;
         }
 
         {

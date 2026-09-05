@@ -270,6 +270,8 @@ t/49-cgi-autoescape.t
 t/50-substitution-autoescape.t
 t/51-session-cookie-flags.t
 t/52-index-source-enable.t
+t/53-pagi-multipart-post.t
+t/54-zero-mtime.t
 t/alpine.psp                             
 t/apache_harness_helper.pm
 t/api_bare.psp                           
