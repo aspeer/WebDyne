@@ -237,6 +237,7 @@ sub handler {
     #  Get env
     #
     my ($self, $env_hr, @param)=@_;
+    $env_hr={%{$env_hr}};
     debug('in handler, self: %s, env: %s, param:%s', Dumper($self, $env_hr, \@param));
     
     
@@ -261,6 +262,26 @@ sub handler {
         return err('unable to create new WebDyne::Request::PSGI object: %s', 
     			$@ || errclr() || 'unknown error');
     debug("r: $r");
+
+    #  Bound the complete body before page execution. Replay it for CGI and
+    #  Plack readers, including API redispatch, without rewriting caller metadata.
+    #  CGI needs a byte length even when the original request omitted one.
+    #
+    my ($body, $error);
+    {
+        #  Input failures are handled here, not by the page exception hook.
+        local $SIG{__DIE__};
+        $body=eval { $r->body() };
+        $error=$@;
+    }
+    if ($error) {
+        return psgi_error($r, $r->{'body_status'} || HTTP_BAD_REQUEST, $error);
+    }
+    $env_hr->{'webdyne.psgi.body'}=\$body;
+    $env_hr->{'psgi.input'}=IO::String->new($body);
+    $env_hr->{'CONTENT_LENGTH'}=length($body) unless defined($env_hr->{'CONTENT_LENGTH'});
+    $ENV{'CONTENT_LENGTH'}=$env_hr->{'CONTENT_LENGTH'};
+    $r->{'req'}=Plack::Request->new($env_hr);
     
     
     #  Get handler

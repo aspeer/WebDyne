@@ -307,13 +307,40 @@ sub new {
 
 sub body {
 
-    my $r=shift(); 
-    if ((my $input_or=$r->input) && $r->content_length()) { 
-        unless (exists $r->{'body'}) {
-            $input_or->read($r->{'body'}, $r->content_length()) 
+    my $self=shift();
+    return ${$self->{'env'}{'webdyne.psgi.body'}} if exists $self->{'env'}{'webdyne.psgi.body'};
+    return $self->{'body'} if exists $self->{'body'};
+
+    my $length=$self->content_length();
+    $self->{'body_status'}=400;
+    die "invalid Content-Length\n" if defined($length) && $length !~ /\A[0-9]+\z/;
+    if (defined($length) && $length > $WEBDYNE_CGI_POST_MAX) {
+        $self->{'body_status'}=413;
+        die "request body exceeds upload limit\n";
+    }
+
+    #  PSGI input may return short reads. Stop at the declared length when
+    #  present, or EOF otherwise, and reject before retaining excess bytes.
+    #
+    my $input_or=$self->input();
+    my $body='';
+    while (!defined($length) || length($body) < $length) {
+        my $remaining=defined($length) ? $length-length($body) : $WEBDYNE_CGI_POST_MAX-length($body)+1;
+        my $chunk;
+        my $read=$input_or->read($chunk, $remaining > 8192 ? 8192 : $remaining);
+        die "unable to read request body\n" unless defined($read);
+        unless ($read) {
+            die "incomplete request body\n" if defined($length);
+            last;
         }
-        return $r->{'body'} 
-    } 
+        if (length($body)+length($chunk) > $WEBDYNE_CGI_POST_MAX) {
+            $self->{'body_status'}=413;
+            die "request body exceeds upload limit\n";
+        }
+        $body.=$chunk;
+    }
+    delete $self->{'body_status'};
+    return $self->{'body'}=$body;
 }
 
 

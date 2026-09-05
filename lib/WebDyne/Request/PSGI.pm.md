@@ -30,7 +30,7 @@ When no filename is supplied, the constructor derives one from the PSGI environm
 
 * **body()**
 
-    Read and cache request body content from `psgi.input`.
+    Read and cache request body content from `psgi.input`, handling short reads and enforcing `WEBDYNE_CGI_POST_MAX`. Read to the declared length when present, or EOF otherwise. Reject malformed lengths, read errors, and premature EOF.
 
 * **headers_in()**
 

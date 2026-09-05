@@ -28,6 +28,8 @@ my $single_file_app = WebDyne::PSGI->new(
 
 The module also contains special handling for API-style fallback resolution when a `.psp` file is not found directly from the incoming path.
 
+HTTP request bodies are buffered up to `WEBDYNE_CGI_POST_MAX` before page execution and replayed through `psgi.input` for CGI/Plack readers. Missing Content-Length is supplied in the internal environment from the buffered byte count. Oversized bodies return 413; invalid or incomplete input returns 400. Caller environment metadata is preserved.
+
 # METHODS #
 
 * **new(%options)**
