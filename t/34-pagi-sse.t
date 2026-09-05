@@ -69,8 +69,8 @@ async sub sse {
     await $sse_or->start(
         status  => HTTP_OK,
         headers => [
-            ['Content-Type' => 'text/event-stream'],
-            ['Cache-Control' => 'no-cache'],
+            ['content-type' => 'text/event-stream'],
+            ['cache-control' => 'no-cache'],
         ],
     );
     await $sse_or->send_event(event => 'tick', data => join(':', $param_hr->{'one'}, $param_hr->{'two'}));

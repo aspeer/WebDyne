@@ -35,8 +35,8 @@ async sub sse {
     #
     await $sse_or->start(status => HTTP_OK, 
         headers => [
-            ['X-Accel-Buffering' => 'no'], 
-            ['Content-Encoding' => 'identity']
+            ['x-accel-buffering' => 'no'],
+            ['content-encoding' => 'identity']
         ]);
     
     
