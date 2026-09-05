@@ -1470,3 +1470,4 @@ t/pagi-sse-denial.t
 t/pagi-websocket-denial.t
 t/psgi-body.t
 t/psgi-response-headers.t
+t/static-no-plack.t

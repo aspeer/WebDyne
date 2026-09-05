@@ -21,7 +21,6 @@ requires 'Hash::MultiValue';
 requires 'IO::String';
 requires 'JSON';
 requires 'Module::Reload';
-requires 'Plack::Request';
 requires 'Router::Simple';
 requires 'Storable';
 requires 'Sub::Util';

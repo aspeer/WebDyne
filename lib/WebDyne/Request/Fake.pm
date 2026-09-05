@@ -511,7 +511,8 @@ sub lookup_file {
     if ($fn!~WEBDYNE_PSP_EXT_RE) { # fastest
 
 
-        #  Static file. Should migrate to this module but OK is PSGI for moment
+        #  Static file. The helper retains its historical PSGI name but does
+        #  not require Plack.
         #
         debug('non psp file, passing to WebDyne::Request::PSGI::Static');
         require WebDyne::Request::PSGI::Static;

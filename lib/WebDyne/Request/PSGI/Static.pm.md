@@ -14,7 +14,7 @@ my $status = WebDyne::Request::PSGI::Static->run($child_request);
 
 # DESCRIPTION #
 
-`WebDyne::Request::PSGI::Static` is a small helper subclass used when a PSGI request should serve a static asset rather than a `.psp` page.
+`WebDyne::Request::PSGI::Static` is a small subclass of `WebDyne::Request::Fake` used to serve static-file subrequests. It does not load Plack or PAGI; its historical package name is retained for compatibility.
 
 It reads the nominated file, sets `Content-Length`, selects a content type from `WEBDYNE_MIME_TYPE_HR` with a plain-text fallback, emits headers, streams the file to the parent response object, and returns an HTTP status code.
 

@@ -27,10 +27,11 @@ use WebDyne::Util;
 use WebDyne::Constant;
 
 
-#  Inheritance
+#  Static subrequests use the common request interface and do not need
+#  Plack. Keep standalone tools usable without a PSGI installation.
 #
-use WebDyne::Request::PSGI;
-@ISA=qw(WebDyne::Request::PSGI);
+use WebDyne::Request::Fake;
+@ISA=qw(WebDyne::Request::Fake);
 
 
 #  Version information
@@ -99,7 +100,7 @@ my $status = WebDyne::Request::PSGI::Static->run($child_request);
 
 # DESCRIPTION #
 
-`WebDyne::Request::PSGI::Static` is a small helper subclass used when a PSGI request should serve a static asset rather than a `.psp` page.
+`WebDyne::Request::PSGI::Static` is a small subclass of `WebDyne::Request::Fake` used to serve static-file subrequests. It does not load Plack or PAGI; its historical package name is retained for compatibility.
 
 It reads the nominated file, sets `Content-Length`, selects a content type from `WEBDYNE_MIME_TYPE_HR` with a plain-text fallback, emits headers, streams the file to the parent response object, and returns an HTTP status code.
 
@@ -117,11 +118,11 @@ Despite the package name, the same helper is also used from fake-request and non
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
@@ -129,7 +130,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 
@@ -151,7 +151,7 @@ WebDyne::Request::PSGI::Static - simple static-file responder for WebDyne PSGI r
 
 =head1 DESCRIPTION
 
-C<WebDyne::Request::PSGI::Static> is a small helper subclass used when a PSGI request should serve a static asset rather than a C<.psp> page.
+C<WebDyne::Request::PSGI::Static> is a small subclass of C<WebDyne::Request::Fake> used to serve static-file subrequests. It does not load Plack or PAGI; its historical package name is retained for compatibility.
 
 It reads the nominated file, sets C<Content-Length>, selects a content type from C<WEBDYNE_MIME_TYPE_HR> with a plain-text fallback, emits headers, streams the file to the parent response object, and returns an HTTP status code.
 

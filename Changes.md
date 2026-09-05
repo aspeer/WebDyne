@@ -41,6 +41,12 @@
   archives downloaded from CPAN mirrors. Prefixed release-script shell globs
   with ./ to prevent filenames being interpreted as options.
 
+- Removed the Plack dependency from static-file subrequests used by
+  standalone utilities. The historical PSGI::Static helper now inherits
+  from Request::Fake; cpanfile no longer requires Plack::Request. Added
+  regression coverage for utilities without Plack/PAGI, binary and empty
+  static files, missing files, and PSGI/PAGI parent requests.
+
 - Reviewed and expanded the DocBook guide against the current code.
   Corrected examples and runtime defaults, and added guidance on PAGI async
   state and await boundaries, SSE and WebSocket completion, request and
