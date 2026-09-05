@@ -58,6 +58,11 @@ The module also provides `WebDyne::CGI::Simple::Upload`, a lightweight upload wr
 
 Upload allowance and maximum POST size are controlled by `WEBDYNE_CGI_DISABLE_UPLOADS` and `WEBDYNE_CGI_POST_MAX`.
 
+URL-encoded forms can be parsed without Content-Length. Multipart forms without
+a length are first buffered through the request adapter, then replayed with a
+length for CGI::Simple. Under Apache, configure `LimitRequestBody` as the primary
+size protection; the Apache adapter also checks `WEBDYNE_CGI_POST_MAX` defensively.
+
 # AUTHOR #
 
 Andrew Speer <andrew.speer@isolutions.com.au>

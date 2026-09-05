@@ -392,15 +392,10 @@ sub env {
 sub body {
     my $r=shift();
     return $r->{'body'} if exists $r->{'body'};
-    my $len=$r->content_length() || 0;
-    return $r->{'body'}='' unless $len;
+    my $input_or=WebDyne::Request::Apache::Body->TIEHANDLE($r->{'req'});
     my $buf='';
-    my $read=0;
-    while ($read < $len) {
-        my $chunk='';
-        my $n=$r->{'req'}->read($chunk, $len-$read);
-        last unless $n;
-        $read += $n;
+    my $chunk;
+    while ($input_or->read_chunk($chunk, 8192)) {
         $buf.=$chunk;
     }
     return $r->{'body'}=$buf;
@@ -450,18 +445,60 @@ sub DESTROY {
 package WebDyne::Request::Apache::Body;
 
 sub TIEHANDLE {
-    my ($class, $r) = @_;
-    bless {
-        req    => $r,
+    my ($class, $request_or)=@_;
+    my $length=$request_or->headers_in()->{'Content-Length'};
+    die "invalid Content-Length\n" if defined($length) && $length !~ /\A[0-9]+\z/;
+
+    #  LimitRequestBody is the primary protection. Also bound adapter reads,
+    #  including multipart input, if the server permits a larger request.
+    #
+    my $limit=$WebDyne::Request::Apache::WEBDYNE_CGI_POST_MAX;
+    die "request body exceeds upload limit\n" if defined($length) && $length > $limit;
+    return bless {
+        req    => $request_or,
+        length => $length,
+        limit  => $limit,
+        read   => 0,
         buffer => '',
         eof    => 0,
     }, $class;
 }
 
+
+sub read_chunk {
+    my ($self, undef, $length)=@_;
+    return 0 unless $length;
+    return 0 if $self->{'eof'};
+
+    #  Without a declared length, read to Apache's EOF. One extra byte
+    #  distinguishes an exact-limit body from an oversized one.
+    #
+    my $remaining=defined($self->{'length'})
+        ? $self->{'length'}-$self->{'read'} : $self->{'limit'}-$self->{'read'}+1;
+    unless ($remaining) {
+        $self->{'eof'}=1;
+        return 0;
+    }
+    $length=$remaining if $length > $remaining;
+    $length=8192 if $length > 8192;
+    my $chunk='';
+    my $read=$self->{'req'}->read($chunk, $length);
+    die "unable to read request body\n" unless defined($read);
+    unless ($read) {
+        die "incomplete request body\n" if defined($self->{'length'});
+        $self->{'eof'}=1;
+    }
+    $self->{'read'}+=$read;
+    die "request body exceeds upload limit\n" if $self->{'read'} > $self->{'limit'};
+    $_[1]=$chunk;
+    return $read;
+}
+
+
 sub READ {
     my ($self, undef, $len, $offset) = @_;
     my $buf = '';
-    my $read = $self->{req}->read($buf, $len);
+    my $read = $self->read_chunk($buf, $len);
     return 0 unless $read;
     substr($_[1], $offset || 0) = $buf;
     return $read;
@@ -480,7 +517,7 @@ sub READLINE {
 
         # read more data
         my $chunk = '';
-        my $n = $self->{req}->read($chunk, 8192);
+        my $n = $self->read_chunk($chunk, 8192);
 
         unless ($n) {
             $self->{eof} = 1;

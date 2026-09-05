@@ -31,6 +31,12 @@ The module builds rendered configuration files from bundled templates, merges va
 
 # NOTES #
 
+Configure [LimitRequestBody](https://httpd.apache.org/docs/2.4/mod/core.html#limitrequestbody)
+in the WebDyne directory or virtual host for request-size protection. For example,
+`LimitRequestBody 524288` matches the default 512 KiB `WEBDYNE_CGI_POST_MAX`.
+Adjust both settings when larger uploads are required. The request adapter's
+defensive size checks do not replace this server-level limit.
+
 The module depends on the discovery logic in `WebDyne::Install::Apache::Constant` for Apache binary detection, config directory selection, mod_perl library discovery, and SELinux-related helpers.
 
 # AUTHOR #

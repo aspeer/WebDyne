@@ -50,13 +50,33 @@ It maps Apache request data into WebDyne-style methods and provides body-handle 
 
 * **body() / body_handle()**
 
-    Read request body content or return a handle-like interface for streaming reads.
+    Read and cache the complete request body, or return a handle-like interface
+    for streaming reads. Both support short reads and bodies without
+    Content-Length. Invalid lengths, premature EOF, read failures and bodies
+    exceeding `WEBDYNE_CGI_POST_MAX` raise exceptions; partial bodies are not
+    cached. The default defensive limit is 512 KiB and also covers multipart
+    reads through the handle. Direct reads from the native Apache request bypass
+    these adapter checks.
 
 * **uri()**
 
     Return a `URI` object for the current request.
 
 # NOTES #
+
+Configure Apache's [LimitRequestBody](https://httpd.apache.org/docs/2.4/mod/core.html#limitrequestbody)
+as the primary request-size protection, for example in the WebDyne directory or
+virtual host:
+
+```apache
+LimitRequestBody 524288
+```
+
+Keep this value and `WEBDYNE_CGI_POST_MAX` consistent when allowing larger
+uploads. Apache enforces its limit with an HTTP 413 response; the adapter checks
+are defensive exceptions during body consumption (normally HTTP 500 if uncaught),
+not a replacement for server configuration. Multipart forms without Content-Length
+are buffered within the adapter limit to provide the length required by CGI::Simple.
 
 The module initializes many additional normalized methods by delegating through `WebDyne::Request::Common`. Methods not implemented directly are filled by adapter dispatch or inherited fallback behavior.
 
