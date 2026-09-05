@@ -48,7 +48,7 @@ my $single_file_app = WebDyne::PAGI->new(
 
 * **handler_sse()**
 
-    Handle server-sent event requests.
+    Handle server-sent event requests. URL-encoded form bodies are buffered before CGI parameter setup, subject to `WEBDYNE_CGI_POST_MAX`. Oversized forms receive status 413 through SSE HTTP denial events; disconnects during buffering skip page execution. Normal EventSource GETs do not wait for body data. Multipart SSE form submissions are outside this handler's supported scope.
 
 * **handler_ws()**
 

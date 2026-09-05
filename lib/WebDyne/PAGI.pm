@@ -270,50 +270,62 @@ sub local_constant_load {
 
 sub handler_sse {
 
+    my $self=shift();
+    return async sub {
+        my ($scope, $receive, $send)=@_;
+        my ($size, $disconnected)=(0, 0);
+        my $req_or=PAGI::Request->new($scope, async sub {
+            my $event_hr=await $receive->();
+            if ($event_hr->{'type'} eq 'sse.disconnect') {
+                $disconnected=1;
+                return {%{$event_hr}, type => 'http.disconnect'};
+            }
+            die "unexpected event while reading SSE form" unless $event_hr->{'type'} eq 'sse.request';
+            $size += length(defined($event_hr->{'body'}) ? $event_hr->{'body'} : '');
+            die "SSE form exceeds upload limit" if $size > $WEBDYNE_CGI_POST_MAX;
+            return $event_hr;
+        });
 
-    #  Get request
-    #
-    my ($self, $scope, $receive, $send)=@_;
-    debug('in handler_sse, scope:%s receive:%s, send:%s', Dumper($scope, $receive, $send));
+        #  Only URL-encoded forms need staging here. EventSource GETs keep
+        #  their existing path; multipart SSE submissions are not supported.
+        #  Use PAGI's buffered helper so CGI can read synchronously below.
+        #
+        if ($req_or->content_type() eq 'application/x-www-form-urlencoded') {
+            my $length=$req_or->content_length();
+            $size=$length if defined($length) && $length =~ /\A[0-9]+\z/;
+            unless ($size > $WEBDYNE_CGI_POST_MAX) {
+                $size=0;
+                my $read=eval { await $req_or->body(); 1 };
+                die $@ unless $read || $size > $WEBDYNE_CGI_POST_MAX;
+            }
+            if ($size > $WEBDYNE_CGI_POST_MAX) {
+                await $send->({type => 'sse.http.response.start', status => HTTP_REQUEST_ENTITY_TOO_LARGE,
+                    headers => [['content-type', 'text/plain']]});
+                await $send->({type => 'sse.http.response.body', body => "Request body exceeds upload limit\n", more => 0});
+                return;
+            }
+            return if $disconnected;
+        }
 
-
-    #  Setup %ENV
-    #
-    local *ENV=\%ENV_BASE;
-
-
-    #  Create helper objects
-    #
-    my $req_or=PAGI::Request->new($scope, $receive) ||
-        return err('unable to get PAGI::Request object');
-    my $res_or=PAGI::Response->new($scope) ||
-        return err('unable to get PAGI::Response object');
-    my $sse_or=PAGI::SSE->new($scope, $receive, $send) ||
-        return err('unable to get PAGI::SSE object');
-    debug("req_or: $req_or, res_or: $res_or, sse_or: $sse_or");
-
-
-    #  Get main WebDyne handler request object
-    #
-    my $r=WebDyne::Request::PAGI->new( document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, res=>$res_or, sse=>$sse_or,
-        receive => $receive, send=> $send) ||
-            return err('unable to create new WebDyne::Request::PAGI object: %s', 
-                $@ || errclr() || 'unknown error');
-    debug("r: $r");
-    
-    
-    #  Call handler. No point error checking but log errors
-    #
-    debug('calling WebDyne handler');
-    my $status=WebDyne->handler($r);
-    debug("status: $status");
-    if ($status eq HTTP_CONTINUE) {
-        my $sse_cr=$r->custom_response($status);
-        return $sse_cr;
-    }
-    else {
-        return err();
-    }
+        my $sse_cr;
+        {
+            #  Confine localized process state to synchronous page setup.
+            #  POST fields are buffered before CGI builds the parameter hash.
+            #
+            local *ENV=\%ENV_BASE;
+            my $res_or=PAGI::Response->new($scope);
+            my $sse_or=PAGI::SSE->new($scope, $receive, $send);
+            my $r=WebDyne::Request::PAGI->new(
+                document_root => $self->{'root'}, document_default => $self->{'index'},
+                scope => $scope, req => $req_or, res => $res_or, sse => $sse_or,
+                receive => $receive, send => $send,
+            ) || return err('unable to create SSE request');
+            my $status=WebDyne->handler($r);
+            return err() unless $status eq HTTP_CONTINUE;
+            $sse_cr=$r->custom_response($status);
+        }
+        await $sse_cr->($scope, $receive, $send);
+    };
 
 }
 
