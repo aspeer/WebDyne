@@ -416,11 +416,16 @@ sub handler_ws {
     debug("status: $status");
     if ($status eq HTTP_CONTINUE) {
         my $ws_cr=$r->custom_response($status);
-        return $ws_cr;
+        return $ws_cr if ref($ws_cr) eq 'CODE';
     }
-    else {
-        return err();
-    }
+
+    #  Reject before accepting the socket. The server converts this into
+    #  an HTTP 403 handshake response; no optional extension is required.
+    #
+    return async sub {
+        my ($scope, $receive, $send)=@_;
+        await $send->({type => 'websocket.close'});
+    };
 
 }
 

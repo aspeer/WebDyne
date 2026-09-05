@@ -52,7 +52,7 @@ my $single_file_app = WebDyne::PAGI->new(
 
 * **handler_ws()**
 
-    Handle WebSocket requests.
+    Handle WebSocket requests. If page setup does not provide a valid WebSocket callback, reject the handshake with `websocket.close`. This uses the standard HTTP 403 rejection without requiring the optional HTTP denial-response extension.
 
 * **handler_lifespan()**
 
