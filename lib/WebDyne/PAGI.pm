@@ -307,7 +307,7 @@ sub handler_sse {
             return if $disconnected;
         }
 
-        my $sse_cr;
+        my ($sse_cr, $status);
         {
             #  Confine localized process state to synchronous page setup.
             #  POST fields are buffered before CGI builds the parameter hash.
@@ -320,9 +320,27 @@ sub handler_sse {
                 scope => $scope, req => $req_or, res => $res_or, sse => $sse_or,
                 receive => $receive, send => $send,
             ) || return err('unable to create SSE request');
-            my $status=WebDyne->handler($r);
-            return err() unless $status eq HTTP_CONTINUE;
-            $sse_cr=$r->custom_response($status);
+            $status=WebDyne->handler($r);
+            $sse_cr=$r->custom_response($status) if $status eq HTTP_CONTINUE;
+        }
+
+        #  Decline before starting a stream. Preserve HTTP error statuses;
+        #  other results without an SSE callback indicate a setup failure.
+        #  Send outside the localized environment and await both events.
+        #
+        unless (ref($sse_cr) eq 'CODE') {
+            $status=HTTP_INTERNAL_SERVER_ERROR
+                unless defined($status) && $status =~ /\A[45][0-9]{2}\z/;
+            my $message=HTTP::Status::status_message($status) || 'Request failed';
+            await $send->({
+                type => 'sse.http.response.start', status => $status,
+                headers => [['content-type', 'text/plain']],
+            });
+            await $send->({
+                type => 'sse.http.response.body',
+                body => "$status $message\n", more => 0,
+            });
+            return;
         }
         await $sse_cr->($scope, $receive, $send);
     };
