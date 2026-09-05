@@ -36,7 +36,7 @@ use WebDyne::Request::Fake;
 
 #  Version information
 #
-$VERSION='3.024';
+$VERSION='3.025';
 
 
 #  Debug load
@@ -118,11 +118,11 @@ Despite the package name, the same helper is also used from fake-request and non
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT #
+# LICENSE and COPYRIGHT
 
 This file is part of WebDyne.
 
-This software is copyright (c) 2026 by Andrew Speer <andrew.speer@isolutions.com.au>.
+This software is copyright (c) 2026 by Andrew Speer <andrew.speer.com.au>.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
@@ -130,6 +130,7 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
+
 
 =end markdown
 

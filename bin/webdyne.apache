@@ -49,7 +49,7 @@ use WebDyne::Util qw(:all);
 
 #  Version information
 #
-$VERSION='3.024';
+$VERSION='3.025';
 
 
 #  Check for supporting modules
