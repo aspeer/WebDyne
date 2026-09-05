@@ -56,7 +56,7 @@ jobs:
 
       - name: Install PAGI optional runtime dependencies
         if: ${{ matrix.perl != '5.14' && matrix.perl != '5.16' }}
-        run: cpanm --notest --skip-satisfied PAGI::Server PAGI::Tools
+        run: cpanm --notest --skip-satisfied PAGI::Server PAGI::Tools Future::IO
 
       - name: Configure
         run: perl Makefile.PL

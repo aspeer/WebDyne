@@ -33,7 +33,7 @@ jobs:
         run: cpanm --sudo --notest --installdeps .
 
       - name: Install optional runtime dependencies
-        run: cpanm --sudo --notest --skip-satisfied Plack PAGI::Server PAGI::Tools
+        run: cpanm --sudo --notest --skip-satisfied Plack PAGI::Server PAGI::Tools Future::IO
 
       - name: Configure
         run: perl Makefile.PL

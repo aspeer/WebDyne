@@ -2,6 +2,11 @@
 
 ## 3.026 - 2026-09-05
 
+- Required Carp 1.50 or newer so Devel::Confess preserves the original PAGI
+  send failure on older Perls instead of reporting a stack-argument copy
+  error. Installed Future::IO explicitly in CI to run the PAGI multipart
+  tests instead of skipping them.
+
 - Retained the PAGI response Future before awaiting it to avoid a Perl 5.38
   segmentation fault when Devel::Confess builds a stack trace for a failed
   response send. Exception tracing remains enabled.

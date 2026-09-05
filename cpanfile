@@ -1,5 +1,6 @@
 requires 'CGI::Simple';
 requires 'Capture::Tiny';
+requires 'Carp', '1.50';
 requires 'Crypt::URandom';
 requires 'Devel::Confess';
 requires 'Digest::MD5';

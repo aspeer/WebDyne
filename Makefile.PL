@@ -72,6 +72,7 @@ my %WriteMakefile=(
     PREREQ_PM        => {
         'CGI::Simple'       => 0,
         'Capture::Tiny'     => 0,
+        'Carp'              => '1.50',
         'File::Temp'        => 0,
         'HTML::Element'     => 0,
         'HTML::Entities'    => 0,
