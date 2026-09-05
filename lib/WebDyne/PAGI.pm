@@ -671,7 +671,7 @@ sub handler_http {
         #  PAGI requires lowercase names in response events. Normalize only
         #  the outgoing header pairs, preserving values, order and duplicates.
         #
-        my $respond_status=await $r->res->send($body)->respond(sub {
+        my $respond_or=$r->res->send($body)->respond(sub {
             my $event_hr=shift();
             if ($event_hr->{'type'} eq 'http.response.start') {
                 $event_hr={
@@ -684,6 +684,11 @@ sub handler_http {
             }
             return $send->($event_hr);
         });
+
+        #  Retain the response Future across await. Awaiting the temporary can
+        #  crash Devel::Confess stack tracing on send failure with Perl 5.38.
+        #
+        my $respond_status=await $respond_or;
         $r->DESTROY();
         return $respond_status;
 

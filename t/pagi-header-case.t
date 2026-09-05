@@ -14,7 +14,7 @@ use WebDyne::PAGI;
 use Future;
 
 my $app_cr=WebDyne::PAGI->new(root => '.', static => 0)->to_app();
-foreach my $failure (0, 1) {
+foreach my $failure (0, 1, 2) {
     my (@event, @send);
     my $response_or;
     my $application_or;
@@ -46,7 +46,15 @@ foreach my $failure (0, 1) {
     my @stored=grep { $_->[0] =~ /^X-/ } @{$response_or->headers()};
     is_deeply(\@stored, [['X-Mixed', 'VaLuE'], ['X-Mixed', 'second'], ['X-Empty', '']], 'stored headers retain original names');
     ok(!$application_or->is_ready(), 'application awaits start send');
-    if ($failure) {
+    if ($failure == 2) {
+        $send[0]->done();
+        ok(!$application_or->is_ready(), 'application awaits body send before failure');
+        $send[1]->fail('test body send failure');
+        ok($application_or->is_failed(), 'body send failure propagates');
+        like(scalar($application_or->failure()), qr/test body send failure/, 'original body send failure retained');
+        is(scalar(@event), 2, 'no extra events sent after failed body');
+    }
+    elsif ($failure) {
         $send[0]->fail('test send failure');
         ok($application_or->is_failed(), 'send failure propagates');
         like(scalar($application_or->failure()), qr/test send failure/, 'original send failure retained');

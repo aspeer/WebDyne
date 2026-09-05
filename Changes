@@ -1,5 +1,15 @@
 Revision history for WebDyne
 
+3.026 2026-09-05
+
+    * Retained the PAGI response Future before awaiting it to avoid a Perl
+      5.38 segmentation fault when Devel::Confess builds a stack trace for a
+      failed response send. Exception tracing remains enabled.
+
+    * Added regression coverage for failed PAGI response body sends,
+      checking that the original error propagates without sending
+      additional events.
+
 3.025 2026-09-05
 
     * Preserved repeated Set-Cookie headers in PAGI responses and flattened
