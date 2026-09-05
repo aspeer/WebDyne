@@ -386,7 +386,7 @@ sub handler {
     #
     my @return=(
         $r->status() || HTTP_INTERNAL_SERVER_ERROR,
-        [ %{$r->headers_out()} ],
+        $r->headers_out()->psgi_flatten_without_sort(),
         [ $html ]
     );
 
