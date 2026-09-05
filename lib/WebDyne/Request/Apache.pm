@@ -253,7 +253,7 @@ sub _headers {
     }
     else {
         my $headers_or=HTTP::Headers::Fast->new();
-        $table->do(sub { $headers_or->header($_[0] => $_[1]); return 1; });
+        $table->do(sub { $headers_or->push_header($_[0] => $_[1]); return 1; });
         return $headers_or;
     }
 }

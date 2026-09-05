@@ -30,7 +30,11 @@ It maps Apache request data into WebDyne-style methods and provides body-handle 
 
 * **headers_in() / headers_out()**
 
-    Access request and response headers through the adapter.
+    Access request and response headers through the adapter. With no arguments,
+    return a snapshot preserving repeated values such as `Set-Cookie`. Changes
+    to this snapshot do not update Apache's table. Use
+    `$wr->headers_out($name => $value)` to replace a response header, or
+    `$apache_request_rec->headers_out()->add($name => $value)` to append one.
 
 * **content_type() / content_length() / content_encoding()**
 
