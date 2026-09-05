@@ -667,7 +667,23 @@ sub handler_http {
             debug('sending html to client via await()');
             $r->res->content_type($r->content_type() || $WEBDYNE_CONTENT_TYPE_HTML);
         }
-        my $respond_status=await $r->res->send($body)->respond($send);
+
+        #  PAGI requires lowercase names in response events. Normalize only
+        #  the outgoing header pairs, preserving values, order and duplicates.
+        #
+        my $respond_status=await $r->res->send($body)->respond(sub {
+            my $event_hr=shift();
+            if ($event_hr->{'type'} eq 'http.response.start') {
+                $event_hr={
+                    %{$event_hr},
+                    headers => [
+                        map { [lc($_->[0]), $_->[1]] }
+                            @{$event_hr->{'headers'} || []}
+                    ],
+                };
+            }
+            return $send->($event_hr);
+        });
         $r->DESTROY();
         return $respond_status;
 

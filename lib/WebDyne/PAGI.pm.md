@@ -44,7 +44,7 @@ my $single_file_app = WebDyne::PAGI->new(
 
 * **handler_http()**
 
-    Handle normal HTTP requests.
+    Handle normal HTTP requests. Outgoing response header names are normalized to lowercase for PAGI, preserving values, order, and duplicates without changing the stored header collections.
 
 * **handler_sse()**
 
