@@ -576,9 +576,16 @@ sub handler_http {
         $r->res->status($final_status);
         my $headers_ar=$r->headers_out->psgi_flatten_without_sort();
         debug('sending headers: %s', Dumper($headers_ar));
+        my $cookie_seen;
         for (my $i=0; $i<@{$headers_ar}; $i+=2) {
             my ($header, $value)=@{$headers_ar}[$i, $i+1];
-            $r->res->header_try($header => $value);
+            if (lc($header) eq 'set-cookie') {
+                $r->res->remove_header('set-cookie') unless $cookie_seen++;
+                $r->res->header('set-cookie' => $value);
+            }
+            else {
+                $r->res->header_try($header => $value);
+            }
         }
         
         
