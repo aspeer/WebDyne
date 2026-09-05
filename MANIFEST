@@ -1458,3 +1458,15 @@ t/webdyne_constant.conf.pl
 t/webdyne_dir-config.conf.pl             
 t/webdyne_meta.conf.pl                   
 t/whitespace.psp
+t/apache-body.t
+t/apache-request.t
+t/pagi-bounded-body.t
+t/pagi-form-no-content-length.t
+t/pagi-header-case.t
+t/pagi-mounted-path.t
+t/pagi-response-cookies.t
+t/pagi-sse-body.t
+t/pagi-sse-denial.t
+t/pagi-websocket-denial.t
+t/psgi-body.t
+t/psgi-response-headers.t

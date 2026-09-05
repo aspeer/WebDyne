@@ -1,5 +1,40 @@
 # Revision history for WebDyne
 
+## Unreleased
+
+- Preserved repeated Set-Cookie headers in PAGI responses and flattened
+  repeated PSGI response headers into separate scalar pairs. Apache header
+  snapshots now retain repeated values; their documented snapshot semantics
+  remain unchanged.
+
+- Bound PAGI and PSGI HTTP request bodies with WEBDYNE_CGI_POST_MAX (512 KiB
+  by default) before page dispatch. Added support for bodies without
+  Content-Length and robust PSGI short-read handling, with oversized bodies
+  rejected using HTTP 413 and invalid or incomplete PSGI bodies using HTTP
+  400.
+
+- Corrected PAGI mounted-path handling relative to root_path and normalized
+  outgoing HTTP header names to lowercase.
+
+- Buffered bounded URL-encoded PAGI SSE form bodies before page setup,
+  awaited SSE close sends, and returned explicit denial responses for SSE
+  setup failures and WebSocket handshakes without valid page callbacks.
+  Multipart SSE submissions remain unsupported.
+
+- Accepted URL-encoded form Content-Type parameters such as charset. Apache
+  body readers now support missing Content-Length, reject incomplete reads,
+  and enforce defensive size checks for buffered and streaming input.
+  Multipart forms without a length are buffered for CGI::Simple parsing.
+
+- Documented Apache LimitRequestBody as the primary request-size protection.
+  Adapter checks also enforce WEBDYNE_CGI_POST_MAX; uncaught defensive
+  exceptions currently produce HTTP 500.
+
+- Added regression coverage for the request-adapter fixes to MANIFEST and
+  made the new PSGI tests skip when optional Plack dependencies are
+  unavailable. Refreshed the WebDyne 3.0 release overview and upgrade
+  guidance.
+
 ## 3.024 - 2026-09-05
 
 - Fixed PAGI multipart form uploads by staging bounded request bodies before

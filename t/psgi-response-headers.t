@@ -1,7 +1,14 @@
 use strict;
 use warnings;
 use Test::More;
-BEGIN { $ENV{'WEBDYNE_CONF'}='.' }
+BEGIN {
+    my @missing;
+    foreach my $module (qw(Plack::Builder Plack::Request Plack::Response)) {
+        eval "require $module; 1" || push @missing, $module;
+    }
+    plan skip_all => 'Skipping PSGI tests: missing '.join(', ', @missing) if @missing;
+    $ENV{'WEBDYNE_CONF'}='.';
+}
 use WebDyne::PSGI;
 use IO::String;
 

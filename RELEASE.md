@@ -4,19 +4,63 @@
 
 It supports multiple Perl embedding styles inside `.psp` files, partial compilation and caching for performance, and runs under **mod_perl**, **PSGI/Plack**, or **PAGI**.
 
-Introduction below, full documentation is at [webdyne.org](https://webdyne.org), with code available on [CPAN](https://metacpan.org/dist/WebDyne) and via [Github](https://github.com/aspeer/WebDyne). Docker images are also available. Current branch builds are versioned in the `2.088_630` series.
+WebDyne 3.0 brings the established `.psp` page model to synchronous and
+asynchronous Perl servers. This overview covers notable changes across the 3.x
+series; see [Changes.md](Changes.md) for individual releases.
 
-Branch highlights:
+Full documentation is at [webdyne.org](https://webdyne.org), with packages on
+[CPAN](https://metacpan.org/dist/WebDyne), source on
+[GitHub](https://github.com/aspeer/WebDyne), and Docker images for deployment.
 
-- PAGI runtime support through `WebDyne::PAGI` and `webdyne.pagi`
-- PAGI dispatch for HTTP, server-sent events, WebSocket connections, and lifespan events
-- normalized request adapters for standalone/fake, Apache, PSGI, and PAGI execution
-- `webdyne.apache` for temporary local Apache/mod_perl development without permanent Apache configuration
-- expanded wrapper and utility documentation for `wdlint`, `wdrender`, `webdyne.psgi`, `webdyne.pagi`, and `webdyne.apache`
-- broader test coverage for request backends, command wrappers, static files, path traversal, uploads, error handling, SSE, and WebSocket flows
-- the main WebDyne documentation has been merged into this repository with `doc/webdyne.xml` as the definitive source
+### WebDyne 3.0 highlights
 
-Quick selected feature summary below to pique interest/dis-interest:
+- **Three server runtimes.** Run pages under Apache/mod_perl, PSGI/Plack, or
+  PAGI, with normalized request adapters and helper scripts for each runtime.
+  `webdyne.apache` can start a temporary local server without installing a
+  permanent Apache configuration.
+- **Asynchronous applications.** PAGI supports HTTP, server-sent events,
+  WebSockets, and application lifespan events. SSE and WebSocket handlers can
+  receive parsed parameters and render WebDyne fragments for browser updates.
+- **HTML fragments and JSON APIs.** HTMX handlers and reusable blocks support
+  partial page updates. API pages use Router::Simple routes relative to their
+  own mount path, so route declarations can move with the application.
+- **Page authoring and diagnostics.** `<start_html>` supports dependency loading
+  and imports. `wdlint` checks embedded Perl chunks and substitutions as well
+  as `__PERL__` sections. Compiler, renderer, wrapper, and tag documentation
+  accompany the examples and integrated main documentation.
+- **Safer defaults.** Request-derived substitutions and CGI-generated values
+  gain automatic HTML escaping. Session cookies have Secure, HttpOnly, and
+  SameSite defaults. Directory indexing, source viewing, and PSGI/PAGI static
+  serving require explicit configuration; API path traversal and PSP extension
+  checks have also been tightened.
+- **More reliable request handling.** Recent fixes preserve repeated cookies
+  and headers, support forms without Content-Length and media-type charset
+  parameters, and bound request bodies. PAGI multipart uploads, mounted paths,
+  SSE completion and setup denials, and WebSocket handshake rejection have
+  dedicated regression coverage.
+- **Portable caching.** Source, template, and compiled-cache handling accepts
+  valid zero timestamps, including those used by WebAssembly filesystems.
+
+### Upgrading an existing application
+
+- Since 3.020, `<api pattern>` matches the path relative to the API page's
+  mount. An API page mounted at `/api` should declare `/user/:id` rather than
+  `/api/user/:id`.
+- Review uses of automatic escaping and reserve raw `${...}` substitutions for
+  trusted rendered content. Secure session cookies require HTTPS; configure
+  cookie attributes explicitly where local development needs different values.
+- Enable indexing, source viewing, or static-file serving explicitly where
+  needed. Wrapper and application-builder defaults are intentionally conservative.
+- `WEBDYNE_CGI_POST_MAX` defaults to 512 KiB and now bounds buffered PAGI and
+  PSGI HTTP bodies, including non-form content. Increase it explicitly for
+  applications accepting larger payloads. Under Apache, configure
+  `LimitRequestBody 524288` as primary protection and keep it consistent with
+  the WebDyne limit. Uncaught Apache adapter validation exceptions currently
+  produce HTTP 500.
+- PAGI SSE setup supports bounded URL-encoded forms. Multipart SSE submissions
+  remain unsupported; use a normal HTTP upload endpoint for those forms.
+
+The examples below introduce the page syntax, fragments, APIs, and runtime tools.
 
 ---
 
