@@ -44,6 +44,10 @@ Like the PSGI adapter, it can derive a target filename from the request path, co
 
     Return server identity details.
 
+* **content_length()**
+
+    Return the declared Content-Length when present. Otherwise, return the byte length of a form body already buffered by the PAGI handler, or undef when no buffered length is available. Original request headers remain unchanged.
+
 * **body() / body_handle()**
 
     Read or stream the request body.

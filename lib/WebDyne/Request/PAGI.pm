@@ -90,7 +90,7 @@ sub init {
         client_address      => sub { shift()->{'req'}->client()->[0] },
         content             => \&body,
         content_encoding    => undef,
-        content_length      => undef,
+        content_length      => \&content_length,
         content_type        => undef,,
         cookies             => 'cookies',
         cookie              => 'cookies',
@@ -328,6 +328,28 @@ sub server_port {
         return $server_ar->[1];
     }
     return undef;
+}
+
+
+sub content_length {
+
+    my $self=shift();
+    my $length=$self->{'req'}->content_length();
+    return $length if defined($length);
+
+    #  Supply the buffered byte length for synchronous CGI parsing when
+    #  the request did not declare Content-Length.
+    #
+    my $scope_hr=$self->{'scope'};
+    if (exists $scope_hr->{'webdyne.pagi.multipart_body'}) {
+        return length(${$scope_hr->{'webdyne.pagi.multipart_body'}});
+    }
+    if ($scope_hr->{'pagi.request.body.read'}) {
+        return length($scope_hr->{'pagi.request.body'});
+    }
+
+    return undef;
+
 }
 
 

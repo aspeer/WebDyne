@@ -429,13 +429,17 @@ sub handler_http {
             return err('unable to get PAGI::Response object');
         if (
             ($req_or->content_type() || '') =~ m{\Aapplication/x-www-form-urlencoded\b}i
-            && $req_or->content_length()
+            #  PAGI body events can carry form data without Content-Length.
+            #  Read through the final event before synchronous CGI parsing.
+            # && $req_or->content_length()
         ) {
             await $req_or->body();
         }
         elsif (
             ($req_or->content_type() || '') =~ m{\Amultipart/form-data(?:\s*;|\z)}i
-            && $req_or->content_length()
+            #  Chunked requests need not declare Content-Length. Stage their
+            #  body too, retaining the independent upload size limit below.
+            # && $req_or->content_length()
         ) {
             my $multipart_body='';
             my $staged=eval {
