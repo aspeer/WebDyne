@@ -134,7 +134,7 @@ sub init {
         notes               => undef,
         origin              => undef,
         output_filters      => undef,
-        path_info           => 'path',
+        path_info           => sub { scope_path(shift()->{'scope'}) },
         path_parameters     => undef,
         path                => 'path',
         pool                => undef,
@@ -158,7 +158,7 @@ sub init {
         route               => undef,
         run                 => undef,
         scheme              => 'scheme',
-        script_name         => undef,
+        script_name         => sub { shift()->{'scope'}{'root_path'} || '' },
         secure              => \&secure,
         sendfile            => undef,
         send_http_header    => undef,
@@ -221,7 +221,7 @@ sub new {
 
             #  Get from URI and location
             #
-            my $uri=$r{'uri'} || $r{'req'}->path();
+            my $uri=$r{'uri'} || scope_path($r{'scope'});
             debug("uri: $uri");
             my @uri_part=grep { length($_) } split(m{/+}, $uri);
             if (grep { $_ eq '..' } @uri_part) {
@@ -286,6 +286,22 @@ sub new {
     #  Finished, pass back
     #
     return bless \%r, $class;
+
+}
+
+
+sub scope_path {
+
+    my $scope_hr=shift();
+    my $path=$scope_hr->{'path'} || '';
+    my $root=$scope_hr->{'root_path'} || '';
+
+    #  Strip the mount prefix only at a path boundary, so /app does not
+    #  match /apple. Preserve the original scope for downstream consumers.
+    #
+    $root=~s{/+$}{};
+    $path=~s{^\Q$root\E(?=/|$)}{} if length($root);
+    return $path;
 
 }
 

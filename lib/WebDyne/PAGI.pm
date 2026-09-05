@@ -494,10 +494,11 @@ sub handler_http {
             #  localized global %ENV across an asynchronous response await.
             #
             local *ENV=\%ENV_BASE;
-            @ENV{qw(PATH_INFO QUERY_STRING REQUEST_METHOD)}=(
-                $scope->{'path'} || '',
+            @ENV{qw(PATH_INFO QUERY_STRING REQUEST_METHOD SCRIPT_NAME)}=(
+                WebDyne::Request::PAGI::scope_path($scope),
                 $scope->{'query_string'} || '',
                 $scope->{'method'} || '',
+                $scope->{'root_path'} || '',
             );
 
             #  If the requested path is not a file, an API PSP may own a path
@@ -647,7 +648,7 @@ sub api_filename {
     my ($self, $scope)=@_;
     return unless WEBDYNE_API_ENABLE;
 
-    my $path=$scope->{'path'} || '';
+    my $path=WebDyne::Request::PAGI::scope_path($scope);
     return unless length($path);
 
     my @part=grep { length($_) } split(m{/+}, $path);

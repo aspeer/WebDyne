@@ -28,6 +28,10 @@ Like the PSGI adapter, it can derive a target filename from the request path, co
 
     Construct a PAGI-backed request adapter.
 
+* **path_info() / script_name()**
+
+    Return the application-relative path and the PAGI `root_path` mount point. Filename and API lookup strip the mount prefix at a path boundary; `path()` and the original scope retain the full request path.
+
 * **env()**
 
     Return the normalized environment view used by the adapter.
