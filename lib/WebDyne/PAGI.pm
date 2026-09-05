@@ -418,47 +418,75 @@ sub handler_http {
         #
         my ($r, $html, $html_fh, $status, $req_or, $res_or);
 
-        #  CGI::Simple parses request bodies synchronously. Read URL-encoded
-        #  bodies through PAGI's buffered helper, and stage bounded multipart
-        #  bodies while still inside this async request handler, before
-        #  entering the localized %ENV scope below.
+        #  WebDyne page code reads synchronously. Buffer HTTP bodies before
+        #  dispatch, bounded by the existing 512 KiB default upload limit.
+        #  Count actual bytes even when Content-Length is absent or inaccurate.
+        #  Wrapping receive preserves PAGI's buffered body/json helpers; using
+        #  body_stream for every request would disable those helpers.
         #
-        $req_or=PAGI::Request->new($scope, $receive) ||
+        my ($body_bytes, $body_oversize, $body_disconnected)=(0, 0, 0);
+        my $bounded_receive_cr=async sub {
+            my $event_hr=await $receive->();
+            if ($event_hr->{'type'} eq 'http.disconnect') {
+                $body_disconnected=1;
+                return $event_hr;
+            }
+            die "unexpected event while reading HTTP body" unless $event_hr->{'type'} eq 'http.request';
+            $body_bytes += length(defined($event_hr->{'body'}) ? $event_hr->{'body'} : '');
+            if ($body_bytes > $WEBDYNE_CGI_POST_MAX) {
+                $body_oversize=1;
+                die "request body exceeds upload limit";
+            }
+            return $event_hr;
+        };
+        $req_or=PAGI::Request->new($scope, $bounded_receive_cr) ||
             return err('unable to get PAGI::Request object');
         $res_or=PAGI::Response->new($scope) ||
             return err('unable to get PAGI::Response object');
-        if (
-            ($req_or->content_type() || '') =~ m{\Aapplication/x-www-form-urlencoded\b}i
-            #  PAGI body events can carry form data without Content-Length.
-            #  Read through the final event before synchronous CGI parsing.
-            # && $req_or->content_length()
-        ) {
-            await $req_or->body();
-        }
-        elsif (
-            ($req_or->content_type() || '') =~ m{\Amultipart/form-data(?:\s*;|\z)}i
-            #  Chunked requests need not declare Content-Length. Stage their
-            #  body too, retaining the independent upload size limit below.
-            # && $req_or->content_length()
-        ) {
-            my $multipart_body='';
+
+        #  Reject a declared oversize body before consuming any input. The
+        #  receive counter remains authoritative for bodies we do accept.
+        #
+        my $content_length=$req_or->content_length();
+        $body_oversize=1 if defined($content_length) && $content_length =~ /\A[0-9]+\z/
+            && $content_length > $WEBDYNE_CGI_POST_MAX;
+        unless ($body_oversize) {
             my $staged=eval {
-                my $stream_or=$req_or->body_stream(max_bytes => $WEBDYNE_CGI_POST_MAX);
-                await $stream_or->stream_to(sub { $multipart_body .= shift() });
+                if (
+                    ($req_or->content_type() || '') =~ m{\Aapplication/x-www-form-urlencoded\b}i
+                    #  PAGI form data need not declare Content-Length.
+                    # && $req_or->content_length()
+                ) {
+                    await $req_or->body();
+                }
+                elsif (
+                    ($req_or->content_type() || '') =~ m{\Amultipart/form-data(?:\s*;|\z)}i
+                    #  Stage chunked uploads too, with the independent limit.
+                    # && $req_or->content_length()
+                ) {
+                    my $multipart_body='';
+                    my $stream_or=$req_or->body_stream(max_bytes => $WEBDYNE_CGI_POST_MAX);
+                    await $stream_or->stream_to(sub { $multipart_body .= shift() });
+                    $scope->{'webdyne.pagi.multipart_body'}=\$multipart_body;
+                }
+                else {
+                    await $req_or->body();
+                }
                 1;
             };
-            unless ($staged) {
-                my $error=$@;
-                if ($error =~ /\ARequest body max_bytes exceeded\b/) {
-                    return await $res_or
-                        ->status(HTTP_REQUEST_ENTITY_TOO_LARGE)
-                        ->send("Request body exceeds upload limit\n")
-                        ->respond($send);
-                }
-                die $error;
-            }
-            $scope->{'webdyne.pagi.multipart_body'}=\$multipart_body;
+            die $@ unless $staged || $body_oversize;
         }
+        if ($body_oversize) {
+            return await $res_or
+                ->status(HTTP_REQUEST_ENTITY_TOO_LARGE)
+                ->send("Request body exceeds upload limit\n")
+                ->respond($send);
+        }
+
+        #  PAGI's helpers may return partial bytes on disconnect. Never run
+        #  page code with an incomplete upload or synthesize a response for it.
+        #
+        return if $body_disconnected;
 
         {
             #  Keep the request environment localized only while WebDyne is

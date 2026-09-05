@@ -414,7 +414,7 @@ The constants below are defined by `WebDyne::Constant`. Each definition includes
 
     **Default:** `524288`
 
-    Maximum accepted POST body size for CGI processing, in bytes. The default is 512 KiB.
+    Maximum accepted POST body size for CGI processing, in bytes. The default is 512 KiB. Under PAGI this also bounds all HTTP request bodies buffered before page execution, regardless of method or content type. Bodies exceeding the limit receive HTTP 413; actual bytes are checked even without Content-Length.
 
 * **WEBDYNE_CGI_PARAM_EXPAND**
 

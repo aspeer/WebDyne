@@ -32,7 +32,6 @@ use Data::Dumper;
 use HTTP::Headers::Fast;
 use Future::AsyncAwait;
 use PAGI::Request;
-use File::Temp qw(tempfile);
 
 
 #  WebDyne modules
@@ -355,53 +354,34 @@ sub content_length {
 
 sub body {
 
-    my $r=shift();
+    my $self=shift();
+    my $scope_hr=$self->{'scope'};
 
-    return $r->{'scope'}{'pagi.request.body'}
-        if $r->{'scope'}{'pagi.request.body.read'};
-
-    my $body;
-    if (my $body_or=$r->{'req'}->body()) {
-        $body=$body_or->get;
+    if (exists $scope_hr->{'webdyne.pagi.multipart_body'}) {
+        return ${$scope_hr->{'webdyne.pagi.multipart_body'}};
     }
-    
+    if ($scope_hr->{'pagi.request.body.read'}) {
+        return $scope_hr->{'pagi.request.body'};
+    }
+
+    return err('request body is not buffered; await req()->body() before synchronous access');
+
 }
+
 
 sub body_handle {
 
-    #  Try to munge streamed IO into file handle
-    #
-    my $r=shift();
-    debug($r);
+    my $self=shift();
+    my $body=$self->body();
+    return unless defined($body);
 
-    #  Multipart bodies used by synchronous CGI parsing are staged by the
-    #  async PAGI handler before WebDyne dispatch begins.
+    #  Each handle reads the completed bytes from the beginning. No temporary
+    #  file or private server event-loop access is needed for synchronous IO.
     #
-    if (exists $r->{'scope'}{'webdyne.pagi.multipart_body'}) {
-        my $body_sr=$r->{'scope'}{'webdyne.pagi.multipart_body'};
-        open(my $fh, '<', $body_sr) ||
-            return err('unable to open staged PAGI multipart body: %s', $!);
-        binmode($fh);
-        return $fh;
-    }
-
-    local $SIG{__DIE__};
-    my ($fh, $fn) = tempfile();
-    if (my $stream_or=eval{ $r->{'req'}->body_stream() }) {
-        
-        my $future_or=$stream_or->stream_to_file($fn);
-        my $loop =
-            $r->{'scope'}{'pagi.connection'}
-              {'_connection'}
-              {'idle_timer'}
-              {'IO_Async_Notifier__loop'};
-        debug("loop: $loop, awaiting end");
-        $loop->await($future_or) if $loop;
-        debug("loop completed on fn: $fn, fh: $fh, size: %s", (-s $fn));
-        seek($fh,0,0);
-    }
-    eval {} if $@;
-    return $fh;
+    open(my $body_fh, '<', \$body) ||
+        return err('unable to open buffered PAGI body: %s', $!);
+    binmode($body_fh);
+    return $body_fh;
 
 }
 

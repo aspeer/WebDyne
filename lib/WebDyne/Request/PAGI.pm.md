@@ -46,11 +46,11 @@ Like the PSGI adapter, it can derive a target filename from the request path, co
 
 * **content_length()**
 
-    Return the declared Content-Length when present. Otherwise, return the byte length of a form body already buffered by the PAGI handler, or undef when no buffered length is available. Original request headers remain unchanged.
+    Return the declared Content-Length when present. Otherwise, return the byte length of a body already buffered by the PAGI handler, or undef when no buffered length is available. Original request headers remain unchanged.
 
 * **body() / body_handle()**
 
-    Read or stream the request body.
+    Read the completed HTTP request body buffered before page execution. `body_handle()` returns a fresh binary handle positioned at the beginning of those bytes. Synchronous access requires a buffered body; it does not drive the server event loop.
 
 * **headers_in() / headers_out()**
 
