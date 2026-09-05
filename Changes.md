@@ -1,6 +1,6 @@
 # Revision history for WebDyne
 
-## Unreleased
+## 3.025 - 2026-09-05
 
 - Preserved repeated Set-Cookie headers in PAGI responses and flattened
   repeated PSGI response headers into separate scalar pairs. Apache header
@@ -34,6 +34,18 @@
   made the new PSGI tests skip when optional Plack dependencies are
   unavailable. Refreshed the WebDyne 3.0 release overview and upgrade
   guidance.
+
+- Added GitHub build-provenance attestations for release distribution
+  archives, alongside existing Cosign signatures. README.md now explains
+  verification with gh attestation verify against aspeer/WebDyne, including
+  archives downloaded from CPAN mirrors. Prefixed release-script shell globs
+  with ./ to prevent filenames being interpreted as options.
+
+- Reviewed and expanded the DocBook guide against the current code.
+  Corrected examples and runtime defaults, and added guidance on PAGI async
+  state and await boundaries, SSE and WebSocket completion, request and
+  response handling, uploads, escaping, body limits, and production
+  deployment.
 
 ## 3.024 - 2026-09-05
 

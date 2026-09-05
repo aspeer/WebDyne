@@ -158,6 +158,26 @@ WebDyne supports:
 - CGI-style parameter access from page code
 - standalone rendering and debugging tools
 
+# GitHub Attestations #
+
+WebDyne's release workflow generates [GitHub artifact attestations](https://docs.github.com/en/actions/concepts/security/artifact-attestations) for distribution archives. These allow you to verify that a downloaded archive was built by the official `aspeer/WebDyne` repository's GitHub Actions workflow, and identify the source commit used to build it.
+
+Install the [GitHub CLI](https://cli.github.com/) with support for `gh attestation`, then authenticate with your GitHub account:
+
+```bash
+gh auth login
+```
+
+Download the WebDyne distribution archive from a GitHub release, MetaCPAN, or a CPAN mirror. Replace `VERSION` below with the version you downloaded, then verify the archive before extracting or installing it:
+
+```bash
+gh attestation verify WebDyne-VERSION.tar.gz --repo aspeer/WebDyne
+```
+
+A successful verification confirms that the archive's checksum matches an attestation from this repository. The release workflow publishes the same archive to GitHub and CPAN, so verification works regardless of which mirror supplied it. You do not need to download a separate signature file for this command.
+
+Attestations cover distribution archives produced by the attestation-enabled release workflow. Older releases and GitHub's automatically generated "Source code" archives are not covered.
+
 # Further Reading #
 
 Repository documentation includes:

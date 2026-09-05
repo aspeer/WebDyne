@@ -19,6 +19,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      attestations: write
 
     steps:
       - uses: actions/checkout@v7
@@ -65,8 +66,13 @@ jobs:
             --certificate-identity="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/.github/workflows/release.yml@${GITHUB_REF}" \
             --certificate-oidc-issuer="https://token.actions.githubusercontent.com"
 
+      - name: Attest distribution provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: ${{ steps.sign-dist.outputs.dist_file }}
+
       - name: List generated file
-        run: ls -l *.tar.gz *.tar.gz.sigstore.json
+        run: ls -l ./*.tar.gz ./*.tar.gz.sigstore.json
 
       - name: Upload distribution artifact
         uses: actions/upload-artifact@v4
@@ -120,4 +126,4 @@ jobs:
 
       - name: Publish to CPAN
         run: |
-          cpan-upload -u ${{ secrets.CPAN_USERNAME }} -p ${{ secrets.CPAN_PASSWORD }} *.tar.gz
+          cpan-upload -u ${{ secrets.CPAN_USERNAME }} -p ${{ secrets.CPAN_PASSWORD }} ./*.tar.gz

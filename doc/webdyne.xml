@@ -128,7 +128,7 @@
         </info>
 
         <para><programlisting language="html"><xi:include href="example/introduction8.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-        xlink:href="https://demo.webdyne.org/example/introduction7.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+        xlink:href="https://demo.webdyne.org/example/introduction8.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
       </example></para>
 
     <para>Template blocks and variable replacement are supported also:</para>
@@ -262,6 +262,22 @@ $ <command>cpanm Task::WebDyne::Starman</command></screen>
 
     <section xml:id="runtime_choices">
       <title>Runtime Choices</title>
+
+      <para>The request adapter provides common page operations, but runtime-specific transports remain different. SSE and WebSockets require PAGI; normal HTML, forms, HTMX fragments and explicitly routed API pages can use the other adapters.</para>
+      <informaltable><tgroup cols="4"><thead><row><entry>Feature</entry><entry>Apache/mod_perl</entry><entry>PSGI</entry><entry>PAGI</entry></row></thead><tbody>
+        <row><entry>Normal page rendering</entry><entry>Synchronous</entry><entry>Synchronous</entry><entry>Synchronous rendering inside async HTTP dispatch</entry></row>
+        <row><entry>Extensionless API discovery</entry><entry>Requires Apache routing</entry><entry>Built in</entry><entry>Built in</entry></row>
+        <row><entry>SSE and WebSockets</entry><entry>No WebDyne transport support</entry><entry>No WebDyne transport support</entry><entry>Async connection handlers</entry></row>
+        <row><entry>Request-size protection</entry><entry>LimitRequestBody plus defensive adapter checks</entry><entry>Bounded buffering</entry><entry>Bounded HTTP and URL-encoded SSE setup buffering</entry></row>
+      </tbody></tgroup></informaltable>
+      <para>For command-line rendering the fake adapter simulates a request; it is useful for page tests but does not exercise a network connection. See <link linkend="request_response">Request and response handling</link> and <link linkend="pagi_async">Writing asynchronous PAGI applications</link>.</para>
+      <section xml:id="application_defaults"><title>Wrappers and application-builder defaults</title>
+        <para>The <command>webdyne.psgi</command> and <command>webdyne.pagi</command> wrappers currently pass <code>static =&gt; 1</code> and <code>conf =&gt; 1</code> when constructing an application, including when an external server loads the wrapper. Directly constructed <classname>WebDyne::PSGI</classname> and <classname>WebDyne::PAGI</classname> objects do not enable root configuration loading by default, and their package static-serving default is off. An explicit <property>static</property> instance option takes precedence over the package setting. Use <option>--no-static</option> when starting a wrapper directly to disable its static middleware.</para>
+        <para>Static middleware serves the extensions selected by <varname>WEBDYNE_PSGI_MIDDLEWARE_STATIC</varname> or <varname>WEBDYNE_PAGI_MIDDLEWARE_STATIC</varname>. Treat files under those roots as potentially public; an extension allowlist is not authorisation. Static assets handled by middleware do not go through page rendering.</para>
+        <para>For a direct application, <code>conf =&gt; 1</code> loads <filename>.webdyne.conf.pl</filename> from the root, or from the parent directory when the root is a file. Another true value names a configuration file relative to that root unless absolute. Configuration updates package state; constructing multiple applications does not isolate their constants.</para>
+        <para>Direct command wrappers default their indexing option to off. <option>--index</option> selects the built-in development index, while <option>--index=FILE</option> or <envar>DOCUMENT_DEFAULT</envar> selects a default file. When a server loads the wrapper as an application, its default-document configuration normally selects <filename>app.psp</filename>. These are distinct from enabling a browsable file listing. Source viewing is a further opt-in.</para>
+        <para>When mounting an application, let the mount middleware supply the request prefix: PSGI uses <literal>SCRIPT_NAME</literal> and <literal>PATH_INFO</literal>, while PAGI uses <literal>root_path</literal> and <literal>path</literal>. WebDyne resolves the application-relative path under its filesystem root. Do not repeat the mount prefix in API route patterns.</para>
+      </section>
 
       <section xml:id="psgi">
         <title>PSGI</title>
@@ -580,6 +596,9 @@ my $webdyne_app = WebDyne::PAGI-&gt;new(
 
 builder {
     async sub ($scope, $receive, $send) {
+        if ($scope-&gt;{type} eq 'lifespan') {
+            return await $webdyne_app-&gt;($scope, $receive, $send);
+        }
         if (($scope-&gt;{path} // '') =~ /\.psp$/i) {
             return await $webdyne_app-&gt;($scope, $receive, $send);
         }
@@ -618,10 +637,12 @@ builder {
         <para>Once <command>wdapacheinit</command> has been run the Apache server should be reloaded or restarted. Use a method appropriate for your Linux distribution.</para>
 
         <screen>
-[root@localhost ~]# <command>systemctl httpd restart</command>
+[root@localhost ~]# <command>systemctl restart httpd</command>
 Stopping httpd:                                            [  OK  ]
 Starting httpd:                                            [  OK  ]
 </screen>
+
+        <para>Configure Apache's <literal>LimitRequestBody</literal> in the WebDyne directory or virtual host as the primary body-size protection. For example, <literal>LimitRequestBody 524288</literal> matches WebDyne's default 512 KiB defensive limit. Adjust both it and <varname>WEBDYNE_CGI_POST_MAX</varname> for larger uploads. The adapter's uncaught body-validation exceptions normally produce HTTP 500; they do not replace the server's request-limit handling. See <link linkend="request_body_limits">Body limits</link>.</para>
 
         <section>
           <info>
@@ -678,6 +699,8 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
 &lt;/Perl&gt;
 
 </screen></para>
+
+          <note><para>The error-display settings above are intended for development. Disable detailed error and source-context output on a public deployment; see <link linkend="production_considerations">Production considerations</link>. Keep cache files outside public document roots and grant only the filesystem access required by the server.</para></note>
 
           <important>
             <para>Substitute directory paths in the above example for the relevant/correct/appropriate ones on your system.</para>
@@ -808,8 +831,7 @@ $ <command>docker run -e WEBDYNE_SERVER=pagi -e PORT=5002 -p 5002:5002 --name=we
           <term><envar>DOCUMENT_DEFAULT</envar></term>
 
           <listitem>
-            <para>The default document to serve from <envar>DOCUMENT_ROOT</envar>. If omitted, the command wrappers enable WebDyne's built-in default index behavior, which uses
-            <filename>app.psp</filename> in the published Docker images.</para>
+            <para>The default document to serve from <envar>DOCUMENT_ROOT</envar>. If omitted, server-loaded wrapper configuration normally selects <filename>app.psp</filename>. This is a default page, not an automatically enabled directory listing.</para>
           </listitem>
         </varlistentry>
 
@@ -832,6 +854,8 @@ $ <command>docker run -e WEBDYNE_SERVER=pagi -e PORT=5002 -p 5002:5002 --name=we
           </listitem>
         </varlistentry>
       </variablelist>
+
+      <para>The container entrypoint runs <command>cpanm --installdeps</command> when a <filename>cpanfile</filename> exists in its working directory. For reproducible deployments, install and pin application dependencies when building the image rather than relying on network access at every startup. A custom image must use the fully qualified base image name, such as <literal>ghcr.io/aspeer/webdyne:latest</literal>; pin a release tag or digest when deployment reproducibility matters.</para>
 
       <para>See the <link linkend="docker_runtime_server_tuning">Docker Runtime Server Tuning</link> reference section for server worker, timeout and connection limit environment variables.</para>
 
@@ -1044,7 +1068,7 @@ sub greeting { return \undef }
           </info>
 
           <para><programlisting language="html"><xi:include href="example/noninline3a.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
-          xlink:href="https://demo.webdyne.org/example/noninline3.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
+          xlink:href="https://demo.webdyne.org/example/noninline3a.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
         </example>
 
         <para>Note that there is a syntactic shortcut available if you have a single handler - just call the subroutine "<methodname>handler</methodname>" and it will be invoked by
@@ -1173,9 +1197,7 @@ sub greeting { return \undef }
           <title>Notes about <token>__PERL__</token> sections</title>
         </info>
 
-        <para>Code in <token>__PERL__</token> sections has some particular properties.<token> __PERL__</token> code is only executed once. Subroutines defined in a<token> __PERL__</token>
-        section can be called as many times as you want, but the code outside of subroutines is only executed the first time a page is loaded. No matter how many times it is run, in the
-        following code <varname>$i</varname> will always be 1:</para>
+        <para>Top-level code in a <token>__PERL__</token> section runs when the compiled page package is loaded into an interpreter, rather than on every request. A reload, recompilation or another worker can initialise a new package. Subroutines in that package can be called repeatedly. In the following example, initialisation sets <varname>$i</varname> to 1; it is not a request counter. Put request-dependent work inside handlers.</para>
 
         <para><example>
             <info>
@@ -1185,6 +1207,8 @@ sub greeting { return \undef }
             <para><programlisting language="html"><xi:include href="example/noninline4.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
             xlink:href="https://demo.webdyne.org/example/noninline4.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
           </example></para>
+
+        <para>Page-package variables are shared across requests in that interpreter. They are useful for immutable setup data, but should not hold per-user state. The following examples deliberately contrast inaccessible variables with valid access patterns; a warning or empty value in a case labelled as failing is expected.</para>
 
         <para>Lexical variables are not accessible outside of the <token>__PERL__</token> section due to the way perl's eval() function works. The following example will fail:</para>
 
@@ -1204,7 +1228,37 @@ sub greeting { return \undef }
               <title>Perl code variable scope</title>
             </info>
 
-            <para><programlisting language="html"><xi:include href="example/noninline6.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+            <para><programlisting language="html" xml:id="corrected_noninline6">&lt;html&gt;
+&lt;head&gt;&lt;title&gt;Hello World&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- Does not work --&gt;
+The value of $i is !{! $::i !}
+&lt;p&gt;
+
+&lt;!-- Ugly hack, does work though --&gt;
+The value of $i is !{! ${__PACKAGE__.'::i'} !}
+&lt;p&gt;
+
+&lt;!-- Probably best to just do this though --&gt;
+The value of $i is !{! &amp;get_i() !}
+&lt;p&gt;
+
+&lt;!-- Or this - see variable substitution section  --&gt;
+&lt;perl handler="render_i"&gt;
+The value of $i is ${i}
+&lt;/perl&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+
+__PERL__
+
+our $i=5;
+
+sub get_i { \$i }
+
+sub render_i { shift()-&gt;render(i=&gt;$i) }</programlisting><link
             xlink:href="https://demo.webdyne.org/example/noninline6.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
           </example></para>
 
@@ -1272,8 +1326,7 @@ sub greeting { return \undef }
         </listitem>
 
         <listitem>
-          <para><varname>^{requestmethod}</varname> for Apache request (<varname>$r=Apache-&gt;request</varname>) object methods, e.g. <varname>^{protocol}</varname>. Only available for in
-          Apache/mod_perl, and only useful for request methods that return a scalar value.</para>
+          <para><varname>^{requestmethod}</varname> calls a method on the current WebDyne request adapter, for example <varname>^{protocol}</varname>. It is available across runtimes when the adapter implements the method. Use methods returning scalar values; backend-specific capabilities are not automatically portable.</para>
         </listitem>
       </itemizedlist>
 
@@ -1284,9 +1337,95 @@ sub greeting { return \undef }
             <title>Variable usage</title>
           </info>
 
-          <para><programlisting language="html"><xi:include href="example/var4.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting><link
+          <para><programlisting language="html" xml:id="corrected_var4">&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Variables&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;!-- Environment variables --&gt;
+
+&lt;p&gt;
+&lt;!-- Short Way --&gt;
+Request Method: *{REQUEST_METHOD}
+&lt;br&gt;
+&lt;!-- Same as Perl code --&gt;
+Request Method:
+&lt;perl&gt; $ENV{'REQUEST_METHOD'} &lt;/perl&gt;
+
+
+&lt;!-- Request record methods. Only methods that return a scalar result are usable --&gt;
+
+&lt;p&gt;
+&lt;!-- Short Way --&gt;
+Request Protocol: ^{protocol}
+&lt;br&gt;
+&lt;!-- Same as Perl code --&gt;
+Request Protocol:
+&lt;perl&gt; my $self=shift(); my $r=$self-&gt;r(); return $r-&gt;protocol() &lt;/perl&gt;
+
+
+&lt;!-- CGI params --&gt;
+
+&lt;form&gt;
+Your Name:
+&lt;p&gt;&lt;textfield name="name" default="Test" size="12"&gt;
+&lt;p&gt;&lt;submit name="Submit"&gt;
+&lt;/form&gt;
+&lt;p&gt;
+&lt;!-- Short Way --&gt;
+You Entered: +{name}
+&lt;br&gt;
+&lt;!-- Same as Perl code --&gt;
+You Entered:
+&lt;perl&gt; my $self=shift(); my $cgi_or=$self-&gt;CGI(); return $cgi_or-&gt;param('name') &lt;/perl&gt;
+&lt;br&gt;
+&lt;!-- CGI vars are also loaded into the %_ global var, so the above is the same as --&gt;
+You Entered:
+&lt;perl&gt; $_{'name'} &lt;/perl&gt;
+
+
+&lt;!-- Array Syntax --&gt;
+
+&lt;form&gt;
+&lt;p&gt;
+Favourite colour 1:
+&lt;p&gt;&lt;popup_menu name="popup_menu1" values="@{qw(red green blue)}"&gt;
+
+
+&lt;!-- Hash Syntax --&gt;
+
+&lt;p&gt;
+Favourite colour 2 (pick multiple):
+&lt;p&gt;&lt;popup_menu multiple name="popup_menu2" values="%{red=&gt;'Red', green=&gt;'Green', blue=&gt;'Blue', orange=&gt;'Orange', yellow=&gt;'Yellow'}" default='green'&gt;
+&lt;p&gt;&lt;submit name="Submit"&gt;
+
+&lt;/form&gt;
+
+&lt;perl handler run="+{popup_menu1}"&gt;
+Favourite colour 1: +{popup_menu1}
+&lt;p&gt;
+Favourite colour 2: ${popup_menu2_values}
+&lt;/perl&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+
+__PERL__
+
+sub handler {
+	my $self=shift();
+    return $self-&gt;render(popup_menu2_values =&gt; join(',', $self-&gt;CGI()-&gt;param('popup_menu2')));
+}</programlisting><link
           xlink:href="https://demo.webdyne.org/example/var4.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
         </example></para>
+    </section>
+
+    <section xml:id="escaping_values"><title>Escaping values and separating parameter sources</title>
+      <para>With <varname>WEBDYNE_CGI_AUTOESCAPE</varname> enabled (the default), text substitutions <literal>+{name}</literal>, <literal>*{NAME}</literal> and <literal>^{method}</literal> HTML-escape request, environment and request-method values. Generated form values and attributes are also escaped by the HTML helper. Disabling this setting restores legacy raw behaviour and should not be used as a general solution to double escaping.</para>
+      <para><literal>${name}</literal> inserts a render parameter as raw content, and Perl handler return values are also output content. Neither is automatically safe merely because it was passed through WebDyne. Escape untrusted text before placing it in a raw render parameter; use <classname>HTML::Entities</classname> or the HTML helper, and avoid escaping the same value twice.</para>
+      <para>HTML escaping is not JavaScript, JSON, URL or SQL escaping. Use an appropriate encoder for the destination and validate application inputs. A <literal>javascript:</literal> URL is not made safe by escaping quotes. Take special care when embedding untrusted JSON in a script element: browser script termination rules also apply.</para>
+      <para>Render parameters passed to <methodname>render()</methodname> are separate from CGI parameters. A normal handler's second argument contains its tag/inherited parameters; an API handler receives route matches, and an SSE/WebSocket handler receives connection CGI parameters. The normal <varname>%_</varname> shortcut is a convenience view of CGI values, not a general shared parameter store.</para>
     </section>
 
     <section>
@@ -1333,8 +1472,7 @@ sub greeting { return \undef }
         </example>
 
         <caution>
-          <para>Make sure any attributes using the <parameter>@{..}</parameter> or <parameter>%{..}</parameter> convention are on one line - the parser may not interpret them correctly if
-          spanning multiple lines.</para>
+          <para>Array and hash attributes must occupy the whole attribute value and contain valid Perl expressions. Multiline values are supported; keep quotes and braces balanced, and quote string values where Perl requires them. Use <command>wdlint</command> to check embedded expressions and <command>wdrender</command> to inspect the resulting HTML.</para>
         </caution>
 
         <para>If using the <tag>&lt;start_html&gt;</tag> shortcut tag you can optionally insert default stylesheets and/or <tag>&lt;head&gt;</tag> sections from the Webdyne configuration file.
@@ -1352,13 +1490,13 @@ sub greeting { return \undef }
             #  This one rendered as &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt;
             'http-equiv=X-UA-Compatible' =&gt; 'IE=edge',
             'http-equiv=refresh' =&gt; '5; url=https://www.example.com'
-        }
+        },
 
         #  This is inserted inside the &lt;html&gt; starting tag, works for &lt;start_html&gt; or straight &lt;html&gt;
         #
         WEBDYNE_HTML_PARAM =&gt; {
             lang =&gt; 'de'
-        }
+        },
 
         #  This is inserted before the &lt;/head&gt; closing tag, works for &lt;start_html&gt; or straight &lt;html&gt;
         #
@@ -1366,7 +1504,7 @@ sub greeting { return \undef }
 &lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css"&gt;
 &lt;style&gt;
 :root { --pico-font-size: 85% }
-body { padding-top: 10px; padding-left: 10px;
+body { padding-top: 10px; padding-left: 10px; }
 &lt;/style&gt;
 END
 
@@ -1385,6 +1523,7 @@ END
 &lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css"&gt;
 &lt;style&gt;
     :root { --pico-font-size: 85% }
+    body { padding-top: 10px; padding-left: 10px; }
 &lt;/style&gt;
 &lt;/head&gt;
 </screen>
@@ -1592,7 +1731,7 @@ END
 
       <para>Constitute all the files needed to stand up a WebDyne based application in a Docker container. The contents of the Dockerfile are minimal:</para>
 
-      <screen>FROM webdyne:latest
+      <screen>FROM ghcr.io/aspeer/webdyne:latest
 WORKDIR /app
 # Debian packages needed for this app
 RUN apt-get update &amp;&amp; apt-get -y install fortunes
@@ -1788,10 +1927,9 @@ COPY webdyne.conf.pl /etc</screen>
         </example></para>
 
       <para>In fact the above page will render very quickly because it has no dynamic content at all once the &lt;perl&gt; content is flagged as static. The WebDyne engine will recognise this
-      and store the page as a static HTML file in its cache. Whenever it is called WebDyne will use the Apache <methodname>lookup_file()</methodname> or equivalent Plack function to return the
-      page as if it was just serving up static content.</para>
+      and store the page as a static HTML file in its cache. Whenever it is called WebDyne can return the cached HTML through the active request adapter without repeating the original rendering work.</para>
 
-      <para>You can check this by looking at the content of the WebDyne cache directory (usually /var/webdyne/cache). Any file with a ".html" extension represents the static version of a
+      <para>You can check this by looking at the content of the WebDyne cache directory (the configured <varname>WEBDYNE_CACHE_DN</varname>). Any file with a ".html" extension represents the static version of a
       page.</para>
 
       <para>Of course you can still mix static and dynamic Perl sections:</para>
@@ -1866,6 +2004,10 @@ COPY webdyne.conf.pl /etc</screen>
           check that <varname>$WEBDYNE_CACHE_DN</varname> is defined and permissions set correctly for your web server.</para>
         </important></para>
 
+      <para>There are several independent caches: the parsed/compiled page tree, HTML generated from static sections, application-selected page variants, and browser/proxy HTTP caching. <methodname>no_cache()</methodname> controls HTTP response headers; it does not force server-side page recompilation. <methodname>cache_compile()</methodname> and the cache handler govern that separate decision.</para>
+      <para>Cached page packages and metadata persist within each worker. Static output and includes can retain values from the request that first generated them. Do not mark personalised or permission-dependent content static unless the cache identity and invalidation policy separate the relevant users and permissions. Validate and bound cache seeds; a hash of unlimited user input still creates unlimited cache variants.</para>
+      <para>The disk cache location is deployment-dependent. Check <varname>WEBDYNE_CACHE_DN</varname> rather than assuming a fixed path; a basic module installation can leave it unset. A timestamp of zero can be valid on virtual filesystems: distinguish it from an undefined timestamp when writing cache policies.</para>
+
       <para>There are many potential examples, but consider this one: you have a page that generates output by making a complex query to a database, which takes a lot of CPU and disk IO
       resources to generate. You need to update the page reasonably frequently (e.g. a weather forecast, near real time sales stats), but can't afford to have the query run every time someone
       view the page.</para>
@@ -1876,7 +2018,7 @@ COPY webdyne.conf.pl /etc</screen>
       <para>WebDyne knows to enable the caching code by looking for a meta tag, or by loading the <classname>WebDyne::Cache</classname> module in a <token>__PERL__</token> block.</para>
 
       <para>The cache code can command WebDyne to recompile a page based on any arbitrary criteria it desires. As an example the following code will recompile the page every 10 seconds. If
-      viewed in between refresh intervals WebDyne will serve up the cached HTML result using Apache <code>$r-&gt;lookup_file()</code> or the FCGI equivalent, which is very fast.</para>
+      viewed in between refresh intervals WebDyne will serve up the cached HTML result through the active request adapter without re-running the static page code.</para>
 
       <para>Try it by running the following example and clicking refresh a few times over a 20 second interval</para>
 
@@ -1910,6 +2052,59 @@ COPY webdyne.conf.pl /etc</screen>
           a malicious user could potentially DOS the server by supplying endless random "months" to the above page with a script, causing WebDyne to create a new file for each UID - perhaps
           eventually filling the disk partition that holds the cache directory. That is why we check the month is valid in the code above.</para>
         </important></para>
+    </section>
+
+    <section xml:id="request_response"><title>Request and response handling</title>
+      <para>Use <code>$self-&gt;r()</code> for the WebDyne request adapter and <code>$self-&gt;CGI()</code> for parsed form/query parameters. Native transport helpers are separate objects: PAGI provides <code>$self-&gt;r()-&gt;req()</code>, <methodname>res()</methodname>, <methodname>sse()</methodname> and <methodname>ws()</methodname> where applicable. Avoid reaching into backend object internals in portable page code.</para>
+      <section xml:id="request_parameters"><title>Request parameters and repeated values</title>
+        <para>Scalar <methodname>param()</methodname> returns the first value; list context returns all values. <methodname>Vars()</methodname> returns a <classname>Hash::MultiValue</classname> whose hash view selects the last value. Validate both the permitted values and the permitted number of values for an input; do not let different layers choose conflicting values.</para>
+        <programlisting xml:id="request_parameter_code" language="perl">my $cgi_or=$self-&gt;CGI();
+my $first=scalar($cgi_or-&gt;param('choice'));
+my @choices=$cgi_or-&gt;param('choice');
+my $values_hr=$cgi_or-&gt;Vars();
+my $last=$values_hr-&gt;{'choice'};
+my @all=$values_hr-&gt;get_all('choice');</programlisting>
+        <para>For the default checkbox submission <literal>flag=0&amp;flag=1</literal>, the first value is 0 and the last is 1. In normal synchronous page code <code>$_{'flag'}</code> uses the last-value view. For more complex controls, explicitly inspect all values. API route matches in a handler's second argument do not replace the CGI parameter object.</para>
+      </section>
+      <section xml:id="request_body_limits"><title>Raw bodies, JSON and body limits</title>
+        <para>The adapter's <methodname>body()</methodname> returns body bytes synchronously. PSGI and PAGI HTTP dispatch buffer the body before page execution, bounded by <varname>WEBDYNE_CGI_POST_MAX</varname>, whose default is 524288 bytes (512 KiB). This limit includes JSON and other non-form bodies, regardless of HTTP method. A buffered <methodname>body_handle()</methodname> is not evidence of a network-streaming upload API.</para>
+        <programlisting xml:id="request_json_code" language="perl">use JSON ();
+
+# Inside a normal HTTP handler; validate Content-Type and the decoded shape
+# according to the endpoint contract before using the data.
+my $body=$self-&gt;r()-&gt;body();
+my $data_hr=JSON::decode_json($body);
+die "expected a JSON object\n" unless ref($data_hr) eq 'HASH';</programlisting>
+        <para>JSON body data is not automatically turned into ordinary form fields. Do not read the native transport input independently after WebDyne has consumed it. PAGI multipart bodies are staged separately for synchronous CGI parsing; use the WebDyne body/form interfaces rather than assuming every native PAGI body helper remains available.</para>
+        <informaltable><tgroup cols="3"><thead><row><entry>Runtime</entry><entry>Body handling</entry><entry>Failure behaviour</entry></row></thead><tbody>
+          <row><entry>PSGI HTTP</entry><entry>Bounded buffering; short reads and missing Content-Length supported; declared length is respected</entry><entry>Oversize: 413. Invalid length, premature EOF or read failure: 400</entry></row>
+          <row><entry>PAGI HTTP</entry><entry>Bounded buffering, including multipart; actual bytes counted independently of Content-Length</entry><entry>Oversize: 413. A disconnect during staging abandons dispatch rather than processing a partial upload</entry></row>
+          <row><entry>PAGI SSE setup</entry><entry>Bounded URL-encoded form buffering; EventSource query parameters supported</entry><entry>Oversize: SSE HTTP denial with 413. Multipart SSE setup is unsupported</entry></row>
+          <row><entry>Apache</entry><entry>LimitRequestBody is primary; body and streaming-handle reads also check WebDyne's limit and incomplete input</entry><entry>Adapter validation throws; uncaught exceptions normally become 500. Configure the server limit for server-level rejection</entry></row>
+        </tbody></tgroup></informaltable>
+        <para>Set a larger WebDyne limit explicitly for applications that accept larger payloads. Under Apache keep <literal>LimitRequestBody</literal> consistent. Under PAGI, the server's own maximum body size is another independent limit. The smallest effective limit wins; increasing only one layer is insufficient. These limits apply to body bytes, not WebSocket message size, SSE output volume or all in-memory copies during parsing.</para>
+      </section>
+      <section xml:id="request_uploads"><title>Uploaded files</title>
+        <para>Use <tag>&lt;start_multipart_form&gt;</tag> with <tag>&lt;filefield&gt;</tag> for normal HTTP uploads. The <property>multiple</property> attribute permits more than one file. Forms without Content-Length are supported by the HTTP adapters; Apache/PSGI/PAGI staging and validation occur before the synchronous parser consumes the relevant bytes.</para>
+        <programlisting xml:id="request_upload_code" language="perl">my $uploads_hr=$self-&gt;CGI()-&gt;uploads();
+foreach my $upload_or ($uploads_hr-&gt;get_all('file')) {
+    my $client_name=$upload_or-&gt;filename();
+    my $size=$upload_or-&gt;size();
+    my $input_fh=$upload_or-&gt;fh();
+    # Validate the file, then read/copy from $input_fh to an application-owned
+    # destination selected by the server, not by $client_name.
+}</programlisting>
+        <para>The wrapper supplies <methodname>filename()</methodname>, <methodname>basename()</methodname>, <methodname>size()</methodname>, <methodname>content_type()</methodname>, <methodname>fh()</methodname> and <methodname>content()</methodname>. Its <methodname>path()</methodname> is a compatibility alias for the handle, not a guaranteed filesystem pathname. <methodname>content()</methodname> reads the entire upload; prefer handle reads for copying. Client filenames and MIME types are untrusted. Copy data that must survive the request to an application-owned location before request cleanup.</para>
+      </section>
+      <section xml:id="response_headers"><title>Response headers, cookies and redirects</title>
+        <para>For ordinary HTTP pages, set headers before returning output. The portable setter replaces a header value:</para>
+        <programlisting xml:id="response_header_code" language="perl">my $request_or=$self-&gt;r();
+$request_or-&gt;headers_out('X-Request-Result' =&gt; 'complete');
+$request_or-&gt;status(200);</programlisting>
+        <para>Repeated cookies must remain separate <literal>Set-Cookie</literal> fields. For PSGI/PAGI, the response header object supports <methodname>push_header()</methodname>. Apache's no-argument <methodname>headers_out()</methodname> returns a detached snapshot: changing it does not change the native response table. Append through the native Apache request's <code>headers_out()-&gt;add()</code> API instead. Reading an Apache snapshot now preserves repeated values.</para>
+        <para>Use the runtime's cookie serialisation helper rather than concatenating unchecked input into cookie headers. Set cookie attributes deliberately. For browser navigation, <code>$self-&gt;redirect(uri =&gt; '/next')</code> uses the page redirect facility; HTML/text/JSON redirection replaces accumulated page output. Choose destinations from trusted routes or validate them, rather than reflecting an arbitrary submitted URL.</para>
+        <para>SSE/WebSocket handshakes and established connections use their own helper/event APIs. Normal page response headers and redirects are not automatically forwarded into those transports. Establish any ordinary session cookie through a normal HTTP response before opening a long-lived connection, and validate that session when authorising the connection.</para>
+      </section>
     </section>
 
     <section xml:id="dynamic_interfaces">
@@ -2149,6 +2344,119 @@ COPY webdyne.conf.pl /etc</screen>
         </section>
       </section>
 
+      <section xml:id="pagi_async"><title>Writing asynchronous PAGI applications</title>
+        <para>PAGI supplies asynchronous transport, while WebDyne's ordinary page compiler and renderer are synchronous. The HTTP adapter awaits and bounds request input before invoking page code, then sends the completed response asynchronously. SSE and WebSocket callbacks are the supported long-lived async page entry points. Declaring an ordinary <tag>&lt;perl&gt;</tag>, <tag>&lt;api&gt;</tag> or <tag>&lt;htmx&gt;</tag> handler <literal>async</literal> does not make the normal renderer await its result.</para>
+        <para>Use <classname>Future::AsyncAwait</classname> for async callbacks. PAGI, its server and its helper distributions have their own Perl and dependency requirements; these can be newer than the base WebDyne module requirements. Install the runtime stack appropriate to your interpreter and use the matching PAGI specification/helper documentation when calling low-level APIs.</para>
+        <section xml:id="pagi_async_state"><title>Connection state, parameters and scope</title>
+          <para>SSE and WebSocket callbacks receive <code>($self, $param_hr)</code>. The second argument is built from <code>CGI()-&gt;Vars()</code> during connection setup, so hash access selects the last value of repeated parameters. Query parameters are connection inputs, not a live view of changes in the browser; send new WebSocket messages or start another HTTP request when inputs change.</para>
+          <para>Keep connection-specific state in lexical variables captured by that callback. Page-package globals and module variables can be shared by concurrent connections in the same worker. Other workers have independent copies; use an external store or messaging service for state that must be shared across processes.</para>
+          <para>Do not rely on <varname>%_</varname>, request-localised <varname>%ENV</varname>, temporary <varname>@INC</varname> changes or a process working directory remaining suitable across <function>await</function>. Capture needed request metadata and absolute paths before suspending. Prefer the request/helper object for headers and scope information. Use explicit <property>require</property>/<property>import</property> dependencies or ordinary module imports rather than depending on a later normal rendering pass to initialise a connection.</para>
+          <para>Do not modify WebDyne constants or shared page metadata per connection. Configuration and compiled metadata have a longer lifetime than a request. An application with multiple roots in one interpreter must account for their shared configuration namespace.</para>
+        </section>
+        <section xml:id="pagi_async_await"><title>Awaiting work without blocking the worker</title>
+          <para><function>await</function> suspends the current coroutine while its Future is pending. It does not turn a synchronous database query, filesystem operation, external command or HTTP client into nonblocking work. Such calls still block other connections in the same event-loop worker. Use compatible asynchronous clients, bounded worker services, or an ordinary HTTP/job endpoint for slow operations.</para>
+          <para>Use asynchronous timers instead of Perl's blocking <function>sleep()</function>. The SSE helper's <methodname>every()</methodname> supports periodic callbacks and monitors disconnection; it requires <classname>Future::IO</classname> with a backend compatible with the running server. Do not install a conflicting event loop inside a page. For costly or infrequent updates, event-driven notifications avoid polling once per client.</para>
+          <para><classname>Future::AsyncAwait</classname> has restrictions around dynamic localisation and suspension inside <function>map</function>/<function>grep</function>. Use lexical loop variables and an explicit loop for awaited operations:</para>
+          <programlisting xml:id="pagi_await_loop" language="perl"># Fragment inside an async handler. Obtain work items from your application.
+foreach my $item (@items) {
+    my $result=await $client_or-&gt;fetch($item);
+    push @results, $result;
+}</programlisting>
+          <para>The client above is application-specific. Bound concurrency when starting several operations, retain the Futures whose work you own, and ensure completion or cancellation of that work during connection cleanup. Do not let request-related producers outlive the request unintentionally.</para>
+        </section>
+        <section xml:id="pagi_async_completion"><title>Send completion, flow control and disconnects</title>
+          <para>Await every send operation and any asynchronous close before allowing the handler Future to complete. Returning from the async callback tells the server that application work for the connection is complete; retaining an unawaited send Future is not a substitute for awaiting it.</para>
+          <para>A successful send means the server has finished using the event and any associated application-owned resource. It may have accepted output or discarded it because the connection ended; success does not guarantee browser delivery. A pending send can provide flow control for a slow client. Do not cancel send Futures to implement a disconnect policy.</para>
+          <para>Detect disconnects through the protocol's receive event or a helper that monitors those events. Sending is not itself a reliable disconnect probe. Stop unnecessary work, release subscriptions and handles, and cancel application-owned pending timers or jobs where appropriate. Avoid multiple independent consumers competing for the same receive callback.</para>
+          <para>These contracts are defined in <link xlink:href="https://metacpan.org/dist/PAGI/view/lib/PAGI/Spec.pod" xmlns:xlink="http://www.w3.org/1999/xlink">PAGI::Spec</link>. Future syntax restrictions are described in <link xlink:href="https://metacpan.org/pod/Future::AsyncAwait" xmlns:xlink="http://www.w3.org/1999/xlink">Future::AsyncAwait</link>. Use the server's advertised extensions before relying on optional transport features.</para>
+        </section>
+        <section xml:id="pagi_async_sse"><title>SSE lifecycle and form setup</title>
+          <para>Browser <classname>EventSource</classname> uses a GET event-stream request. Put small connection options in the URL; URL-encoded SSE POST bodies require a client capable of issuing such a request. WebDyne stages those URL-encoded bodies within <varname>WEBDYNE_CGI_POST_MAX</varname> before constructing the CGI parameter hash. Multipart SSE submissions are unsupported: use a normal HTTP upload endpoint, then identify the uploaded resource in the stream request.</para>
+          <para>Authorise the connection before starting the stream. WebDyne setup failures without a valid SSE callback produce an HTTP denial: 4xx/5xx statuses are preserved, other unsuccessful setup outcomes become 500, and an oversized supported form body becomes 413. These setup denials use a plain-text response; arbitrary page bodies, redirect responses and custom page headers are not automatically preserved.</para>
+          <para>Use <methodname>start()</methodname> for stream response headers, followed by awaited <methodname>send_event()</methodname> calls. Supply lowercase names in raw PAGI header pairs. Once the stream starts, its HTTP status and headers cannot be changed. Send an application error event or close the stream when an established stream fails; log diagnostic detail on the server.</para>
+          <para>Give updates meaningful event names. If the client should stop after completion, send a terminal event, have the browser call <methodname>EventSource.close()</methodname>, and await the server-side close. Otherwise EventSource normally reconnects after a dropped connection. Event IDs and replay after reconnection are application responsibilities; WebDyne does not maintain an automatic event history.</para>
+          <para>Use heartbeats where the helper and proxy configuration require them, and test idle connections through the real proxy. Headers such as <literal>x-accel-buffering: no</literal> can help with a supporting proxy, but are not universal controls over compression, buffering or idle timeouts.</para>
+        </section>
+        <section xml:id="pagi_async_ws"><title>WebSocket helpers and lifecycle</title>
+          <para>The request adapter exposes <code>$self-&gt;r()-&gt;ws()</code>, a <classname>PAGI::WebSocket</classname> helper. Its <methodname>receive()</methodname> skips the initial handshake event and returns an undefined value on disconnect. It distinguishes text and binary messages and provides awaited send and close operations. The following echo handler can replace the raw-event handler in the earlier WebSocket demo:</para>
+          <programlisting xml:id="pagi_ws_helper" language="perl">use Future::AsyncAwait;
+
+async sub ws {
+    my ($self, $param_hr)=@_;
+    my $socket_or=$self-&gt;r()-&gt;ws();
+
+    # Authorise the real application's session, origin and requested channel
+    # here, before accepting. This echo example has no protected data.
+    await $socket_or-&gt;accept();
+    while (my $event_hr=await $socket_or-&gt;receive()) {
+        if (defined($event_hr-&gt;{'text'})) {
+            await $socket_or-&gt;send_text($event_hr-&gt;{'text'});
+        }
+        elsif (defined($event_hr-&gt;{'bytes'})) {
+            await $socket_or-&gt;send_bytes($event_hr-&gt;{'bytes'});
+        }
+    }
+    return;
+}</programlisting>
+          <para>If the application finishes while the connection is open, await <code>$socket_or-&gt;close(1000, 'complete')</code>. For a received disconnect, stop processing and clean up; no normal HTTP error page can replace an accepted WebSocket connection. Only offer a subprotocol the application actually supports, and validate message types, sizes and contents independently of the HTTP body limit.</para>
+          <para>When WebDyne setup does not provide a valid WebSocket callback, it sends a close before acceptance, resulting in a denied handshake rather than an accepted connection. The basic rejection uses HTTP 403; it does not preserve an arbitrary page error body or status. More elaborate denial responses require the relevant server extension and explicit helper/event handling.</para>
+          <para>The browser should enable message-send controls only after <literal>open</literal>, or check <literal>readyState</literal> before calling <methodname>send()</methodname>. Establish normal session cookies before opening the socket and check authorisation again for messages that change protected state.</para>
+        </section>
+        <section xml:id="pagi_async_fragments"><title>Rendering fragments for stream updates</title>
+          <para>Rendering remains synchronous even inside an async callback. Render the fragment completely, then await sending the resulting string. A standalone <methodname>render_block()</methodname> call without an active Perl rendering context can schedule a block for later rendering and return an empty scalar reference; do not assume it immediately renders a block during SSE setup. One portable approach is to extract a block from a separate fragment file with <methodname>include()</methodname>.</para>
+          <para>Save this fragment as <filename>status-fragment.psp</filename> beside the stream page:</para>
+          <programlisting xml:id="pagi_fragment_source" language="html">&lt;block name="status"&gt;
+&lt;p class="status"&gt;${message}&lt;/p&gt;
+&lt;/block&gt;
+</programlisting>
+          <para>The following complete page sends one rendered fragment and then closes. Escape the raw render parameter at the boundary; transport framing does not perform HTML escaping.</para>
+          <programlisting xml:id="pagi_fragment_page" language="html">&lt;start_html title="Status stream" sse&gt;
+&lt;div id="status"&gt;Waiting for an update&lt;/div&gt;
+&lt;script&gt;
+const source = new EventSource(location.pathname + location.search);
+source.addEventListener('status', event =&gt; {
+    document.getElementById('status').innerHTML = event.data;
+});
+source.addEventListener('done', () =&gt; source.close());
+&lt;/script&gt;
+__PERL__
+use Future::AsyncAwait;
+use File::Spec;
+use HTML::Entities qw(encode_entities);
+
+async sub sse {
+    my ($self, $param_hr)=@_;
+    my $stream_or=$self-&gt;r()-&gt;sse();
+    my $fragment_fn=File::Spec-&gt;catfile($self-&gt;cwd(), 'status-fragment.psp');
+    my $message=defined($param_hr-&gt;{'message'}) ? $param_hr-&gt;{'message'} : 'Ready';
+    my $html_sr=$self-&gt;include({
+        file =&gt; $fragment_fn, block =&gt; 'status',
+        param =&gt; {message =&gt; encode_entities($message)},
+    });
+    die "unable to render status fragment\n" unless defined($html_sr);
+    await $stream_or-&gt;start();
+    await $stream_or-&gt;send_event(event =&gt; 'status', data =&gt; ${$html_sr});
+    await $stream_or-&gt;send_event(event =&gt; 'done', data =&gt; 'complete');
+    await $stream_or-&gt;close();
+}
+</programlisting>
+          <para>For a page already using HTMX, another approach is a small named SSE notification followed by an ordinary HTMX request for the current HTML fragment. Use the HTMX SSE extension to subscribe and trigger the refresh, and configure a terminal event with <literal>sse-close</literal> when appropriate. This keeps the normal rendering endpoint reusable and avoids retaining large rendered fragments per connection.</para>
+          <para>For example, serve local copies of HTMX and its SSE extension at the paths below. Let <filename>updates.psp</filename> send <literal>changed</literal> notifications and a terminal <literal>done</literal> event; let <filename>status.psp</filename> return an ordinary HTMX fragment. The server-side producer remains responsible for closing the stream after completion.</para>
+          <programlisting xml:id="pagi_htmx_notifications" language="html">&lt;start_html title="Live status" script="@{'/static/htmx.min.js', '/static/sse.js'}"&gt;
+&lt;div hx-ext="sse" sse-connect="updates.psp" sse-close="done"&gt;
+    &lt;div hx-get="status.psp" hx-trigger="sse:changed, sse:done"&gt;
+        Waiting for an update
+    &lt;/div&gt;
+&lt;/div&gt;
+</programlisting>
+        </section>
+        <section xml:id="pagi_async_deployment"><title>Workers, proxies and application lifespan</title>
+          <para>Each long-lived connection retains its page/request objects and application state. Bound subscriptions, queues, retained history and per-message work. For many clients, share expensive computation through an application service or publish/subscribe system rather than repeating the same query in each connection. Process-local state is not a cross-worker store.</para>
+          <para>Configure the reverse proxy for SSE streaming or WebSocket upgrade as appropriate. Check idle/read timeouts, buffering, compression, TLS and graceful restarts with the real deployment. A successful command-line render cannot establish these properties. The <link linkend="docker_runtime_server_tuning">Docker tuning variables</link> configure the server, not the whole proxy chain.</para>
+          <para>WebDyne's built-in lifespan handler acknowledges <literal>lifespan.startup</literal> and <literal>lifespan.shutdown</literal>. It does not discover arbitrary startup/shutdown subroutines in PSP files. Initialise application-level pools or services through an explicit application wrapper or suitable middleware, and close them in that wrapper's lifecycle handling. Forward lifespan scopes before routing by URL, since lifespan does not have an ordinary request path.</para>
+        </section>
+      </section>
+
       <section>
         <title>Server-Sent Events (SSE)</title>
 
@@ -2187,7 +2495,69 @@ COPY webdyne.conf.pl /etc</screen>
               <title>SSE</title>
             </info>
 
-            <para><programlisting language="html"><xi:include href="example/sse1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting></para>
+            <para><programlisting xml:id="corrected_sse1" language="html">&lt;start_html title="Progress Bar" h3 hr alpine sse&gt;
+&lt;progress id="bar" value="0" max="100"&gt;&lt;/progress&gt;
+&lt;span id="pct"&gt;0%&lt;/span&gt;
+
+&lt;script&gt;
+const bar = document.getElementById('bar');
+const pct = document.getElementById('pct');
+
+const es = new EventSource("#");
+
+es.addEventListener("progress", e =&gt; {
+    const value = parseInt(e.data, 10);
+    bar.value = value;
+    pct.textContent = value + "%";
+});
+
+es.addEventListener("done", () =&gt; {
+    es.close();
+});
+&lt;/script&gt;
+
+__PERL__
+use HTTP::Status qw(HTTP_OK);
+use Future::AsyncAwait;
+
+async sub sse {
+
+    #  Get self ref, PAGI::SSE object
+    #
+    my $self=shift();
+    my $sse_or=$self-&gt;r-&gt;sse();
+
+
+    #  Send start with some extra headers to discourage buffering
+    #
+    await $sse_or-&gt;start(status =&gt; HTTP_OK,
+        headers =&gt; [
+            ['x-accel-buffering' =&gt; 'no'],
+            ['content-encoding' =&gt; 'identity']
+        ]);
+
+
+    #  Now main loop
+    #
+    my $progress = 0;
+    await $sse_or-&gt;every(1, async sub {
+
+        $progress += 10;
+        await $sse_or-&gt;send_event(
+            event =&gt; 'progress',
+            data  =&gt; $progress,
+        );
+
+        if ($progress &gt;= 100) {
+            await $sse_or-&gt;send_event(event =&gt; 'done', data =&gt; 'complete');
+            #  Wait for the close send before finishing this callback.
+            #
+            await $sse_or-&gt;close();
+        }
+    });
+
+}
+</programlisting></para>
 
             <para><link xlink:href="https://demo.webdyne.org/example/progress.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
           </example></para>
@@ -2232,7 +2602,74 @@ COPY webdyne.conf.pl /etc</screen>
               <title>WebSockets</title>
             </info>
 
-            <para><programlisting language="html"><xi:include href="example/ws1.psp" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/></programlisting></para>
+            <para><programlisting xml:id="corrected_ws1" language="html">&lt;start_html ws title="WebSocket Demo" h3&gt;
+&lt;input id="msg" value="Hello from browser"&gt;
+&lt;button id="send" disabled&gt;Send&lt;/button&gt;
+&lt;pre id="log"&gt;&lt;/pre&gt;
+
+&lt;script&gt;
+  const log = (line) =&gt; {
+    document.getElementById('log').textContent += line + "\n";
+  };
+
+  const ws = new WebSocket(
+    `${location.origin.replace(/^http/, "ws")}${location.pathname}`
+  );
+
+  ws.onopen = () =&gt; {
+    document.getElementById("send").disabled = false;
+    log("connected");
+  };
+  ws.onmessage = (ev) =&gt; log("server: " + ev.data);
+  ws.onclose = () =&gt; {
+    document.getElementById("send").disabled = true;
+    log("closed");
+  };
+  ws.onerror = (ev) =&gt; log("error");
+
+  document.getElementById('send').onclick = () =&gt; {
+    if (ws.readyState !== WebSocket.OPEN) return;
+    const text = document.getElementById('msg').value;
+    log("client: " + text);
+    ws.send(text);
+  };
+&lt;/script&gt;
+__PERL__
+use Future::AsyncAwait;
+
+async sub ws {
+
+    my $self=shift();
+    my $r=$self-&gt;r();
+    my ($scope, $receive, $send) = map {$r-&gt;{$_}} qw(scope receive send);
+
+    await $send-&gt;({
+        type =&gt; 'websocket.accept',
+    });
+
+    while (1) {
+        my $event = await $receive-&gt;();
+
+        last if $event-&gt;{type} eq 'websocket.disconnect';
+
+        if (defined $event-&gt;{text}) {
+            my $text=$event-&gt;{text}. ' '. scalar localtime;
+            await $send-&gt;({
+                type =&gt; 'websocket.send',
+                text =&gt; "$text",
+            });
+        }
+        elsif (defined $event-&gt;{bytes}) {
+            await $send-&gt;({
+                type  =&gt; 'websocket.send',
+                bytes =&gt; $event-&gt;{bytes},
+            });
+        }
+    }
+
+    return;
+}
+</programlisting></para>
           </example></para>
 
         <para><link xlink:href="https://demo.webdyne.org/example/ws.psp" xmlns:xlink="http://www.w3.org/1999/xlink">Run</link></para>
@@ -2383,8 +2820,7 @@ sub hello {
         <title>Error Checking</title>
       </info>
 
-      <para>So far all the code examples have just assumed that any call to a WebDyne API method has been successful - no error checking is done. WebDyne always returns "undef" if an API
-      method call fails - which should be checked for after every call in a best practice scenario.</para>
+      <para>Many synchronous WebDyne rendering methods return <returnvalue>undef</returnvalue> and record an error when they fail. Check their return values before using the result. Request body readers can instead throw exceptions, and asynchronous PAGI operations return Futures whose failures surface at <function>await</function>; do not assume every API signals failure by returning <returnvalue>undef</returnvalue>.</para>
 
       <example>
         <info>
@@ -2462,7 +2898,7 @@ sub hello {
           <term><command>wddump</command></term>
 
           <listitem>
-            <para>Usage: <command>wddump filename</command>. Where filename is a compiled WebDyne source file (usually in <filename>/var/webdyne/cache</filename>). Will dump out the saved data
+            <para>Usage: <command>wddump filename</command>. Where filename is a compiled WebDyne source file (in the configured <varname>WEBDYNE_CACHE_DN</varname>). Will dump out the saved data
             structure of the compiled file.</para>
 
             <para><link role="manual-page-new-tab" xlink:href="utilities/wddump.md" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
@@ -2517,8 +2953,7 @@ sub hello {
           <term><command>wdlint</command></term>
 
           <listitem>
-            <para>Run <command>perl -c -w</command> over code in <token>__PERL__</token> sections on any PSP file to check for syntax errors. Will automatically skip HTML code. It only checks
-            code in the <token>__PERL__</token> area, and won't check syntax in in-line perl, dynamic attributes etc.</para>
+            <para>Checks page-level code in <token>__PERL__</token> or <token>__CODE__</token>, inline Perl, processing instructions and supported substitution expressions, including dynamic attributes. Chunks are checked separately so a failure does not hide later errors. This is syntax checking, not execution of handlers or validation of rendered HTML; optional modules used by an example must be installed to check that example fully.</para>
 
             <para><link role="manual-page-new-tab" xlink:href="utilities/wdlint.md" xmlns:xlink="http://www.w3.org/1999/xlink">Full manual page</link></para>
           </listitem>
@@ -2829,13 +3264,13 @@ sub hello {
 
                 <programlisting language="html">#  Run code only at 4am
 #
-&lt;perl handler="banner" run="(localtime)[2] == 4"&gt;
+&lt;perl handler="banner" run="!{! (localtime)[2] == 4 !}"&gt;
 
-#  Run code only if a "name" form parameter supplied, all below equivalent
+#  Choose the condition required: a truthy value, an existing key, or a defined value
 #
 &lt;perl handler="hello" run="+{name}"&gt; ...
 &lt;perl handler="hello" run="!{! exists $_{'name'} !}"&gt; ...
-&lt;perl handler="hello" run="!{! defined shift()-&gt;CGI-&gt;param('name') !}</programlisting>
+&lt;perl handler="hello" run="!{! defined shift()-&gt;CGI()-&gt;param('name') !}"/&gt;</programlisting>
               </listitem>
             </varlistentry>
 
@@ -2970,7 +3405,7 @@ sub hello {
 &lt;json handler/&gt;
 ...
 __PERL__
-use JSON:
+use JSON;
 sub handler {
     return { enabled =&gt; JSON::true }
 }</programlisting>
@@ -3086,7 +3521,7 @@ Thank you for registering +{name} !
 
                 <programlisting language="html">#  Include the protocols file and wrap in &lt;pre&gt;
 #
-&lt;include="/etc/protocols" wrap="pre"&gt;</programlisting>
+&lt;include file="/etc/protocols" wrap="pre"&gt;</programlisting>
               </listitem>
             </varlistentry>
 
@@ -3403,11 +3838,11 @@ This is my output
                 <para>Stylesheets to load. Values to this attribute will be output as <property>href</property> attributes of type <property>rel=stylesheet</property> in a
                 <tag>&lt;link&gt;</tag> tag.</para>
 
-                <programlisting language="html">&lt;start_html style="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"&gt;</programlisting>
+                <programlisting language="html">&lt;start_html style="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"&gt;</programlisting>
 
                 <para>Will produce:</para>
 
-                <programlisting language="html">&lt;link href="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" rel="stylesheet"&gt;</programlisting>
+                <programlisting language="html">&lt;link href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" rel="stylesheet"&gt;</programlisting>
 
                 <para>Array types are supported as values to the style property to allow multiple style sheet <tag>&lt;link&gt;</tag> tags to be created at once, e.g.</para>
 
@@ -3451,7 +3886,7 @@ This is my output
 
                 <para>Will produce:</para>
 
-                <programlisting language="html">&lt;script src="https://cdn.jsdelivr.net/npm/chart.js"&gt;</programlisting>
+                <programlisting language="html">&lt;script src="https://cdn.jsdelivr.net/npm/chart.js"&gt;&lt;/script&gt;</programlisting>
 
                 <para>Anything supplied after the URL section as an anchor will be used in the script tag as an attribute, e.g.</para>
 
@@ -3459,7 +3894,7 @@ This is my output
 
                 <para>Will produce:</para>
 
-                <programlisting language="html">&lt;script defer integrity=sha.. src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"&gt;</programlisting>
+                <programlisting language="html">&lt;script defer integrity="sha.." src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"&gt;&lt;/script&gt;</programlisting>
 
                 <para>As per the style attribute you can supply an array of resources to load using the same syntax.</para>
 
@@ -4018,10 +4453,7 @@ This is my output
           </variablelist>
 
           <note>
-            <para>In order to retain state all checkbox form items will present a hidden parameter with the same name as the checkbox. This is notable because querying the parameter associated
-            with a checkbox component will always return a <classname>Hash::MultiValue</classname> object with two items, the last of which is the checkbox value. When using
-            <code>$self-&gt;CGI-&gt;param(&lt;checkbox name&gt;)</code> form of query, or <code>$_{&lt;checkbox name&gt;}</code> the user selected checkbox value will always be returned as a
-            boolean or scalar value. This automatic hidden-field and persistence behaviour applies when no explicit <property>value</property> is supplied.</para>
+            <para>With the default boolean value, WebDyne emits a hidden field with value 0 before the checkbox with value 1. An unchecked submission therefore sends 0; a checked submission normally sends both 0 and 1. Scalar <code>CGI()-&gt;param($name)</code> returns the first value, while the <classname>Hash::MultiValue</classname> returned by <code>CGI()-&gt;Vars()</code> exposes the last value through hash access. Normal synchronous <varname>%_</varname> uses that latter view. Use list context or <methodname>get_all()</methodname> to inspect all values. A truthy explicit <property>value</property> bypasses the automatic boolean hidden-field logic.</para>
           </note>
         </section>
 
@@ -4150,7 +4582,7 @@ This is my output
           </info>
 
           <para>The standard <tag>&lt;input type="file"&gt;</tag> tag type. It uses the same attributes as <tag>&lt;textfield&gt;</tag>, with the generated input type set to
-          <literal>file</literal>. When querying this parameter after form submission responses will be in the form of a Plack::Request::Upload object. Example to demonstrate minimal file
+          <literal>file</literal>. The <code>$self-&gt;CGI()-&gt;uploads()</code> method returns a <classname>Hash::MultiValue</classname> containing <classname>WebDyne::CGI::Simple::Upload</classname> wrappers. These provide methods such as <methodname>filename()</methodname>, <methodname>size()</methodname>, <methodname>content_type()</methodname> and <methodname>fh()</methodname>; do not rely on a native Plack upload class. Example to demonstrate minimal file
           upload facility:</para>
 
           <programlisting language="html">&lt;start_html title="File Upload"&gt;
@@ -4272,9 +4704,7 @@ sub handler {
         <title>Method Reference</title>
       </info>
 
-      <para>When running Perl code within a WebDyne page the very first parameter passed to any routine (in-line or in a __PERL__ block) is an instance of the WebDyne page object (referred to
-      as <varname>$self</varname> in most of the examples, e.g. <code>$self-&gt;print("Hello World")</code>). All methods return <returnvalue>undef</returnvalue> on failure, and raise an error
-      using the <function>err()</function> function. The following methods are available to any instance of the WebDyne object:</para>
+      <para>WebDyne passes the page object as the first argument to handlers it invokes and to compiled inline chunks. A helper called from such a chunk receives only the arguments explicitly forwarded to it; for example, use <code>&lt;? helper(@_) ?&gt;</code> to pass the current arguments. The page object is conventionally named <varname>$self</varname>. Many synchronous rendering methods report failure through <function>err()</function> and an undefined return value; request-reader exceptions and failed PAGI Futures require their own handling. The following methods are available on the page object:</para>
 
       <variablelist>
         <varlistentry>
@@ -4320,7 +4750,7 @@ sub handler {
         </varlistentry>
 
         <varlistentry>
-          <term><methodname>render_block( blockname, <replaceable>key=&gt;value, key=&gt;valufge, ..</replaceable>).</methodname></term>
+          <term><methodname>render_block( blockname, <replaceable>key=&gt;value, key=&gt;value, ..</replaceable>).</methodname></term>
 
           <listitem>
             <para>Called to render a block of text or HTML between &lt;block&gt;..&lt;/block&gt; tags. Optional key and value pairs will be substituted into the output as per the variable
@@ -4413,8 +4843,7 @@ sub handler {
           <term><methodname>meta()</methodname></term>
 
           <listitem>
-            <para>Return a hash ref containing the meta data for this page. Alterations to meta data are persistent for this process, and carry across Apache requests (although not across
-            different Apache processes)</para>
+            <para>Return a hash ref containing the meta data for this page. Alterations to meta data are persistent for this process, and carry across requests in that interpreter, including PSGI and PAGI workers. They do not automatically propagate to other worker processes</para>
           </listitem>
         </varlistentry>
 
@@ -4499,7 +4928,7 @@ $VAR1={
 
           <important>
             <para>Always check the syntax of the <filename>/etc/webdyne.conf.pl</filename> file after editing by running <command>perl -c -w /etc/webdyne.conf.pl</command> to check that the
-            file is readable by Perl. Files with syntax errors will fail silently and the variables will revert to module defaults.</para>
+            file is readable by Perl. A failed load can leave defaults in effect and emits a warning; inspect startup diagnostics as well as checking syntax.</para>
           </important>
         </section>
 
@@ -4511,6 +4940,8 @@ $VAR1={
           <para>When the <command>webdyne.psgi</command> or <command>webdyne.pagi</command> wrapper builds an application it also loads
           <filename>$DOCUMENT_ROOT/.webdyne.conf.pl</filename>, if present. This applies both when the wrapper is started directly and when it is loaded by an external PSGI or PAGI server. If
           the effective document root is a file, the parent directory is checked for <filename>.webdyne.conf.pl</filename>.</para>
+
+          <para>Global configuration is selected from the system/home files or <envar>WEBDYNE_CONF</envar>; an explicitly enabled root configuration is loaded during application construction. Environment values override file values for matching scalar constants. Configuration is cached and held in shared package state, so restart workers after deployment changes and do not use it as request-local storage. Use <varname>WEBDYNE_CONF_HR</varname> and startup diagnostics to inspect which files were loaded.</para>
 
           <para>This root configuration file is separate from request-directory configuration. When <varname>WEBDYNE_DIR_CONFIG_CWD_LOAD</varname> is enabled, WebDyne can also inspect a
           <filename>.webdyne.conf.pl</filename> file in the directory of the current PSP file, but only the <varname>WEBDYNE_DIR_CONFIG</varname> section is used from that per-directory
@@ -4608,7 +5039,7 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
           reference</link> for the complete list of constants, defaults, and behaviour descriptions.</para>
 
           <tip>
-            <para>Configuration items can be overridden by setting environment variables of the same name with the desired value.</para>
+            <para>Use environment variables for scalar overrides. Configure hashes, arrays and callbacks in the Perl configuration file. Configuration is held in package-level state shared by applications in an interpreter; separate application objects do not provide independent constant namespaces.</para>
           </tip>
 
           <para>Extension modules, for example <classname>WebDyne::Session</classname>, may define their own constants in their own <classname>WebDyne::*::Constant</classname> packages. See
@@ -4619,8 +5050,7 @@ $WebDyne::WEBDYNE_ERROR_SHOW_EXTENDED=1;
       <section xml:id="environment_variable_reference">
         <title>Environment Variable Reference</title>
 
-        <para>All WebDyne configuration items can be overridden by setting an environment variable of the same name when starting PSGI or PAGI instances, or via an Apache SetEnv directive,
-        e.g:</para>
+        <para>Scalar WebDyne configuration values can be overridden with environment variables of the same name available when the modules load. Structured values such as arrays, hashes and code references belong in the Perl configuration file; an environment value is a string, not a Perl expression to be evaluated. Under Apache, ensure startup configuration is available before preloading modules rather than relying on a later request-level <literal>SetEnv</literal> setting. For example:</para>
 
         <screen>#  Start webdyne plack instance with extended error display for this run.
 #
@@ -4631,8 +5061,7 @@ $ WEBDYNE_ERROR_SHOW_EXTENDED=1 plackup `which webdyne.psgi`</screen>
         <section xml:id="env_webdyne_conf">
           <title>WEBDYNE_CONF</title>
 
-          <para>Location of the WebDyne configuration file to load. Loading of an alternate configuration file will bypass loading of any/all other configuration files (e.g.
-          /etc/webdyne.conf.pl). They are not additive - only configuration directives in the nominated by this environment variable will be processed. e.g.</para>
+          <para>Selects an alternative global WebDyne configuration file instead of the usual system and home-directory files. This does not suppress an explicitly loaded configuration file or root configuration enabled by the PSGI/PAGI wrapper <property>conf</property> option. For example:</para>
 
           <screen>#  Start webdyne with an alternate config file
 #
@@ -4966,7 +5395,7 @@ PerlSetVar      WebDyneCacheHandler '&amp;MyModule::cache'
         <title>WebDyne::Session</title>
       </info>
 
-      <para>WebDyne::Session generates a unique session ID for each browser connection and stores it in a cookie. It has the following API:</para>
+      <para><classname>WebDyne::Session</classname> reads an existing session identifier from the configured browser cookie, or generates one when the cookie is absent. The identifier persists across requests while the browser retains and sends that cookie. The module does not itself provide a session-data store, login system, authorisation or CSRF protection. It has the following API:</para>
 
       <variablelist>
         <varlistentry>
@@ -5149,8 +5578,28 @@ PerlSetVar      WebDyneTemplate '/path/to/template.psp'
     </section>
   </section>
 
+  <section xml:id="production_considerations"><title>Production considerations</title>
+    <para>PSP pages, required Perl files and WebDyne configuration files execute trusted server-side code. WebDyne is not a sandbox for user-authored templates. Keep upload destinations separate from executable page roots and application libraries, and restrict who can modify page sources and configuration.</para>
+    <para>Use the escaping rules in <link linkend="escaping_values">Escaping values</link>, validate request data, and implement the application's authentication, authorisation and CSRF policy. A session identifier alone is not proof of identity. Reject untrusted redirect destinations, filesystem paths and executable code; use parameterised database operations rather than composing SQL from request text.</para>
+    <para>Keep detailed error pages, source viewing and diagnostic dumps disabled on public endpoints. Do not allow arbitrary query parameters to enable dumps containing environment or configuration data. Log errors on the server with enough request context to diagnose them, without logging credentials or complete sensitive request bodies. Limit access to logs and cache directories.</para>
+    <para>Review cookie attributes and HTTPS deployment. Secure cookies require an appropriate HTTPS connection; do not disable their protection globally to accommodate a local HTTP test. Apply transport-specific authorisation before starting SSE or accepting WebSockets, and recheck permissions when processing protected actions.</para>
+    <para>Set body limits at both the application adapter and server/proxy layers. Validate uploaded filenames, file contents and intended use; store persistent uploads under server-selected names. Use separate limits for WebSocket messages, background jobs and retained event history. An upload limit is not a total process-memory limit.</para>
+    <para>Keep personalised data out of shared static caches unless cache keys and invalidation enforce isolation. Pin deployment dependencies and frontend resource versions where reproducibility matters; the convenience <tag>&lt;start_html&gt;</tag> library shortcuts can use moving CDN versions. Test upgrades using the packaged distribution and the actual runtime dependencies, not only a developer checkout.</para>
+  </section>
+
   <section xml:id="troubleshooting">
     <title>Troubleshooting</title>
+
+    <para>Start with syntax and ordinary request rendering, then test the transport the application uses. From an installed distribution:</para>
+    <programlisting xml:id="troubleshooting_commands" language="bash">wdlint app.psp
+wdrender --raw app.psp
+wdrender --raw --get name=Alice app.psp
+wdrender --raw --post 'name=Alice&amp;colour=blue' app.psp
+wdrender --raw --htmx fragment.psp
+webdyne.pagi --test
+</programlisting>
+    <para>In a source checkout use <command>perl -Ilib bin/wdlint</command> or <command>perl -Ilib bin/wdrender</command> to test the checkout's modules. Inspect rendered HTML as well as exit status. Some examples intentionally demonstrate runtime failures; a syntax pass is not evidence that a page will execute successfully. The country-list examples require the optional <classname>Locale::Country</classname> module.</para>
+    <para>For API endpoints assert status, content type and decoded JSON. For forms check repeated values and uploads. For SSE/WebSockets use a PAGI server or protocol test client and exercise disconnect, completion and denial paths. Test proxy behaviour in the deployed topology. If an upload fails, compare the WebDyne, server and proxy limits before changing code.</para>
 
     <para>At some stage a PSP file is not going to output what you expect. This could be for many reasons:</para>
 
@@ -5272,8 +5721,7 @@ sub my_handler {
     <section xml:id="additional_notes_check_psp_syntax">
       <title>How to check syntax of a PSP file</title>
 
-      <para>To check the syntax of a PSP file - or more specifically any Perl code in the __PERL__ section - you can use the <command>wdlint</command> command. Take this file with an
-      assignment syntax error in the server_time() routine:</para>
+      <para>Use <command>wdlint</command> to check page-level Perl and embedded code fragments in a PSP file. The following example deliberately contains an assignment syntax error in <function>server_time()</function>:</para>
 
       <programlisting language="html">&lt;start_html&gt;
 Hello World &lt;? server_time() ?&gt;
@@ -5299,7 +5747,7 @@ check.psp had compilation errors.</screen>
 
       <programlisting language="html">&lt;start_html&gt;
 Hello World &lt;? server_time(@_) ?&gt;
-Hello World &lt;? server_time(shift(), 'UTC' ?&gt;
+Hello World &lt;? server_time(shift(), 'UTC') ?&gt;
 Hello World &lt;perl handler="server_time" param="UTC"/&gt;
 __PERL__
 
@@ -5328,12 +5776,9 @@ Server local time is: &lt;? localtime ?&gt;</programlisting>
     </section>
 
     <section xml:id="additional_notes_checkbox_hidden_field">
-      <title>The <tag>&lt;checkbox&gt;</tag> tag will always set a hidden form field</title>
+      <title>Checkbox hidden fields and repeated values</title>
 
-      <para>The <tag>&lt;checkbox&gt;</tag> tag is unusual in that it adds a hidden field (with the same name as the checkbox) to the HTML page to retain state. Thus if you are examining the
-      checkbox parameter from CGI via <varname>$_{'checkbox_name'}</varname> or <code>$self-&gt;CGI-&gt;param('checkbox_name')</code> you may get an array rather than a single value. The value
-      of the checkbox (boolean, checked or unchecked, i.e. 1 or 0) will always be the first value returned. So the code <code>if ($_{'checkbox_name'}) { .. do_something }</code> will work as
-      expected - but just be careful if using in an array context.</para>
+      <para>A default boolean checkbox emits a hidden 0 before its checkbox value 1. Checked submissions usually contain <literal>0, 1</literal>, while unchecked submissions contain only <literal>0</literal>. Scalar <code>$self-&gt;CGI()-&gt;param($name)</code> selects the first value; <code>$self-&gt;CGI()-&gt;Vars()-&gt;{$name}</code> and normal synchronous <varname>%_</varname> select the last. Do not treat those scalar interfaces as interchangeable. A truthy explicit checkbox <property>value</property> bypasses the automatic hidden-field logic. See <link linkend="request_parameters">Request parameters and repeated values</link> for examples.</para>
     </section>
 
     <section xml:id="additional_notes_about_documentation">
@@ -5354,7 +5799,6 @@ Server local time is: &lt;? localtime ?&gt;</programlisting>
     <para>WebDyne is Copyright © Andrew Speer 2006-2026. WebDyne is free software; you can redistribute it and/or modify it under the same terms as Perl itself.</para>
 
     <para>WebDyne is written in Perl and uses modules from <link xlink:href="http://www.cpan.org" xmlns:xlink="http://www.w3.org/1999/xlink">CPAN</link> (the Comprehensive Perl Archive
-    Network). CPAN modules are Copyright © the owner/author, and are available in source form by downloading from CPAN directly. All CPAN modules used are covered by the <link
-    xlink:href="http://www.perl.com/pub/a/language/misc/Artistic.html" xmlns:xlink="http://www.w3.org/1999/xlink">Perl Artistic License</link></para>
+    Network). CPAN modules are Copyright © the owner/author, and are available in source form by downloading from CPAN directly. Dependencies retain their own licences; consult the individual distributions for their terms</para>
   </section>
 </article>
