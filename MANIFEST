@@ -1461,6 +1461,7 @@ t/whitespace.psp
 t/apache-body.t
 t/apache-request.t
 t/pagi-bounded-body.t
+t/pagi-error-isolation.t
 t/pagi-form-no-content-length.t
 t/pagi-header-case.t
 t/pagi-mounted-path.t

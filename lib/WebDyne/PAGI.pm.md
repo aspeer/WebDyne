@@ -64,6 +64,10 @@ my $single_file_app = WebDyne::PAGI->new(
 
 # NOTES #
 
+HTTP, SSE and WebSocket handlers clear WebDyne's shared diagnostic stack before synchronous page setup. HTTP and SSE body buffering completes before this reset, so errors from another request processed during buffering do not contaminate the resumed render. Diagnostics raised during page setup remain available to its error-response handling.
+
+This is a synchronous request boundary, not per-session diagnostic storage. Asynchronous callbacks must not rely on `errstr()` or `errdump()` retaining their diagnostics across an `await`; use exceptions or Future failures to propagate asynchronous errors. Caught exceptions within one render can still populate the shared stack.
+
 The module relies on `WebDyne::Request::PAGI` for normalized request handling and on `WebDyne::PAGI::Constant` for middleware and environment defaults.
 
 # AUTHOR #
