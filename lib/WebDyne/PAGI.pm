@@ -31,6 +31,7 @@ use Future::AsyncAwait;
 use Sub::Util qw(set_subname);
 use File::Basename;
 use File::Spec;
+use Scalar::Util qw(blessed reftype);
 
 
 #  PAGI modules
@@ -74,6 +75,11 @@ sub new {
     #  Get options
     #
     my ($class, %opt)=@_;
+
+    foreach my $phase (qw(startup shutdown)) {
+        die "PAGI $phase callback must be a coderef\n"
+            if (defined($opt{$phase})&&((reftype($opt{$phase}) || '') ne 'CODE'));
+    }
     
     
     #  Test ?
@@ -749,21 +755,44 @@ sub handler_lifespan {
     
     return set_subname('handler_lifespan_anon', async sub {
 
-        my ($scope, $receive, $send) = @_;
+        my ($scope_hr, $receive_cr, $send_cr)=@_;
         while (1) {
-            my $event_hr = await $receive->();
-            if ($event_hr->{'type'} eq 'lifespan.startup') {
-                printf STDERR "[lifespan] WebDyne PAGI handler startup. DOCUMENT_ROOT: %s, DOCUMENT_DEFAULT: %s\n", $self->{'root'}, basename($self->{'index'} || $DOCUMENT_DEFAULT);
-                await $send->({ type => 'lifespan.startup.complete' });
-                
-            }
-            elsif ($event_hr->{'type'} eq 'lifespan.shutdown') {
-                print STDERR "[lifespan] WebDyne PAGI handler shutdown.\n";
-                await $send->({ type => 'lifespan.shutdown.complete' });
+            my $event_hr=await $receive_cr->();
+            my $phase=$event_hr->{'type'} eq 'lifespan.startup' ? 'startup'
+                : $event_hr->{'type'} eq 'lifespan.shutdown' ? 'shutdown' : undef;
+            next unless defined($phase);
+
+            #  Own the protocol acknowledgement; callbacks only perform work.
+            #  Keep send failures outside the callback exception boundary.
+            #
+            my $ok=eval { await $self->lifespan_callback($phase, $scope_hr); 1 };
+            unless ($ok) {
+                my $error=$@;
+                await $send_cr->({type => "lifespan.$phase.failed", message => "$error"});
                 last;
             }
+            if ($phase eq 'startup') {
+                printf STDERR "[lifespan] WebDyne PAGI handler startup. DOCUMENT_ROOT: %s, DOCUMENT_DEFAULT: %s\n", $self->{'root'}, basename($self->{'index'} || $DOCUMENT_DEFAULT);
+            }
+            else {
+                print STDERR "[lifespan] WebDyne PAGI handler shutdown.\n";
+            }
+            await $send_cr->({type => "lifespan.$phase.complete"});
+            last if $phase eq 'shutdown';
         }
     })
+}
+
+
+async sub lifespan_callback {
+
+    my ($self, $phase, $scope_hr)=@_;
+    die "Unknown PAGI lifespan phase\n" unless (($phase eq 'startup')||($phase eq 'shutdown'));
+    my $callback_cr=$self->{$phase};
+    return unless defined($callback_cr);
+    my $result_ref=$callback_cr->($self, $scope_hr);
+    await $result_ref if (blessed($result_ref)&&$result_ref->isa('Future'));
+    return;
 }
 
 

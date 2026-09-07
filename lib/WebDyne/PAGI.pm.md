@@ -30,13 +30,26 @@ my $single_file_app = WebDyne::PAGI->new(
 
 * **new(%options)**
 
-    Construct a PAGI application wrapper. Options include `root`, `index`, `test`, `filename`, `static`, `conf`, and related runtime settings.
+    Construct a PAGI application wrapper. Options include `root`, `index`, `test`, `filename`, `static`, `conf`, `startup`, `shutdown`, and related runtime settings.
 
     The `filename` option is an explicit source-file override for the application. When supplied, it is passed to `WebDyne::Request::PAGI` for every HTTP request and always wins over normal filename derivation from the PAGI request scope, including path-based dispatch, document-root resolution, default document handling, and API-style fallback resolution. This is useful for helper tools or deliberate single-file PAGI applications; do not set it for normal multi-page applications that should dispatch from the request path.
 
     The `static` option enables or disables the configured PAGI static-file middleware for this app instance. Static middleware is disabled by the package default, but wrapper scripts such as `webdyne.pagi` may pass `static => 1`.
 
     The `conf` option loads local WebDyne constants during app construction. A true value of `1` loads `$root/.webdyne.conf.pl`; any other true value is treated as an explicit config filename, relative to `root` unless already absolute.
+
+    The optional `startup` and `shutdown` options are coderefs (or `undef` to disable). Each receives `($app_or, $scope_hr)`: this application object and the lifespan scope. A normal return, including a false value, succeeds; a returned `Future` is awaited. WebDyne owns the receive/send protocol and sends the completion acknowledgement only after the callback succeeds. An exception or failed Future sends `lifespan.startup.failed` or `lifespan.shutdown.failed` with the diagnostic, then ends the lifespan session. Failures while sending protocol events propagate to the server. Missing callbacks preserve the default acknowledgements.
+
+    Callbacks run when the server delivers the corresponding event, not during construction. A lifespan scope is not an HTTP request and has no PSP request object. Startup is per application lifespan/interpreter, not once per deployment. Shutdown requires a server that delivers shutdown; it cannot be relied upon after a crash or forced termination.
+
+    ```perl
+    use My::App;
+    my $app_cr=WebDyne::PAGI->new(
+        root     => '.',
+        startup  => \&My::App::startup,
+        shutdown => \&My::App::shutdown,
+    )->to_app();
+    ```
 
 * **to_app()**
 
@@ -57,6 +70,10 @@ my $single_file_app = WebDyne::PAGI->new(
 * **handler_lifespan()**
 
     Handle PAGI lifespan startup and shutdown events.
+
+* **lifespan_callback($phase, $scope_hr)**
+
+    Invoke the configured `startup` or `shutdown` callback and return a Future resolving without values when its work completes. An absent callback completes immediately. Unknown phases and callback errors fail the Future. `handler_lifespan()` uses this method before acknowledging the event; callers normally configure callbacks through the constructor instead of calling it directly.
 
 * **handler_sse_error()**
 
