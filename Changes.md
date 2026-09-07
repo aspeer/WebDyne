@@ -1,5 +1,11 @@
 # Revision history for WebDyne
 
+## Unreleased
+
+- Clear PAGI diagnostics before synchronous HTTP, SSE and WebSocket page
+  setup, after body buffering, so recovered errors do not leak into later
+  requests. Add regression coverage for interleaved HTTP and SSE body reads.
+
 ## 3.027 - 2026-09-07
 
 - Use lazy load ("require") for modules only required at certain decision paths

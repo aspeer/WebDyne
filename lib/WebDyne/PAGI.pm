@@ -307,6 +307,10 @@ sub handler_sse {
 
         my ($sse_cr, $status);
         {
+            #  Start page setup with clean diagnostics after body buffering.
+            #
+            errclr();
+
             #  Confine localized process state to synchronous page setup.
             #  POST fields are buffered before CGI builds the parameter hash.
             #
@@ -382,6 +386,11 @@ sub handler_ws {
     #
     my ($self, $scope, $receive, $send)=@_;
     debug('in handler_ws, scope:%s receive:%s, send:%s', Dumper($scope, $receive, $send));
+
+
+    #  Start synchronous WebSocket setup with clean diagnostics.
+    #
+    errclr();
 
 
     #  Setup %ENV
@@ -525,6 +534,10 @@ sub handler_http {
         return if $body_disconnected;
 
         {
+            #  Start page setup with clean diagnostics after body buffering.
+            #
+            errclr();
+
             #  Keep the request environment localized only while WebDyne is
             #  constructing and executing the request. Do not retain a
             #  localized global %ENV across an asynchronous response await.
@@ -816,15 +829,15 @@ my $single_file_app = WebDyne::PAGI->new(
 
 * **handler_http()**
 
-    Handle normal HTTP requests.
+    Handle normal HTTP requests. Outgoing response header names are normalized to lowercase for PAGI, preserving values, order, and duplicates without changing the stored header collections.
 
 * **handler_sse()**
 
-    Handle server-sent event requests.
+    Handle server-sent event requests. URL-encoded form bodies are buffered before CGI parameter setup, subject to `WEBDYNE_CGI_POST_MAX`. Oversized forms receive status 413 through SSE HTTP denial events; disconnects during buffering skip page execution. Normal EventSource GETs do not wait for body data. Multipart SSE form submissions are outside this handler's supported scope. When page setup returns an HTTP error status instead of a stream callback, send a plain-text SSE HTTP denial response with that status. Other results without a valid callback produce status 500. Custom error headers and redirects are not forwarded by this fallback.
 
 * **handler_ws()**
 
-    Handle WebSocket requests.
+    Handle WebSocket requests. If page setup does not provide a valid WebSocket callback, reject the handshake with `websocket.close`. This uses the standard HTTP 403 rejection without requiring the optional HTTP denial-response extension.
 
 * **handler_lifespan()**
 
@@ -836,13 +849,17 @@ my $single_file_app = WebDyne::PAGI->new(
 
 # NOTES #
 
+HTTP, SSE and WebSocket handlers clear WebDyne's shared diagnostic stack before synchronous page setup. HTTP and SSE body buffering completes before this reset, so errors from another request processed during buffering do not contaminate the resumed render. Diagnostics raised during page setup remain available to its error-response handling.
+
+This is a synchronous request boundary, not per-session diagnostic storage. Asynchronous callbacks must not rely on `errstr()` or `errdump()` retaining their diagnostics across an `await`; use exceptions or Future failures to propagate asynchronous errors. Caught exceptions within one render can still populate the shared stack.
+
 The module relies on `WebDyne::Request::PAGI` for normalized request handling and on `WebDyne::PAGI::Constant` for middleware and environment defaults.
 
 # AUTHOR #
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
@@ -854,7 +871,6 @@ the same terms as the Perl 5 programming language system itself.
 Full license text is available at:
 
 <http://dev.perl.org/licenses/>
-
 
 =end markdown
 
@@ -919,7 +935,7 @@ Return the PAGI application code reference, wrapped in configured PAGI middlewar
 
 B<handler_http()>
 
-Handle normal HTTP requests.
+Handle normal HTTP requests. Outgoing response header names are normalized to lowercase for PAGI, preserving values, order, and duplicates without changing the stored header collections.
 
 
 
@@ -927,7 +943,7 @@ Handle normal HTTP requests.
 
 B<handler_sse()>
 
-Handle server-sent event requests.
+Handle server-sent event requests. URL-encoded form bodies are buffered before CGI parameter setup, subject to C<WEBDYNE_CGI_POST_MAX>. Oversized forms receive status 413 through SSE HTTP denial events; disconnects during buffering skip page execution. Normal EventSource GETs do not wait for body data. Multipart SSE form submissions are outside this handler's supported scope. When page setup returns an HTTP error status instead of a stream callback, send a plain-text SSE HTTP denial response with that status. Other results without a valid callback produce status 500. Custom error headers and redirects are not forwarded by this fallback.
 
 
 
@@ -935,7 +951,7 @@ Handle server-sent event requests.
 
 B<handler_ws()>
 
-Handle WebSocket requests.
+Handle WebSocket requests. If page setup does not provide a valid WebSocket callback, reject the handshake with C<websocket.close>. This uses the standard HTTP 403 rejection without requiring the optional HTTP denial-response extension.
 
 
 
@@ -959,6 +975,10 @@ Helper for reporting SSE-side failures.
 
 
 =head1 NOTES
+
+HTTP, SSE and WebSocket handlers clear WebDyne's shared diagnostic stack before synchronous page setup. HTTP and SSE body buffering completes before this reset, so errors from another request processed during buffering do not contaminate the resumed render. Diagnostics raised during page setup remain available to its error-response handling.
+
+This is a synchronous request boundary, not per-session diagnostic storage. Asynchronous callbacks must not rely on C<errstr()> or C<errdump()> retaining their diagnostics across an C<await>; use exceptions or Future failures to propagate asynchronous errors. Caught exceptions within one render can still populate the shared stack.
 
 The module relies on C<WebDyne::Request::PAGI> for normalized request handling and on C<WebDyne::PAGI::Constant> for middleware and environment defaults.
 
