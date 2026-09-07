@@ -2,6 +2,9 @@ Revision history for WebDyne
 
 Unreleased
 
+    * Add optional PAGI startup and shutdown callbacks, awaiting returned Futures
+      before acknowledgement and reporting callback failures through lifespan events.
+
     * Clear PAGI diagnostics before synchronous HTTP, SSE and WebSocket page
       setup, after body buffering, so recovered errors do not leak into later
       requests. Add regression coverage for interleaved HTTP and SSE body reads.

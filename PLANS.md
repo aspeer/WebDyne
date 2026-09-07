@@ -18,3 +18,21 @@ Implemented and validated on 2026-09-07:
   deployed Cloudflare acceptance run.
 
 The WASM bootstrap reset remains until a runtime bundles the updated core.
+
+
+# PAGI lifespan callbacks (2026-09-07)
+
+Add optional startup/shutdown coderefs to the portable PAGI constructor.
+Callbacks receive the application and lifespan scope; returned Futures are
+awaited before acknowledgement. Callback errors send the matching failure
+event and end the lifespan session. Transport errors propagate unchanged.
+
+Implement and verify on development, then merge into main as requested before
+adding callback-name configuration to the ZeroPerl scaffold. No shutdown host
+dispatch, shared state or Cloudflare capability changes are part of this step.
+
+Validated: `prove -lr t` passes 74 files and 3,949 assertions; Apache-specific
+tests skip where their dependencies are unavailable. All 45 callback assertions
+also pass in Perl 5.44 WASM build 8 with the development WebDyne library overlaid.
+The maintained PAGI.pm.md sidecar is updated; the configured docbook-convert
+command is unavailable locally, so generated embedded POD awaits regeneration.
