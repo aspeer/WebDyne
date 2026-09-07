@@ -38,7 +38,6 @@ use WebDyne::Util;
 #
 #use Digest::MD5 qw(md5_hex);
 use Crypt::URandom qw( urandom );
-use CGI::Simple;
 
 
 #  Version information
