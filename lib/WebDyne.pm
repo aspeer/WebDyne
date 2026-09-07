@@ -41,7 +41,6 @@ use File::Spec::Unix;
 use Data::Dumper;
 use HTML::Entities qw(decode_entities encode_entities);
 use CGI::Simple;
-use JSON;
 use Cwd qw(fastcwd);
 use Sub::Util qw(set_subname);
 
@@ -2742,6 +2741,7 @@ sub json {
 
     #  Convert to JSON
     #
+    require JSON;
     my $json_or=JSON->new() ||
         return err('unable to create new JSON object');
     $json_or->allow_nonref(1);
@@ -2930,6 +2930,7 @@ sub api {
 
         #  Convert to JSON
         #
+        require JSON;
         my $json_or=JSON->new() ||
             return err('unable to create new JSON object');
         $json_or->allow_nonref(1);
