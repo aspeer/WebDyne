@@ -801,6 +801,16 @@ sub request_fake {
     $html_fh->close();
     
 
+    #  HTTP::Response requires bytes rather than Perl character strings.
+    #
+    if (utf8::is_utf8($html)) {
+        utf8::encode($html);
+        my $headers_or=$r->headers_out();
+        delete $headers_or->{$_} foreach grep {lc($_) eq 'content-length'} keys %{$headers_or};
+        $headers_or->header('Content-Length' => length($html));
+    }
+
+
     #  Construct HTTP::Response and return it
     #
     my $res_or=HTTP::Response->new(

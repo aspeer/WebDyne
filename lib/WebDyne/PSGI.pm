@@ -403,6 +403,16 @@ sub handler {
         if ($html && !$r->content_type());
 
     
+    #  HTTP bodies contain bytes, and Content-Length counts encoded bytes.
+    #
+    if (utf8::is_utf8($html)) {
+        utf8::encode($html);
+        my $headers_or=$r->headers_out();
+        delete $headers_or->{$_} foreach grep {lc($_) eq 'content-length'} keys %{$headers_or};
+        $headers_or->header('Content-Length' => length($html));
+    }
+
+
     #  Return structure
     #
     my @return=(

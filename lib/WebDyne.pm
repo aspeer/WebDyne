@@ -2148,7 +2148,10 @@ sub redirect {
         #  Set content type
         #
         my $r=$self->r() || return err();
-        if ($redirect_type eq 'html') {
+        if (my $content_type=$param_hr->{'content_type'}) {
+            $r->content_type($content_type)
+        }
+        elsif ($redirect_type eq 'html') {
             $r->content_type(WEBDYNE_CONTENT_TYPE_HTML)
         }
         elsif ($redirect_type eq 'text') {

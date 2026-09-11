@@ -2066,6 +2066,14 @@ my $last=$values_hr-&gt;{'choice'};
 my @all=$values_hr-&gt;get_all('choice');</programlisting>
         <para>For the default checkbox submission <literal>flag=0&amp;flag=1</literal>, the first value is 0 and the last is 1. In normal synchronous page code <code>$_{'flag'}</code> uses the last-value view. For more complex controls, explicitly inspect all values. API route matches in a handler's second argument do not replace the CGI parameter object.</para>
       </section>
+      <section xml:id="request_parameter_utf8"><title>UTF-8 parameter values</title>
+        <para>The default <methodname>param()</methodname> interface returns query and form values as bytes. Use the opt-in <methodname>param_utf8(name)</methodname> accessor when the application expects UTF-8 text:</para>
+        <programlisting language="perl">my $cgi_or=$self-&gt;CGI();
+my $name=$cgi_or-&gt;param_utf8('name');
+my @choices=$cgi_or-&gt;param_utf8('choice');</programlisting>
+        <para>This read-only accessor requires exactly one defined parameter name. Scalar context returns the first value; list context returns all values. It decodes copies of byte values using strict UTF-8 decoding, leaves already decoded Perl character strings unchanged, and preserves empty strings and the value <literal>0</literal>. A missing parameter returns <literal>undef</literal> in scalar context or an empty list in list context.</para>
+        <para>Malformed UTF-8 raises an exception. Applications should catch it and reject the invalid input according to their validation policy. The original parameter values remain unchanged, including after a decoding failure. This accessor does not decode parameter names or change <methodname>param()</methodname>, <methodname>Vars()</methodname>, <varname>%_</varname>, parameter substitution, or upload handling. Continue to use byte-oriented access for binary values and data in other encodings.</para>
+      </section>
       <section xml:id="request_body_limits"><title>Raw bodies, JSON and body limits</title>
         <para>The adapter's <methodname>body()</methodname> returns body bytes synchronously. PSGI and PAGI HTTP dispatch buffer the body before page execution, bounded by <varname>WEBDYNE_CGI_POST_MAX</varname>, whose default is 524288 bytes (512 KiB). This limit includes JSON and other non-form bodies, regardless of HTTP method. A buffered <methodname>body_handle()</methodname> is not evidence of a network-streaming upload API.</para>
         <programlisting xml:id="request_json_code" language="perl">use JSON ();
@@ -4775,6 +4783,12 @@ sub handler {
           <listitem>
             <para>Will redirect to URI or file nominated, or display only nominated text. Any rendering done to prior to this method is abandoned. If supplying HTML text to be rendered supply
             as a SCALAR reference. Content type header will be automatically adjusted to MIME type appropriate for type if redirecting to html, json or plain text content.</para>
+            <para>For HTML, JSON or text output, an optional <code>content_type</code> parameter overrides the default MIME type. For example, return an SVG label without an HTML wrapper:</para>
+            <programlisting><![CDATA[return $self->redirect(
+    text         => $body,
+    content_type => 'image/svg+xml'
+);]]></programlisting>
+            <para>If <code>content_type</code> is omitted or empty, the existing HTML, JSON or plain-text default is used. This option sets the response header only. Under PAGI, byte strings are sent unchanged, including binary image data and text already encoded as UTF-8. Perl strings with the UTF-8 flag set are encoded as UTF-8 before sending. Supply binary data as a byte string; setting a MIME type does not convert the body.</para>
           </listitem>
         </varlistentry>
 
