@@ -1,0 +1,216 @@
+#!/usr/bin/env perl
+#
+#  This file is part of WebDyne.
+#  Copyright (c) 2026 Andrew Speer. Distributed under the same terms as Perl 5.
+#
+use strict;
+use warnings;
+
+use Getopt::Long qw(GetOptionsFromArray);
+use HTML::Parser;
+use HTML::Tagset;
+use File::Temp qw(tempfile);
+use Capture::Tiny qw(capture);
+
+exit(main(\@ARGV)) unless caller();
+
+
+sub main {
+
+    my $argv_ar=shift();
+    my %opt=(indent => 4, tidy => 'tidy');
+    GetOptionsFromArray($argv_ar, \%opt, 'indent=i', 'tidy=s', 'outfile=s', 'help') ||
+        die "wdtidy: use --help for usage\n";
+    if ($opt{'help'}) {
+        print "Usage: wdtidy [--indent 4] [--tidy /path/to/tidy] [--outfile FILE] [FILE|-]\n",
+            "Tidy PSP indentation; default input/output are stdin/stdout. Perl and tags are preserved.\n";
+        return 0;
+    }
+    die "wdtidy: expected at most one source file\n" if @{$argv_ar}>1;
+    die "wdtidy: indent must be between 1 and 16\n" if $opt{'indent'}<1 || $opt{'indent'}>16;
+    my $source_fn=@{$argv_ar} ? $argv_ar->[0] : '-';
+    my $source_fh;
+    if ($source_fn eq '-') {
+        $source_fh=\*STDIN;
+    }
+    else {
+        open($source_fh, '<', $source_fn) || die "wdtidy: unable to read $source_fn, $!\n";
+    }
+    binmode($source_fh);
+    my $source=do { local $/; <$source_fh> };
+    $source='' unless defined($source);
+    close($source_fh) if $source_fn ne '-';
+    my $output=tidy_psp($source, \%opt);
+
+    #  Finish formatting before opening any output, including the source itself.
+    #
+    my $output_fh=\*STDOUT;
+    if (defined($opt{'outfile'})) {
+        open($output_fh, '>', $opt{'outfile'}) ||
+            die "wdtidy: unable to write $opt{'outfile'}, $!\n";
+    }
+    binmode($output_fh);
+    print({$output_fh} $output) || die "wdtidy: write failed, $!\n";
+    close($output_fh) || die "wdtidy: close failed, $!\n";
+    return 0;
+
+}
+
+
+sub tokenize {
+
+    my $source=shift();
+    my @token;
+    my $tag_qr=qr/<\/?[a-zA-Z][\w:.-]*(?:[^<>"']|"[^"]*"|'[^']*')*>/;
+    my $parser_or=HTML::Parser->new(api_version => 3);
+    my $attr_hr;
+    $parser_or->handler(start => sub { $attr_hr=shift() }, 'attr');
+
+    #  Consume source in order. Nothing inside a protected region is tokenised.
+    #  The raw-tail rule deliberately matches WebDyne::Compile.
+    #
+    my $tail='';
+    if ($source=~s/(^[ \t]*__(?:PERL|CODE)__\b[^\r\n]*(?:\r?\n|\r)?.*)\z//sm) {
+        $tail=$1;
+    }
+    pos($source)=0;
+    while (pos($source)<length($source)) {
+        my ($text, $tag, $end, $opaque)=('', '', 0, 0);
+        if ($source=~/\G(<!--.*?-->|<!\[CDATA\[.*?\]\]>|<\?.*?\?>|!\{!.*?!\})/gcs) {
+            ($text, $opaque)=($1, 1);
+        }
+        elsif ($source=~/\G($tag_qr)/gc) {
+            $text=$1;
+            ($end, $tag)=$text=~m{^<(/?)([\w:.-]+)};
+            $tag=lc($tag);
+            if (!$end) {
+                $attr_hr={};
+                $parser_or->parse($text);
+                $parser_or->eof();
+                my $raw_html=$tag=~/^(?:script|style|pre|textarea|title|xmp|listing|plaintext|iframe|noembed|noframes|noscript|svg|math)$/;
+                my $raw=$raw_html ||
+                    ($tag eq 'perl' && !grep { exists($attr_hr->{$_}) } qw(handler method package)) ||
+                    ($tag=~/^(?:api|json|htmx)$/ && exists($attr_hr->{'perl'})) ||
+                    grep { /^data-webdyne-/ } keys(%{$attr_hr});
+                if ($raw && ($raw_html || $text!~m{/\s*>$})) {
+                    if ($tag ne 'plaintext' && $source=~/\G(.*?<\/\Q$tag\E\s*>)/gcis) {
+                        $text.=$1;
+                    }
+                    else {
+                        $text.=substr($source, pos($source));
+                        pos($source)=length($source);
+                    }
+                    $opaque=1;
+                }
+            }
+        }
+        elsif ($source=~/\G(<![^>]*>)/gc) {
+            ($text, $opaque)=($1, 1);
+        }
+        elsif ($source=~/\G([^< !]+| |!(?!\{!))/gc) {
+            $text=$1;
+        }
+        else {
+            #  An incomplete instruction/expression is safest left untouched.
+            #
+            $text=substr($source, pos($source));
+            pos($source)=length($source);
+            $opaque=1;
+        }
+        if (!$tag && !$opaque && @token && !$token[-1]{'tag'} && !$token[-1]{'opaque'}) {
+            $token[-1]{'text'}.=$text;
+        }
+        else {
+            push @token, {text => $text, tag => $tag, end => $end, opaque => $opaque};
+        }
+    }
+    return (\@token, $tail);
+
+}
+
+
+sub tidy_psp {
+
+    my ($source, $opt_hr)=@_;
+    my ($token_ar, $tail)=tokenize($source);
+    return $source unless @{$token_ar};
+    my $newline=$source=~/\r\n/ ? "\r\n" : "\n";
+    my (%closing, @stack);
+    foreach my $token_hr (@{$token_ar}) {
+        $closing{$token_hr->{'tag'}}++ if $token_hr->{'end'};
+    }
+
+    #  LibTidy sees only a balanced XML outline, never PSP. Markers represent
+    #  original source tokens; scope nodes provide indentation, not HTML repair.
+    #
+    my $outline='<root>';
+    foreach my $ix (0..$#{$token_ar}) {
+        my $token_hr=$token_ar->[$ix];
+        my $tag=$token_hr->{'tag'};
+        if ($token_hr->{'end'} && grep { $_ eq $tag } @stack) {
+            while (@stack) {
+                $outline.='</scope>';
+                last if pop(@stack) eq $tag;
+            }
+        }
+        $outline.="<n$ix/>";
+        if ($tag && !$token_hr->{'end'} && !$token_hr->{'opaque'} &&
+            !$HTML::Tagset::emptyElement{$tag} && $token_hr->{'text'}!~m{/\s*>$} &&
+            $closing{$tag}) {
+            push @stack, $tag;
+            $outline.='<scope>';
+        }
+    }
+    $outline.=('</scope>' x scalar(@stack)).'</root>';
+    my $formatted=tidy_outline($outline, $opt_hr);
+    my %indent;
+    my @marker;
+    while ($formatted=~/^( +)<n(\d+)\s*\/>[ \t]*$/gm) {
+        die "wdtidy: invalid outline indentation; no output written\n" if length($1)<$opt_hr->{'indent'};
+        push @marker, $2;
+        $indent{$2}=substr($1, $opt_hr->{'indent'});
+    }
+    die "wdtidy: tidy changed the protected outline; no output written\n" unless
+        join(',', @marker) eq join(',', 0..$#{$token_ar});
+
+    #  Only replace existing whitespace between tags. Never introduce a new
+    #  text node, wrap an attribute, or change whitespace touching text/code.
+    #
+    my $output='';
+    foreach my $ix (0..$#{$token_ar}) {
+        my $token_hr=$token_ar->[$ix];
+        my $text=$token_hr->{'text'};
+        if (!$token_hr->{'opaque'} && $text=~/\A[ \t\r\n]+\z/ && $ix>0 && $ix<$#{$token_ar} &&
+            $token_ar->[$ix-1]{'tag'} && $token_ar->[$ix+1]{'tag'}) {
+            #  Keep a blank line if the author separated sections.
+            #
+            my $breaks=()=$text=~/\n/g;
+            $text=($newline x ($breaks>1 ? 2 : 1)).$indent{$ix+1};
+        }
+        $output.=$text;
+    }
+    return $output.$tail;
+
+}
+
+
+sub tidy_outline {
+
+    my ($outline, $opt_hr)=@_;
+    my ($input_fh, $input_fn)=tempfile(UNLINK => 1);
+    print({$input_fh} $outline) || die "wdtidy: unable to write temporary input, $!\n";
+    close($input_fh) || die "wdtidy: unable to close temporary input, $!\n";
+    my ($stdout, $stderr, $status)=capture {
+        #  Do not allow personal Tidy configuration to alter the outline.
+        #
+        local $ENV{'HTML_TIDY'}='';
+        system($opt_hr->{'tidy'}, '-xml', '-quiet', '--indent', 'yes',
+            '--indent-spaces', $opt_hr->{'indent'}, '--wrap', '0',
+            '--output-file', '', '--write-back', 'no', '--markup', 'yes',
+            '--newline', 'LF', '--char-encoding', 'utf8', $input_fn);
+    };
+    die "wdtidy: unable to run tidy; install HTML Tidy or use --tidy PATH\n$stderr" if $status==-1;
+    die "wdtidy: tidy failed; no output written\n$stderr" if ($status & 127) || ($status >> 8)>1;
+    return $stdout;
+
+}

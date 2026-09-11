@@ -10,6 +10,8 @@ bin/wdlint
 bin/wdlint.md                            
 bin/wdrender
 bin/wdrender.md                          
+bin/wdtidy
+bin/wdtidy.md
 bin/webdyne.apache                       
 bin/webdyne.apache.md
 bin/webdyne.pagi                         
@@ -272,6 +274,7 @@ t/51-session-cookie-flags.t
 t/52-index-source-enable.t
 t/53-pagi-multipart-post.t
 t/54-zero-mtime.t
+t/55-bin-wdtidy.t
 t/alpine.psp                             
 t/apache_harness_helper.pm
 t/api_bare.psp                           

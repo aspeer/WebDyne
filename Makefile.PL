@@ -61,6 +61,7 @@ my %WriteMakefile=(
             'bin/wdapacheinit',
             'bin/wddebug',
             'bin/wdlint',
+            'bin/wdtidy',
             'bin/webdyne.psgi',
             'bin/webdyne.pagi',
             'bin/webdyne.apache'
