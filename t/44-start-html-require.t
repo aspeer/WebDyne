@@ -21,7 +21,7 @@ BEGIN {
     unshift @INC, 't';
     my $skip;
     eval { require PAGI::Test::Client; require WebDyne::PAGI; require Future::AsyncAwait; 1 }
-        or $skip=$@ || 'PAGI modules unavailable';
+        or $skip='PAGI modules unavailable';
     plan skip_all => "Skipping start_html require/import SSE test: $skip" if $skip;
 }
 

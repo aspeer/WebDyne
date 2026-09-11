@@ -12,7 +12,7 @@ sub pagi_skip_reason {
 
     for my $module (@module) {
         eval "require $module; 1"
-            or return "missing $module: $@";
+            or return "missing $module";
 
         next unless $module =~ /^PAGI::/;
         my $version=eval { $module->VERSION($MIN_PAGI_VERSION); 1 };
