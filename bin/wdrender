@@ -359,7 +359,8 @@ sub main {
             
                 #  Send out to backend for render
                 #
-                my $res_or=&{sprintf('request_%s', $request_type)}($req_or, \%opt);
+                my $res_or=&{sprintf('request_%s', $request_type)}($req_or, \%opt) ||
+                    return err("no responsonse object returned on $request_type");
                 my $html=$res_or->decoded_content;
                 
 
