@@ -14,6 +14,7 @@ BEGIN {
 
 use WebDyne::PAGI;
 use Future;
+use PAGI::Test::ConnectionState;
 
 my $root_dn=tempdir(CLEANUP => 1);
 my $app_cr=WebDyne::PAGI->new(root => $root_dn, static => 0)->to_app();
@@ -30,7 +31,8 @@ foreach my $case_ar (
     my $send_or=Future->new();
     my $run_cr=sub {
         return $app_cr->(
-            {type => 'websocket', path => '/missing.psp', query_string => '', headers => []},
+            {type => 'websocket', path => '/missing.psp', query_string => '', headers => [],
+                'pagi.connection' => PAGI::Test::ConnectionState->new(websocket => 1)},
             sub { Future->done({type => 'websocket.connect'}) },
             sub { push @event, shift(); return $send_or },
         );
@@ -44,10 +46,13 @@ foreach my $case_ar (
         local *WebDyne::handler=sub { return $status };
         $application_or=$run_cr->();
     }
-    is_deeply(\@event, [{type => 'websocket.close'}], "$name rejects without accepting");
-    ok(!$application_or->is_ready(), "$name awaits close send");
+    is(scalar(@event), 1, "$name refuses without accepting");
+    is($event[0]->{'type'}, 'http.response.start', "$name refuses with an HTTP response");
+    is($event[0]->{'status'}, 403, "$name refuses with 403");
+    ok(!$application_or->is_ready(), "$name awaits refusal send");
     $send_or->done();
-    ok($application_or->is_done(), "$name completes after close send resolves");
+    is($event[1]->{'type'}, 'http.response.body', "$name sends the refusal body");
+    ok($application_or->is_done(), "$name completes after refusal send resolves");
     $application_or->get();
 }
 

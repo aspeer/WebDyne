@@ -12,7 +12,6 @@ use WebDyne::Request::PAGI;
 my $wr = WebDyne::Request::PAGI->new(
     scope => $scope,
     req   => $pagi_request,
-    res   => $pagi_response,
 );
 ```
 
@@ -38,7 +37,7 @@ Like the PSGI adapter, it can derive a target filename from the request path, co
 
 * **id()**
 
-    Return the request identifier if present.
+    Return the request identifier if present: the `pagi.request_id` that PAGI's RequestId middleware assigns.
 
 * **https() / secure()**
 

@@ -16,17 +16,19 @@ use Future;
 use HTTP::Status qw(HTTP_OK);
 
 my $app_cr=WebDyne::PAGI->new(root => '.', static => 0)->to_app();
-foreach my $case (qw(multiple identical response_only)) {
+foreach my $case (qw(multiple identical single)) {
     my @event;
     {
         no warnings 'redefine';
         local *WebDyne::handler=sub {
             my ($class, $request_or)=@_;
             my $headers_or=$request_or->headers_out();
-            $request_or->res()->header('X-Test' => 'original');
+            $headers_or->header('X-Test' => 'original');
             $headers_or->header('X-Test' => 'replacement');
-            $request_or->res()->header('Set-Cookie' => 'existing=1');
-            unless ($case eq 'response_only') {
+            if ($case eq 'single') {
+                $headers_or->header('Set-Cookie' => 'existing=1');
+            }
+            else {
                 $headers_or->push_header('Set-Cookie' => 'a=1');
                 $headers_or->push_header('set-cookie' => $case eq 'identical' ? 'a=1' : 'b=2');
             }
@@ -39,10 +41,10 @@ foreach my $case (qw(multiple identical response_only)) {
         )->get();
     }
     my @cookie=map { $_->[1] } grep { lc($_->[0]) eq 'set-cookie' } @{$event[0]->{'headers'}};
-    my @expected=$case eq 'response_only' ? ('existing=1') : ('a=1', $case eq 'identical' ? 'a=1' : 'b=2');
+    my @expected=$case eq 'single' ? ('existing=1') : ('a=1', $case eq 'identical' ? 'a=1' : 'b=2');
     is_deeply(\@cookie, \@expected, "$case cookies are preserved without duplication");
     my @ordinary=map { $_->[1] } grep { lc($_->[0]) eq 'x-test' } @{$event[0]->{'headers'}};
-    is_deeply(\@ordinary, ['original'], "$case preserves ordinary header precedence");
+    is_deeply(\@ordinary, ['replacement'], "$case sends a replaced header once");
 }
 
 done_testing();

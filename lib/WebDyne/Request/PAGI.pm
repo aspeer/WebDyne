@@ -183,7 +183,7 @@ sub init {
     
     #  Implement and return
     #
-    foreach my $handler (qw(req res sse ws)) {
+    foreach my $handler (qw(req sse ws)) {
         *{$handler}=sub { return shift()->{$handler} };
     }
     return handler_methods_init(__PACKAGE__, 'PAGI::Request', \%method);
@@ -314,7 +314,7 @@ sub env {
 
 
 sub id {
-    return shift()->{'scope'}{'request_id'};
+    return shift()->{'scope'}{'pagi.request_id'};
 }
 
 
@@ -431,13 +431,8 @@ sub headers_in {
 
 sub headers_out {
     my $r=shift();
-    my $headers_or=$r->{'headers_out'}
-        ||= HTTP::Headers::Fast->new(map { @{$_} } @{$r->{'res'}->headers()});
-    if (@_) {
-        $r->{'res'}->header(@_);
-        return $headers_or->header(@_);
-    }
-    return $headers_or;
+    my $headers_or=$r->{'headers_out'} ||= HTTP::Headers::Fast->new();
+    return @_ ? $headers_or->header(@_) : $headers_or;
 }
 
 
@@ -481,7 +476,6 @@ use WebDyne::Request::PAGI;
 my $wr = WebDyne::Request::PAGI->new(
     scope => $scope,
     req   => $pagi_request,
-    res   => $pagi_response,
 );
 ```
 
@@ -503,7 +497,7 @@ Like the PSGI adapter, it can derive a target filename from the request path, co
 
 * **id()**
 
-    Return the request identifier if present.
+    Return the request identifier if present: the `pagi.request_id` that PAGI's RequestId middleware assigns.
 
 * **https() / secure()**
 
@@ -574,7 +568,6 @@ WebDyne::Request::PAGI - PAGI request adapter for WebDyne
  my $wr = WebDyne::Request::PAGI->new(
      scope => $scope,
      req   => $pagi_request,
-     res   => $pagi_response,
  );
 
 =head1 DESCRIPTION
@@ -608,7 +601,7 @@ Return the normalized environment view used by the adapter.
 
 B<id()>
 
-Return the request identifier if present.
+Return the request identifier if present: the C<pagi.request_id> that PAGI's RequestId middleware assigns.
 
 
 

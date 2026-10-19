@@ -14,6 +14,7 @@ BEGIN {
 
 use WebDyne::PAGI;
 use Future;
+use PAGI::Test::ConnectionState;
 
 my $root_dn=tempdir(CLEANUP => 1);
 open(my $page_fh, '>', File::Spec->catfile($root_dn, 'sse.psp')) || die $!;
@@ -42,12 +43,18 @@ foreach my $case_ar (
 ) {
     my ($name, $method, $type, $body, $length, $expected)=@{$case_ar};
     my (@receive, @event);
-    my $scope_hr={type => 'sse', method => $method, path => '/sse.psp', query_string => 'query=yes', headers => []};
+    my $scope_hr={type => 'sse', method => $method, path => '/sse.psp', query_string => 'query=yes', headers => [],
+        'pagi.connection' => (my $connection_or=PAGI::Test::ConnectionState->new())};
     push @{$scope_hr->{'headers'}}, ['content-type', $type] if length($type);
     push @{$scope_hr->{'headers'}}, ['content-length', $length] if defined($length);
     my $future_or=$app_cr->($scope_hr,
         sub { my $receive_or=Future->new(); push @receive, $receive_or; return $receive_or },
-        sub { push @event, shift(); Future->done() },
+        sub {
+            push @event, shift();
+            #  The test plays the server, which ends the connection on sse.close.
+            $connection_or->_mark_complete() if $event[-1]->{'type'} eq 'sse.close';
+            return Future->done();
+        },
     );
     if ($name eq 'GET') {
         is(scalar(@receive), 0, 'GET starts without waiting for a body');
@@ -74,7 +81,7 @@ foreach my $case_ar (
         is(scalar(@event), 0, 'disconnect sends no response');
     }
     else {
-        is_deeply([map { $_->{'type'} } @event], [qw(sse.http.response.start sse.http.response.body)], "$name sends SSE denial response");
+        is_deeply([map { $_->{'type'} } @event], [qw(http.response.start http.response.body)], "$name sends SSE denial response");
         is($event[0]->{'status'}, 413, "$name returns 413");
     }
 }

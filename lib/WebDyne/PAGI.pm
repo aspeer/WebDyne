@@ -32,12 +32,14 @@ use Sub::Util qw(set_subname);
 use File::Basename;
 use File::Spec;
 use Scalar::Util qw(blessed reftype);
+use Encode qw(encode FB_CROAK);
 
 
-#  PAGI modules
+#  PAGI modules. The adapter relies on the PAGI-Tools 0.003000 API (PAGI Www
+#  0.6); fail at load time on an older install rather than mid-request.
 #
+use PAGI::Tools 0.003000 ();
 use PAGI::Request;
-use PAGI::Response;
 
 
 #  WebDyne Modules
@@ -300,12 +302,13 @@ sub handler_sse {
             unless ($size > $WEBDYNE_CGI_POST_MAX) {
                 $size=0;
                 my $read=eval { await $req_or->body(); 1 };
-                die $@ unless $read || $size > $WEBDYNE_CGI_POST_MAX;
+                die $@ unless $read || $disconnected || $size > $WEBDYNE_CGI_POST_MAX;
             }
             if ($size > $WEBDYNE_CGI_POST_MAX) {
-                await $send->({type => 'sse.http.response.start', status => HTTP_REQUEST_ENTITY_TOO_LARGE,
-                    headers => [['content-type', 'text/plain']]});
-                await $send->({type => 'sse.http.response.body', body => "Request body exceeds upload limit\n", more => 0});
+                my $body="Request body exceeds upload limit\n";
+                await $send->({type => 'http.response.start', status => HTTP_REQUEST_ENTITY_TOO_LARGE,
+                    headers => [['content-type', 'text/plain'], ['content-length', length($body)]]});
+                await $send->({type => 'http.response.body', body => $body, more => 0});
                 return;
             }
             return if $disconnected;
@@ -321,12 +324,11 @@ sub handler_sse {
             #  POST fields are buffered before CGI builds the parameter hash.
             #
             local *ENV=\%ENV_BASE;
-            my $res_or=PAGI::Response->new($scope);
             require PAGI::SSE;
             my $sse_or=PAGI::SSE->new($scope, $receive, $send);
             my $r=WebDyne::Request::PAGI->new(
                 document_root => $self->{'root'}, document_default => $self->{'index'},
-                scope => $scope, req => $req_or, res => $res_or, sse => $sse_or,
+                scope => $scope, req => $req_or, sse => $sse_or,
                 receive => $receive, send => $send,
             ) || return err('unable to create SSE request');
             $status=WebDyne->handler($r);
@@ -341,13 +343,14 @@ sub handler_sse {
             $status=HTTP_INTERNAL_SERVER_ERROR
                 unless defined($status) && $status =~ /\A[45][0-9]{2}\z/;
             my $message=HTTP::Status::status_message($status) || 'Request failed';
+            my $body="$status $message\n";
             await $send->({
-                type => 'sse.http.response.start', status => $status,
-                headers => [['content-type', 'text/plain']],
+                type => 'http.response.start', status => $status,
+                headers => [['content-type', 'text/plain'], ['content-length', length($body)]],
             });
             await $send->({
-                type => 'sse.http.response.body',
-                body => "$status $message\n", more => 0,
+                type => 'http.response.body',
+                body => $body, more => 0,
             });
             return;
         }
@@ -408,17 +411,15 @@ sub handler_ws {
     #
     my $req_or=PAGI::Request->new($scope, $receive) ||
         return err('unable to get PAGI::Request object');
-    my $res_or=PAGI::Response->new($scope) ||
-        return err('unable to get PAGI::Response object');
     require PAGI::WebSocket;
     my $ws_or=PAGI::WebSocket->new($scope, $receive, $send) ||
         return err('unable to get PAGI::WebSocket object');
-    debug("req_or: $req_or, res_or: $res_or, ws_or: $ws_or");
+    debug("req_or: $req_or, ws_or: $ws_or");
 
 
     #  Get main WebDyne handler request object
     #
-    my $r=WebDyne::Request::PAGI->new( document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, res=>$res_or, ws=>$ws_or,
+    my $r=WebDyne::Request::PAGI->new( document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, ws=>$ws_or,
         receive => $receive, send=> $send) ||
             return err('unable to create new WebDyne::Request::PAGI object: %s', 
                 $@ || errclr() || 'unknown error');
@@ -435,12 +436,15 @@ sub handler_ws {
         return $ws_cr if ref($ws_cr) eq 'CODE';
     }
 
-    #  Reject before accepting the socket. The server converts this into
-    #  an HTTP 403 handshake response; no optional extension is required.
+    #  Refuse before accepting the socket. A refusal is an ordinary HTTP
+    #  response sent in place of websocket.accept.
     #
     return async sub {
         my ($scope, $receive, $send)=@_;
-        await $send->({type => 'websocket.close'});
+        my $body="403 Forbidden\n";
+        await $send->({type => 'http.response.start', status => HTTP_FORBIDDEN,
+            headers => [['content-type', 'text/plain'], ['content-length', length($body)]]});
+        await $send->({type => 'http.response.body', body => $body, more => 0});
     };
 
 }
@@ -467,7 +471,7 @@ sub handler_http {
         #  Restrict local env and expose the PAGI request path to WebDyne's
         #  shared Router::Simple based API implementation.
         #
-        my ($r, $html, $html_fh, $status, $req_or, $res_or);
+        my ($r, $html, $html_fh, $status, $req_or);
 
         #  WebDyne page code reads synchronously. Buffer HTTP bodies before
         #  dispatch, bounded by the existing 512 KiB default upload limit.
@@ -492,8 +496,6 @@ sub handler_http {
         };
         $req_or=PAGI::Request->new($scope, $bounded_receive_cr) ||
             return err('unable to get PAGI::Request object');
-        $res_or=PAGI::Response->new($scope) ||
-            return err('unable to get PAGI::Response object');
 
         #  Reject a declared oversize body before consuming any input. The
         #  receive counter remains authoritative for bodies we do accept.
@@ -525,17 +527,18 @@ sub handler_http {
                 }
                 1;
             };
-            die $@ unless $staged || $body_oversize;
+            die $@ unless $staged || $body_oversize || $body_disconnected;
         }
         if ($body_oversize) {
-            return await $res_or
-                ->status(HTTP_REQUEST_ENTITY_TOO_LARGE)
-                ->send("Request body exceeds upload limit\n")
-                ->respond($send);
+            my $body="Request body exceeds upload limit\n";
+            await $send->({type => 'http.response.start', status => HTTP_REQUEST_ENTITY_TOO_LARGE,
+                headers => [['content-type', 'text/plain; charset=utf-8'], ['content-length', length($body)]]});
+            await $send->({type => 'http.response.body', body => $body, more => 0});
+            return;
         }
 
-        #  PAGI's helpers may return partial bytes on disconnect. Never run
-        #  page code with an incomplete upload or synthesize a response for it.
+        #  PAGI's body helpers fail when the client disconnects mid-body. Never
+        #  run page code with an incomplete upload or synthesize a response for it.
         #
         return if $body_disconnected;
 
@@ -574,7 +577,7 @@ sub handler_http {
             #  prefix resolved above as its PSP filename.
             #
             $html_fh=IO::String->new($html);
-            my %request_opt=(select => $html_fh, document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, res=>$res_or,
+            my %request_opt=(select => $html_fh, document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or,
                 receive => $receive, send=> $send, no_head_insert=>$self->{'no_head_insert'}, filename=>$self->{'filename'});
             $request_opt{'filename'} ||= do {$api_fn if $api_fn};
             $r=WebDyne::Request::PAGI->new(%request_opt) ||
@@ -659,21 +662,14 @@ sub handler_http {
         debug("final handler status: %s, content_type: %s, html:%s", $final_status, $r->content_type(), $html);
         
         
-        #  Send headers unless already sent
+        #  Send headers unless already sent. PAGI requires lowercase names;
+        #  order and duplicates such as Set-Cookie are kept.
         #
-        $r->res->status($final_status);
         my $headers_ar=$r->headers_out->psgi_flatten_without_sort();
         debug('sending headers: %s', Dumper($headers_ar));
-        my $cookie_seen;
+        my @header;
         for (my $i=0; $i<@{$headers_ar}; $i+=2) {
-            my ($header, $value)=@{$headers_ar}[$i, $i+1];
-            if (lc($header) eq 'set-cookie') {
-                $r->res->remove_header('set-cookie') unless $cookie_seen++;
-                $r->res->header('set-cookie' => $value);
-            }
-            else {
-                $r->res->header_try($header => $value);
-            }
+            push @header, [lc($headers_ar->[$i]), $headers_ar->[$i+1]];
         }
         
         
@@ -685,29 +681,25 @@ sub handler_http {
         my $body=$html || '';
         if ($body) {
             debug('sending html to client via await()');
-            $r->res->content_type($r->content_type() || $WEBDYNE_CONTENT_TYPE_HTML);
+            @header=grep { $_->[0] ne 'content-type' } @header;
+            push @header, ['content-type', $r->content_type() || $WEBDYNE_CONTENT_TYPE_HTML];
         }
 
         #  Encode character strings, but preserve byte strings from files and R2.
         #
-        my $send_method=utf8::is_utf8($body) ? 'send' : 'send_raw';
-        my $respond_or=$r->res->$send_method($body)->respond(sub {
-
-            #  PAGI requires lowercase names in response events. Normalize only
-            #  the outgoing header pairs, preserving values, order and duplicates.
-            #
-            my $event_hr=shift();
-            if ($event_hr->{'type'} eq 'http.response.start') {
-                $event_hr={
-                    %{$event_hr},
-                    headers => [
-                        map { [lc($_->[0]), $_->[1]] }
-                            @{$event_hr->{'headers'} || []}
-                    ],
-                };
-            }
-            return $send->($event_hr);
-        });
+        if (utf8::is_utf8($body)) {
+            $body=encode('UTF-8', $body, FB_CROAK);
+            my ($content_type_ar)=grep { $_->[0] eq 'content-type' } @header;
+            push @header, ($content_type_ar=['content-type', 'text/plain']) unless $content_type_ar;
+            $content_type_ar->[1].='; charset=utf-8'
+                unless $content_type_ar->[1]=~/charset=/i
+                    || $content_type_ar->[1]=~m{\A\s*(?:application/json|[^;]*\+json)\s*(?:;|\z)}i;
+        }
+        @header=grep { $_->[0] ne 'content-length' && $_->[0] ne 'transfer-encoding' } @header;
+        push @header, ['content-length', length($body)];
+        my $start_or=$send->({type => 'http.response.start', status => $final_status, headers => \@header});
+        await $start_or;
+        my $respond_or=$send->({type => 'http.response.body', body => $body, more => 0});
 
         #  Retain the response Future across await. Awaiting the temporary can
         #  crash Devel::Confess stack tracing on send failure with Perl 5.38.
