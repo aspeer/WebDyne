@@ -305,9 +305,10 @@ sub handler_sse {
                 die $@ unless $read || $disconnected || $size > $WEBDYNE_CGI_POST_MAX;
             }
             if ($size > $WEBDYNE_CGI_POST_MAX) {
+                my $body="Request body exceeds upload limit\n";
                 await $send->({type => 'http.response.start', status => HTTP_REQUEST_ENTITY_TOO_LARGE,
-                    headers => [['content-type', 'text/plain']]});
-                await $send->({type => 'http.response.body', body => "Request body exceeds upload limit\n", more => 0});
+                    headers => [['content-type', 'text/plain'], ['content-length', length($body)]]});
+                await $send->({type => 'http.response.body', body => $body, more => 0});
                 return;
             }
             return if $disconnected;
@@ -342,13 +343,14 @@ sub handler_sse {
             $status=HTTP_INTERNAL_SERVER_ERROR
                 unless defined($status) && $status =~ /\A[45][0-9]{2}\z/;
             my $message=HTTP::Status::status_message($status) || 'Request failed';
+            my $body="$status $message\n";
             await $send->({
                 type => 'http.response.start', status => $status,
-                headers => [['content-type', 'text/plain']],
+                headers => [['content-type', 'text/plain'], ['content-length', length($body)]],
             });
             await $send->({
                 type => 'http.response.body',
-                body => "$status $message\n", more => 0,
+                body => $body, more => 0,
             });
             return;
         }
@@ -439,9 +441,10 @@ sub handler_ws {
     #
     return async sub {
         my ($scope, $receive, $send)=@_;
+        my $body="403 Forbidden\n";
         await $send->({type => 'http.response.start', status => HTTP_FORBIDDEN,
-            headers => [['content-type', 'text/plain']]});
-        await $send->({type => 'http.response.body', body => "403 Forbidden\n", more => 0});
+            headers => [['content-type', 'text/plain'], ['content-length', length($body)]]});
+        await $send->({type => 'http.response.body', body => $body, more => 0});
     };
 
 }
@@ -527,9 +530,10 @@ sub handler_http {
             die $@ unless $staged || $body_oversize || $body_disconnected;
         }
         if ($body_oversize) {
+            my $body="Request body exceeds upload limit\n";
             await $send->({type => 'http.response.start', status => HTTP_REQUEST_ENTITY_TOO_LARGE,
-                headers => [['content-type', 'text/plain; charset=utf-8']]});
-            await $send->({type => 'http.response.body', body => "Request body exceeds upload limit\n", more => 0});
+                headers => [['content-type', 'text/plain; charset=utf-8'], ['content-length', length($body)]]});
+            await $send->({type => 'http.response.body', body => $body, more => 0});
             return;
         }
 
