@@ -74,6 +74,8 @@ foreach my $case_ar (
     if (defined($status)) {
         is($event[0]->{'status'}, $status, "$name response status");
         is($dispatched, $status == 200 ? 1 : 0, "$name dispatch count");
+        my %header=map { @{$_} } @{$event[0]->{'headers'}};
+        is($header{'content-length'}, length($event[1]->{'body'}), "$name frames the response body in bytes");
     }
     else {
         is($dispatched, 0, 'disconnect does not dispatch page');

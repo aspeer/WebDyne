@@ -14,6 +14,7 @@ BEGIN {
 
 use WebDyne::PAGI;
 use Future;
+use PAGI::Test::ConnectionState;
 
 my $root_dn=tempdir(CLEANUP => 1);
 foreach my $page_ar (
@@ -107,11 +108,18 @@ sub recovered_request {
 sub request {
     my ($type, $path, $receive_or)=@_;
     my @event;
+    my $connection_or=PAGI::Test::ConnectionState->new(websocket => $type eq 'websocket');
     my $application_or=$app_cr->(
         {type => $type, path => $path, method => $receive_or ? 'POST' : 'GET',
-            query_string => '', headers => $receive_or ? [['content-type', 'application/x-www-form-urlencoded']] : []},
+            query_string => '', headers => $receive_or ? [['content-type', 'application/x-www-form-urlencoded']] : [],
+            'pagi.connection' => $connection_or},
         sub { return $receive_or || Future->done({type => "$type.request", body => '', more => 0}) },
-        sub { push @event, shift(); return Future->done() },
+        sub {
+            push @event, shift();
+            #  The test plays the server, which ends the connection on sse.close.
+            $connection_or->_mark_complete() if $event[-1]->{'type'} eq 'sse.close';
+            return Future->done();
+        },
     );
     $application_or->get() unless $receive_or;
     return ($application_or, \@event);

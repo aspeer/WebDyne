@@ -32,12 +32,14 @@ use Sub::Util qw(set_subname);
 use File::Basename;
 use File::Spec;
 use Scalar::Util qw(blessed reftype);
+use Encode qw(encode FB_CROAK);
 
 
-#  PAGI modules
+#  PAGI modules. The adapter relies on the PAGI-Tools 0.003000 API (PAGI Www
+#  0.6); fail at load time on an older install rather than mid-request.
 #
+use PAGI::Tools 0.003000 ();
 use PAGI::Request;
-use PAGI::Response;
 
 
 #  WebDyne Modules
@@ -300,12 +302,13 @@ sub handler_sse {
             unless ($size > $WEBDYNE_CGI_POST_MAX) {
                 $size=0;
                 my $read=eval { await $req_or->body(); 1 };
-                die $@ unless $read || $size > $WEBDYNE_CGI_POST_MAX;
+                die $@ unless $read || $disconnected || $size > $WEBDYNE_CGI_POST_MAX;
             }
             if ($size > $WEBDYNE_CGI_POST_MAX) {
-                await $send->({type => 'sse.http.response.start', status => HTTP_REQUEST_ENTITY_TOO_LARGE,
-                    headers => [['content-type', 'text/plain']]});
-                await $send->({type => 'sse.http.response.body', body => "Request body exceeds upload limit\n", more => 0});
+                my $body="Request body exceeds upload limit\n";
+                await $send->({type => 'http.response.start', status => HTTP_REQUEST_ENTITY_TOO_LARGE,
+                    headers => [['content-type', 'text/plain'], ['content-length', length($body)]]});
+                await $send->({type => 'http.response.body', body => $body, more => 0});
                 return;
             }
             return if $disconnected;
@@ -321,12 +324,11 @@ sub handler_sse {
             #  POST fields are buffered before CGI builds the parameter hash.
             #
             local *ENV=\%ENV_BASE;
-            my $res_or=PAGI::Response->new($scope);
             require PAGI::SSE;
             my $sse_or=PAGI::SSE->new($scope, $receive, $send);
             my $r=WebDyne::Request::PAGI->new(
                 document_root => $self->{'root'}, document_default => $self->{'index'},
-                scope => $scope, req => $req_or, res => $res_or, sse => $sse_or,
+                scope => $scope, req => $req_or, sse => $sse_or,
                 receive => $receive, send => $send,
             ) || return err('unable to create SSE request');
             $status=WebDyne->handler($r);
@@ -341,13 +343,14 @@ sub handler_sse {
             $status=HTTP_INTERNAL_SERVER_ERROR
                 unless defined($status) && $status =~ /\A[45][0-9]{2}\z/;
             my $message=HTTP::Status::status_message($status) || 'Request failed';
+            my $body="$status $message\n";
             await $send->({
-                type => 'sse.http.response.start', status => $status,
-                headers => [['content-type', 'text/plain']],
+                type => 'http.response.start', status => $status,
+                headers => [['content-type', 'text/plain'], ['content-length', length($body)]],
             });
             await $send->({
-                type => 'sse.http.response.body',
-                body => "$status $message\n", more => 0,
+                type => 'http.response.body',
+                body => $body, more => 0,
             });
             return;
         }
@@ -408,17 +411,15 @@ sub handler_ws {
     #
     my $req_or=PAGI::Request->new($scope, $receive) ||
         return err('unable to get PAGI::Request object');
-    my $res_or=PAGI::Response->new($scope) ||
-        return err('unable to get PAGI::Response object');
     require PAGI::WebSocket;
     my $ws_or=PAGI::WebSocket->new($scope, $receive, $send) ||
         return err('unable to get PAGI::WebSocket object');
-    debug("req_or: $req_or, res_or: $res_or, ws_or: $ws_or");
+    debug("req_or: $req_or, ws_or: $ws_or");
 
 
     #  Get main WebDyne handler request object
     #
-    my $r=WebDyne::Request::PAGI->new( document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, res=>$res_or, ws=>$ws_or,
+    my $r=WebDyne::Request::PAGI->new( document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, ws=>$ws_or,
         receive => $receive, send=> $send) ||
             return err('unable to create new WebDyne::Request::PAGI object: %s', 
                 $@ || errclr() || 'unknown error');
@@ -435,12 +436,15 @@ sub handler_ws {
         return $ws_cr if ref($ws_cr) eq 'CODE';
     }
 
-    #  Reject before accepting the socket. The server converts this into
-    #  an HTTP 403 handshake response; no optional extension is required.
+    #  Refuse before accepting the socket. A refusal is an ordinary HTTP
+    #  response sent in place of websocket.accept.
     #
     return async sub {
         my ($scope, $receive, $send)=@_;
-        await $send->({type => 'websocket.close'});
+        my $body="403 Forbidden\n";
+        await $send->({type => 'http.response.start', status => HTTP_FORBIDDEN,
+            headers => [['content-type', 'text/plain'], ['content-length', length($body)]]});
+        await $send->({type => 'http.response.body', body => $body, more => 0});
     };
 
 }
@@ -467,7 +471,7 @@ sub handler_http {
         #  Restrict local env and expose the PAGI request path to WebDyne's
         #  shared Router::Simple based API implementation.
         #
-        my ($r, $html, $html_fh, $status, $req_or, $res_or);
+        my ($r, $html, $html_fh, $status, $req_or);
 
         #  WebDyne page code reads synchronously. Buffer HTTP bodies before
         #  dispatch, bounded by the existing 512 KiB default upload limit.
@@ -492,8 +496,6 @@ sub handler_http {
         };
         $req_or=PAGI::Request->new($scope, $bounded_receive_cr) ||
             return err('unable to get PAGI::Request object');
-        $res_or=PAGI::Response->new($scope) ||
-            return err('unable to get PAGI::Response object');
 
         #  Reject a declared oversize body before consuming any input. The
         #  receive counter remains authoritative for bodies we do accept.
@@ -525,17 +527,18 @@ sub handler_http {
                 }
                 1;
             };
-            die $@ unless $staged || $body_oversize;
+            die $@ unless $staged || $body_oversize || $body_disconnected;
         }
         if ($body_oversize) {
-            return await $res_or
-                ->status(HTTP_REQUEST_ENTITY_TOO_LARGE)
-                ->send("Request body exceeds upload limit\n")
-                ->respond($send);
+            my $body="Request body exceeds upload limit\n";
+            await $send->({type => 'http.response.start', status => HTTP_REQUEST_ENTITY_TOO_LARGE,
+                headers => [['content-type', 'text/plain; charset=utf-8'], ['content-length', length($body)]]});
+            await $send->({type => 'http.response.body', body => $body, more => 0});
+            return;
         }
 
-        #  PAGI's helpers may return partial bytes on disconnect. Never run
-        #  page code with an incomplete upload or synthesize a response for it.
+        #  PAGI's body helpers fail when the client disconnects mid-body. Never
+        #  run page code with an incomplete upload or synthesize a response for it.
         #
         return if $body_disconnected;
 
@@ -574,7 +577,7 @@ sub handler_http {
             #  prefix resolved above as its PSP filename.
             #
             $html_fh=IO::String->new($html);
-            my %request_opt=(select => $html_fh, document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or, res=>$res_or,
+            my %request_opt=(select => $html_fh, document_root => $self->{'root'}, document_default => $self->{'index'}, scope=>$scope, req=>$req_or,
                 receive => $receive, send=> $send, no_head_insert=>$self->{'no_head_insert'}, filename=>$self->{'filename'});
             $request_opt{'filename'} ||= do {$api_fn if $api_fn};
             $r=WebDyne::Request::PAGI->new(%request_opt) ||
@@ -659,21 +662,14 @@ sub handler_http {
         debug("final handler status: %s, content_type: %s, html:%s", $final_status, $r->content_type(), $html);
         
         
-        #  Send headers unless already sent
+        #  Send headers unless already sent. PAGI requires lowercase names;
+        #  order and duplicates such as Set-Cookie are kept.
         #
-        $r->res->status($final_status);
         my $headers_ar=$r->headers_out->psgi_flatten_without_sort();
         debug('sending headers: %s', Dumper($headers_ar));
-        my $cookie_seen;
+        my @header;
         for (my $i=0; $i<@{$headers_ar}; $i+=2) {
-            my ($header, $value)=@{$headers_ar}[$i, $i+1];
-            if (lc($header) eq 'set-cookie') {
-                $r->res->remove_header('set-cookie') unless $cookie_seen++;
-                $r->res->header('set-cookie' => $value);
-            }
-            else {
-                $r->res->header_try($header => $value);
-            }
+            push @header, [lc($headers_ar->[$i]), $headers_ar->[$i+1]];
         }
         
         
@@ -685,29 +681,25 @@ sub handler_http {
         my $body=$html || '';
         if ($body) {
             debug('sending html to client via await()');
-            $r->res->content_type($r->content_type() || $WEBDYNE_CONTENT_TYPE_HTML);
+            @header=grep { $_->[0] ne 'content-type' } @header;
+            push @header, ['content-type', $r->content_type() || $WEBDYNE_CONTENT_TYPE_HTML];
         }
 
         #  Encode character strings, but preserve byte strings from files and R2.
         #
-        my $send_method=utf8::is_utf8($body) ? 'send' : 'send_raw';
-        my $respond_or=$r->res->$send_method($body)->respond(sub {
-
-            #  PAGI requires lowercase names in response events. Normalize only
-            #  the outgoing header pairs, preserving values, order and duplicates.
-            #
-            my $event_hr=shift();
-            if ($event_hr->{'type'} eq 'http.response.start') {
-                $event_hr={
-                    %{$event_hr},
-                    headers => [
-                        map { [lc($_->[0]), $_->[1]] }
-                            @{$event_hr->{'headers'} || []}
-                    ],
-                };
-            }
-            return $send->($event_hr);
-        });
+        if (utf8::is_utf8($body)) {
+            $body=encode('UTF-8', $body, FB_CROAK);
+            my ($content_type_ar)=grep { $_->[0] eq 'content-type' } @header;
+            push @header, ($content_type_ar=['content-type', 'text/plain']) unless $content_type_ar;
+            $content_type_ar->[1].='; charset=utf-8'
+                unless $content_type_ar->[1]=~/charset=/i
+                    || $content_type_ar->[1]=~m{\A\s*(?:application/json|[^;]*\+json)\s*(?:;|\z)}i;
+        }
+        @header=grep { $_->[0] ne 'content-length' && $_->[0] ne 'transfer-encoding' } @header;
+        push @header, ['content-length', length($body)];
+        my $start_or=$send->({type => 'http.response.start', status => $final_status, headers => \@header});
+        await $start_or;
+        my $respond_or=$send->({type => 'http.response.body', body => $body, more => 0});
 
         #  Retain the response Future across await. Awaiting the temporary can
         #  crash Devel::Confess stack tracing on send failure with Perl 5.38.
@@ -844,17 +836,32 @@ my $single_file_app = WebDyne::PAGI->new(
 
 `WebDyne::PAGI` wraps the core WebDyne handler in a PAGI application. It supports multiple PAGI scope types, including normal HTTP requests, server-sent events, WebSocket connections, and lifespan startup or shutdown events.
 
+The adapter requires PAGI::Tools 0.003000 or newer and a server implementing PAGI Www 0.6. Older toolkit versions are rejected when the adapter loads.
+
 # METHODS #
 
 * **new(%options)**
 
-    Construct a PAGI application wrapper. Options include `root`, `index`, `test`, `filename`, `static`, `conf`, and related runtime settings.
+    Construct a PAGI application wrapper. Options include `root`, `index`, `test`, `filename`, `static`, `conf`, `startup`, `shutdown`, and related runtime settings.
 
     The `filename` option is an explicit source-file override for the application. When supplied, it is passed to `WebDyne::Request::PAGI` for every HTTP request and always wins over normal filename derivation from the PAGI request scope, including path-based dispatch, document-root resolution, default document handling, and API-style fallback resolution. This is useful for helper tools or deliberate single-file PAGI applications; do not set it for normal multi-page applications that should dispatch from the request path.
 
     The `static` option enables or disables the configured PAGI static-file middleware for this app instance. Static middleware is disabled by the package default, but wrapper scripts such as `webdyne.pagi` may pass `static => 1`.
 
     The `conf` option loads local WebDyne constants during app construction. A true value of `1` loads `$root/.webdyne.conf.pl`; any other true value is treated as an explicit config filename, relative to `root` unless already absolute.
+
+    The optional `startup` and `shutdown` options are coderefs (or `undef` to disable). Each receives `($app_or, $scope_hr)`: this application object and the lifespan scope. A normal return, including a false value, succeeds; a returned `Future` is awaited. WebDyne owns the receive/send protocol and sends the completion acknowledgement only after the callback succeeds. An exception or failed Future sends `lifespan.startup.failed` or `lifespan.shutdown.failed` with the diagnostic, then ends the lifespan session. Failures while sending protocol events propagate to the server. Missing callbacks preserve the default acknowledgements.
+
+    Callbacks run when the server delivers the corresponding event, not during construction. A lifespan scope is not an HTTP request and has no PSP request object. Startup is per application lifespan/interpreter, not once per deployment. Shutdown requires a server that delivers shutdown; it cannot be relied upon after a crash or forced termination.
+
+    ```perl
+    use My::App;
+    my $app_cr=WebDyne::PAGI->new(
+        root     => '.',
+        startup  => \&My::App::startup,
+        shutdown => \&My::App::shutdown,
+    )->to_app();
+    ```
 
 * **to_app()**
 
@@ -866,15 +873,19 @@ my $single_file_app = WebDyne::PAGI->new(
 
 * **handler_sse()**
 
-    Handle server-sent event requests. URL-encoded form bodies are buffered before CGI parameter setup, subject to `WEBDYNE_CGI_POST_MAX`. Oversized forms receive status 413 through SSE HTTP denial events; disconnects during buffering skip page execution. Normal EventSource GETs do not wait for body data. Multipart SSE form submissions are outside this handler's supported scope. When page setup returns an HTTP error status instead of a stream callback, send a plain-text SSE HTTP denial response with that status. Other results without a valid callback produce status 500. Custom error headers and redirects are not forwarded by this fallback.
+    Handle server-sent event requests. URL-encoded form bodies are buffered before CGI parameter setup, subject to `WEBDYNE_CGI_POST_MAX`. Oversized forms receive an ordinary HTTP response with status 413; disconnects during buffering skip page execution. Normal EventSource GETs do not wait for body data. Multipart SSE form submissions are outside this handler's supported scope. When page setup returns an HTTP error status instead of a stream callback, send a plain-text HTTP response with that status. Other results without a valid callback produce status 500. Custom error headers and redirects are not forwarded by this fallback.
 
 * **handler_ws()**
 
-    Handle WebSocket requests. If page setup does not provide a valid WebSocket callback, reject the handshake with `websocket.close`. This uses the standard HTTP 403 rejection without requiring the optional HTTP denial-response extension.
+    Handle WebSocket requests. If page setup does not provide a valid WebSocket callback, reject the handshake with an ordinary HTTP 403 response before accepting the socket.
 
 * **handler_lifespan()**
 
     Handle PAGI lifespan startup and shutdown events.
+
+* **lifespan_callback($phase, $scope_hr)**
+
+    Invoke the configured `startup` or `shutdown` callback and return a Future resolving without values when its work completes. An absent callback completes immediately. Unknown phases and callback errors fail the Future. `handler_lifespan()` uses this method before acknowledging the event; callers normally configure callbacks through the constructor instead of calling it directly.
 
 * **handler_sse_error()**
 
@@ -892,7 +903,7 @@ The module relies on `WebDyne::Request::PAGI` for normalized request handling an
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
@@ -905,11 +916,7 @@ Full license text is available at:
 
 <http://dev.perl.org/licenses/>
 
-
 =end markdown
-
-
-=head1 WebDyne::PAGI
 
 
 =head1 NAME
@@ -921,14 +928,14 @@ WebDyne::PAGI - PAGI application wrapper for WebDyne
 
 
  use WebDyne::PAGI;
- 
+
  my $app = WebDyne::PAGI->new(
      root   => '.',
      index  => 1,
      static => 1,
      conf   => 1,
  )->to_app;
- 
+
  my $single_file_app = WebDyne::PAGI->new(
      root     => '.',
      filename => 'app.psp',
@@ -937,6 +944,8 @@ WebDyne::PAGI - PAGI application wrapper for WebDyne
 =head1 DESCRIPTION
 
 C<WebDyne::PAGI> wraps the core WebDyne handler in a PAGI application. It supports multiple PAGI scope types, including normal HTTP requests, server-sent events, WebSocket connections, and lifespan startup or shutdown events.
+
+The adapter requires PAGI::Tools 0.003000 or newer and a server implementing PAGI Www 0.6. Older toolkit versions are rejected when the adapter loads.
 
 
 =head1 METHODS
@@ -947,7 +956,7 @@ C<WebDyne::PAGI> wraps the core WebDyne handler in a PAGI application. It suppor
 
 B<new(%options)>
 
-Construct a PAGI application wrapper. Options include C<root>, C<index>, C<test>, C<filename>, C<static>, C<conf>, and related runtime settings.
+Construct a PAGI application wrapper. Options include C<root>, C<index>, C<test>, C<filename>, C<static>, C<conf>, C<startup>, C<shutdown>, and related runtime settings.
 
 The C<filename> option is an explicit source-file override for the application. When supplied, it is passed to C<WebDyne::Request::PAGI> for every HTTP request and always wins over normal filename derivation from the PAGI request scope, including path-based dispatch, document-root resolution, default document handling, and API-style fallback resolution. This is useful for helper tools or deliberate single-file PAGI applications; do not set it for normal multi-page applications that should dispatch from the request path.
 
@@ -955,6 +964,17 @@ The C<static> option enables or disables the configured PAGI static-file middlew
 
 The C<conf> option loads local WebDyne constants during app construction. A true value of C<1> loads C<$root/.webdyne.conf.pl>; any other true value is treated as an explicit config filename, relative to C<root> unless already absolute.
 
+The optional C<startup> and C<shutdown> options are coderefs (or C<undef> to disable). Each receives C<($app_or, $scope_hr)>: this application object and the lifespan scope. A normal return, including a false value, succeeds; a returned C<Future> is awaited. WebDyne owns the receive/send protocol and sends the completion acknowledgement only after the callback succeeds. An exception or failed Future sends C<lifespan.startup.failed> or C<lifespan.shutdown.failed> with the diagnostic, then ends the lifespan session. Failures while sending protocol events propagate to the server. Missing callbacks preserve the default acknowledgements.
+
+Callbacks run when the server delivers the corresponding event, not during construction. A lifespan scope is not an HTTP request and has no PSP request object. Startup is per application lifespan/interpreter, not once per deployment. Shutdown requires a server that delivers shutdown; it cannot be relied upon after a crash or forced termination.
+
+
+ use My::App;
+ my $app_cr=WebDyne::PAGI->new(
+     root     => '.',
+     startup  => \&My::App::startup,
+     shutdown => \&My::App::shutdown,
+ )->to_app();
 
 
 =item *
@@ -977,7 +997,7 @@ Handle normal HTTP requests. Outgoing response header names are normalized to lo
 
 B<handler_sse()>
 
-Handle server-sent event requests. URL-encoded form bodies are buffered before CGI parameter setup, subject to C<WEBDYNE_CGI_POST_MAX>. Oversized forms receive status 413 through SSE HTTP denial events; disconnects during buffering skip page execution. Normal EventSource GETs do not wait for body data. Multipart SSE form submissions are outside this handler's supported scope. When page setup returns an HTTP error status instead of a stream callback, send a plain-text SSE HTTP denial response with that status. Other results without a valid callback produce status 500. Custom error headers and redirects are not forwarded by this fallback.
+Handle server-sent event requests. URL-encoded form bodies are buffered before CGI parameter setup, subject to C<WEBDYNE_CGI_POST_MAX>. Oversized forms receive an ordinary HTTP response with status 413; disconnects during buffering skip page execution. Normal EventSource GETs do not wait for body data. Multipart SSE form submissions are outside this handler's supported scope. When page setup returns an HTTP error status instead of a stream callback, send a plain-text HTTP response with that status. Other results without a valid callback produce status 500. Custom error headers and redirects are not forwarded by this fallback.
 
 
 
@@ -985,7 +1005,7 @@ Handle server-sent event requests. URL-encoded form bodies are buffered before C
 
 B<handler_ws()>
 
-Handle WebSocket requests. If page setup does not provide a valid WebSocket callback, reject the handshake with C<websocket.close>. This uses the standard HTTP 403 rejection without requiring the optional HTTP denial-response extension.
+Handle WebSocket requests. If page setup does not provide a valid WebSocket callback, reject the handshake with an ordinary HTTP 403 response before accepting the socket.
 
 
 
@@ -994,6 +1014,14 @@ Handle WebSocket requests. If page setup does not provide a valid WebSocket call
 B<handler_lifespan()>
 
 Handle PAGI lifespan startup and shutdown events.
+
+
+
+=item *
+
+B<lifespan_callback($phase, $scope_hr)>
+
+Invoke the configured C<startup> or C<shutdown> callback and return a Future resolving without values when its work completes. An absent callback completes immediately. Unknown phases and callback errors fail the Future. C<handler_lifespan()> uses this method before acknowledging the event; callers normally configure callbacks through the constructor instead of calling it directly.
 
 
 

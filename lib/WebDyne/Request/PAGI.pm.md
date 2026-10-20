@@ -12,7 +12,6 @@ use WebDyne::Request::PAGI;
 my $wr = WebDyne::Request::PAGI->new(
     scope => $scope,
     req   => $pagi_request,
-    res   => $pagi_response,
 );
 ```
 
@@ -21,6 +20,8 @@ my $wr = WebDyne::Request::PAGI->new(
 `WebDyne::Request::PAGI` adapts PAGI request state to the normalized request API expected by WebDyne.
 
 Like the PSGI adapter, it can derive a target filename from the request path, configured document root, and default document settings. It also exposes PAGI-specific request information such as scope-based protocol details, body access, form/query parameters, and request timing through the common WebDyne request surface.
+
+The former `res()` helper is no longer available. Set response status and content type through the request adapter, and use `headers_out()` for response headers. Setting a header replaces its previous value; use `headers_out()->push_header(...)` for repeated values such as Set-Cookie.
 
 # METHODS #
 
@@ -38,7 +39,7 @@ Like the PSGI adapter, it can derive a target filename from the request path, co
 
 * **id()**
 
-    Return the request identifier if present.
+    Return the request identifier if present: the `pagi.request_id` that PAGI's RequestId middleware assigns.
 
 * **https() / secure()**
 

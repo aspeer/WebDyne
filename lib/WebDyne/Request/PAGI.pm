@@ -183,7 +183,7 @@ sub init {
     
     #  Implement and return
     #
-    foreach my $handler (qw(req res sse ws)) {
+    foreach my $handler (qw(req sse ws)) {
         *{$handler}=sub { return shift()->{$handler} };
     }
     return handler_methods_init(__PACKAGE__, 'PAGI::Request', \%method);
@@ -314,7 +314,7 @@ sub env {
 
 
 sub id {
-    return shift()->{'scope'}{'request_id'};
+    return shift()->{'scope'}{'pagi.request_id'};
 }
 
 
@@ -431,13 +431,8 @@ sub headers_in {
 
 sub headers_out {
     my $r=shift();
-    my $headers_or=$r->{'headers_out'}
-        ||= HTTP::Headers::Fast->new(map { @{$_} } @{$r->{'res'}->headers()});
-    if (@_) {
-        $r->{'res'}->header(@_);
-        return $headers_or->header(@_);
-    }
-    return $headers_or;
+    my $headers_or=$r->{'headers_out'} ||= HTTP::Headers::Fast->new();
+    return @_ ? $headers_or->header(@_) : $headers_or;
 }
 
 
@@ -465,6 +460,8 @@ sub base_url {
 
 __END__
 
+=encoding utf8
+
 =begin markdown
 
 # WebDyne::Request::PAGI #
@@ -481,7 +478,6 @@ use WebDyne::Request::PAGI;
 my $wr = WebDyne::Request::PAGI->new(
     scope => $scope,
     req   => $pagi_request,
-    res   => $pagi_response,
 );
 ```
 
@@ -491,11 +487,17 @@ my $wr = WebDyne::Request::PAGI->new(
 
 Like the PSGI adapter, it can derive a target filename from the request path, configured document root, and default document settings. It also exposes PAGI-specific request information such as scope-based protocol details, body access, form/query parameters, and request timing through the common WebDyne request surface.
 
+The former `res()` helper is no longer available. Set response status and content type through the request adapter, and use `headers_out()` for response headers. Setting a header replaces its previous value; use `headers_out()->push_header(...)` for repeated values such as Set-Cookie.
+
 # METHODS #
 
 * **new(%options)**
 
     Construct a PAGI-backed request adapter.
+
+* **path_info() / script_name()**
+
+    Return the application-relative path and the PAGI `root_path` mount point. Filename and API lookup strip the mount prefix at a path boundary; `path()` and the original scope retain the full request path.
 
 * **env()**
 
@@ -503,7 +505,7 @@ Like the PSGI adapter, it can derive a target filename from the request path, co
 
 * **id()**
 
-    Return the request identifier if present.
+    Return the request identifier if present: the `pagi.request_id` that PAGI's RequestId middleware assigns.
 
 * **https() / secure()**
 
@@ -513,9 +515,13 @@ Like the PSGI adapter, it can derive a target filename from the request path, co
 
     Return server identity details.
 
+* **content_length()**
+
+    Return the declared Content-Length when present. Otherwise, return the byte length of a body already buffered by the PAGI handler, or undef when no buffered length is available. Original request headers remain unchanged.
+
 * **body() / body_handle()**
 
-    Read or stream the request body.
+    Read the completed HTTP request body buffered before page execution. `body_handle()` returns a fresh binary handle positioned at the beginning of those bytes. Synchronous access requires a buffered body; it does not drive the server event loop.
 
 * **headers_in() / headers_out()**
 
@@ -541,7 +547,7 @@ This adapter also supports WebDyne’s SSE and WebSocket-aware PAGI flows becaus
 
 Andrew Speer <andrew.speer@isolutions.com.au>
 
-# LICENSE and COPYRIGHT
+# LICENSE and COPYRIGHT #
 
 This file is part of WebDyne.
 
@@ -554,11 +560,7 @@ Full license text is available at:
 
 <http://dev.perl.org/licenses/>
 
-
 =end markdown
-
-
-=head1 WebDyne::Request::PAGI
 
 
 =head1 NAME
@@ -570,11 +572,10 @@ WebDyne::Request::PAGI - PAGI request adapter for WebDyne
 
 
  use WebDyne::Request::PAGI;
- 
+
  my $wr = WebDyne::Request::PAGI->new(
      scope => $scope,
      req   => $pagi_request,
-     res   => $pagi_response,
  );
 
 =head1 DESCRIPTION
@@ -582,6 +583,8 @@ WebDyne::Request::PAGI - PAGI request adapter for WebDyne
 C<WebDyne::Request::PAGI> adapts PAGI request state to the normalized request API expected by WebDyne.
 
 Like the PSGI adapter, it can derive a target filename from the request path, configured document root, and default document settings. It also exposes PAGI-specific request information such as scope-based protocol details, body access, form/query parameters, and request timing through the common WebDyne request surface.
+
+The former C<res()> helper is no longer available. Set response status and content type through the request adapter, and use C<headers_out()> for response headers. Setting a header replaces its previous value; use C<<< headers_out()->push_header(...) >>> for repeated values such as Set-Cookie.
 
 
 =head1 METHODS
@@ -598,6 +601,14 @@ Construct a PAGI-backed request adapter.
 
 =item *
 
+B<path_info() / script_name()>
+
+Return the application-relative path and the PAGI C<root_path> mount point. Filename and API lookup strip the mount prefix at a path boundary; C<path()> and the original scope retain the full request path.
+
+
+
+=item *
+
 B<env()>
 
 Return the normalized environment view used by the adapter.
@@ -608,7 +619,7 @@ Return the normalized environment view used by the adapter.
 
 B<id()>
 
-Return the request identifier if present.
+Return the request identifier if present: the C<pagi.request_id> that PAGI's RequestId middleware assigns.
 
 
 
@@ -630,9 +641,17 @@ Return server identity details.
 
 =item *
 
+B<content_length()>
+
+Return the declared Content-Length when present. Otherwise, return the byte length of a body already buffered by the PAGI handler, or undef when no buffered length is available. Original request headers remain unchanged.
+
+
+
+=item *
+
 B<body() / body_handle()>
 
-Read or stream the request body.
+Read the completed HTTP request body buffered before page execution. C<body_handle()> returns a fresh binary handle positioned at the beginning of those bytes. Synchronous access requires a buffered body; it does not drive the server event loop.
 
 
 

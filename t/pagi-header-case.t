@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
+use sort 'stable';
 
 BEGIN {
     unshift @INC, 't';
@@ -16,18 +17,16 @@ use Future;
 my $app_cr=WebDyne::PAGI->new(root => '.', static => 0)->to_app();
 foreach my $failure (0, 1, 2) {
     my (@event, @send);
-    my $response_or;
+    my $headers_or;
     my $application_or;
     {
         no warnings 'redefine';
         local *WebDyne::handler=sub {
             my ($class, $request_or)=@_;
-            #  Create the WebDyne snapshot first to exercise response-only headers.
-            $request_or->headers_out();
-            $response_or=$request_or->res();
-            $response_or->header('X-Mixed' => 'VaLuE');
-            $response_or->header('X-Mixed' => 'second');
-            $response_or->header('X-Empty' => '');
+            $headers_or=$request_or->headers_out();
+            $headers_or->push_header('X-Mixed' => 'VaLuE');
+            $headers_or->push_header('X-Mixed' => 'second');
+            $headers_or->push_header('X-Empty' => '');
             return 200;
         };
         $application_or=$app_cr->(
@@ -41,10 +40,14 @@ foreach my $failure (0, 1, 2) {
             },
         );
     }
-    my @custom=grep { $_->[0] =~ /^x-/ } @{$event[0]->{'headers'}};
-    is_deeply(\@custom, [['x-mixed', 'VaLuE'], ['x-mixed', 'second'], ['x-empty', '']], 'outgoing names normalized without changing values or order');
-    my @stored=grep { $_->[0] =~ /^X-/ } @{$response_or->headers()};
-    is_deeply(\@stored, [['X-Mixed', 'VaLuE'], ['X-Mixed', 'second'], ['X-Empty', '']], 'stored headers retain original names');
+    #  Headers of different names have no defined order; repeated values of
+    #  one name keep theirs. A stable sort by name compares only that.
+    #
+    my @custom=sort { $a->[0] cmp $b->[0] } grep { $_->[0] =~ /^x-/ } @{$event[0]->{'headers'}};
+    is_deeply(\@custom, [['x-empty', ''], ['x-mixed', 'VaLuE'], ['x-mixed', 'second']], 'outgoing names normalized without changing values or order');
+    my $stored_ar=$headers_or->psgi_flatten_without_sort();
+    my @stored=sort { $a->[0] cmp $b->[0] } grep { $_->[0] =~ /^X-/ } map { [@{$stored_ar}[$_*2, $_*2+1]] } 0 .. @{$stored_ar}/2-1;
+    is_deeply(\@stored, [['X-Empty', ''], ['X-Mixed', 'VaLuE'], ['X-Mixed', 'second']], 'stored headers retain original names');
     ok(!$application_or->is_ready(), 'application awaits start send');
     if ($failure == 2) {
         $send[0]->done();

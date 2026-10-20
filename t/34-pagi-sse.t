@@ -41,6 +41,7 @@ use Future;
 #  Load WebDyne modules we need
 #
 use WebDyne::PAGI;
+use PAGI::Test::ConnectionState;
 
 
 #  Run tests
@@ -102,16 +103,22 @@ EOF
     #  A pending transport send must keep the application alive through close.
     #  Immediately resolved test sends would conceal a missing await above.
     #
+    #  The test plays the server, which ends the connection on sse.close.
+    #
     my $close_or=Future->new();
+    my $connection_or=PAGI::Test::ConnectionState->new();
     my @event;
     my $application_or=$app_cr->(
         {type => 'sse', method => 'GET', path => '/sse.psp',
-            query_string => 'one=alpha&two=bravo', headers => []},
+            query_string => 'one=alpha&two=bravo', headers => [],
+            'pagi.connection' => $connection_or},
         sub { Future->new() },
         sub {
             my $event_hr=shift();
             push @event, $event_hr->{'type'};
-            return $event_hr->{'type'} eq 'sse.close' ? $close_or : Future->done();
+            return Future->done() unless $event_hr->{'type'} eq 'sse.close';
+            $connection_or->_mark_complete();
+            return $close_or;
         },
     );
     is_deeply(\@event, [qw(sse.start sse.send sse.close)], 'SSE sends start, event and close in order');

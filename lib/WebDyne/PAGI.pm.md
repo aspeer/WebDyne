@@ -26,6 +26,8 @@ my $single_file_app = WebDyne::PAGI->new(
 
 `WebDyne::PAGI` wraps the core WebDyne handler in a PAGI application. It supports multiple PAGI scope types, including normal HTTP requests, server-sent events, WebSocket connections, and lifespan startup or shutdown events.
 
+The adapter requires PAGI::Tools 0.003000 or newer and a server implementing PAGI Www 0.6. Older toolkit versions are rejected when the adapter loads.
+
 # METHODS #
 
 * **new(%options)**
@@ -61,11 +63,11 @@ my $single_file_app = WebDyne::PAGI->new(
 
 * **handler_sse()**
 
-    Handle server-sent event requests. URL-encoded form bodies are buffered before CGI parameter setup, subject to `WEBDYNE_CGI_POST_MAX`. Oversized forms receive status 413 through SSE HTTP denial events; disconnects during buffering skip page execution. Normal EventSource GETs do not wait for body data. Multipart SSE form submissions are outside this handler's supported scope. When page setup returns an HTTP error status instead of a stream callback, send a plain-text SSE HTTP denial response with that status. Other results without a valid callback produce status 500. Custom error headers and redirects are not forwarded by this fallback.
+    Handle server-sent event requests. URL-encoded form bodies are buffered before CGI parameter setup, subject to `WEBDYNE_CGI_POST_MAX`. Oversized forms receive an ordinary HTTP response with status 413; disconnects during buffering skip page execution. Normal EventSource GETs do not wait for body data. Multipart SSE form submissions are outside this handler's supported scope. When page setup returns an HTTP error status instead of a stream callback, send a plain-text HTTP response with that status. Other results without a valid callback produce status 500. Custom error headers and redirects are not forwarded by this fallback.
 
 * **handler_ws()**
 
-    Handle WebSocket requests. If page setup does not provide a valid WebSocket callback, reject the handshake with `websocket.close`. This uses the standard HTTP 403 rejection without requiring the optional HTTP denial-response extension.
+    Handle WebSocket requests. If page setup does not provide a valid WebSocket callback, reject the handshake with an ordinary HTTP 403 response before accepting the socket.
 
 * **handler_lifespan()**
 

@@ -1,15 +1,15 @@
 # carton snapshot format: version 1.0
 DISTRIBUTIONS
-  Future-0.52
-    pathname: P/PE/PEVANS/Future-0.52.tar.gz
+  Future-0.53
+    pathname: P/PE/PEVANS/Future-0.53.tar.gz
     provides:
-      Future 0.52
-      Future::Exception 0.52
-      Future::Mutex 0.52
-      Future::PP 0.52
-      Future::Utils 0.52
-      Test::Future 0.52
-      Test::Future::Deferred 0.52
+      Future 0.53
+      Future::Exception 0.53
+      Future::Mutex 0.53
+      Future::PP 0.53
+      Future::Utils 0.53
+      Test::Future 0.53
+      Test::Future::Deferred 0.53
     requirements:
       Carp 1.25
       List::Util 1.29

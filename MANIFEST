@@ -1477,3 +1477,5 @@ t/22-cgi-request-cookies.t
 t/pagi-redirect-content-type.t
 t/psgi-response-bytes.t
 t/22-cgi-param-utf8.t
+t/pagi-request-id.t
+t/pagi-tools-floor.t

@@ -2055,7 +2055,7 @@ COPY webdyne.conf.pl /etc</screen>
     </section>
 
     <section xml:id="request_response"><title>Request and response handling</title>
-      <para>Use <code>$self-&gt;r()</code> for the WebDyne request adapter and <code>$self-&gt;CGI()</code> for parsed form/query parameters. Native transport helpers are separate objects: PAGI provides <code>$self-&gt;r()-&gt;req()</code>, <methodname>res()</methodname>, <methodname>sse()</methodname> and <methodname>ws()</methodname> where applicable. Avoid reaching into backend object internals in portable page code.</para>
+      <para>Use <code>$self-&gt;r()</code> for the WebDyne request adapter and <code>$self-&gt;CGI()</code> for parsed form/query parameters. Native transport helpers are separate objects: PAGI provides <code>$self-&gt;r()-&gt;req()</code>, <methodname>sse()</methodname> and <methodname>ws()</methodname> where applicable. Avoid reaching into backend object internals in portable page code.</para>
       <section xml:id="request_parameters"><title>Request parameters and repeated values</title>
         <para>Scalar <methodname>param()</methodname> returns the first value; list context returns all values. <methodname>Vars()</methodname> returns a <classname>Hash::MultiValue</classname> whose hash view selects the last value. Validate both the permitted values and the permitted number of values for an input; do not let different layers choose conflicting values.</para>
         <programlisting xml:id="request_parameter_code" language="perl">my $cgi_or=$self-&gt;CGI();
